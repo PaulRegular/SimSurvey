@@ -8,3 +8,5 @@ Description: In development
 Depends: R (>= 3.3.2)
 License: GPL-3
 LazyData: true
+Imports:
+    sp
