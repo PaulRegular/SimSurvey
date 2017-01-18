@@ -8,7 +8,7 @@
 #'   \item{id}{survey unit identifier}
 #'   \item{division}{NAFO division}
 #'   \item{strat}{survey strata number}
-#'   \item{unit.num}{survey sampling unit number}
+#'   \item{unit_num}{survey sampling unit number}
 #'   \item{easting}{easting coordinates from UTM Zone 21}
 #'   \item{northing}{northing coordinates from UTM Zone 21}
 #'   \item{area}{area of Voronoi polygon the sampling unit lies within}
@@ -18,4 +18,4 @@
 #' For further details on how this file was created, see the data-raw folder for
 #' this package
 #'
-"simgrid"
+"survey_grid"

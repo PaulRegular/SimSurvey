@@ -8,6 +8,7 @@
 #' simPop()
 
 SimPop <- function(ages = 1:6,
-                   grid = simgrid) {
-  print("Hello, world!")
+                   grid = survey_grid) {
+  print("In progress")
 }
+

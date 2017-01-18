@@ -1,12 +1,15 @@
 Package: surveyTestr
 Type: Package
-Title: A Package for the Simulation Testing of the Design and Analysis of Fisheries-independent Trawl Surveys
+Title: A Package for the Simulation Testing of the Design and Analysis of
+    Fisheries-independent Trawl Surveys
 Version: 0.0.0.9000
 Author: person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca",
-               role = c("aut", "cre"))
+    role = c("aut", "cre"))
 Description: In development
-Depends: R (>= 3.3.2)
+Depends:
+    R (>= 3.3.2)
 License: GPL-3
 LazyData: true
 Imports:
     sp
+RoxygenNote: 5.0.1
