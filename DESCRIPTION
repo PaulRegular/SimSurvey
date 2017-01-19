@@ -11,5 +11,6 @@ Depends:
 License: GPL-3
 LazyData: true
 Imports:
-    sp
+    sp,
+    raster
 RoxygenNote: 5.0.1

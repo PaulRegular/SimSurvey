@@ -125,5 +125,5 @@ survey_grid@data[] <- lapply(names(survey_grid@data),
                                  survey_grid@data[[nm]]
                                }
                              }) # two digits should suffice for the double columns
-save(survey_grid, file = "data/survey_grid.Rdata")
+save(survey_grid, file = "data/survey_grid.rda")
 

@@ -19,11 +19,11 @@
 #' calculated using the same equation above using \code{Z} values from \code{min(years)}.
 #'
 #' @examples
-#' SimAbundance()
+#' simAbundance()
 #'
 #' @export
 
-SimAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
+simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -52,6 +52,31 @@ SimAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
 }
 
 
+#' Simulate spatial and temporal distribution
+#'
+#' @description Provided an abundance at age matrix (like one provided by \code{\link{SimAbundance}})
+#' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
+#' applies spatial and temporal error to simulate the spatial and temporal distribution
+#' of the population.
+#'
+#' @param N An abundance at age matrix with ages defining the rows and years defining
+#' the columns (i.e. same structure as a matrix provided by \code{\link{SimAbundance}})
+#' @param grid A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
+#' grid with the same structure as \code{\link{survey_grid}}
+#'
+#' @examples
+#' simDistribution()
+#'
+
+simDistribution <- function(N = SimAbundance(),
+                            grid = survey_grid) {
+
+
+}
+
+
+
+
 
 #' Simulate an age-structured population over a survey grid.
 #'
@@ -62,7 +87,7 @@ SimAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
 #' @examples
 #' simPop()
 
-SimPop <- function(ages = 1:6,
+simPop <- function(ages = 1:6,
                    grid = survey_grid) {
   print("In progress")
 }
