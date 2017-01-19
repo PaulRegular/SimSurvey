@@ -1,3 +1,58 @@
+
+
+#' Simulate basic population dynamics model
+#'
+#' @param ages Ages to include in the simulation.
+#' @param years Years to include in the simulation.
+#' @param Z Total mortality. Can be one value or a matrix of \code{length(ages)}
+#' rows and \code{length(years)} columns.
+#' @param r Recruitment (i.e. Abundance at \code{min(ages)}). Can be one value
+#' or vector of \code{length(years)}
+#'
+#' @return A \code{matrix} of abundance at age by year.
+#'
+#' @details
+#' Abundance from \code{ages[2:max(ages)]} and \code{years[2:max(years)]} is
+#' calculated using a standard population dynamics model:
+#' \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
+#' Abundance at \code{min(ages)} is supplied by \code{r} and abundance at \code{ages[2:max(ages)]} are
+#' calculated using the same equation above using \code{Z} values from \code{min(years)}.
+#'
+#' @examples
+#' SimAbundance()
+#'
+#' @export
+
+SimAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
+
+  ## Simple error check
+  if (any(diff(ages) > 1) | any(diff(years) > 1)) {
+    stop("Age and year sequences must be ascending and increment by 1")
+  }
+
+  ## Set-up abundance-at-age matrix
+  z <- Z # save user supplied z
+  N <- Z <- matrix(nrow = length(ages), ncol = length(years),
+                   dimnames = list(age = ages, year = years))
+  Z[] <- z
+  N[1, ] <- r
+
+  ## Fill abundance-at-age matrix
+  for (y in seq_along(years)) {
+    for (a in seq_along(ages)[-1]) {
+      if (y == 1) {
+        N[a, 1] <- N[a - 1, 1] * exp(- Z[a - 1, 1])
+      } else {
+        N[a, y] <- N[a -1, y - 1] * exp(- Z[a -1, y - 1])
+      }
+    }
+  }
+  N
+
+}
+
+
+
 #' Simulate an age-structured population over a survey grid.
 #'
 #' @param ages Ages to include in the simulated population.
