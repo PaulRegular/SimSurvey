@@ -23,7 +23,7 @@
 #'
 #' @export
 
-simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
+simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -71,13 +71,27 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
 #'
 
 simDistribution <- function(N = simAbundance(),
-                            grid = survey_grid) {
+                            grid = survey_grid,
+                            rho = 0.8) {
 
+  ## Distribute abundance equally through the domaine
   N_array <- array(dim = c(nrow(N), ncol(N), nrow(grid)),
-                   dimnames = list(age = rownames(N), year = colnames(N), ))
-  grid$area / sum(grid$area)
+                   dimnames = list(age = rownames(N), year = colnames(N), cell = grid$cell))
+  prop <- grid$area / sum(grid$area)
+  for(i in seq_along(grid$cell)) {
+    N_array[, , i] <- prop[i] * N
+  }
 
-
+  ## Generate spatially correlated errors
+  coords <- grid@data[, c("easting", "northing", "depth")]
+  coords$depth <- - coords$depth/1000 # convert depth to km to make units equal to eastings and northings
+  if (requireNamespace("fields", quietly = TRUE)) {
+    d <- fields::rdist(coords)
+  } else {
+    d <- as.matrix(dist(coords))
+  }
+  w <- exp(-rho * d); rm(d)
+  W <- chol(w); rm(w)
 
 
 }

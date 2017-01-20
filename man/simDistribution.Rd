@@ -4,7 +4,7 @@
 \alias{simDistribution}
 \title{Simulate spatial and temporal distribution}
 \usage{
-simDistribution(N = SimAbundance(), grid = survey_grid)
+simDistribution(N = simAbundance(), grid = survey_grid, rho = 0.8)
 }
 \arguments{
 \item{N}{An abundance at age matrix with ages defining the rows and years defining

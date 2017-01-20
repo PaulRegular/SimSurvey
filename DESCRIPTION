@@ -13,4 +13,6 @@ LazyData: true
 Imports:
     sp,
     raster
+Suggests:
+    fields
 RoxygenNote: 5.0.1

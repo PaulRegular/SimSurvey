@@ -6,14 +6,13 @@
 \title{Sample survey simulation grid.}
 \format{A SpatialPolygonsDataFrame with 8 variables:
 \describe{
-  \item{id}{survey unit identifier}
+  \item{cell}{Survey cell identifier}
   \item{division}{NAFO division}
-  \item{strat}{survey strata number}
-  \item{unit_num}{survey sampling unit number}
-  \item{easting}{easting coordinates from UTM Zone 21}
-  \item{northing}{northing coordinates from UTM Zone 21}
-  \item{area}{area of Voronoi polygon the sampling unit lies within}
-  \item{depth}{mean depth of the waters under each Voronoi polygon}
+  \item{strat}{Survey strata number}
+  \item{easting}{Easting coordinates from UTM Zone 21, datum WGS84}
+  \item{northing}{Northing coordinates from UTM Zone 21, datum WGS84}
+  \item{area}{Area of Voronoi cell (polygon) the sampling unit lies within}
+  \item{depth}{Mean depth of the waters under each Voronoi cell (polygon)}
 }
 
 For further details on how this file was created, see the data-raw folder for
