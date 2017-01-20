@@ -67,9 +67,17 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 1000) {
 #' @examples
 #' simDistribution()
 #'
+#' @export
+#'
 
-simDistribution <- function(N = SimAbundance(),
+simDistribution <- function(N = simAbundance(),
                             grid = survey_grid) {
+
+  N_array <- array(dim = c(nrow(N), ncol(N), nrow(grid)),
+                   dimnames = list(age = rownames(N), year = colnames(N), ))
+  grid$area / sum(grid$area)
+
+
 
 
 }

@@ -110,12 +110,16 @@ survey_grid_dat <- merge(survey_grid_dat, survey_grid@data, by = "id")
 ggplot(survey_grid_dat) +
   geom_polygon(aes(x = long, y = lat, group = group, fill = depth), colour = "steelblue")
 
+## Simplify identifier by providing a unique string
+survey_grid$cell <- seq_along(survey_grid)
+row.names(survey_grid) <- as.character(survey_grid$cell)
+
 ## Finalize Rdata object by adding survey unit coordinates, then order and rename cols
 survey_grid@data <- merge(survey_grid@data,  as.data.frame(survey_units_utm),
                           by = c("division", "strat", "unit_num"), all.x = TRUE)
-survey_grid@data <- survey_grid@data[, c("id", "division", "strat", "unit_num",
+survey_grid@data <- survey_grid@data[, c("cell", "division", "strat",
                                          "lon", "lat", "area", "depth")]
-names(survey_grid@data) <- c("id", "division", "strat", "unit_num",
+names(survey_grid@data) <- c("cell", "division", "strat",
                              "easting", "northing", "area", "depth")
 survey_grid@data[] <- lapply(names(survey_grid@data),
                              function(nm) {
