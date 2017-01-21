@@ -72,15 +72,9 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
 
 simDistribution <- function(N = simAbundance(),
                             grid = survey_grid,
-                            rho = 0.8) {
+                            rho = 0.5,
+                            sigma = 1) {
 
-  ## Distribute abundance equally through the domaine
-  N_array <- array(dim = c(nrow(N), ncol(N), nrow(grid)),
-                   dimnames = list(age = rownames(N), year = colnames(N), cell = grid$cell))
-  prop <- grid$area / sum(grid$area)
-  for(i in seq_along(grid$cell)) {
-    N_array[, , i] <- prop[i] * N
-  }
 
   ## Generate spatially correlated errors
   coords <- grid@data[, c("easting", "northing", "depth")]
@@ -92,6 +86,28 @@ simDistribution <- function(N = simAbundance(),
   }
   w <- exp(-rho * d); rm(d)
   W <- chol(w); rm(w)
+  e <- (t(W) %*% rnorm(nrow(coords))) * sigma; rm(W)
+
+
+  ## Distribute abundance equally through the domaine
+  N_array <- array(dim = c(nrow(N), ncol(N), nrow(grid)),
+                   dimnames = list(age = rownames(N), year = colnames(N), cell = grid$cell))
+  prop <- grid$area / sum(grid$area)
+  for(i in seq_along(grid$cell)) {
+    N_array[, , i] <- N * prop[i] * exp(e[i])
+  }
+
+
+
+  grid_dat <- ggplot2::fortify(grid)
+  names(grid_dat)[names(grid_dat) == "id"] <- "cell"
+  grid_dat$cell <- as.numeric(grid_dat$cell)
+  grid@data$N <- N_array[1, 1, ]
+  grid@data$den <- grid@data$N/grid@data$area
+  grid_dat <- merge(grid_dat, grid@data, by = "cell")
+  ggplot(grid_dat) +
+    geom_polygon(aes(x = long, y = lat, group = cell, fill = den, colour = den))
+
 
 
 }
