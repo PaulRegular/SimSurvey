@@ -1,5 +1,8 @@
 
 
+
+
+
 #' Simulate basic population dynamics model
 #'
 #' @param ages Ages to include in the simulation.
@@ -52,15 +55,16 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
 }
 
 
+
 #' Simulate spatial and temporal distribution
 #'
-#' @description Provided an abundance at age matrix (like one provided by \code{\link{SimAbundance}})
+#' @description Provided an abundance at age matrix (like one provided by \code{\link{simAbundance}})
 #' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
 #' applies spatial and temporal error to simulate the spatial and temporal distribution
 #' of the population.
 #'
 #' @param N An abundance at age matrix with ages defining the rows and years defining
-#' the columns (i.e. same structure as a matrix provided by \code{\link{SimAbundance}})
+#' the columns (i.e. same structure as a matrix provided by \code{\link{simAbundance}})
 #' @param grid A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
 #' grid with the same structure as \code{\link{survey_grid}}
 #'
@@ -72,8 +76,8 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
 
 simDistribution <- function(N = simAbundance(),
                             grid = survey_grid,
-                            rho = 0.5,
-                            sigma = 1) {
+                            rho = 0.05,
+                            sigma = 0.00001) {
 
 
   ## Generate spatially correlated errors
@@ -94,7 +98,7 @@ simDistribution <- function(N = simAbundance(),
                    dimnames = list(age = rownames(N), year = colnames(N), cell = grid$cell))
   prop <- grid$area / sum(grid$area)
   for(i in seq_along(grid$cell)) {
-    N_array[, , i] <- N * prop[i] * exp(e[i])
+    N_array[, , i] <- (N/grid$area[i]) * prop[i] * exp(e[i])
   }
 
 
@@ -104,9 +108,10 @@ simDistribution <- function(N = simAbundance(),
   grid_dat$cell <- as.numeric(grid_dat$cell)
   grid@data$N <- N_array[1, 1, ]
   grid@data$den <- grid@data$N/grid@data$area
+  grid@data$error <- e
   grid_dat <- merge(grid_dat, grid@data, by = "cell")
   ggplot(grid_dat) +
-    geom_polygon(aes(x = long, y = lat, group = cell, fill = den, colour = den))
+    geom_polygon(aes(x = long, y = lat, group = cell, fill = N, colour = N))
 
 
 
