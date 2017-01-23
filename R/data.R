@@ -25,7 +25,7 @@
 #' @format A SpatialPolygons object
 #'
 #' Derived from global administrative boundaries data (http://gadm.org/) downloaded
-#' using the \code{\link{raster::getData}} function. Details provided in the
+#' using the \code{\link{getData}} function. Details provided in the
 #' data-raw folder for this package.
 #'
 "land"
