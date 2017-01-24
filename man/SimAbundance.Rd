@@ -4,21 +4,26 @@
 \alias{simAbundance}
 \title{Simulate basic population dynamics model}
 \usage{
-simAbundance(ages = 1:6, years = 1:10, Z = 0.2, r = 10000)
+simAbundance(ages = 1:6, years = 1:10, Z = simZ(), R = simR())
 }
 \arguments{
 \item{ages}{Ages to include in the simulation.}
 
 \item{years}{Years to include in the simulation.}
 
-\item{Z}{Total mortality. Can be one value or a matrix of \code{length(ages)}
-rows and \code{length(years)} columns.}
+\item{Z}{Total mortality function, like \code{\link{simZ}}, for generating
+mortality matrix.}
 
-\item{r}{Recruitment (i.e. Abundance at \code{min(ages)}). Can be one value
-or vector of \code{length(years)}}
+\item{R}{Recruitment (i.e. Abundance at \code{min(ages)}) function, like
+\code{\link{simR}}, for generating recruitment vector.}
 }
 \value{
-A \code{matrix} of abundance at age by year.
+A \code{list} of length 3:
+\itemize{
+  \item{\code{R} - Vector of recruitment values}
+  \item{\code{Z} - Matrix of total mortality values}
+  \item{\code{N} - Matrix of abundance values}
+}
 }
 \description{
 Simulate basic population dynamics model

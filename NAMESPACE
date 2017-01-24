@@ -2,3 +2,5 @@
 
 export(simAbundance)
 export(simDistribution)
+export(simR)
+export(simZ)

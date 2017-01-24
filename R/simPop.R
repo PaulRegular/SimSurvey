@@ -1,5 +1,49 @@
 
+#' Simulate random recruitment
+#'
+#' @description This function returns a function to use inside \code{\link{simAbundance}}.
+#' Given parameters, it generates recruitment values from a log normal distribution
+#'
+#' @param mean,sd Mean and standard deviation of recruitment
+#'
+#' @examples
+#' simAbundance(R = simR(mean = 100000, sd = 4))
+#'
+#' @export
+simR <- function(mean = 20000, sd = 4) {
+  function(years = NULL) {
+    r <- rlnorm(length(years), meanlog = log(mean), sdlog = log(sd))
+    names(r) <- years
+    r
+  }
+}
 
+
+#' Simulate total mortality using a random walk
+#'
+#' @description This function returns a function to use inside \code{\link{simAbundance}}.
+#' Given parameters, it generates total mortality values from a log normal random walk
+#'
+#' @param mean,sd Mean and standard deviation of total mortality
+#'
+#' @details Random walk errors are first generated for years and ages independently.
+#' The outer product of these errors are then calculated to generate a total
+#' mortality matrix.
+#'
+#' @examples
+#' simAbundance(Z = simZ(mean = 0.6, sd = 0.3))
+#'
+#' @export
+simZ <- function(mean = 0.4, sd = 0.2) {
+  function(ages = NULL, years = NULL) {
+    ey <- cumsum(rnorm(length(years), sd = sd)) # random walk error
+    ea <- cumsum(rnorm(length(ages), sd = sd))
+    e <- outer(ea, ey)
+    z <- exp(log(mean) + e)
+    dimnames(z) <- list(age = ages, year = years)
+    z
+  }
+}
 
 
 
@@ -7,12 +51,17 @@
 #'
 #' @param ages Ages to include in the simulation.
 #' @param years Years to include in the simulation.
-#' @param Z Total mortality. Can be one value or a matrix of \code{length(ages)}
-#' rows and \code{length(years)} columns.
-#' @param r Recruitment (i.e. Abundance at \code{min(ages)}). Can be one value
-#' or vector of \code{length(years)}
+#' @param Z Total mortality function, like \code{\link{simZ}}, for generating
+#' mortality matrix.
+#' @param R Recruitment (i.e. Abundance at \code{min(ages)}) function, like
+#' \code{\link{simR}}, for generating recruitment vector.
 #'
-#' @return A \code{matrix} of abundance at age by year.
+#' @return A \code{list} of length 3:
+#' \itemize{
+#'   \item{\code{R} - Vector of recruitment values}
+#'   \item{\code{Z} - Matrix of total mortality values}
+#'   \item{\code{N} - Matrix of abundance values}
+#' }
 #'
 #' @details
 #' Abundance from \code{ages[2:max(ages)]} and \code{years[2:max(years)]} is
@@ -26,7 +75,7 @@
 #'
 #' @export
 
-simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
+simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -34,11 +83,10 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
   }
 
   ## Set-up abundance-at-age matrix
-  z <- Z # save user supplied z
-  N <- Z <- matrix(nrow = length(ages), ncol = length(years),
-                   dimnames = list(age = ages, year = years))
-  Z[] <- z
-  N[1, ] <- r
+  N <- matrix(nrow = length(ages), ncol = length(years),
+              dimnames = list(age = ages, year = years))
+  Z <- Z(ages = ages, years = years)
+  N[1, ] <- R <- R(years = years)
 
   ## Fill abundance-at-age matrix
   for (y in seq_along(years)) {
@@ -50,7 +98,7 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = 0.2, r = 10000) {
       }
     }
   }
-  N
+  list(R = R, Z = Z, N = N)
 
 }
 
