@@ -103,6 +103,7 @@ survey_grid <- do.call(rbind, survey_grids)
 plot(survey_grid)
 
 ## Add buffer around survey area (optional)
+## This will minimize or get rid of edge effects in the survey area in the simulation
 b1 <- raster::buffer(strat_polys_utm, width = 0.1)
 b2 <- raster::buffer(b1, width = 25)
 b3 <- raster::buffer(b2, width = 75)
