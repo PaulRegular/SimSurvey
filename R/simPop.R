@@ -104,6 +104,53 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 
 
 
+
+simTime <- function(dcor_time = 5) {
+  function(years = NULL) {
+    if (requireNamespace("fields", quietly = TRUE)) {
+      d <- fields::rdist(years)
+    } else {
+      d <- as.matrix(dist(years))
+    }
+    p_time <- exp(- d / dcor_time)
+  }
+}
+
+
+simSize <- function(dcor_size = 4) {
+  function(ages = NULL) {
+    if (requireNamespace("fields", quietly = TRUE)) {
+      d <- fields::rdist(ages)
+    } else {
+      d <- as.matrix(dist(ages))
+    }
+    p_size <- exp(- d / dcor_time)
+  }
+}
+
+
+simSpace <- function(q = 0.1, d = 0.01) {
+  function(grid = NULL) {
+    nb <- Q <- rgeos::gTouches(grid, byid = TRUE) # cell neighbour matrix
+    m <- rowSums(nb)                              # number of neighbouring cells
+    Q[] <- 0
+    Q[nb] <- -q
+    diag(Q) <- q * (m + d)
+    invQ <- solve(Q)
+
+    sigma <- (1 / length(grid)) * sum(diag(invQ))
+    H <- mean(grid$area) / log(1 + (d / 2) + sqrt(d + ((d ^ 2)/4)))
+    message(paste0("Sigma = ", sigma))
+    message(paste0("H = ", H))
+  }
+}
+
+
+
+
+
+
+
 #' Simulate spatial and temporal distribution
 #'
 #' @description Provided an abundance at age matrix (like one provided by \code{\link{simAbundance}})
@@ -122,7 +169,7 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 #' @export
 #'
 
-simDistribution <- function(N = simAbundance(),
+simDistribution <- function(pop = simAbundance(),
                             grid = survey_grid,
                             rho = 0.05,
                             sigma = 0.00001) {

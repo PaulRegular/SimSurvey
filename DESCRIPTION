@@ -13,7 +13,8 @@ LazyData: true
 ByteCompile: true
 Imports:
     sp,
-    raster
+    raster,
+    rgeos
 Suggests:
     fields
 RoxygenNote: 5.0.1
