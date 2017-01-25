@@ -72,68 +72,49 @@ survey_units_utm <- spTransform(survey_units, crs(utm_proj))
 ## Clean-up some unused objects
 rm(strat_polys, nl, survey_units)
 
-## Clean-up one issue with the strat polygons in the loop below
-plot(strat_polys_utm[strat_polys_utm$Strat_ID %in% c(295, 296), ],
-     col = rgb(1, 0, 0, 0.5)) # overlap!
-plot(survey_units_utm[survey_units_utm$strat %in% c(295, 296), ],
-     add = TRUE, pch = 16, col = rgb(1, 0, 0, 0.5))
 
-## Make an irregular grid using Voronoi tessellation
-## Loop across each strata to impose proper bounds
-survey_grids <- vector("list", length(index_strata))
-for(i in seq_along(index_strata)) {
-  u <- survey_units_utm[survey_units_utm$strat == index_strata[i], ]
-  s <- strat_polys_utm[strat_polys_utm$Strat_ID == index_strata[i], ]
-  s <- raster::buffer(s, width = 0.00001) # add a small buffer to fix some issues
-  if(index_strata[i] == 295) {
-    s2 <- strat_polys_utm[strat_polys_utm$Strat_ID == 296, ]
-    s2 <- raster::buffer(s2, width = 0.00001)
-    s <- raster::erase(s, s2)
-  }
-  v <- dismo::voronoi(u, ext = extent(s))
-  v <- raster::intersect(s, v)
-  row.names(v) <- paste0(v$strat, "-", v$unit_num) # ensure unique row names are provided
-  survey_grids[[i]] <- v
-  plot(v, main = index_strata[i])
-  plot(s, add = TRUE, border = "red", lty = 3)
-  plot(u, add = TRUE, pch = 16, cex = 0.5)
-}
-survey_grid <- do.call(rbind, survey_grids)
-## There are some allignment issues here, but they shouldn't be an issue
-plot(survey_grid)
-
-## Add buffer around survey area (optional)
-## This will minimize or get rid of edge effects in the survey area in the simulation
-b1 <- raster::buffer(strat_polys_utm, width = 0.1)
-b2 <- raster::buffer(b1, width = 25)
-b3 <- raster::buffer(b2, width = 75)
-land <- raster::crop(nl_utm, b3) # crop and simplify the land object to ease erase below
-land <- rgeos::gSimplify(land, tol = 0.1)
-b2 <- raster::erase(b2, b1)
-b2 <- raster::erase(b2, land)
-plot(b2, col = "grey") # clean up isolated polygon
+## Identify the survey region and add a buffer zone
+## The buffer zone will minimize or get rid of edge effects in the survey
+## area of the simulation + improve distance through water calculations
+## (buffer zone may not be necessary for some cases)
+survey_region <- raster::buffer(strat_polys_utm, width = 0.5) # km
+buffer_zone <- raster::buffer(survey_region, width = 25)
+buffer_zone <- raster::erase(buffer_zone, survey_region)
+buffer_zone <- raster::erase(buffer_zone, nl_utm)
+plot(buffer_zone, col = "grey") # clean up isolated polygon
 # locator() # used this function to generate values below
 p <- cbind(c(731.4171, 740.1683, 762.3381, 750.0864, 731.4171),
            c(5289.713, 5296.714, 5270.461, 5262.876, 5289.713))
 p <- SpatialPolygons(list(Polygons(list(Polygon(p)), "1")),
-                     pO = 1L, proj4string = CRS(proj4string(b2)))
+                     pO = 1L, proj4string = CRS(proj4string(buffer_zone)))
 # p <- raster::drawPoly() # easier (less repeatable) option
-b2 <- raster::erase(b2, p)
-plot(b2, col = "grey")
-samp_area <- raster::area(survey_grid)
-samp_den <- length(samp_area) / sum(samp_area)
-b2_area <- raster::area(b2)
-b2_n <- round(b2_area * (samp_den / 4)) # number of units to place in buffer zone
-b2_units <- spsample(b2, b2_n, type = "stratified")
-v <- dismo::voronoi(b2_units)
-b2 <- raster::intersect(b2, v)
-temp <- data.frame(replicate(ncol(survey_grid), rep(NA, nrow(b2))))
-names(temp) <- names(survey_grid)
-row.names(temp) <- row.names(b2)
-b2@data <- temp
-survey_grid <- raster::bind(survey_grid, b2) # bind the main and buffer zone together
-plot(survey_grid)
-survey_grid
+buffer_zone <- raster::erase(buffer_zone, p)
+plot(buffer_zone, col = "grey")
+samp_area <- raster::area(survey_region)
+samp_den <- length(survey_units_utm) / samp_area
+buffer_area <- raster::area(buffer_zone)
+buffer_n <- round(buffer_area * (samp_den / 2)) # number of units to place in buffer zone
+buffer_zone_units <- spsample(buffer_zone, buffer_n, type = "stratified")
+temp <- data.frame(replicate(ncol(survey_units_utm), rep(NA, length(buffer_zone_units))))
+names(temp) <- names(survey_units_utm)
+row.names(temp) <- row.names(buffer_zone_units)
+buffer_zone_units <- SpatialPointsDataFrame(buffer_zone_units, data = temp)
+survey_units_utm <- rbind(survey_units_utm, buffer_zone_units) # add buffer zone points to survey_units_utm object
+
+plot(buffer_zone)
+plot(survey_region, add = TRUE)
+plot(survey_units_utm, add = TRUE, pch = ".")
+
+
+## Make irregular grid using Voroni tessellation
+v <- dismo::voronoi(survey_units_utm, ext = survey_extent)
+plot(v)
+p <- rgeos::gUnion(survey_region, buffer_zone)
+survey_grid <- rgeos::gIntersection(v, p, byid = TRUE,
+                                    id = row.names(v)) # raster::intersect returned a warning
+plot(survey_grid, col = "grey")
+survey_grid <- SpatialPolygonsDataFrame(survey_grid, data = data.frame(v))
+
 
 ## Extract coords and area, and calculate mean depth
 xy <- coordinates(survey_grid) # these centroids are essentially the actual survey units

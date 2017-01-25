@@ -4,15 +4,15 @@
 \alias{simDistribution}
 \title{Simulate spatial and temporal distribution}
 \usage{
-simDistribution(N = simAbundance(), grid = survey_grid, rho = 0.05,
+simDistribution(pop = simAbundance(), grid = survey_grid, rho = 0.05,
   sigma = 1e-05)
 }
 \arguments{
-\item{N}{An abundance at age matrix with ages defining the rows and years defining
-the columns (i.e. same structure as a matrix provided by \code{\link{simAbundance}})}
-
 \item{grid}{A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
 grid with the same structure as \code{\link{survey_grid}}}
+
+\item{N}{An abundance at age matrix with ages defining the rows and years defining
+the columns (i.e. same structure as a matrix provided by \code{\link{simAbundance}})}
 }
 \description{
 Provided an abundance at age matrix (like one provided by \code{\link{simAbundance}})

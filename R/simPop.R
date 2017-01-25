@@ -24,21 +24,38 @@ simR <- function(mean = 20000, sd = 4) {
 #' @description This function returns a function to use inside \code{\link{simAbundance}}.
 #' Given parameters, it generates total mortality values from a log normal random walk
 #'
-#' @param mean,sd Mean and standard deviation of total mortality
+#' @param mean,sd Mean and standard deviation of total mortality.
+#' @param breaks Provide breaks to age and/or year series to specify group specific
+#' mean total mortality values. If specified, multiple mean values must be
+#' supplied; one more than the number of breaks. Provide named lists (see
+#' examples below).
 #'
 #' @details Random walk errors are first generated for years and ages independently.
 #' The outer product of these errors are then calculated to generate a total
-#' mortality matrix.
+#' mortality matrix as follows:
+#' \deqn{log(Z_{a, y}) = log(z_{a}) + \delta_{a, y}}{Z_a,y = z_a,y + e_a,y}
+#'
 #'
 #' @examples
 #' simAbundance(Z = simZ(mean = 0.6, sd = 0.3))
+#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2)),
+#'                       breaks = list(ages = c(1, 2)), sd = 0.3))
+#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
+#'                       breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
 #'
 #' @export
-simZ <- function(mean = 0.4, sd = 0.2) {
+simZ <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
   function(ages = NULL, years = NULL) {
     ey <- cumsum(rnorm(length(years), sd = sd)) # random walk error
     ea <- cumsum(rnorm(length(ages), sd = sd))
     e <- outer(ea, ey)
+    if (!is.null(breaks)) {
+      mean_ages <- mean$ages[findInterval(ages, breaks$ages, left.open = TRUE) + 1]
+      mean_years <- mean$years[findInterval(years, breaks$years, left.open = TRUE) + 1]
+      if (is.null(mean_ages)) { mean_ages <- rep(1, length(ages)) }
+      if (is.null(mean_years)) { mean_years <- rep(1, length(years)) }
+      mean <- outer(mean_ages, mean_years)
+    }
     z <- exp(log(mean) + e)
     dimnames(z) <- list(age = ages, year = years)
     z
@@ -105,14 +122,14 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 
 
 
-simTime <- function(dcor_time = 5) {
+simTime <- function(dcor_time = 2) {
   function(years = NULL) {
     if (requireNamespace("fields", quietly = TRUE)) {
       d <- fields::rdist(years)
     } else {
       d <- as.matrix(dist(years))
     }
-    p_time <- exp(- d / dcor_time)
+    rho_time <- exp(- d / dcor_time)
   }
 }
 
@@ -124,24 +141,51 @@ simSize <- function(dcor_size = 4) {
     } else {
       d <- as.matrix(dist(ages))
     }
-    p_size <- exp(- d / dcor_time)
+    rho_size <- exp(- d / dcor_size)
   }
 }
 
 
-simSpace <- function(q = 0.1, d = 0.01) {
+simSpacePM <- function(tau = 4, theta = 0.04) {
   function(grid = NULL) {
+
+
+
+    grid <- as(raster(extent(survey_grid), nrow = 50, ncol = 50), "SpatialPolygons")
+
     nb <- Q <- rgeos::gTouches(grid, byid = TRUE) # cell neighbour matrix
+
+
+    d <- Q <- fields::rdist(coordinates(grid))
+    nb <- d < ndist
     m <- rowSums(nb)                              # number of neighbouring cells
+
+    tau <- 0.001
+    theta <- 0.001
+
     Q[] <- 0
-    Q[nb] <- -q
-    diag(Q) <- q * (m + d)
+    Q[nb] <- - tau
+    diag(Q) <- tau * (m + theta)
     invQ <- solve(Q)
 
-    sigma <- (1 / length(grid)) * sum(diag(invQ))
-    H <- mean(grid$area) / log(1 + (d / 2) + sqrt(d + ((d ^ 2)/4)))
-    message(paste0("Sigma = ", sigma))
-    message(paste0("H = ", H))
+    #sigma <- (1 / length(grid)) * sum(diag(invQ))
+    #H <- mean(grid$area) / log(1 + (d / 2) + sqrt(d + ((d ^ 2)/4))) # is area = h??
+
+    d <- fields::rdist(coordinates(grid))
+    invQ <- exp(- d / 50)
+    plot(d[106, ], invQ[106, ], xlab = "Distance", ylab = "Correlation")
+    ncols <- 200
+    cols <- cut(invQ[106, ], breaks = ncols, labels = FALSE)
+    cols <- colorRampPalette(c("white", "black"))(ncols)[cols]
+    plot(grid, col = cols, lwd = 0.5)
+
+    plot(d[2000, ], invQ[2000, ], xlab = "Distance", ylab = "Correlation")
+    ncols <- 200
+    cols <- cut(invQ[2000, ], breaks = ncols, labels = FALSE)
+    cols <- colorRampPalette(c("white", "black"))(ncols)[cols]
+    plot(grid, col = cols, lwd = 0.5)
+
+
   }
 }
 
