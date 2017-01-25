@@ -156,8 +156,8 @@ simSpacePM <- function(tau = 4, theta = 0.04) {
     nb <- Q <- rgeos::gTouches(grid, byid = TRUE) # cell neighbour matrix
 
 
-    d <- Q <- fields::rdist(coordinates(grid))
-    nb <- d < ndist
+    #d <- Q <- fields::rdist(coordinates(grid))
+    #nb <- d < ndist
     m <- rowSums(nb)                              # number of neighbouring cells
 
     tau <- 0.001
@@ -172,7 +172,7 @@ simSpacePM <- function(tau = 4, theta = 0.04) {
     #H <- mean(grid$area) / log(1 + (d / 2) + sqrt(d + ((d ^ 2)/4))) # is area = h??
 
     d <- fields::rdist(coordinates(grid))
-    invQ <- exp(- d / 50)
+    #invQ <- exp(- d / 50)
     plot(d[106, ], invQ[106, ], xlab = "Distance", ylab = "Correlation")
     ncols <- 200
     cols <- cut(invQ[106, ], breaks = ncols, labels = FALSE)
