@@ -93,8 +93,8 @@ plot(buffer_zone, col = "grey")
 samp_area <- raster::area(survey_region)
 samp_den <- length(survey_units_utm) / samp_area
 buffer_area <- raster::area(buffer_zone)
-buffer_n <- round(buffer_area * (samp_den / 2)) # number of units to place in buffer zone
-buffer_zone_units <- spsample(buffer_zone, buffer_n, type = "stratified")
+buffer_n <- round(buffer_area * samp_den) # apply equal density of points to buffer zone
+buffer_zone_units <- spsample(buffer_zone, buffer_n, type = "nonaligned")
 temp <- data.frame(replicate(ncol(survey_units_utm), rep(NA, length(buffer_zone_units))))
 names(temp) <- names(survey_units_utm)
 row.names(temp) <- row.names(buffer_zone_units)
@@ -104,7 +104,7 @@ survey_units_utm <- rbind(survey_units_utm, buffer_zone_units) # add buffer zone
 plot(buffer_zone)
 plot(survey_region, add = TRUE)
 plot(survey_units_utm, add = TRUE, pch = ".")
-
+plot(buffer_zone_units, add = TRUE, pch = ".", col = "red")
 
 ## Make irregular grid using Voroni tessellation
 v <- dismo::voronoi(survey_units_utm, ext = survey_extent)

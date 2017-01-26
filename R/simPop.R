@@ -120,69 +120,61 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 }
 
 
+## Helper function for euclidian distance calculations
+.dist <- function(x) {
+  if (requireNamespace("fields", quietly = TRUE)) {
+    d <- fields::rdist(x)
+  } else {
+    d <- as.matrix(dist(x))
+  }
+}
 
 
 simTime <- function(dcor_time = 2) {
   function(years = NULL) {
-    if (requireNamespace("fields", quietly = TRUE)) {
-      d <- fields::rdist(years)
-    } else {
-      d <- as.matrix(dist(years))
-    }
-    rho_time <- exp(- d / dcor_time)
+    d <- .dist(years)
+    exp(- d / dcor_time)
   }
 }
 
 
 simSize <- function(dcor_size = 4) {
   function(ages = NULL) {
-    if (requireNamespace("fields", quietly = TRUE)) {
-      d <- fields::rdist(ages)
-    } else {
-      d <- as.matrix(dist(ages))
-    }
-    rho_size <- exp(- d / dcor_size)
+    d <- .dist(ages)
+    exp(- d / dcor_size)
+  }
+}
+
+simSpace <- function(dcor_dist = 70, sigma = 1.5) {
+  function(grid = NULL) {
+    d <- .dist(coordinates(grid))
+    sigma * exp(- d / dcor_dist)
   }
 }
 
 
-simSpacePM <- function(tau = 4, theta = 0.04) {
+simSpacePM <- function(tau = 0.4, theta = 0.004) {
   function(grid = NULL) {
 
-
-
-    grid <- as(raster(extent(survey_grid), nrow = 50, ncol = 50), "SpatialPolygons")
-
+    d <- .dist(coordinates(grid))
     nb <- Q <- rgeos::gTouches(grid, byid = TRUE) # cell neighbour matrix
-
-
-    #d <- Q <- fields::rdist(coordinates(grid))
-    #nb <- d < ndist
     m <- rowSums(nb)                              # number of neighbouring cells
-
-    tau <- 0.001
-    theta <- 0.001
-
     Q[] <- 0
     Q[nb] <- - tau
     diag(Q) <- tau * (m + theta)
     invQ <- solve(Q)
+    s <- (1 / length(grid)) * sum(diag(invQ))
+    H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
+    message(paste0("Spatial variance is approxamatly ", signif(s, 3),
+                   "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
 
-    #sigma <- (1 / length(grid)) * sum(diag(invQ))
-    #H <- mean(grid$area) / log(1 + (d / 2) + sqrt(d + ((d ^ 2)/4))) # is area = h??
 
-    d <- fields::rdist(coordinates(grid))
-    #invQ <- exp(- d / 50)
-    plot(d[106, ], invQ[106, ], xlab = "Distance", ylab = "Correlation")
+    cell <- sample(grid$cell, 1)
     ncols <- 200
-    cols <- cut(invQ[106, ], breaks = ncols, labels = FALSE)
-    cols <- colorRampPalette(c("white", "black"))(ncols)[cols]
-    plot(grid, col = cols, lwd = 0.5)
-
-    plot(d[2000, ], invQ[2000, ], xlab = "Distance", ylab = "Correlation")
-    ncols <- 200
-    cols <- cut(invQ[2000, ], breaks = ncols, labels = FALSE)
-    cols <- colorRampPalette(c("white", "black"))(ncols)[cols]
+    cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
+    cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
+    plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
+         xlab = "Distance", ylab = "Correlation")
     plot(grid, col = cols, lwd = 0.5)
 
 
