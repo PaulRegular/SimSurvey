@@ -79,6 +79,17 @@ rm(strat_polys, nl, survey_units)
 ## (buffer zone may not be necessary for some cases)
 survey_region <- raster::buffer(strat_polys_utm, width = 0.5) # km
 buffer_zone <- raster::buffer(survey_region, width = 25)
+<<<<<<< HEAD
+=======
+  samp_area <- raster::area(survey_region)
+
+## Generate a regular grid over the survey & buffer zones
+samp_den <- length(survey_units_utm) / samp_area
+buffer_area <- raster::area(buffer_zone)
+nunits <- round(buffer_area * samp_den)
+survey_grid <- spsample(buffer_zone, n = nunits, type = "regular")
+survey_grid <- as(as(survey_grid, "SpatialPixels"), "SpatialPolygons")
+>>>>>>> 7d1e093a7031205072dce74bb520cfaf3cbb4b81
 
 ## Erase the land from the buffer_zone and clip the survey_grid
 buffer_zone <- raster::erase(buffer_zone, nl_utm)
@@ -91,6 +102,7 @@ p <- SpatialPolygons(list(Polygons(list(Polygon(p)), "1")),
 # p <- raster::drawPoly() # easier (less repeatable) option
 buffer_zone <- raster::erase(buffer_zone, p)
 plot(buffer_zone, col = "grey")
+<<<<<<< HEAD
 
 ## Generate a regular grid over the area, then clip to buffer_zone
 samp_area <- raster::area(survey_region)
@@ -101,6 +113,8 @@ extent_area <- raster::area(extent_poly)
 nunits <- round(extent_area * samp_den)
 survey_grid <- spsample(extent_poly, n = nunits, type = "regular")
 survey_grid <- as(as(survey_grid, "SpatialPixels"), "SpatialPolygons")
+=======
+  >>>>>>> 7d1e093a7031205072dce74bb520cfaf3cbb4b81
 survey_grid <- raster::intersect(survey_grid, buffer_zone)
 plot(survey_grid)
 
