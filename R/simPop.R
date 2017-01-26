@@ -120,6 +120,11 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 }
 
 
+#' Simulate size, time and space correlation structure
+#'
+#'
+
+
 ## Helper function for euclidian distance calculations
 .dist <- function(x) {
   if (requireNamespace("fields", quietly = TRUE)) {
@@ -168,15 +173,13 @@ simSpacePM <- function(tau = 0.4, theta = 0.004) {
     message(paste0("Spatial variance is approxamatly ", signif(s, 3),
                    "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
 
-
-    cell <- sample(grid$cell, 1)
-    ncols <- 200
-    cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
-    cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
-    plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
-         xlab = "Distance", ylab = "Correlation")
-    plot(grid, col = cols, lwd = 0.5)
-
+    # cell <- sample(grid$cell, 1)
+    # ncols <- 200
+    # cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
+    # cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
+    # plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
+    #      xlab = "Distance", ylab = "Correlation")
+    # plot(grid, col = cols, lwd = 0.5)
 
   }
 }
