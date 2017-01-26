@@ -45,7 +45,7 @@ row.names(spm) <- paste("SPM", row.names(spm), sep = "_")
 nl <- rbind(nl, spm)
 nl_utm <- spTransform(nl, CRS(utm_proj))
 nl_utm <- raster::crop(nl_utm, survey_extent)
-nl_utm <- rgeos::gSimplify(nl_utm, tol = 0.1) # simplify the land object
+nl_utm <- rgeos::gSimplify(nl_utm, tol = 0.2) # simplify the land object
 plot(nl_utm)
 
 ## Import GEBCO derived bathymetry data
@@ -79,7 +79,8 @@ rm(strat_polys, nl, survey_units)
 ## (buffer zone may not be necessary for some cases)
 survey_region <- raster::buffer(strat_polys_utm, width = 0.5) # km
 buffer_zone <- raster::buffer(survey_region, width = 25)
-buffer_zone <- raster::erase(buffer_zone, survey_region)
+
+## Erase the land from the buffer_zone and clip the survey_grid
 buffer_zone <- raster::erase(buffer_zone, nl_utm)
 plot(buffer_zone, col = "grey") # clean up isolated polygon
 # locator() # used this function to generate values below
@@ -90,31 +91,30 @@ p <- SpatialPolygons(list(Polygons(list(Polygon(p)), "1")),
 # p <- raster::drawPoly() # easier (less repeatable) option
 buffer_zone <- raster::erase(buffer_zone, p)
 plot(buffer_zone, col = "grey")
+
+## Generate a regular grid over the area, then clip to buffer_zone
 samp_area <- raster::area(survey_region)
 samp_den <- length(survey_units_utm) / samp_area
-buffer_area <- raster::area(buffer_zone)
-buffer_n <- round(buffer_area * samp_den) # apply equal density of points to buffer zone
-buffer_zone_units <- spsample(buffer_zone, buffer_n, type = "nonaligned")
-temp <- data.frame(replicate(ncol(survey_units_utm), rep(NA, length(buffer_zone_units))))
-names(temp) <- names(survey_units_utm)
-row.names(temp) <- row.names(buffer_zone_units)
-buffer_zone_units <- SpatialPointsDataFrame(buffer_zone_units, data = temp)
-survey_units_utm <- rbind(survey_units_utm, buffer_zone_units) # add buffer zone points to survey_units_utm object
+extent_poly <- as(survey_extent, "SpatialPolygons")
+proj4string(extent_poly) <- proj4string(survey_region)
+extent_area <- raster::area(extent_poly)
+nunits <- round(extent_area * samp_den)
+survey_grid <- spsample(extent_poly, n = nunits, type = "regular")
+survey_grid <- as(as(survey_grid, "SpatialPixels"), "SpatialPolygons")
+survey_grid <- raster::intersect(survey_grid, buffer_zone)
+plot(survey_grid)
 
-plot(buffer_zone)
-plot(survey_region, add = TRUE)
-plot(survey_units_utm, add = TRUE, pch = ".")
-plot(buffer_zone_units, add = TRUE, pch = ".", col = "red")
-
-## Make irregular grid using Voroni tessellation
-v <- dismo::voronoi(survey_units_utm, ext = survey_extent)
-plot(v)
-p <- rgeos::gUnion(survey_region, buffer_zone)
-survey_grid <- rgeos::gIntersection(v, p, byid = TRUE,
-                                    id = row.names(v)) # raster::intersect returned a warning
-plot(survey_grid, col = "grey")
-survey_grid <- SpatialPolygonsDataFrame(survey_grid, data = data.frame(v))
-
+## Extract the strat each centroid lies over
+coords <- data.frame(coordinates(survey_grid))
+coordinates(coords) <- coords
+proj4string(coords) <- proj4string(survey_grid)
+data <- over(coords, strat_polys_utm)
+data <- data[, c("DIV", "STRAT")]
+names(data) <- c("division", "strat")
+survey_grid <- SpatialPolygonsDataFrame(survey_grid, data = data)
+plot(survey_grid[!is.na(survey_grid$strat), ])
+cols <- rainbow(length(unique(survey_grid$strat)))
+plot(survey_grid, col = cols[factor(survey_grid$strat)]) # coarse
 
 ## Extract coords and area, and calculate mean depth
 xy <- coordinates(survey_grid) # these centroids are essentially the actual survey units
