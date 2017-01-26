@@ -158,7 +158,7 @@ simSpace <- function(dcor_dist = 70, sigma = 1.5) {
 }
 
 
-simSpacePM <- function(tau = 0.4, theta = 0.004) {
+simSpacePM <- function(tau = 0.25, theta = 0.001) {
   function(grid = NULL) {
 
     d <- .dist(coordinates(grid))
@@ -173,13 +173,14 @@ simSpacePM <- function(tau = 0.4, theta = 0.004) {
     message(paste0("Spatial variance is approxamatly ", signif(s, 3),
                    "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
 
-    # cell <- sample(grid$cell, 1)
-    # ncols <- 200
-    # cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
-    # cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
-    # plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
-    #      xlab = "Distance", ylab = "Correlation")
-    # plot(grid, col = cols, lwd = 0.5)
+    cell <- sample(grid$cell, 1)
+    # cell <- 8179
+    ncols <- 200
+    cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
+    cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
+    plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
+         xlab = "Distance", ylab = "Correlation")
+    plot(grid, col = cols, lwd = 0.5)
 
   }
 }
