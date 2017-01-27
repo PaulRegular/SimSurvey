@@ -1,7 +1,7 @@
 
 #' Simulate recruitment and natural mortality
 #'
-#' @description These functions return a function to use inside \code{\link{simAbundance}}.
+#' @description These functions return a function to use inside \code{\link{sim_abundance}}.
 #' Given parameters, it generates R and Z values.
 #'
 #' @param mean,sd Mean and standard deviation
@@ -10,8 +10,8 @@
 #' supplied; one more than the number of breaks. Provide named lists (see
 #' examples below).
 #'
-#' @details \code{simR} simply generates uncorrelated recruitment values from a log normal
-#' distribution. \code{simZ} simulates total mortality using a random walk.
+#' @details \code{sim_R} simply generates uncorrelated recruitment values from a log normal
+#' distribution. \code{sim_Z} simulates total mortality using a random walk.
 #' Random walk errors are first generated for years and ages independently.
 #' The outer product of these errors are then calculated to generate a total
 #' mortality matrix as follows:
@@ -19,16 +19,16 @@
 #' where \eqn{z_{a, y}}{z_a,y} are the supplied mean values.
 #'
 #' @examples
-#' simAbundance(R = simR(mean = 100000, sd = 4))
-#' simAbundance(Z = simZ(mean = 0.6, sd = 0.3))
-#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2)),
+#' sim_abundance(R = sim_R(mean = 100000, sd = 4))
+#' sim_abundance(Z = sim_Z(mean = 0.6, sd = 0.3))
+#' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2)),
 #'                       breaks = list(ages = c(1, 2)), sd = 0.3))
-#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
+#' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
 #'                       breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
 #'
 #' @export
-#' @rdname simR
-simR <- function(mean = 20000, sd = 4) {
+#' @rdname sim_R
+sim_R <- function(mean = 20000, sd = 4) {
   function(years = NULL) {
     r <- rlnorm(length(years), meanlog = log(mean), sdlog = log(sd))
     names(r) <- years
@@ -38,8 +38,8 @@ simR <- function(mean = 20000, sd = 4) {
 
 
 #' @export
-#' @rdname simR
-simZ <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
+#' @rdname sim_R
+sim_Z <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
   function(ages = NULL, years = NULL) {
     ey <- cumsum(rnorm(length(years), sd = sd)) # random walk error
     ea <- cumsum(rnorm(length(ages), sd = sd))
@@ -63,10 +63,10 @@ simZ <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
 #'
 #' @param ages Ages to include in the simulation.
 #' @param years Years to include in the simulation.
-#' @param Z Total mortality function, like \code{\link{simZ}}, for generating
+#' @param Z Total mortality function, like \code{\link{sim_Z}}, for generating
 #' mortality matrix.
 #' @param R Recruitment (i.e. Abundance at \code{min(ages)}) function, like
-#' \code{\link{simR}}, for generating recruitment vector.
+#' \code{\link{sim_R}}, for generating recruitment vector.
 #'
 #' @return A \code{list} of length 3:
 #' \itemize{
@@ -83,11 +83,11 @@ simZ <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
 #' calculated using the same equation above using \code{Z} values from \code{min(years)}.
 #'
 #' @examples
-#' simAbundance()
+#' sim_abundance()
 #'
 #' @export
 
-simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
+sim_abundance <- function(ages = 1:6, years = 1:10, Z = sim_Z(), R = sim_R()) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -127,7 +127,7 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 
 #' Simulate size, time and space correlation structure
 #'
-#' @description These function returns a function to use inside \code{\link{simDistribution}}.
+#' @description These function returns a function to use inside \code{\link{sim_distribution}}.
 #' Given parameters, it generates recruitment values from a log normal distribution
 #'
 #' @param dcor_time Decorrelation time (years)
@@ -142,36 +142,38 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 #' (2013). Estimating spatio-temporal dynamics of size-structured populations.
 #' Canadian Journal of Fisheries and Aquatic Sciences, 71(2), 326-336.
 #'
-#' @rdname simTime
+#' @rdname sim_time_cor
 #' @export
-simTime <- function(dcor_time = 2) {
+sim_time_cor <- function(dcor_time = 2) {
   function(years = NULL) {
     d <- .dist(years)
     exp(- d / dcor_time)
   }
 }
 
-#' @rdname simTime
+#' @rdname sim_time_cor
 #' @export
-simSize <- function(dcor_size = 4) {
+sim_size_cor <- function(dcor_size = 4) {
   function(ages = NULL) {
     d <- .dist(ages)
     exp(- d / dcor_size)
   }
 }
 
-#' @rdname simTime
-#' @export
-simSpace <- function(dcor_dist = 70, sigma = 1.5) {
-  function(grid = NULL) {
-    d <- .dist(coordinates(grid))
-    sigma * exp(- d / dcor_dist)
-  }
-}
+# #' @rdname sim_time_cor
+# #' @export
+# sim_space_cor <- function(dcor_dist = 70, sigma = 1.5) {
+#   function(grid = NULL) {
+#     d <- .dist(coordinates(grid))
+#     sigma * exp(- d / dcor_dist)
+#   }
+# } # Alternate formulation to precision matrix approach.
+#   # Con: correlation as the crow flys, not as the fish swims
+#          i.e. land is not a barrier
 
-#' @rdname simTime
+#' @rdname sim_time_cor
 #' @export
-simSpacePM <- function(tau = 0.25, theta = 0.001) {
+sim_space_cor <- function(tau = 0.25, theta = 0.001) {
   function(grid = NULL) {
 
     d <- .dist(coordinates(grid))
@@ -207,26 +209,27 @@ simSpacePM <- function(tau = 0.25, theta = 0.001) {
 
 #' Simulate spatial and temporal distribution
 #'
-#' @description Provided an abundance at age matrix (like one provided by \code{\link{simAbundance}})
+#' @description Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
 #' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
 #' applies correlated space, time and size error to simulate the distribution
 #' of the population.
 #'
 #' @param N An abundance at age matrix with ages defining the rows and years defining
-#' the columns (i.e. same structure as a matrix provided by \code{\link{simAbundance}})
+#' the columns (i.e. same structure as a matrix provided by \code{\link{sim_abundance}})
 #' @param grid A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
 #' grid with the same structure as \code{\link{survey_grid}}
 #'
 #' @examples
-#' simDistribution()
+#' sim_distribution()
 #'
 #' @export
 #'
 
-simDistribution <- function(pop = simAbundance(),
+sim_distribution <- function(pop = sim_abundance(),
                             grid = survey_grid,
-                            rho = 0.05,
-                            sigma = 0.00001) {
+                            size_cor  = sim_size_cor(),
+                            time_cor  = sim_time_cor(),
+                            space_cor = sim_space_cor()) {
 
 
   ## Generate spatially correlated errors
