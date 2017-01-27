@@ -1,15 +1,33 @@
 
-#' Simulate random recruitment
+#' Simulate recruitment and natural mortality
 #'
-#' @description This function returns a function to use inside \code{\link{simAbundance}}.
-#' Given parameters, it generates recruitment values from a log normal distribution
+#' @description These functions return a function to use inside \code{\link{simAbundance}}.
+#' Given parameters, it generates R and Z values.
 #'
-#' @param mean,sd Mean and standard deviation of recruitment
+#' @param mean,sd Mean and standard deviation
+#' @param breaks Provide breaks to age and/or year series to specify group specific
+#' mean total mortality values. If specified, multiple mean values must be
+#' supplied; one more than the number of breaks. Provide named lists (see
+#' examples below).
+#'
+#' @details \code{simR} simply generates uncorrelated recruitment values from a log normal
+#' distribution. \code{simZ} simulates total mortality using a random walk.
+#' Random walk errors are first generated for years and ages independently.
+#' The outer product of these errors are then calculated to generate a total
+#' mortality matrix as follows:
+#' \eqn{log(Z_{a, y}) = log(z_{a, y}) + \delta_{a, y}}{log(Z_a,y) = log(z_a,y) + e_a,y},
+#' where \eqn{z_{a, y}}{z_a,y} are the supplied mean values.
 #'
 #' @examples
 #' simAbundance(R = simR(mean = 100000, sd = 4))
+#' simAbundance(Z = simZ(mean = 0.6, sd = 0.3))
+#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2)),
+#'                       breaks = list(ages = c(1, 2)), sd = 0.3))
+#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
+#'                       breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
 #'
 #' @export
+#' @rdname simR
 simR <- function(mean = 20000, sd = 4) {
   function(years = NULL) {
     r <- rlnorm(length(years), meanlog = log(mean), sdlog = log(sd))
@@ -19,31 +37,8 @@ simR <- function(mean = 20000, sd = 4) {
 }
 
 
-#' Simulate total mortality using a random walk
-#'
-#' @description This function returns a function to use inside \code{\link{simAbundance}}.
-#' Given parameters, it generates total mortality values from a log normal random walk
-#'
-#' @param mean,sd Mean and standard deviation of total mortality.
-#' @param breaks Provide breaks to age and/or year series to specify group specific
-#' mean total mortality values. If specified, multiple mean values must be
-#' supplied; one more than the number of breaks. Provide named lists (see
-#' examples below).
-#'
-#' @details Random walk errors are first generated for years and ages independently.
-#' The outer product of these errors are then calculated to generate a total
-#' mortality matrix as follows:
-#' \deqn{log(Z_{a, y}) = log(z_{a}) + \delta_{a, y}}{Z_a,y = z_a,y + e_a,y}
-#'
-#'
-#' @examples
-#' simAbundance(Z = simZ(mean = 0.6, sd = 0.3))
-#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2)),
-#'                       breaks = list(ages = c(1, 2)), sd = 0.3))
-#' simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
-#'                       breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
-#'
 #' @export
+#' @rdname simR
 simZ <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
   function(ages = NULL, years = NULL) {
     ey <- cumsum(rnorm(length(years), sd = sd)) # random walk error
@@ -120,10 +115,6 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
 }
 
 
-#' Simulate size, time and space correlation structure
-#'
-#'
-
 
 ## Helper function for euclidian distance calculations
 .dist <- function(x) {
@@ -134,7 +125,25 @@ simAbundance <- function(ages = 1:6, years = 1:10, Z = simZ(), R = simR()) {
   }
 }
 
-
+#' Simulate size, time and space correlation structure
+#'
+#' @description These function returns a function to use inside \code{\link{simDistribution}}.
+#' Given parameters, it generates recruitment values from a log normal distribution
+#'
+#' @param dcor_time Decorrelation time (years)
+#' @param dcor_size Decorrelation size (age)
+#' @param dcor_dist Decorrelation distance (km)
+#' @param sigma     Spatial variance
+#' @param tau,theta Precision matrix parameters
+#'
+#' @details The formulation of these functions follow Kristensen et al. (2013).
+#'
+#' @references Kristensen, K., Thygesen, U. H., Andersen, K. H., & Beyer, J. E.
+#' (2013). Estimating spatio-temporal dynamics of size-structured populations.
+#' Canadian Journal of Fisheries and Aquatic Sciences, 71(2), 326-336.
+#'
+#' @rdname simTime
+#' @export
 simTime <- function(dcor_time = 2) {
   function(years = NULL) {
     d <- .dist(years)
@@ -142,7 +151,8 @@ simTime <- function(dcor_time = 2) {
   }
 }
 
-
+#' @rdname simTime
+#' @export
 simSize <- function(dcor_size = 4) {
   function(ages = NULL) {
     d <- .dist(ages)
@@ -150,6 +160,8 @@ simSize <- function(dcor_size = 4) {
   }
 }
 
+#' @rdname simTime
+#' @export
 simSpace <- function(dcor_dist = 70, sigma = 1.5) {
   function(grid = NULL) {
     d <- .dist(coordinates(grid))
@@ -157,7 +169,8 @@ simSpace <- function(dcor_dist = 70, sigma = 1.5) {
   }
 }
 
-
+#' @rdname simTime
+#' @export
 simSpacePM <- function(tau = 0.25, theta = 0.001) {
   function(grid = NULL) {
 
@@ -173,14 +186,15 @@ simSpacePM <- function(tau = 0.25, theta = 0.001) {
     message(paste0("Spatial variance is approxamatly ", signif(s, 3),
                    "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
 
-    cell <- sample(grid$cell, 1)
-    # cell <- 8179
-    ncols <- 200
-    cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
-    cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
-    plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
-         xlab = "Distance", ylab = "Correlation")
-    plot(grid, col = cols, lwd = 0.5)
+    # # dcor_dist <- H; sigma <- s; invQ <- sigma * exp(- d / dcor_dist)
+    # cell <- sample(grid$cell, 1)
+    # # cell <- 8179
+    # ncols <- 200
+    # cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
+    # cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
+    # plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
+    #      xlab = "Distance", ylab = "Correlation")
+    # plot(grid, col = cols, lwd = 0.5, border = NA)
 
   }
 }
@@ -195,7 +209,7 @@ simSpacePM <- function(tau = 0.25, theta = 0.001) {
 #'
 #' @description Provided an abundance at age matrix (like one provided by \code{\link{simAbundance}})
 #' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
-#' applies spatial and temporal error to simulate the spatial and temporal distribution
+#' applies correlated space, time and size error to simulate the distribution
 #' of the population.
 #'
 #' @param N An abundance at age matrix with ages defining the rows and years defining

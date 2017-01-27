@@ -2,19 +2,41 @@
 % Please edit documentation in R/simPop.R
 \name{simR}
 \alias{simR}
-\title{Simulate random recruitment}
+\alias{simZ}
+\title{Simulate recruitment and natural mortality}
 \usage{
 simR(mean = 20000, sd = 4)
+
+simZ(mean = 0.4, sd = 0.2, breaks = NULL)
 }
 \arguments{
-\item{mean, sd}{Mean and standard deviation of recruitment}
+\item{mean, sd}{Mean and standard deviation}
+
+\item{breaks}{Provide breaks to age and/or year series to specify group specific
+mean total mortality values. If specified, multiple mean values must be
+supplied; one more than the number of breaks. Provide named lists (see
+examples below).}
 }
 \description{
-This function returns a function to use inside \code{\link{simAbundance}}.
-Given parameters, it generates recruitment values from a log normal distribution
+These functions return a function to use inside \code{\link{simAbundance}}.
+Given parameters, it generates R and Z values.
+}
+\details{
+\code{simR} simply generates uncorrelated recruitment values from a log normal
+distribution. \code{simZ} simulates total mortality using a random walk.
+Random walk errors are first generated for years and ages independently.
+The outer product of these errors are then calculated to generate a total
+mortality matrix as follows:
+\eqn{log(Z_{a, y}) = log(z_{a, y}) + \delta_{a, y}}{log(Z_a,y) = log(z_a,y) + e_a,y},
+where \eqn{z_{a, y}}{z_a,y} are the supplied mean values.
 }
 \examples{
 simAbundance(R = simR(mean = 100000, sd = 4))
+simAbundance(Z = simZ(mean = 0.6, sd = 0.3))
+simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2)),
+                      breaks = list(ages = c(1, 2)), sd = 0.3))
+simAbundance(Z = simZ(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
+                      breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
 
 }
 
