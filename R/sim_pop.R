@@ -110,7 +110,7 @@ sim_abundance <- function(ages = 1:6, years = 1:10, Z = sim_Z(), R = sim_R()) {
       }
     }
   }
-  list(R = R, Z = Z, N = N)
+  list(ages = ages, years = years, R = R, Z = Z, N = N)
 
 }
 
@@ -182,7 +182,8 @@ sim_space_cor <- function(tau = 0.25, theta = 0.001) {
     Q[] <- 0
     Q[nb] <- - tau
     diag(Q) <- tau * (m + theta)
-    invQ <- solve(Q)
+    #invQ <- solve(Q)
+    invQ <- chol2inv(chol(Q))
     s <- (1 / length(grid)) * sum(diag(invQ))
     H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
     message(paste0("Spatial variance is approxamatly ", signif(s, 3),
@@ -198,10 +199,10 @@ sim_space_cor <- function(tau = 0.25, theta = 0.001) {
     #      xlab = "Distance", ylab = "Correlation")
     # plot(grid, col = cols, lwd = 0.5, border = NA)
 
+    invQ
+
   }
 }
-
-
 
 
 
@@ -226,23 +227,54 @@ sim_space_cor <- function(tau = 0.25, theta = 0.001) {
 #'
 
 sim_distribution <- function(pop = sim_abundance(),
-                            grid = survey_grid,
-                            size_cor  = sim_size_cor(),
-                            time_cor  = sim_time_cor(),
-                            space_cor = sim_space_cor()) {
+                             grid = survey_grid,
+                             size_cor  = sim_size_cor(),
+                             time_cor  = sim_time_cor(),
+                             space_cor = sim_space_cor()) {
 
 
-  ## Generate spatially correlated errors
-  coords <- grid@data[, c("easting", "northing", "depth")]
-  coords$depth <- - coords$depth/1000 # convert depth to km to make units equal to eastings and northings
-  if (requireNamespace("fields", quietly = TRUE)) {
-    d <- fields::rdist(coords)
-  } else {
-    d <- as.matrix(dist(coords))
-  }
-  w <- exp(-rho * d); rm(d)
-  W <- chol(w); rm(w)
-  e <- (t(W) %*% rnorm(nrow(coords))) * sigma; rm(W)
+  ## solution 1
+  pop$years <- 1:10
+  pop$ages <- 1:6
+  test <- expand.grid(year = pop$years, age = pop$ages)
+  rho_size <- size_cor(ages = test$age)
+  rho_time <- time_cor(years = test$year)
+  rho <- rho_size * rho_time
+  test$e <- t(chol(rho)) %*% rnorm(nrow(test))
+  plot(age ~ year, data = test, cex = e - min(e))
+  #plot(e ~ year, data = test[test$age == 3, ], type = "b")
+  e1 <- sd(test$e)
+
+
+  ## YOU ARE HERE: Read the supplement to Kristensen's article closely
+  ##               There are surely tips to ease computation
+  rho_size <- size_cor(ages = pop$ages)
+  rho_time <- time_cor(years = pop$years)
+  rho_space <- space_cor(grid = grid)
+  s <- Matrix(round(solve(rho_size), 5), sparse = TRUE)
+  t <- Matrix(round(solve(rho_time), 5), sparse = TRUE)
+  sp <- Matrix(round(solve(rho_space), 5), sparse = TRUE)
+  test <- kronecker(s, sp)
+  temp <- solve(test)
+
+
+
+  rho <- outer(rho_size, rho_time)
+  rho <- outer(rho_space, rho)
+
+  e_size <- data.frame(age = pop$ages, ea = t(chol(rho_size)) %*% rnorm(length(pop$ages)))
+  e_time <- data.frame(year = pop$years, ey = t(chol(rho_time)) %*% rnorm(length(pop$years)))
+  test <- merge(test, e_size, by = "age", all.x = TRUE)
+  test <- merge(test, e_time, by = "year", all.x = TRUE)
+  test$e <- test$ea * test$ey
+  #plot(test$e, col = test$age)
+  plot(age ~ year, data = test, cex = e - min(e))
+  #plot(e ~ year, data = test[test$age == 3, ], type = "b")
+  e2 <- sd(test$e)
+  e1
+  e2
+
+
 
 
   ## Distribute abundance equally through the domaine
