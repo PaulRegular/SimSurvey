@@ -271,6 +271,8 @@ sim_distribution <- function(pop = sim_abundance(),
   cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
   plot(grid, col = cols, lwd = 0.5, border = NA)
 
+  ## You are here, still trying to figure out how to deal with sparse precision matrix stuff
+
 
 
   spt <- kronecker(sp, t)
