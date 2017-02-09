@@ -11,6 +11,8 @@ Depends:
 License: GPL-3
 LazyData: true
 ByteCompile: true
+URL: https://github.com/PaulRegular/SimSurvey
+BugReports: https://github.com/PaulRegular/SimSurvey/issues
 Imports:
     sp,
     raster,
