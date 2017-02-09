@@ -176,18 +176,18 @@ sim_size_cor <- function(dcor_size = 4) {
 sim_space_cor <- function(tau = 0.25, theta = 0.001) {
   function(grid = NULL) {
 
-    d <- .dist(coordinates(grid))
+    d <- .dist(sp::coordinates(grid))
     nb <- Q <- rgeos::gTouches(grid, byid = TRUE) # cell neighbour matrix
     m <- rowSums(nb)                              # number of neighbouring cells
     Q[] <- 0
     Q[nb] <- - tau
     diag(Q) <- tau * (m + theta)
-    #invQ <- solve(Q)
-    invQ <- chol2inv(chol(Q))
-    s <- (1 / length(grid)) * sum(diag(invQ))
-    H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
-    message(paste0("Spatial variance is approxamatly ", signif(s, 3),
-                   "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
+    # invQ <- solve(Q)
+    # invQ <- chol2inv(chol(Q))
+    # s <- (1 / length(grid)) * sum(diag(invQ))
+    # H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
+    # message(paste0("Spatial variance is approxamatly ", signif(s, 3),
+    #                "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
 
     # # dcor_dist <- H; sigma <- s; invQ <- sigma * exp(- d / dcor_dist)
     # cell <- sample(grid$cell, 1)
@@ -199,7 +199,8 @@ sim_space_cor <- function(tau = 0.25, theta = 0.001) {
     #      xlab = "Distance", ylab = "Correlation")
     # plot(grid, col = cols, lwd = 0.5, border = NA)
 
-    invQ
+    # invQ
+    Q
 
   }
 }
@@ -246,15 +247,37 @@ sim_distribution <- function(pop = sim_abundance(),
   e1 <- sd(test$e)
 
 
-  ## YOU ARE HERE: Read the supplement to Kristensen's article closely
-  ##               There are surely tips to ease computation
-  rho_size <- size_cor(ages = pop$ages)
-  rho_time <- time_cor(years = pop$years)
-  rho_space <- space_cor(grid = grid)
-  s <- Matrix(round(solve(rho_size), 5), sparse = TRUE)
-  t <- Matrix(round(solve(rho_time), 5), sparse = TRUE)
-  sp <- Matrix(round(solve(rho_space), 5), sparse = TRUE)
-  test <- kronecker(s, sp)
+
+  sigma_size <- size_cor(ages = pop$ages)
+  sigma_time <- time_cor(years = pop$years)
+  sigma_space <- space_cor(grid = grid)
+  sigma_size <- Matrix(solve(sigma_size), sparse = TRUE)
+  sigma_time <- Matrix(solve(rho_time), sparse = TRUE)
+  sigma_space <- Matrix::Matrix(sigma_space, sparse = TRUE)
+
+  test1 <- kronecker(sigma_space, sigma_size)
+
+
+  e <- solve(chol(sigma_space)) %*% rnorm(nrow(sigma_space))
+  e <- e * 4
+
+  library(sparseMVN)
+  space_cor <- sim_space_cor(tau = 1, theta = 0.01)
+  sigma_space <- space_cor(grid = grid)
+  sigma_space <- Matrix::Matrix(sigma_space, sparse = TRUE)
+  e <- rmvn.sparse(nrow(sigma_space), rep(0, nrow(sigma_space)), Cholesky(sigma_space))
+  ncols <- 200
+  cols <- cut(e[, 1], breaks = ncols, labels = FALSE)
+  cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
+  plot(grid, col = cols, lwd = 0.5, border = NA)
+
+
+
+  spt <- kronecker(sp, t)
+  test <- kronecker(spt, s)
+
+  ctest <- Cholesky(test)
+
   temp <- solve(test)
 
 
