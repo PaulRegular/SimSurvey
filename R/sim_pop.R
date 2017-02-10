@@ -182,12 +182,12 @@ sim_space_cor <- function(tau = 0.25, theta = 0.001) {
     Q[] <- 0
     Q[nb] <- - tau
     diag(Q) <- tau * (m + theta)
-    # invQ <- solve(Q)
-    # invQ <- chol2inv(chol(Q))
-    # s <- (1 / length(grid)) * sum(diag(invQ))
-    # H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
-    # message(paste0("Spatial variance is approxamatly ", signif(s, 3),
-    #                "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
+    invQ <- solve(Q)
+    invQ <- chol2inv(chol(Q))
+    s <- (1 / length(grid)) * sum(diag(invQ))
+    H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
+    message(paste0("Spatial variance is approxamatly ", signif(s, 3),
+                  "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
 
     # # dcor_dist <- H; sigma <- s; invQ <- sigma * exp(- d / dcor_dist)
     # cell <- sample(grid$cell, 1)
@@ -262,14 +262,27 @@ sim_distribution <- function(pop = sim_abundance(),
   e <- e * 4
 
   library(sparseMVN)
-  space_cor <- sim_space_cor(tau = 1, theta = 0.01)
+  library(MASS)
+  library(ggplot2)
+
+
+  grid <- survey_grid#[survey_grid$strat %in% 319:324, ]
+  space_cor <- sim_space_cor(tau = 1, theta = 0.001)
   sigma_space <- space_cor(grid = grid)
   sigma_space <- Matrix::Matrix(sigma_space, sparse = TRUE)
-  e <- rmvn.sparse(nrow(sigma_space), rep(0, nrow(sigma_space)), Cholesky(sigma_space))
-  ncols <- 200
-  cols <- cut(e[, 1], breaks = ncols, labels = FALSE)
-  cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
-  plot(grid, col = cols, lwd = 0.5, border = NA)
+  #sigma_space <- chol(solve(sigma_space))
+  sigma_space <- solve(chol(sigma_space))
+
+  #grid$e <- rmvn.sparse(nrow(sigma_space), rep(0, nrow(sigma_space)), Cholesky(sigma_space), prec = TRUE)
+
+  #sigma_space <- solve(sigma_space)
+  #grid$e <- mvrnorm(n = nrow(sigma_space), mu = rep(0, nrow(sigma_space)), Sigma = sigma_space)
+  #set.seed(3)
+  grid$e <- (sigma_space %*% rnorm(nrow(sigma_space)))
+  plot_sim(grid, zcol = "e")
+
+
+
 
   ## You are here, still trying to figure out how to deal with sparse precision matrix stuff
 
@@ -343,4 +356,7 @@ simPop <- function(ages = 1:6,
                    grid = survey_grid) {
   print("In progress")
 }
+
+
+
 
