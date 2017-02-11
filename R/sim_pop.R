@@ -283,7 +283,7 @@ sim_distribution <- function(pop = sim_abundance(),
 
 
 
-
+  ## Contrast the precision matrix approach to more standared decorrelation distance approach
   ## You are here, still trying to figure out how to deal with sparse precision matrix stuff
 
 
