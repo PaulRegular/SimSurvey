@@ -346,12 +346,12 @@ costd <- costDistance(trans, xy)
 crowd <- dist(coordinates(xy))
 
 as.matrix(costd)[1:10, 1:10]
-as.matrix(d)[1:10, 1:10]
+as.matrix(crowd)[1:10, 1:10]
 
 from <- 5
 to <- 37
 as.matrix(costd)[from, to]
-as.matrix(d)[from, to]
+as.matrix(crowd)[from, to]
 
 
 d <- as.matrix(costd)
@@ -375,6 +375,32 @@ plot(d[focal, ], W[focal, ], xlim = c(0, 500))
 
 
 ## TO DO: find out why "the leading minor of order ___ is not positive definite"!?
+
+
+## Matern covariance
+
+dmat <- as.matrix(costd)
+sigma2e <- 0.1; sigma2x <- 20; kappa <- 0.2; nu <- 1
+
+mcor <- as.matrix(2^(1-nu)*(kappa*dmat)^nu*
+                    besselK(dmat*kappa,nu)/gamma(nu))
+diag(mcor) <- 1; mcov <- sigma2e*diag(n) + sigma2x*mcor
+
+L <- chol(mcov)
+xy$e <- drop(rnorm(n) %*% L)
+
+er <- rasterize(xy, r)$e
+er <- disaggregate(er, fact = 8, method = "bilinear")
+plot(er)
+
+
+focal <- sample(seq_along(xy), 1)
+xy$focal <- mcor[focal,]
+fr <- rasterize(xy, r)$focal
+#fr <- disaggregate(fr, fact = 4, method = "bilinear")
+plot(fr)
+plot(dmat[focal, ], mcor[focal, ], xlim = c(0, 500))
+
 
 
 
