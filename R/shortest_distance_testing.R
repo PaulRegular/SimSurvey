@@ -320,11 +320,11 @@ pols<-SpatialPolygons(list(pols1,pols2,pols3,pols4,pols5,pols6,
 
 
 
-r <- raster(extent(pols), nrow = 100, ncol = 100)
+r <- raster(extent(pols), nrow = 50, ncol = 50)
 r <- rasterize(pols, r)
-r[!is.na(r)] <- 10000
+r[!is.na(r)] <- Inf
 r[is.na(r)] <- 1
-r[3000:3300] <- 10000 # make things interesting; add a road
+r[3000:3300] <- Inf # make things interesting; add a road
 plot(r)
 xy <- rasterToPoints(r)
 #xy <- data.frame(xy[sample(which(r[] == 1), 100), ])
@@ -333,14 +333,14 @@ xy <- SpatialPointsDataFrame(cbind(xy[1], xy[2]), xy[3])
 proj4string(xy) <- proj4string(r)
 plot(xy, add = TRUE)
 
-trans <- gdistance::transition(r, function(x) 1/max(x), directions = 16)
+trans <- gdistance::transition(r, function(x) 1/mean(x), directions = 16)
 trans <- geoCorrection(trans)
 trans[1:10, 1:10]
 
 costs <- gdistance::accCost(trans, xy)
 plot(costs) ## cool!
 plot(pols, add = TRUE)
-text(coordinates(xy)[, 1], coordinates(xy)[, 2], seq_along(xy))
+#text(coordinates(xy)[, 1], coordinates(xy)[, 2], seq_along(xy), cex = 0.5)
 
 costd <- costDistance(trans, xy)
 crowd <- dist(coordinates(xy))
@@ -361,7 +361,7 @@ W <- exp(- d / 20)
 sigma <- chol(W)
 xy$e <- t(sigma) %*% rnorm(n)
 er <- rasterize(xy, r)$e
-er <- disaggregate(er, fact = 8, method = "bilinear")
+#er <- disaggregate(er, fact = 8, method = "bilinear")
 plot(er)
 
 
@@ -377,31 +377,47 @@ plot(d[focal, ], W[focal, ], xlim = c(0, 500))
 ## TO DO: find out why "the leading minor of order ___ is not positive definite"!?
 
 
-## Matern covariance
+# ## Matern covariance
+#
+# dmat <- as.matrix(costd)
+# sigma2e <- 0.1; sigma2x <- 20; kappa <- 0.2; nu <- 1
+#
+# mcor <- as.matrix(2^(1-nu)*(kappa*dmat)^nu*
+#                     besselK(dmat*kappa,nu)/gamma(nu))
+# diag(mcor) <- 1; mcov <- sigma2e*diag(n) + sigma2x*mcor
+#
+# L <- chol(mcov)
+# xy$e <- drop(rnorm(n) %*% L)
+#
+# er <- rasterize(xy, r)$e
+# er <- disaggregate(er, fact = 8, method = "bilinear")
+# plot(er)
+#
+#
+# focal <- sample(seq_along(xy), 1)
+# xy$focal <- mcor[focal,]
+# fr <- rasterize(xy, r)$focal
+# #fr <- disaggregate(fr, fact = 4, method = "bilinear")
+# plot(fr)
+# plot(dmat[focal, ], mcor[focal, ], xlim = c(0, 500))
+#
+# ## Looks like the Matern covariance function is not going to work using least cost distance
 
-dmat <- as.matrix(costd)
-sigma2e <- 0.1; sigma2x <- 20; kappa <- 0.2; nu <- 1
-
-mcor <- as.matrix(2^(1-nu)*(kappa*dmat)^nu*
-                    besselK(dmat*kappa,nu)/gamma(nu))
-diag(mcor) <- 1; mcov <- sigma2e*diag(n) + sigma2x*mcor
-
-L <- chol(mcov)
-xy$e <- drop(rnorm(n) %*% L)
-
-er <- rasterize(xy, r)$e
-er <- disaggregate(er, fact = 8, method = "bilinear")
-plot(er)
 
 
-focal <- sample(seq_along(xy), 1)
-xy$focal <- mcor[focal,]
-fr <- rasterize(xy, r)$focal
-#fr <- disaggregate(fr, fact = 4, method = "bilinear")
-plot(fr)
-plot(dmat[focal, ], mcor[focal, ], xlim = c(0, 500))
+## Size up the Egan values of the exponential autocovarianc function
 
+d <- as.matrix(costd)
+h <- seq(10, 200, by = 10)
+e <- rep(NA, length(h))
+for(i in seq_along(h)) {
+  W <- exp(- d / h[i])
+  e[i] <- min(eigen(W)$values)
+}
+plot(h, e, type = "o", pch = 16)
+abline(h = 0, lty = 3)
 
-
+## least-cost distance matrix is not positive-difinitive...
+## don't know how to make a positive-difinitive least-cost covariance matrix...yet
 
 
