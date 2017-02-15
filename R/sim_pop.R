@@ -125,86 +125,21 @@ sim_abundance <- function(ages = 1:6, years = 1:10, Z = sim_Z(), R = sim_R()) {
   }
 }
 
-#' Simulate size, time and space correlation structure
+#' Simulate exponential covariance
 #'
 #' @description These function returns a function to use inside \code{\link{sim_distribution}}.
-#' Given parameters, it generates recruitment values from a log normal distribution
 #'
-#' @param dcor_time Decorrelation time (years)
-#' @param dcor_size Decorrelation size (age)
-#' @param dcor_dist Decorrelation distance (km)
-#' @param sigma     Spatial variance
-#' @param tau,theta Precision matrix parameters
+#' @param range Decorrelation range (years, age or km)
+#' @param psill Partial sill
 #'
-#' @details The formulation of these functions follow Kristensen et al. (2013).
-#'
-#' @references Kristensen, K., Thygesen, U. H., Andersen, K. H., & Beyer, J. E.
-#' (2013). Estimating spatio-temporal dynamics of size-structured populations.
-#' Canadian Journal of Fisheries and Aquatic Sciences, 71(2), 326-336.
-#'
-#' @rdname sim_time_cor
+#' @rdname sim_exp_covar
 #' @export
-sim_time_cor <- function(dcor_time = 2) {
-  function(years = NULL) {
-    d <- .dist(years)
-    exp(- d / dcor_time)
+sim_exp_covar <- function(range = NULL, psill = 1) {
+  function(x = NULL) {
+    d <- .dist(x)
+    psill * exp(- d / range)
   }
 }
-
-#' @rdname sim_time_cor
-#' @export
-sim_size_cor <- function(dcor_size = 4) {
-  function(ages = NULL) {
-    d <- .dist(ages)
-    exp(- d / dcor_size)
-  }
-}
-
-# #' @rdname sim_time_cor
-# #' @export
-# sim_space_cor <- function(dcor_dist = 70, sigma = 1.5) {
-#   function(grid = NULL) {
-#     d <- .dist(coordinates(grid))
-#     sigma * exp(- d / dcor_dist)
-#   }
-# } # Alternate formulation to precision matrix approach.
-#   # Con: correlation as the crow flys, not as the fish swims
-#          i.e. land is not a barrier
-
-#' @rdname sim_time_cor
-#' @export
-sim_space_cor <- function(tau = 0.25, theta = 0.001) {
-  function(grid = NULL) {
-
-    d <- .dist(sp::coordinates(grid))
-    nb <- Q <- rgeos::gTouches(grid, byid = TRUE) # cell neighbour matrix
-    m <- rowSums(nb)                              # number of neighbouring cells
-    Q[] <- 0
-    Q[nb] <- - tau
-    diag(Q) <- tau * (m + theta)
-    invQ <- solve(Q)
-    invQ <- chol2inv(chol(Q))
-    s <- (1 / length(grid)) * sum(diag(invQ))
-    H <- mean(d[nb]) / log(1 + (theta / 2) + sqrt(theta + ((theta ^ 2)/4)))
-    message(paste0("Spatial variance is approxamatly ", signif(s, 3),
-                  "\nSpatial decorrelation distance is approxamatly ", signif(H, 3), " km"))
-
-    # # dcor_dist <- H; sigma <- s; invQ <- sigma * exp(- d / dcor_dist)
-    # cell <- sample(grid$cell, 1)
-    # # cell <- 8179
-    # ncols <- 200
-    # cols <- cut(invQ[cell, ], breaks = ncols, labels = FALSE)
-    # cols <- colorRampPalette(c("white", "steelblue", "navy"))(ncols)[cols]
-    # plot(d[cell, ], invQ[cell, ], col = cols, pch = 16, cex = 0.75,
-    #      xlab = "Distance", ylab = "Correlation")
-    # plot(grid, col = cols, lwd = 0.5, border = NA)
-
-    # invQ
-    Q
-
-  }
-}
-
 
 
 
@@ -229,89 +164,17 @@ sim_space_cor <- function(tau = 0.25, theta = 0.001) {
 
 sim_distribution <- function(pop = sim_abundance(),
                              grid = survey_grid,
-                             size_cor  = sim_size_cor(),
-                             time_cor  = sim_time_cor(),
-                             space_cor = sim_space_cor()) {
-
-
-  ## solution 1
-  pop$years <- 1:10
-  pop$ages <- 1:6
-  test <- expand.grid(year = pop$years, age = pop$ages)
-  rho_size <- size_cor(ages = test$age)
-  rho_time <- time_cor(years = test$year)
-  rho <- rho_size * rho_time
-  test$e <- t(chol(rho)) %*% rnorm(nrow(test))
-  plot(age ~ year, data = test, cex = e - min(e))
-  #plot(e ~ year, data = test[test$age == 3, ], type = "b")
-  e1 <- sd(test$e)
+                             size_covar  = sim_exp_covar(range = 4),
+                             time_covar  = sim_exp_covar(range = 4),
+                             space_covar = sim_exp_covar(range = 200, psill =5)) {
 
 
 
-  sigma_size <- size_cor(ages = pop$ages)
-  sigma_time <- time_cor(years = pop$years)
-  sigma_space <- space_cor(grid = grid)
-  sigma_size <- Matrix(solve(sigma_size), sparse = TRUE)
-  sigma_time <- Matrix(solve(rho_time), sparse = TRUE)
-  sigma_space <- Matrix::Matrix(sigma_space, sparse = TRUE)
 
-  test1 <- kronecker(sigma_space, sigma_size)
-
-
-  e <- solve(chol(sigma_space)) %*% rnorm(nrow(sigma_space))
-  e <- e * 4
-
-  library(sparseMVN)
-  library(MASS)
-  library(ggplot2)
-
-
-  grid <- survey_grid#[survey_grid$strat %in% 319:324, ]
-  space_cor <- sim_space_cor(tau = 1, theta = 0.001)
-  sigma_space <- space_cor(grid = grid)
-  sigma_space <- Matrix::Matrix(sigma_space, sparse = TRUE)
-  #sigma_space <- chol(solve(sigma_space))
-  sigma_space <- solve(chol(sigma_space))
-
-  #grid$e <- rmvn.sparse(nrow(sigma_space), rep(0, nrow(sigma_space)), Cholesky(sigma_space), prec = TRUE)
-
-  #sigma_space <- solve(sigma_space)
-  #grid$e <- mvrnorm(n = nrow(sigma_space), mu = rep(0, nrow(sigma_space)), Sigma = sigma_space)
-  #set.seed(3)
-  grid$e <- (sigma_space %*% rnorm(nrow(sigma_space)))
+  xy <- coordinates(grid)
+  sigma_space <- space_covar(xy)
+  grid$e <- t(chol(sigma_space)) %*% rnorm(nrow(xy))
   plot_sim(grid, zcol = "e")
-
-
-
-  ## Contrast the precision matrix approach to more standared decorrelation distance approach
-  ## You are here, still trying to figure out how to deal with sparse precision matrix stuff
-
-
-
-  spt <- kronecker(sp, t)
-  test <- kronecker(spt, s)
-
-  ctest <- Cholesky(test)
-
-  temp <- solve(test)
-
-
-
-  rho <- outer(rho_size, rho_time)
-  rho <- outer(rho_space, rho)
-
-  e_size <- data.frame(age = pop$ages, ea = t(chol(rho_size)) %*% rnorm(length(pop$ages)))
-  e_time <- data.frame(year = pop$years, ey = t(chol(rho_time)) %*% rnorm(length(pop$years)))
-  test <- merge(test, e_size, by = "age", all.x = TRUE)
-  test <- merge(test, e_time, by = "year", all.x = TRUE)
-  test$e <- test$ea * test$ey
-  #plot(test$e, col = test$age)
-  plot(age ~ year, data = test, cex = e - min(e))
-  #plot(e ~ year, data = test[test$age == 3, ], type = "b")
-  e2 <- sd(test$e)
-  e1
-  e2
-
 
 
 
