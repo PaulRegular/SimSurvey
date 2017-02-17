@@ -1,10 +1,10 @@
 ## Required libraries for data processing
-library(sp)
-library(rgdal)
-library(dismo)
-library(raster)
-library(rgeos)
-library(ggplot2)
+library("sp")
+library("rgdal")
+library("dismo")
+library("raster")
+library("rgeos")
+library("ggplot2")
 
 ## Function for converting long and lat values in DAT files
 llconvert <- function(x) {

@@ -3,7 +3,7 @@ Type: Package
 Title: A Package for the Simulation Testing of the Design and Analysis of
     Fisheries-independent Trawl Surveys
 Version: 0.0.0.9000
-Author: person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca",
+Author@R: person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca",
     role = c("aut", "cre"))
 Description: In development
 Depends:
