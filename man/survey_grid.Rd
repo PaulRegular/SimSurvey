@@ -4,15 +4,12 @@
 \name{survey_grid}
 \alias{survey_grid}
 \title{Sample survey simulation grid.}
-\format{A SpatialPolygonsDataFrame with 8 variables:
+\format{A RasterStack with 4 variables:
 \describe{
   \item{cell}{Survey cell identifier}
   \item{division}{NAFO division}
   \item{strat}{Survey strata number}
-  \item{easting}{Easting coordinates from UTM Zone 21, datum WGS84, units = km}
-  \item{northing}{Northing coordinates from UTM Zone 21, datum WGS84, units = km}
-  \item{area}{Area of Voronoi cell (polygon) the sampling unit lies within}
-  \item{depth}{Mean depth of the waters under each Voronoi cell (polygon), units = m}
+  \item{depth}{Mean depth of the waters under each cell, units = m}
 }
 
 For further details on how this file was created, see the data-raw folder for

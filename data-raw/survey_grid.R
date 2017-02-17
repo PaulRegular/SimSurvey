@@ -1,10 +1,7 @@
 ## Required libraries for data processing
 library("sp")
 library("rgdal")
-library("dismo")
 library("raster")
-library("rgeos")
-library("ggplot2")
 
 ## Function for converting long and lat values in DAT files
 llconvert <- function(x) {
@@ -72,94 +69,30 @@ survey_units_utm <- spTransform(survey_units, crs(utm_proj))
 ## Clean-up some unused objects
 rm(strat_polys, nl, survey_units)
 
+## Build survey grid - approximate the resolution of the actual survey
+plot(strat_polys_utm)
+plot(survey_units_utm, add = TRUE, pch = ".", col = "red")
+nunits <- length(survey_units_utm)
+survey_grid <- spsample(strat_polys_utm, n = nunits, type = "regular")
+plot(survey_grid, add = TRUE, col = "blue", pch = ".")
+survey_grid <- as(survey_grid, "SpatialPixels")
+dat <- data.frame(cell = seq.int(length(survey_grid)))
+survey_grid <- SpatialPixelsDataFrame(survey_grid, dat)
+survey_grid <- raster(survey_grid)
+names(survey_grid) <- "cell"
 
-## Identify the survey region and add a buffer zone
-## The buffer zone will minimize or get rid of edge effects in the survey
-## area of the simulation + improve distance through water calculations
-## (buffer zone may not be necessary for some cases)
-survey_region <- raster::buffer(strat_polys_utm, width = 0.5) # km
-buffer_zone <- raster::buffer(survey_region, width = 25)
-
-## Erase the land from the buffer_zone and clip the survey_grid
-buffer_zone <- raster::erase(buffer_zone, nl_utm)
-plot(buffer_zone, col = "grey") # clean up isolated polygon
-# locator() # used this function to generate values below
-p <- cbind(c(731.4171, 740.1683, 762.3381, 750.0864, 731.4171),
-           c(5289.713, 5296.714, 5270.461, 5262.876, 5289.713))
-p <- SpatialPolygons(list(Polygons(list(Polygon(p)), "1")),
-                     pO = 1L, proj4string = CRS(proj4string(buffer_zone)))
-# p <- raster::drawPoly() # easier (less repeatable) option
-buffer_zone <- raster::erase(buffer_zone, p)
-plot(buffer_zone, col = "grey")
-
-## Generate a regular grid over the area, then clip to buffer_zone
-samp_area <- raster::area(survey_region)
-samp_den <- length(survey_units_utm) / samp_area
-extent_poly <- as(survey_extent, "SpatialPolygons")
-proj4string(extent_poly) <- proj4string(survey_region)
-extent_area <- raster::area(extent_poly)
-nunits <- round(extent_area * samp_den)
-survey_grid <- spsample(extent_poly, n = nunits, type = "regular")
-survey_grid <- as(as(survey_grid, "SpatialPixels"), "SpatialPolygons")
-survey_grid <- raster::intersect(survey_grid, buffer_zone)
+## Add division, strat and depth
+survey_grid$division <- rasterize(strat_polys_utm, survey_grid, "DIV")
+survey_grid$strat <- rasterize(strat_polys_utm, survey_grid, "STRAT")
+survey_grid$depth <- resample(bathy_utm, survey_grid, method = "bilinear")
+values(survey_grid$depth)[is.na(values(survey_grid$cell))] <- NA
 plot(survey_grid)
 
-## Extract the strat each centroid lies over
-coords <- data.frame(coordinates(survey_grid))
-coordinates(coords) <- coords
-proj4string(coords) <- proj4string(survey_grid)
-data <- over(coords, strat_polys_utm)
-data <- data[, c("DIV", "STRAT")]
-names(data) <- c("division", "strat")
-survey_grid <- SpatialPolygonsDataFrame(survey_grid, data = data)
-plot(survey_grid[!is.na(survey_grid$strat), ])
-cols <- rainbow(length(unique(survey_grid$strat)))
-plot(survey_grid, col = cols[factor(survey_grid$strat)]) # coarse
+## Make sure the number of cells are equal across the stack
+lapply(names(survey_grid), function(nm) sum(!is.na(values(survey_grid[[nm]]))))
 
-## Extract coords and area, and calculate mean depth
-xy <- coordinates(survey_grid) # these centroids are essentially the actual survey units
-survey_grid$easting <- xy[, 1] # + the buffer centroids
-survey_grid$northing <- xy[, 2]
-survey_grid$area <- raster::area(survey_grid)
-survey_grid$depth <- raster::extract(bathy_utm, survey_grid, fun = mean)
-survey_grid$id <- row.names(survey_grid)
-
-## Quick plot of map data for a visual check of the grid
-png("data-raw/survey_grid.png", height = 20, width = 20, units = "in", res = 600)
-plot(bathy_utm, col = colorRampPalette(c("steelblue", "white"))(100))
-plot(nl_utm, add = TRUE, col = "grey", border = "grey50")
-plot(strat_polys_utm, add = TRUE, border = "steelblue")
-plot(survey_units_utm, add = TRUE, pch = 16, cex = 0.1, col = "red")
-plot(survey_grid, add = TRUE, border = "steelblue", lwd = 0.1)
-box()
-dev.off()
-
-## Generate another quick plot showing depth associated with each cell
-# spplot(survey_grid[, "depth"]) # SLOW, use ggplot2
-survey_grid_dat <- fortify(survey_grid)
-survey_grid_dat <- merge(survey_grid_dat, survey_grid@data, by = "id")
-ggplot(survey_grid_dat) +
-  geom_polygon(aes(x = long, y = lat, group = group, fill = depth), colour = "steelblue")
-
-## Simplify identifier by providing a unique string
-survey_grid$cell <- seq_along(survey_grid)
-row.names(survey_grid) <- as.character(survey_grid$cell)
-
-## Finalize Rdata object - order and rename cols, and round double values
-survey_grid@data <- survey_grid@data[, c("cell", "division", "strat",
-                                         "easting", "northing", "area", "depth")]
-survey_grid@data[] <- lapply(names(survey_grid@data),
-                             function(nm) {
-                               if(nm %in% c("easting", "northing", "area", "depth")) {
-                                 round(survey_grid@data[[nm]], 2)
-                               } else {
-                                 survey_grid@data[[nm]]
-                               }
-                             }) # two digits should suffice for the double columns
+## Export survey_grid + land bathy object (optional, for plotting)
 save(survey_grid, file = "data/survey_grid.rda")
-
-
-## Also export land and bathy object (optional, for plotting)
 land <- nl_utm
 save(land, file = "data/land.rda")
 bathy <- bathy_utm
