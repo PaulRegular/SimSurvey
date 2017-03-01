@@ -1,5 +1,14 @@
 
-#' Simulate recruitment and natural mortality
+## TODO ------------------------------------------------------------------------
+##
+## - Work on sim_distribution function
+## - Create more complex mortality simulation (autocovariance between years and
+##   age / separate Z and M effects / etc.)
+##
+##
+
+
+#' Simulate random recruitment and natural mortality
 #'
 #' @description These functions return a function to use inside \code{\link{sim_abundance}}.
 #' Given parameters, it generates R and Z values.
@@ -10,21 +19,16 @@
 #' supplied; one more than the number of breaks. Provide named lists (see
 #' examples below).
 #'
-#' @details \code{sim_R} simply generates uncorrelated recruitment values from a log normal
-#' distribution. \code{sim_Z} simulates total mortality using a random walk.
-#' Random walk errors are first generated for years and ages independently.
-#' The outer product of these errors are then calculated to generate a total
-#' mortality matrix as follows:
-#' \eqn{log(Z_{a, y}) = log(z_{a, y}) + \delta_{a, y}}{log(Z_a,y) = log(z_a,y) + e_a,y},
-#' where \eqn{z_{a, y}}{z_a,y} are the supplied mean values.
+#' @details Both functions simply generate uncorrelated recruitment or mortality
+#' values from a log normal distribution.
 #'
 #' @examples
 #' sim_abundance(R = sim_R(mean = 100000, sd = 4))
-#' sim_abundance(Z = sim_Z(mean = 0.6, sd = 0.3))
+#' sim_abundance(Z = sim_Z(mean = 0.6, sd = 1.5))
 #' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2)),
-#'                       breaks = list(ages = c(1, 2)), sd = 0.3))
+#'                       breaks = list(ages = c(1, 2))))
 #' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
-#'                       breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
+#'                         breaks = list(ages = c(1, 2), years = c(4, 6))))
 #'
 #' @export
 #' @rdname sim_R
@@ -39,19 +43,21 @@ sim_R <- function(mean = 20000, sd = 4) {
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.4, sd = 0.2, breaks = NULL) {
+sim_Z <- function(mean = 0.4, sd = 1.1, breaks = NULL) {
   function(ages = NULL, years = NULL) {
-    ey <- cumsum(rnorm(length(years), sd = sd)) # random walk error
-    ea <- cumsum(rnorm(length(ages), sd = sd))
-    e <- outer(ea, ey)
+    na <- length(ages)
+    ny <- length(years)
     if (!is.null(breaks)) {
       mean_ages <- mean$ages[findInterval(ages, breaks$ages, left.open = TRUE) + 1]
       mean_years <- mean$years[findInterval(years, breaks$years, left.open = TRUE) + 1]
-      if (is.null(mean_ages)) { mean_ages <- rep(1, length(ages)) }
-      if (is.null(mean_years)) { mean_years <- rep(1, length(years)) }
-      mean <- outer(mean_ages, mean_years)
+      if (is.null(mean_ages)) { mean_ages <- rep(0, na) }
+      if (is.null(mean_years)) { mean_years <- rep(0, ny) }
+      mean <- rowSums(expand.grid(mean_ages, mean_years))
+    } else {
+      mean <- rep(mean, na * ny)
     }
-    z <- exp(log(mean) + e)
+    z <- rlnorm(na * ny, meanlog = log(mean), sdlog = log(sd))
+    z <- matrix(z, nrow = na, ncol = ny)
     dimnames(z) <- list(age = ages, year = years)
     z
   }
@@ -125,22 +131,37 @@ sim_abundance <- function(ages = 1:6, years = 1:10, Z = sim_Z(), R = sim_R()) {
   }
 }
 
-#' Simulate exponential covariance
+#' Simulate exponential or Matern covariance
 #'
-#' @description These function returns a function to use inside \code{\link{sim_distribution}}.
+#' @description These functions return a function to use inside \code{\link{sim_distribution}}.
 #'
-#' @param range Decorrelation range (years, age or km)
-#' @param psill Partial sill
+#' @param range Decorrelation range
+#' @param variance Spatial variance
+#' @param model String indicating either "exponential" or "matern" as the correlation function
 #'
-#' @rdname sim_exp_covar
+#' @rdname sim_covar
 #' @export
-sim_exp_covar <- function(range = NULL, psill = 1) {
+sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
   function(x = NULL) {
     d <- .dist(x)
-    psill * exp(- d / range)
+    cormat <- switch(model,
+                     exponential = {
+                       exp(- d / range)
+                     },
+                     matern = {
+                       lambda <- 1 # lambda fixed to 1 as per R-INLA book
+                       kappa <- sqrt(8) / range # approximate kappa from range as per R-INLA book
+                       2 ^ (1 - lambda) / gamma(lambda) * (kappa * d) ^ lambda *
+                         besselK(x = d * kappa, nu = lambda)
+                     },
+                     stop("wrong or no specification of model"))
+
+    diag(cormat) <- 1
+    covar <- variance * cormat
+    covar
+    #Matrix::Matrix(solve(covar), sparse = TRUE)
   }
 }
-
 
 
 
@@ -160,21 +181,32 @@ sim_exp_covar <- function(range = NULL, psill = 1) {
 #' sim_distribution()
 #'
 #' @export
-#'
 
 sim_distribution <- function(pop = sim_abundance(),
                              grid = survey_grid,
-                             size_covar  = sim_exp_covar(range = 4),
-                             time_covar  = sim_exp_covar(range = 4),
-                             space_covar = sim_exp_covar(range = 200, psill =5)) {
+                             size_covar  = sim_covar(range = 4),
+                             time_covar  = sim_covar(range = 4),
+                             space_covar = sim_covar(range = 200, variance = 5)) {
 
 
 
 
-  xy <- coordinates(grid)
-  sigma_space <- space_covar(xy)
-  grid$e <- t(chol(sigma_space)) %*% rnorm(nrow(xy))
-  plot_sim(grid, zcol = "e")
+  sigma_size <- size_covar(ages)
+
+  xy <- na.omit(data.frame(raster::rasterToPoints(grid)))
+  sigma_space <- space_covar(xy[, c("x", "y")])
+
+  #xy$e <- solve(chol(sigma_space)) %*% rnorm(nrow(xy))
+  xy$e <- t(chol(sigma_space)) %*% rnorm(nrow(xy))
+  plot(rasterFromXYZ(xy[, c("x", "y", "e")]))
+
+  sigma_space <- solve(sigma_space)
+
+  Sigma <- kronecker(sigma_space, sigma_size)
+  Sigma[1:10, 1:10]
+  temp <- chol(Sigma)
+
+
 
 
 
@@ -186,17 +218,6 @@ sim_distribution <- function(pop = sim_abundance(),
     N_array[, , i] <- (N/grid$area[i]) * prop[i] * exp(e[i])
   }
 
-
-
-  grid_dat <- ggplot2::fortify(grid)
-  names(grid_dat)[names(grid_dat) == "id"] <- "cell"
-  grid_dat$cell <- as.numeric(grid_dat$cell)
-  grid@data$N <- N_array[1, 1, ]
-  grid@data$den <- grid@data$N/grid@data$area
-  grid@data$error <- e
-  grid_dat <- merge(grid_dat, grid@data, by = "cell")
-  ggplot(grid_dat) +
-    geom_polygon(aes(x = long, y = lat, group = cell, fill = N, colour = N))
 
 
 

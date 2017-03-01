@@ -3,5 +3,5 @@
 export(sim_R)
 export(sim_Z)
 export(sim_abundance)
+export(sim_covar)
 export(sim_distribution)
-export(sim_exp_covar)

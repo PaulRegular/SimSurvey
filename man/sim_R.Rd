@@ -3,11 +3,11 @@
 \name{sim_R}
 \alias{sim_R}
 \alias{sim_Z}
-\title{Simulate recruitment and natural mortality}
+\title{Simulate random recruitment and natural mortality}
 \usage{
 sim_R(mean = 20000, sd = 4)
 
-sim_Z(mean = 0.4, sd = 0.2, breaks = NULL)
+sim_Z(mean = 0.4, sd = 1.1, breaks = NULL)
 }
 \arguments{
 \item{mean, sd}{Mean and standard deviation}
@@ -22,21 +22,16 @@ These functions return a function to use inside \code{\link{sim_abundance}}.
 Given parameters, it generates R and Z values.
 }
 \details{
-\code{sim_R} simply generates uncorrelated recruitment values from a log normal
-distribution. \code{sim_Z} simulates total mortality using a random walk.
-Random walk errors are first generated for years and ages independently.
-The outer product of these errors are then calculated to generate a total
-mortality matrix as follows:
-\eqn{log(Z_{a, y}) = log(z_{a, y}) + \delta_{a, y}}{log(Z_a,y) = log(z_a,y) + e_a,y},
-where \eqn{z_{a, y}}{z_a,y} are the supplied mean values.
+Both functions simply generate uncorrelated recruitment or mortality
+values from a log normal distribution.
 }
 \examples{
 sim_abundance(R = sim_R(mean = 100000, sd = 4))
-sim_abundance(Z = sim_Z(mean = 0.6, sd = 0.3))
+sim_abundance(Z = sim_Z(mean = 0.6, sd = 1.5))
 sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2)),
-                      breaks = list(ages = c(1, 2)), sd = 0.3))
+                      breaks = list(ages = c(1, 2))))
 sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
-                      breaks = list(ages = c(1, 2), years = c(4, 6)), sd = 0.3))
+                        breaks = list(ages = c(1, 2), years = c(4, 6))))
 
 }
 
