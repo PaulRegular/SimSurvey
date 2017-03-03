@@ -4,6 +4,9 @@
 ## - Work on sim_distribution function
 ## - Create more complex mortality simulation (autocovariance between years and
 ##   age / separate Z and M effects / etc.)
+## - Consider random walk over time to help build a longer space-size-time series
+## - Look into building the simulation using R-INLA (see Chapter 8 of book)
+## - Perhaps sim_abundance should be based on SAM formulation?
 ##
 ##
 
@@ -186,15 +189,103 @@ sim_distribution <- function(pop = sim_abundance(),
                              grid = survey_grid,
                              size_covar  = sim_covar(range = 4),
                              time_covar  = sim_covar(range = 4),
-                             space_covar = sim_covar(range = 200, variance = 5)) {
+                             space_covar = sim_covar(range = 100, variance = 10,
+                                                     model = "matern")) {
 
 
 
 
-  sigma_size <- size_covar(ages)
+  ## you are here. download space-time chapter of R-INLA for more inspiration
+  ## Think about AR1, 2, 3, N process. Think about independent realizations of the
+  ## Space-time error across sizes
 
-  xy <- na.omit(data.frame(raster::rasterToPoints(grid)))
-  sigma_space <- space_covar(xy[, c("x", "y")])
+  ages <- 1:5
+  xy <- expand.grid(x = 1:40, y = 1:40)
+  rownames(xy) <- seq(nrow(xy))
+  Sigma_size <- size_covar(ages)
+  Sigma_space <- space_covar(xy)
+  I_size <- diag(1, length(ages))
+  I_space <- diag(1, nrow(xy))
+  Sigma_size[1:3, 1:3] <- diag(1, 3)
+  rownames(Sigma_size) <- rownames(I_size) <- colnames(Sigma_size) <- colnames(I_size) <- ages
+  rownames(Sigma_space) <- rownames(I_space) <- colnames(Sigma_space) <- colnames(I_space) <- seq(nrow(xy))
+  test <- kronecker(Sigma_size, Sigma_space, make.dimnames = TRUE)
+  e <- t(chol(test)) %*% rnorm(nrow(test))
+  xyz <- data.frame(do.call(rbind, strsplit(rownames(e), ":")), e)
+  names(xyz) <- c("age", "cell", "e")
+  xyz <- data.frame(xyz, xy[as.character(xyz$cell), ])
+
+  plot(rasterFromXYZ(xyz[xyz$age == 1, c("x", "y", "e")]))
+  plot(rasterFromXYZ(xyz[xyz$age == 2, c("x", "y", "e")]))
+  plot(rasterFromXYZ(xyz[xyz$age == 3, c("x", "y", "e")]))
+  plot(rasterFromXYZ(xyz[xyz$age == 4, c("x", "y", "e")]))
+  plot(rasterFromXYZ(xyz[xyz$age == 5, c("x", "y", "e")]))
+
+  plot(xyz[xyz$cell == 1, ]$e, type = "l")
+
+
+
+
+  ## Random-walk error
+  xyz <- data.frame(rasterToPoints(grid))
+  xy <- xy[, c("x", "y")]
+  Sigma_space <- space_covar(xy)
+  w <- t(chol(Sigma_space))
+  emat <- replicate(n = length(pop$ages),
+                    {emat <- replicate(n = length(pop$years), w %*% rnorm(nrow(xy)),
+                    simplify = "matrix")
+                    t(apply(emat, 1, cumsum))},
+                    simplify = "array")
+
+  for(i in seq_along(pop$years)) {
+    xy$e <- emat[, i, 2]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+
+  for(i in seq_along(pop$ages)) {
+    xy$e <- emat[, 1, i]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+
+
+  ## Space-time-size random walk process
+  e <- replicate(n = length(pop$years) * length(pop$ages),
+                    w %*% rnorm(nrow(xy)), simplify = FALSE)
+  e2 <- array(unlist(emat), dim = c(nrow(xy), length(pop$years), length(pop$ages)),
+              dimnames = list(cell = xyz$cell, year = pop$years, age = pop$ages))
+  e3 <- apply(e2, c(3, 1), cumsum)
+  e4 <- apply(e2, c(2, 1), cumsum)
+  e5 <- apply(e3, c(1, 3), cumsum)
+  for(i in seq_along(pop$ages)) {
+    xy$e <- e3[1, i, ]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+  for(i in seq_along(pop$years)) {
+    xy$e <- e3[i, 2, ]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+  for(i in seq_along(pop$ages)) {
+    xy$e <- e4[i, 1, ]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+  for(i in seq_along(pop$years)) {
+    xy$e <- e4[1, i, ]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+  for(i in seq_along(pop$ages)) {
+    xy$e <- e5[i, 1, ]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+  for(i in seq_along(pop$years)) {
+    xy$e <- e5[1, i, ]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+  }
+
+
+
+
+
+
 
   #xy$e <- solve(chol(sigma_space)) %*% rnorm(nrow(xy))
   xy$e <- t(chol(sigma_space)) %*% rnorm(nrow(xy))
