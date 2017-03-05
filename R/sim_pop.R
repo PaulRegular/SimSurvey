@@ -7,6 +7,7 @@
 ## - Consider random walk over time to help build a longer space-size-time series
 ## - Look into building the simulation using R-INLA (see Chapter 8 of book)
 ## - Perhaps sim_abundance should be based on SAM formulation?
+## - Add ERROR checking
 ##
 ##
 
@@ -157,7 +158,7 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
                        2 ^ (1 - lambda) / gamma(lambda) * (kappa * d) ^ lambda *
                          besselK(x = d * kappa, nu = lambda)
                      },
-                     stop("wrong or no specification of model"))
+                     stop("wrong or no specification of covariance model"))
 
     diag(cormat) <- 1
     covar <- variance * cormat
@@ -166,6 +167,27 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
   }
 }
 
+
+## Helper function for age and year covariance specification for function below.
+## This is probably a clumsy way to deal with this problem...matrix math would be
+## more elegant...but this was the most computationally efficient way I could work
+## it out.
+.break_covar <- function(m, mar, covar) {
+  switch(covar,
+         ran = unname(m),
+         rw = if(mar == "year") {
+           unname(apply(m, 2, cumsum))
+         } else {
+           unname(t(apply(m, 1, cumsum)))
+         }
+         ,
+         ident = if(mar == "year") {
+           unname(t(replicate(nrow(m), m[1, ])))
+         } else {
+           unname(replicate(ncol(m), m[, 1]))
+         },
+         stop("wrong or no specification of covariance model"))
+}
 
 
 #' Simulate spatial and temporal distribution
@@ -187,118 +209,57 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
 
 sim_distribution <- function(pop = sim_abundance(),
                              grid = survey_grid,
-                             size_covar  = sim_covar(range = 4),
-                             time_covar  = sim_covar(range = 4),
                              space_covar = sim_covar(range = 100, variance = 10,
-                                                     model = "matern")) {
+                                                     model = "matern"),
+                             age_covar  = "ran", # "ident", "ran"
+                             year_covar  = "rw",
+                             age_break = Inf,
+                             year_break = Inf
+) {
 
-
-
-
-  ## you are here. download space-time chapter of R-INLA for more inspiration
-  ## Think about AR1, 2, 3, N process. Think about independent realizations of the
-  ## Space-time error across sizes
-
-  ages <- 1:5
-  xy <- expand.grid(x = 1:40, y = 1:40)
-  rownames(xy) <- seq(nrow(xy))
-  Sigma_size <- size_covar(ages)
-  Sigma_space <- space_covar(xy)
-  I_size <- diag(1, length(ages))
-  I_space <- diag(1, nrow(xy))
-  Sigma_size[1:3, 1:3] <- diag(1, 3)
-  rownames(Sigma_size) <- rownames(I_size) <- colnames(Sigma_size) <- colnames(I_size) <- ages
-  rownames(Sigma_space) <- rownames(I_space) <- colnames(Sigma_space) <- colnames(I_space) <- seq(nrow(xy))
-  test <- kronecker(Sigma_size, Sigma_space, make.dimnames = TRUE)
-  e <- t(chol(test)) %*% rnorm(nrow(test))
-  xyz <- data.frame(do.call(rbind, strsplit(rownames(e), ":")), e)
-  names(xyz) <- c("age", "cell", "e")
-  xyz <- data.frame(xyz, xy[as.character(xyz$cell), ])
-
-  plot(rasterFromXYZ(xyz[xyz$age == 1, c("x", "y", "e")]))
-  plot(rasterFromXYZ(xyz[xyz$age == 2, c("x", "y", "e")]))
-  plot(rasterFromXYZ(xyz[xyz$age == 3, c("x", "y", "e")]))
-  plot(rasterFromXYZ(xyz[xyz$age == 4, c("x", "y", "e")]))
-  plot(rasterFromXYZ(xyz[xyz$age == 5, c("x", "y", "e")]))
-
-  plot(xyz[xyz$cell == 1, ]$e, type = "l")
-
-
-
-
-  ## Random-walk error
+  ## Spatial covariance
   xyz <- data.frame(rasterToPoints(grid))
-  xy <- xy[, c("x", "y")]
+  xy <- xyz[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
-  emat <- replicate(n = length(pop$ages),
-                    {emat <- replicate(n = length(pop$years), w %*% rnorm(nrow(xy)),
-                    simplify = "matrix")
-                    t(apply(emat, 1, cumsum))},
-                    simplify = "array")
-
-  for(i in seq_along(pop$years)) {
-    xy$e <- emat[, i, 2]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-
-  for(i in seq_along(pop$ages)) {
-    xy$e <- emat[, 1, i]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-
 
   ## Space-time-size random walk process
   e <- replicate(n = length(pop$years) * length(pop$ages),
-                    w %*% rnorm(nrow(xy)), simplify = FALSE)
-  e2 <- array(unlist(emat), dim = c(nrow(xy), length(pop$years), length(pop$ages)),
-              dimnames = list(cell = xyz$cell, year = pop$years, age = pop$ages))
-  e3 <- apply(e2, c(3, 1), cumsum)
-  e4 <- apply(e2, c(2, 1), cumsum)
-  e5 <- apply(e3, c(1, 3), cumsum)
-  for(i in seq_along(pop$ages)) {
-    xy$e <- e3[1, i, ]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-  for(i in seq_along(pop$years)) {
-    xy$e <- e3[i, 2, ]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-  for(i in seq_along(pop$ages)) {
-    xy$e <- e4[i, 1, ]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-  for(i in seq_along(pop$years)) {
-    xy$e <- e4[1, i, ]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-  for(i in seq_along(pop$ages)) {
-    xy$e <- e5[i, 1, ]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
-  }
-  for(i in seq_along(pop$years)) {
-    xy$e <- e5[1, i, ]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = i)
+                 w %*% rnorm(nrow(xy)), simplify = FALSE)
+  e <- array(unlist(e), dim = c(nrow(xy), length(pop$years), length(pop$ages)),
+             dimnames = list(cell = xyz$cell, year = pop$years, age = pop$ages))
+  for (i in seq(dim(e)[1])) {
+    e[i, , ]
+    j <- which(as.numeric(dimnames(e)$year) < year_break)
+    k <- seq_along(pop$ages)
+    e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[1])
+    if(length(year_covar) == 2) {
+      j <- which(as.numeric(dimnames(e)$year) >= year_break)
+      e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[2])
+    }
+    j <- seq_along(pop$years)
+    k <- which(as.numeric(dimnames(e)$age) < age_break)
+    e[i, , ]
+    e[i, j, k] <- .break_covar(e[i, j, k], "age", age_covar[1])
+    if(length(age_covar) == 2) {
+      k <- which(as.numeric(dimnames(e)$age) >= age_break)
+      e[i, j, k] <- .break_covar(e[i, j, k], "age", age_covar[2])
+    }
+    e[i, , ]
   }
 
 
+  for(j in seq_along(pop$years)) {
+    xy$e <- e[, j, 2]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = j)
+  }
+  for(k in seq_along(pop$ages)) {
+    xy$e <- e[, 2, k]
+    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = k)
+  }
 
 
-
-
-
-  #xy$e <- solve(chol(sigma_space)) %*% rnorm(nrow(xy))
-  xy$e <- t(chol(sigma_space)) %*% rnorm(nrow(xy))
-  plot(rasterFromXYZ(xy[, c("x", "y", "e")]))
-
-  sigma_space <- solve(sigma_space)
-
-  Sigma <- kronecker(sigma_space, sigma_size)
-  Sigma[1:10, 1:10]
-  temp <- chol(Sigma)
-
-
-
+  ## TO DO: add gaussian function for depth, put model together (inicluding error), and update documentation
 
 
   ## Distribute abundance equally through the domaine
