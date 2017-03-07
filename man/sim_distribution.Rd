@@ -5,8 +5,10 @@
 \title{Simulate spatial and temporal distribution}
 \usage{
 sim_distribution(pop = sim_abundance(), grid = survey_grid,
-  size_covar = sim_covar(range = 4), time_covar = sim_covar(range = 4),
-  space_covar = sim_covar(range = 200, variance = 5))
+  space_covar = sim_covar(range = 200, variance = 0.5, model = "matern"),
+  age_covar = "ran", year_covar = "rw", age_break = Inf,
+  year_break = Inf, depth_par = parabolic_fun(mu = 200, sigma = 100),
+  scale_error = TRUE)
 }
 \arguments{
 \item{grid}{A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular

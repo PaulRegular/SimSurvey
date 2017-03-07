@@ -98,7 +98,7 @@ sim_Z <- function(mean = 0.4, sd = 1.1, breaks = NULL) {
 #'
 #' @export
 
-sim_abundance <- function(ages = 1:6, years = 1:10, Z = sim_Z(), R = sim_R()) {
+sim_abundance <- function(ages = 1:7, years = 1:10, Z = sim_Z(), R = sim_R()) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -171,7 +171,7 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
 
 #' Define relationships with covariates
 #'
-#' @discription Simple closures used to define relationships with covariates
+#' @description  Simple closures used to define relationships with covariates
 #'
 #' @param beta,mu,sigma Parameters
 #' @param scale Center effect around zero?
@@ -235,7 +235,7 @@ parabolic_fun <- function(mu = NULL, sigma = NULL, scale = TRUE) {
 
 sim_distribution <- function(pop = sim_abundance(),
                              grid = survey_grid,
-                             space_covar = sim_covar(range = 200, variance = 3,
+                             space_covar = sim_covar(range = 200, variance = 0.5,
                                                      model = "matern"),
                              age_covar  = "ran", # "ident", "ran"
                              year_covar  = "rw",
@@ -306,14 +306,6 @@ sim_distribution <- function(pop = sim_abundance(),
   den <- exp(eta)
 
 
-
-  ## NOT WORKING RIGHT YET. FIDDLE WITH PARAMETERS
-
-  ## - use link formulation (eta), then apply log
-  ## - model density, and remember to add to log density or place it in the link or something
-  ## - center covariate effects on zero (substract mean)
-
-
   for(j in seq_along(pop$ages)) {
     xy$n <- den[, j, 2]
     plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = j)
@@ -322,6 +314,15 @@ sim_distribution <- function(pop = sim_abundance(),
     xy$n <- den[, 1, k]
     plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = k)
   }
+
+  N <- den * prod(res(grid))
+  round(apply(N, c(2, 3), sum))
+  round(pop$N)
+  j <- 7
+  plot(apply(N, c(2, 3), sum)[, j], type = "s")
+  lines(pop$N[, j], type = "s", col = "red")
+
+  den
 
 
 }
@@ -332,13 +333,15 @@ sim_distribution <- function(pop = sim_abundance(),
 
 #' Simulate an age-structured population over a survey grid.
 #'
+#' @description Simulate age-structured population that varies in space and time
+#'
 #' @param ages Ages to include in the simulated population.
 #' @param grid Survey grid to populate with simulated data.
 #' @return A 'data.frame' containing ages and lengths for every fish in the
 #'     simulated population.
 #' @examples
-#' simPop()
-
+#' sim_pop()
+#' @export
 sim_pop <- function(ages = 1:6,
                    grid = survey_grid) {
   print("In progress")
