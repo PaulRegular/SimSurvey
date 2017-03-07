@@ -7,6 +7,7 @@
 ## - Consider random walk over time to help build a longer space-size-time series
 ## - Look into building the simulation using R-INLA (see Chapter 8 of book)
 ## - Perhaps sim_abundance should be based on SAM formulation?
+## - Consider adding temperature as a covariate
 ## - Add ERROR checking
 ##
 ##
@@ -163,7 +164,32 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
     diag(cormat) <- 1
     covar <- variance * cormat
     covar
-    #Matrix::Matrix(solve(covar), sparse = TRUE)
+  }
+}
+
+
+
+#' Define relationships with covariates
+#'
+#' @discription Simple closures used to define relationships with covariates
+#'
+#' @param beta,mu,sigma Parameters
+#' @param scale Center effect around zero?
+#'
+#' @rdname linear_rel
+#' @export
+linear_fun <- function(alpha = 0, beta = NULL, scale = TRUE) {
+  function(x = NULL) {
+    y <- alpha + beta * x
+    if(scale) { y - mean(y) } else { y }
+  }
+}
+#' @rdname linear_rel
+#' @export
+parabolic_fun <- function(mu = NULL, sigma = NULL, scale = TRUE) {
+  function(x = NULL) {
+    y <- -(((x - mu)^2) / (2 * sigma ^ 2))
+    if(scale) { y - mean(y) } else { y }
   }
 }
 
@@ -175,13 +201,13 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
 .break_covar <- function(m, mar, covar) {
   switch(covar,
          ran = unname(m),
-         rw = if(mar == "year") {
+         rw = if(mar == "age") {
            unname(apply(m, 2, cumsum))
          } else {
            unname(t(apply(m, 1, cumsum)))
          }
          ,
-         ident = if(mar == "year") {
+         ident = if(mar == "age") {
            unname(t(replicate(nrow(m), m[1, ])))
          } else {
            unname(replicate(ncol(m), m[, 1]))
@@ -209,68 +235,93 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
 
 sim_distribution <- function(pop = sim_abundance(),
                              grid = survey_grid,
-                             space_covar = sim_covar(range = 100, variance = 10,
+                             space_covar = sim_covar(range = 200, variance = 3,
                                                      model = "matern"),
                              age_covar  = "ran", # "ident", "ran"
                              year_covar  = "rw",
                              age_break = Inf,
-                             year_break = Inf
+                             year_break = Inf,
+                             depth_par = parabolic_fun(mu = 200, sigma = 100),
+                             scale_error = TRUE
 ) {
 
   ## Spatial covariance
-  xyz <- data.frame(rasterToPoints(grid))
-  xy <- xyz[, c("x", "y")]
+  grid_dat <- data.frame(rasterToPoints(grid))
+  xy <- grid_dat[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
 
   ## Space-time-size random walk process
   e <- replicate(n = length(pop$years) * length(pop$ages),
-                 w %*% rnorm(nrow(xy)), simplify = FALSE)
-  e <- array(unlist(e), dim = c(nrow(xy), length(pop$years), length(pop$ages)),
-             dimnames = list(cell = xyz$cell, year = pop$years, age = pop$ages))
+                 w %*% rnorm(nrow(grid_dat)), simplify = FALSE)
+  e <- array(unlist(e), dim = c(nrow(grid_dat), length(pop$ages), length(pop$years)),
+             dimnames = list(cell = grid_dat$cell, age = pop$ages, year = pop$years))
   for (i in seq(dim(e)[1])) {
     e[i, , ]
-    j <- which(as.numeric(dimnames(e)$year) < year_break)
-    k <- seq_along(pop$ages)
-    e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[1])
-    if(length(year_covar) == 2) {
-      j <- which(as.numeric(dimnames(e)$year) >= year_break)
-      e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[2])
-    }
-    j <- seq_along(pop$years)
-    k <- which(as.numeric(dimnames(e)$age) < age_break)
-    e[i, , ]
+    j <- which(as.numeric(dimnames(e)$age) < age_break)
+    k <- seq_along(pop$years)
     e[i, j, k] <- .break_covar(e[i, j, k], "age", age_covar[1])
     if(length(age_covar) == 2) {
-      k <- which(as.numeric(dimnames(e)$age) >= age_break)
+      j <- which(as.numeric(dimnames(e)$age) >= age_break)
       e[i, j, k] <- .break_covar(e[i, j, k], "age", age_covar[2])
+    }
+    j <- seq_along(pop$ages)
+    k <- which(as.numeric(dimnames(e)$year) < year_break)
+    e[i, , ]
+    e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[1])
+    if(length(year_covar) == 2) {
+      k <- which(as.numeric(dimnames(e)$year) >= year_break)
+      e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[2])
     }
     e[i, , ]
   }
+  if(scale_error) { e <- e - mean(e) }
 
 
-  for(j in seq_along(pop$years)) {
+  for(j in seq_along(pop$ages)) {
     xy$e <- e[, j, 2]
     plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = j)
   }
-  for(k in seq_along(pop$ages)) {
+  for(k in seq_along(pop$years)) {
     xy$e <- e[, 2, k]
     plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = k)
   }
 
 
-  ## TO DO: add gaussian function for depth, put model together (inicluding error), and update documentation
+  ## Distribute abundance equally through the domaine and convert
+  ## cell specific abundance to density
+  den <- replicate(nrow(grid_dat), pop$N / nrow(grid_dat) / prod(res(grid)))
+  den <- aperm(den, c(3, 1, 2)) # match dim of e
+  dimnames(den) <- dimnames(e)
+
+  ## Depth covariate (TODO: think up a better way to generate the depth effect array)
+  depth <- replicate(n = length(pop$years) * length(pop$ages),
+                     depth_par(grid_dat$depth), simplify = FALSE)
+  depth <- array(unlist(depth), dim = dim(e),
+                 dimnames = dimnames(e))
+
+  ## Apply covariate effect and error to calculate density in each cell
+  ## log-normal model
+  eta <- log(den) + depth + e
+  den <- exp(eta)
 
 
-  ## Distribute abundance equally through the domaine
-  N_array <- array(dim = c(nrow(N), ncol(N), nrow(grid)),
-                   dimnames = list(age = rownames(N), year = colnames(N), cell = grid$cell))
-  prop <- grid$area / sum(grid$area)
-  for(i in seq_along(grid$cell)) {
-    N_array[, , i] <- (N/grid$area[i]) * prop[i] * exp(e[i])
+
+  ## NOT WORKING RIGHT YET. FIDDLE WITH PARAMETERS
+
+  ## - use link formulation (eta), then apply log
+  ## - model density, and remember to add to log density or place it in the link or something
+  ## - center covariate effects on zero (substract mean)
+
+
+  for(j in seq_along(pop$ages)) {
+    xy$n <- den[, j, 2]
+    plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = j)
   }
-
-
+  for(k in seq_along(pop$years)) {
+    xy$n <- den[, 1, k]
+    plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = k)
+  }
 
 
 }
@@ -288,7 +339,7 @@ sim_distribution <- function(pop = sim_abundance(),
 #' @examples
 #' simPop()
 
-simPop <- function(ages = 1:6,
+sim_pop <- function(ages = 1:6,
                    grid = survey_grid) {
   print("In progress")
 }
