@@ -86,6 +86,7 @@ survey_grid$division <- rasterize(strat_polys_utm, survey_grid, "DIV")
 survey_grid$strat <- rasterize(strat_polys_utm, survey_grid, "STRAT")
 survey_grid$depth <- resample(bathy_utm, survey_grid, method = "bilinear")
 values(survey_grid$depth)[is.na(values(survey_grid$cell))] <- NA
+values(survey_grid$depth) <- - values(survey_grid$depth)
 plot(survey_grid)
 
 ## Make sure the number of cells are equal across the stack
