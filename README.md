@@ -1,3 +1,3 @@
 ## SimSurvey
 
-In Development: A Package for the Simulation Testing of the Design and Analysis of Fisheries-independent Trawl Surveys.
+In Development: This is a research compendium for the simulation testing of the design and analysis of fisheries-independent trawl surveys.

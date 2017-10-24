@@ -1,19 +1,6 @@
 
-## TODO ------------------------------------------------------------------------
-##
-## - Work on sim_distribution function
-## - Create more complex mortality simulation (autocovariance between years and
-##   age / separate Z and M effects / etc.)
-## - Consider random walk over time to help build a longer space-size-time series
-## - Look into building the simulation using R-INLA (see Chapter 8 of book)
-## - Perhaps sim_abundance should be based on SAM formulation?
-## - Consider adding temperature as a covariate
-## - Add ERROR checking
-##
-##
 
-
-#' Simulate random recruitment and natural mortality
+#' Simulate random recruitment and total mortality
 #'
 #' @description These functions return a function to use inside \code{\link{sim_abundance}}.
 #' Given parameters, it generates R and Z values.
@@ -278,14 +265,14 @@ sim_distribution <- function(pop = sim_abundance(),
   if(scale_error) { e <- e - mean(e) }
 
 
-  for(j in seq_along(pop$ages)) {
-    xy$e <- e[, j, 2]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = j)
-  }
-  for(k in seq_along(pop$years)) {
-    xy$e <- e[, 2, k]
-    plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = k)
-  }
+  # for(j in seq_along(pop$ages)) {
+  #   xy$e <- e[, j, 2]
+  #   plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = j)
+  # }
+  # for(k in seq_along(pop$years)) {
+  #   xy$e <- e[, 2, k]
+  #   plot(rasterFromXYZ(xy[, c("x", "y", "e")]), main = k)
+  # }
 
 
   ## Distribute abundance equally through the domaine and convert
@@ -306,21 +293,27 @@ sim_distribution <- function(pop = sim_abundance(),
   den <- exp(eta)
 
 
-  for(j in seq_along(pop$ages)) {
-    xy$n <- den[, j, 2]
-    plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = j)
-  }
-  for(k in seq_along(pop$years)) {
-    xy$n <- den[, 1, k]
-    plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = k)
-  }
+  # for(j in seq_along(pop$ages)) {
+  #   xy$n <- den[, j, 2]
+  #   plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = j)
+  # }
+  # for(k in seq_along(pop$years)) {
+  #   xy$n <- den[, 1, k]
+  #   plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = k)
+  # }
 
   N <- den * prod(res(grid))
   round(apply(N, c(2, 3), sum))
   round(pop$N)
-  j <- 7
-  plot(apply(N, c(2, 3), sum)[, j], type = "s")
-  lines(pop$N[, j], type = "s", col = "red")
+  for(j in seq_along(pop$years)) {
+    plot(apply(N, c(2, 3), sum)[, j], type = "s")
+    lines(pop$N[, j], type = "s", col = "red")
+  }
+
+
+
+  message("TODO: clean up sim_distribution function and improve documentation")
+
 
   den
 
