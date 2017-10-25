@@ -2,6 +2,7 @@
 
 export(linear_fun)
 export(parabolic_fun)
+export(sim_N0)
 export(sim_R)
 export(sim_Z)
 export(sim_abundance)

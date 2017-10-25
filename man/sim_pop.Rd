@@ -21,4 +21,3 @@ Simulate age-structured population that varies in space and time
 \examples{
 sim_pop()
 }
-

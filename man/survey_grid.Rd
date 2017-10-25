@@ -22,4 +22,3 @@ A exemplar for the structure of a survey grid object to supply to the functions
 in this package.
 }
 \keyword{datasets}
-

@@ -1,6 +1,5 @@
 ## TODO
 
-- Add sim_N0 function
 - Work on sim_distribution function
 - Create more complex mortality simulation (autocovariance between years and age / separate Z and M effects / etc.)
 - Consider random walk over time to help build a longer space-size-time series

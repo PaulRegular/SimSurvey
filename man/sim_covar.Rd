@@ -16,4 +16,3 @@ sim_covar(range = NULL, variance = 1, model = "exponential")
 \description{
 These functions return a function to use inside \code{\link{sim_distribution}}.
 }
-

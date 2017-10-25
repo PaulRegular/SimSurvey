@@ -17,4 +17,3 @@ parabolic_fun(mu = NULL, sigma = NULL, scale = TRUE)
 \description{
 Simple closures used to define relationships with covariates
 }
-

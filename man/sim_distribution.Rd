@@ -27,4 +27,3 @@ of the population.
 sim_distribution()
 
 }
-

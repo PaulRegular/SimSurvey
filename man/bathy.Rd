@@ -15,4 +15,3 @@ bathy
 Southern Newfoundland bathymetry
 }
 \keyword{datasets}
-

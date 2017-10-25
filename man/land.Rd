@@ -16,4 +16,3 @@ land
 Southern Newfoundland coastline
 }
 \keyword{datasets}
-

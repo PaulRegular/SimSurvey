@@ -1,24 +1,27 @@
 
 
-#' Simulate random recruitment and total mortality
+#' Simulate startinig abundance, random recruitment and total mortality
 #'
 #' @description These functions return a function to use inside \code{\link{sim_abundance}}.
-#' Given parameters, it generates R and Z values.
+#' Given parameters, it generates N0, R and Z values.
 #'
 #' @param mean,sd Mean and standard deviation
 #' @param breaks Provide breaks to age and/or year series to specify group specific
 #' mean total mortality values. If specified, multiple mean values must be
 #' supplied; one more than the number of breaks. Provide named lists (see
 #' examples below).
+#' @param N0 Either specify "exp" or numeric vector of starting abundance excluding the first age.
+#' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
+#' \deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}
 #'
-#' @details Both functions simply generate uncorrelated recruitment or mortality
+#' @details sim_R and sim_Z simply generate uncorrelated recruitment or mortality
 #' values from a log normal distribution.
 #'
 #' @examples
 #' sim_abundance(R = sim_R(mean = 100000, sd = 4))
 #' sim_abundance(Z = sim_Z(mean = 0.6, sd = 1.5))
 #' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2)),
-#'                       breaks = list(ages = c(1, 2))))
+#'                         breaks = list(ages = c(1, 2))))
 #' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
 #'                         breaks = list(ages = c(1, 2), years = c(4, 6))))
 #'
@@ -31,7 +34,6 @@ sim_R <- function(mean = 20000, sd = 4) {
     r
   }
 }
-
 
 #' @export
 #' @rdname sim_R
@@ -55,6 +57,23 @@ sim_Z <- function(mean = 0.4, sd = 1.1, breaks = NULL) {
   }
 }
 
+#' @export
+#' @rdname sim_R
+sim_N0 <- function(N0 = "exp") {
+  function(R0 = NULL, Z0 = NULL, ages = NULL) {
+    if (length(N0) == 1 && N0 == "exp") {
+      N0 <- rep(NA, length(ages))
+      N0[1] <- R0
+      for (a in seq_along(ages)[-1]) {
+        N0[a] <- N0[a - 1] * exp(-Z0[a - 1])
+      }
+    } else{
+      N0 <- c(R0, N0)
+    }
+    N0
+  }
+}
+
 
 
 #' Simulate basic population dynamics model
@@ -63,12 +82,15 @@ sim_Z <- function(mean = 0.4, sd = 1.1, breaks = NULL) {
 #' @param years Years to include in the simulation.
 #' @param Z Total mortality function, like \code{\link{sim_Z}}, for generating
 #' mortality matrix.
-#' @param R Recruitment (i.e. Abundance at \code{min(ages)}) function, like
+#' @param R Recruitment (i.e. abundance at \code{min(ages)}) function, like
 #' \code{\link{sim_R}}, for generating recruitment vector.
+#' @param N0 Starting abundance (i.e. abundance at \code{min(years)}) function, like
+#' \code{\link{sim_N0}}, for generating starting abundance vector.
 #'
 #' @return A \code{list} of length 3:
 #' \itemize{
 #'   \item{\code{R} - Vector of recruitment values}
+#'   \item{\code{N0} - Vector of starting abundance values}
 #'   \item{\code{Z} - Matrix of total mortality values}
 #'   \item{\code{N} - Matrix of abundance values}
 #' }
@@ -77,15 +99,14 @@ sim_Z <- function(mean = 0.4, sd = 1.1, breaks = NULL) {
 #' Abundance from \code{ages[2:max(ages)]} and \code{years[2:max(years)]} is
 #' calculated using a standard population dynamics model:
 #' \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
-#' Abundance at \code{min(ages)} is supplied by \code{r} and abundance at \code{ages[2:max(ages)]} are
-#' calculated using the same equation above using \code{Z} values from \code{min(years)}.
 #'
 #' @examples
 #' sim_abundance()
 #'
 #' @export
 
-sim_abundance <- function(ages = 1:7, years = 1:10, Z = sim_Z(), R = sim_R()) {
+sim_abundance <- function(ages = 1:12, years = 1:20,
+                          Z = sim_Z(), R = sim_R(), N0 = sim_N0()) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -97,18 +118,16 @@ sim_abundance <- function(ages = 1:7, years = 1:10, Z = sim_Z(), R = sim_R()) {
               dimnames = list(age = ages, year = years))
   Z <- Z(ages = ages, years = years)
   N[1, ] <- R <- R(years = years)
+  N[, 1] <- N0 <- N0(R0 = R[1], Z0 = Z[, 1], ages = ages)
 
   ## Fill abundance-at-age matrix
-  for (y in seq_along(years)) {
+  for (y in seq_along(years)[-1]) {
     for (a in seq_along(ages)[-1]) {
-      if (y == 1) {
-        N[a, 1] <- N[a - 1, 1] * exp(- Z[a - 1, 1])
-      } else {
-        N[a, y] <- N[a -1, y - 1] * exp(- Z[a -1, y - 1])
-      }
+      N[a, y] <- N[a - 1, y - 1] * exp(-Z[a - 1, y - 1])
     }
   }
-  list(ages = ages, years = years, R = R, Z = Z, N = N)
+
+  list(ages = ages, years = years, R = R, N0 = N0, Z = Z, N = N)
 
 }
 
@@ -138,7 +157,7 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
     d <- .dist(x)
     cormat <- switch(model,
                      exponential = {
-                       exp(- d / range)
+                       exp(-d / range)
                      },
                      matern = {
                        lambda <- 1 # lambda fixed to 1 as per R-INLA book
@@ -168,15 +187,24 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
 linear_fun <- function(alpha = 0, beta = NULL, scale = TRUE) {
   function(x = NULL) {
     y <- alpha + beta * x
-    if(scale) { y - mean(y) } else { y }
+    if (scale) {
+      y - mean(y)
+    } else {
+      y
+    }
   }
 }
+
 #' @rdname linear_rel
 #' @export
 parabolic_fun <- function(mu = NULL, sigma = NULL, scale = TRUE) {
   function(x = NULL) {
     y <- -(((x - mu)^2) / (2 * sigma ^ 2))
-    if(scale) { y - mean(y) } else { y }
+    if (scale) {
+      y - mean(y)
+    } else {
+      y
+    }
   }
 }
 
@@ -184,17 +212,17 @@ parabolic_fun <- function(mu = NULL, sigma = NULL, scale = TRUE) {
 ## Helper function for age and year covariance specification for function below.
 ## This is probably a clumsy way to deal with this problem...matrix math would be
 ## more elegant...but this was the most computationally efficient way I could work
-## it out.
+## out.
 .break_covar <- function(m, mar, covar) {
   switch(covar,
          ran = unname(m),
-         rw = if(mar == "age") {
+         rw = if (mar == "age") {
            unname(apply(m, 2, cumsum))
          } else {
            unname(t(apply(m, 1, cumsum)))
          }
          ,
-         ident = if(mar == "age") {
+         ident = if (mar == "age") {
            unname(t(replicate(nrow(m), m[1, ])))
          } else {
            unname(replicate(ncol(m), m[, 1]))
@@ -210,7 +238,7 @@ parabolic_fun <- function(mu = NULL, sigma = NULL, scale = TRUE) {
 #' applies correlated space, time and size error to simulate the distribution
 #' of the population.
 #'
-#' @param N An abundance at age matrix with ages defining the rows and years defining
+#' @param pop An abundance at age matrix with ages defining the rows and years defining
 #' the columns (i.e. same structure as a matrix provided by \code{\link{sim_abundance}})
 #' @param grid A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
 #' grid with the same structure as \code{\link{survey_grid}}
@@ -248,7 +276,7 @@ sim_distribution <- function(pop = sim_abundance(),
     j <- which(as.numeric(dimnames(e)$age) < age_break)
     k <- seq_along(pop$years)
     e[i, j, k] <- .break_covar(e[i, j, k], "age", age_covar[1])
-    if(length(age_covar) == 2) {
+    if (length(age_covar) == 2) {
       j <- which(as.numeric(dimnames(e)$age) >= age_break)
       e[i, j, k] <- .break_covar(e[i, j, k], "age", age_covar[2])
     }
@@ -256,13 +284,13 @@ sim_distribution <- function(pop = sim_abundance(),
     k <- which(as.numeric(dimnames(e)$year) < year_break)
     e[i, , ]
     e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[1])
-    if(length(year_covar) == 2) {
+    if (length(year_covar) == 2) {
       k <- which(as.numeric(dimnames(e)$year) >= year_break)
       e[i, j, k] <- .break_covar(e[i, j, k], "year", year_covar[2])
     }
     e[i, , ]
   }
-  if(scale_error) { e <- e - mean(e) }
+  if (scale_error) { e <- e - mean(e) }
 
 
   # for(j in seq_along(pop$ages)) {

@@ -4,7 +4,8 @@
 \alias{sim_abundance}
 \title{Simulate basic population dynamics model}
 \usage{
-sim_abundance(ages = 1:7, years = 1:10, Z = sim_Z(), R = sim_R())
+sim_abundance(ages = 1:12, years = 1:20, Z = sim_Z(), R = sim_R(),
+  N0 = sim_N0())
 }
 \arguments{
 \item{ages}{Ages to include in the simulation.}
@@ -14,13 +15,17 @@ sim_abundance(ages = 1:7, years = 1:10, Z = sim_Z(), R = sim_R())
 \item{Z}{Total mortality function, like \code{\link{sim_Z}}, for generating
 mortality matrix.}
 
-\item{R}{Recruitment (i.e. Abundance at \code{min(ages)}) function, like
+\item{R}{Recruitment (i.e. abundance at \code{min(ages)}) function, like
 \code{\link{sim_R}}, for generating recruitment vector.}
+
+\item{N0}{Starting abundance (i.e. abundance at \code{min(years)}) function, like
+\code{\link{sim_N0}}, for generating starting abundance vector.}
 }
 \value{
 A \code{list} of length 3:
 \itemize{
   \item{\code{R} - Vector of recruitment values}
+  \item{\code{N0} - Vector of starting abundance values}
   \item{\code{Z} - Matrix of total mortality values}
   \item{\code{N} - Matrix of abundance values}
 }
@@ -32,11 +37,8 @@ Simulate basic population dynamics model
 Abundance from \code{ages[2:max(ages)]} and \code{years[2:max(years)]} is
 calculated using a standard population dynamics model:
 \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
-Abundance at \code{min(ages)} is supplied by \code{r} and abundance at \code{ages[2:max(ages)]} are
-calculated using the same equation above using \code{Z} values from \code{min(years)}.
 }
 \examples{
 sim_abundance()
 
 }
-
