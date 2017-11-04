@@ -11,11 +11,11 @@ sim_distribution(pop = sim_abundance(), grid = survey_grid,
   scale_error = TRUE)
 }
 \arguments{
+\item{pop}{An abundance at age matrix with ages defining the rows and years defining
+the columns (i.e. same structure as a matrix provided by \code{\link{sim_abundance}})}
+
 \item{grid}{A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
 grid with the same structure as \code{\link{survey_grid}}}
-
-\item{N}{An abundance at age matrix with ages defining the rows and years defining
-the columns (i.e. same structure as a matrix provided by \code{\link{sim_abundance}})}
 }
 \description{
 Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})

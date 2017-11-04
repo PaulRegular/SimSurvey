@@ -6,19 +6,17 @@
 \alias{sim_N0}
 \title{Simulate startinig abundance, random recruitment and total mortality}
 \usage{
-sim_R(mean = 20000, sd = 4)
+sim_R(mean = 1e+05, sd_log = 0.7)
 
-sim_Z(mean = 0.4, sd = 1.1, breaks = NULL)
+sim_Z(mean = 0.5, sd_log = 0.7)
 
 sim_N0(N0 = "exp")
 }
 \arguments{
-\item{mean, sd}{Mean and standard deviation}
+\item{mean}{One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
+rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.}
 
-\item{breaks}{Provide breaks to age and/or year series to specify group specific
-mean total mortality values. If specified, multiple mean values must be
-supplied; one more than the number of breaks. Provide named lists (see
-examples below).}
+\item{sd_log}{Standard deviation of the variable in the log scale.}
 
 \item{N0}{Either specify "exp" or numeric vector of starting abundance excluding the first age.
 If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
@@ -34,10 +32,11 @@ values from a log normal distribution.
 }
 \examples{
 sim_abundance(R = sim_R(mean = 100000, sd = 4))
+sim_abundance(years = 1:20, R = sim_R(mean = c(rep(100000, 10), rep(10000, 10))))
 sim_abundance(Z = sim_Z(mean = 0.6, sd = 1.5))
-sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2)),
-                        breaks = list(ages = c(1, 2))))
-sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
-                        breaks = list(ages = c(1, 2), years = c(4, 6))))
+Za_dev <- c(-0.3, -0.1, 0.2, 0.3, 0.2, 0.1)
+Zy_dev <- c(0.5, -0.2, 0.1, -0.1, 0.5, 0.7, 0.8, 1.2, 0.9, 0.3, -0.1)
+Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
+sim_abundance(ages = 1:6, years = 1:11, Z = sim_Z(mean = Z_mat))
 
 }

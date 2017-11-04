@@ -5,11 +5,9 @@
 #' @description These functions return a function to use inside \code{\link{sim_abundance}}.
 #' Given parameters, it generates N0, R and Z values.
 #'
-#' @param mean,sd Mean and standard deviation
-#' @param breaks Provide breaks to age and/or year series to specify group specific
-#' mean total mortality values. If specified, multiple mean values must be
-#' supplied; one more than the number of breaks. Provide named lists (see
-#' examples below).
+#' @param mean One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
+#' rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.
+#' @param sd_log Standard deviation of the variable in the log scale.
 #' @param N0 Either specify "exp" or numeric vector of starting abundance excluding the first age.
 #' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
 #' \deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}
@@ -19,17 +17,21 @@
 #'
 #' @examples
 #' sim_abundance(R = sim_R(mean = 100000, sd = 4))
-#' sim_abundance(Z = sim_Z(mean = 0.6, sd = 1.5))
-#' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2)),
-#'                         breaks = list(ages = c(1, 2))))
-#' sim_abundance(Z = sim_Z(mean = list(ages = c(0.5, 0.3, 0.2), years = c(0.3, 2, 0.3)),
-#'                         breaks = list(ages = c(1, 2), years = c(4, 6))))
+#' sim_abundance(years = 1:20, R = sim_R(mean = c(rep(100000, 10), rep(10000, 10))))
+#' sim_abundance(Z = sim_Z(mean = 0.6, sd_log = 0))
+#' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
+#' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
+#' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
+#' sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(mean = Z_mat), R = sim_R(sd_log = 0.5))
 #'
 #' @export
 #' @rdname sim_R
-sim_R <- function(mean = 20000, sd = 4) {
+sim_R <- function(mean = 100000, sd_log = 0.5) {
   function(years = NULL) {
-    r <- rlnorm(length(years), meanlog = log(mean), sdlog = log(sd))
+    if (length(mean) > 1 && length(mean) != length(years)) {
+      stop("The number of means supplied for recruitment != number of years.")
+    }
+    r <- rlnorm(length(years), meanlog = log(mean), sdlog = sd_log)
     names(r) <- years
     r
   }
@@ -37,20 +39,16 @@ sim_R <- function(mean = 20000, sd = 4) {
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.4, sd = 1.1, breaks = NULL) {
+sim_Z <- function(mean = 0.5, sd_log = 0.5) {
   function(ages = NULL, years = NULL) {
     na <- length(ages)
     ny <- length(years)
-    if (!is.null(breaks)) {
-      mean_ages <- mean$ages[findInterval(ages, breaks$ages, left.open = TRUE) + 1]
-      mean_years <- mean$years[findInterval(years, breaks$years, left.open = TRUE) + 1]
-      if (is.null(mean_ages)) { mean_ages <- rep(0, na) }
-      if (is.null(mean_years)) { mean_years <- rep(0, ny) }
-      mean <- rowSums(expand.grid(mean_ages, mean_years))
+    if (is.matrix(mean) && (nrow(mean) != na | ncol(mean) != ny)) {
+      stop("The matrix of means supplied for Z != number of years and/or ages.")
     } else {
-      mean <- rep(mean, na * ny)
+      mean <- c(mean)
     }
-    z <- rlnorm(na * ny, meanlog = log(mean), sdlog = log(sd))
+    z <- rlnorm(na * ny, meanlog = log(mean), sdlog = sd_log)
     z <- matrix(z, nrow = na, ncol = ny)
     dimnames(z) <- list(age = ages, year = years)
     z
