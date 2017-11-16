@@ -34,8 +34,7 @@ A \code{list} of length 3:
 Simulate basic population dynamics model
 }
 \details{
-Abundance from \code{ages[2:max(ages)]} and \code{years[2:max(years)]} is
-calculated using a standard population dynamics model:
+Abundance from is calculated using a standard population dynamics model:
 \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
 }
 \examples{

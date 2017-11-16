@@ -7,51 +7,85 @@
 #'
 #' @param mean One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
 #' rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.
-#' @param sd_log Standard deviation of the variable in the log scale.
+#' @param log_sd Standard deviation of the variable in the log scale.
+#' @param phi_age Autoregressive parameter for the age dimension.
+#' @param phi_year Autoregressive parameter for the year dimension.
 #' @param N0 Either specify "exp" or numeric vector of starting abundance excluding the first age.
 #' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
 #' \deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}
 #'
-#' @details sim_R and sim_Z simply generate uncorrelated recruitment or mortality
-#' values from a log normal distribution.
+#' @details sim_R simply generates uncorrelated recruitment values from a log normal distribution.
+#' sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
+#' in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
+#'
+#' @references Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
+#' Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
+#' Fisheries and Aquatic Sciences 73 (2): 296–308.
 #'
 #' @examples
 #' sim_abundance(R = sim_R(mean = 100000, sd = 4))
 #' sim_abundance(years = 1:20, R = sim_R(mean = c(rep(100000, 10), rep(10000, 10))))
-#' sim_abundance(Z = sim_Z(mean = 0.6, sd_log = 0))
+#' sim_abundance(Z = sim_Z(mean = 0.6, log_sd = 0))
 #' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 #' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 #' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-#' sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(mean = Z_mat), R = sim_R(sd_log = 0.5))
+#' sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(mean = Z_mat), R = sim_R(log_sd = 0.5))
 #'
 #' @export
 #' @rdname sim_R
-sim_R <- function(mean = 100000, sd_log = 0.5) {
+sim_R <- function(mean = 100000, log_sd = 0.5) {
   function(years = NULL) {
     if (length(mean) > 1 && length(mean) != length(years)) {
       stop("The number of means supplied for recruitment != number of years.")
     }
-    r <- rlnorm(length(years), meanlog = log(mean), sdlog = sd_log)
+    r <- rnorm(length(years), mean = log(mean), sd = log_sd)
     names(r) <- years
-    r
+    exp(r)
   }
 }
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.5, sd_log = 0.5) {
+sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0) {
   function(ages = NULL, years = NULL) {
+
     na <- length(ages)
     ny <- length(years)
     if (is.matrix(mean) && (nrow(mean) != na | ncol(mean) != ny)) {
       stop("The matrix of means supplied for Z != number of years and/or ages.")
-    } else {
-      mean <- c(mean)
     }
-    z <- rlnorm(na * ny, meanlog = log(mean), sdlog = sd_log)
-    z <- matrix(z, nrow = na, ncol = ny)
-    dimnames(z) <- list(age = ages, year = years)
-    z
+
+    Z <- matrix(NA, nrow = na, ncol = ny,
+                dimnames = list(age = ages, year = years))
+    pc_age <- sqrt(1 - phi_age * phi_age)
+    pc_year <- sqrt(1 - phi_year * phi_year)
+    for (j in seq_along(years)) {
+      for (i in seq_along(ages)) {
+        if ((i == 1) & (j == 1)) {
+          m <- 0
+          s <- log_sd / pc_age
+          Z[i, j] <- rnorm(1, m, s)
+        }
+        if ((i > 1) & (j == 1)) {
+          m <- phi_age * Z[i - 1, j]
+          s <- log_sd / pc_year
+          Z[i, j] <- rnorm(1, m, s)
+        }
+        if ((i == 1) & (j > 1)) {
+          m <- phi_year * Z[i, j - 1]
+          s <- log_sd / pc_age
+          Z[i, j] <- rnorm(1, m, s)
+        }
+        if ((i > 1) & (j > 1)) {
+          m <- phi_year * Z[i, j - 1] + phi_age * (Z[i - 1, j] - phi_year * Z[i - 1, j - 1])
+          s <- log_sd
+          Z[i, j] <- rnorm(1, m, s)
+        }
+      }
+    }
+    Z <- log(mean) + Z
+    exp(Z)
+
   }
 }
 
@@ -94,8 +128,7 @@ sim_N0 <- function(N0 = "exp") {
 #' }
 #'
 #' @details
-#' Abundance from \code{ages[2:max(ages)]} and \code{years[2:max(years)]} is
-#' calculated using a standard population dynamics model:
+#' Abundance from is calculated using a standard population dynamics model:
 #' \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
 #'
 #' @examples
@@ -103,7 +136,7 @@ sim_N0 <- function(N0 = "exp") {
 #'
 #' @export
 
-sim_abundance <- function(ages = 1:12, years = 1:20,
+sim_abundance <- function(ages = 1:14, years = 1:20,
                           Z = sim_Z(), R = sim_R(), N0 = sim_N0()) {
 
   ## Simple error check
@@ -148,9 +181,9 @@ sim_abundance <- function(ages = 1:12, years = 1:20,
 #' @param variance Spatial variance
 #' @param model String indicating either "exponential" or "matern" as the correlation function
 #'
-#' @rdname sim_covar
+#' @rdname sim_sp_covar
 #' @export
-sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
+sim_sp_covar <- function(range = NULL, variance = 1, model = "exponential") {
   function(x = NULL) {
     d <- .dist(x)
     cormat <- switch(model,
@@ -171,6 +204,11 @@ sim_covar <- function(range = NULL, variance = 1, model = "exponential") {
   }
 }
 
+#' @rdname sim_sp_covar
+#' @export
+sim_ay_covar <- function() {
+
+}
 
 
 #' Define relationships with covariates

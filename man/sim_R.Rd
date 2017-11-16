@@ -6,9 +6,9 @@
 \alias{sim_N0}
 \title{Simulate startinig abundance, random recruitment and total mortality}
 \usage{
-sim_R(mean = 1e+05, sd_log = 0.7)
+sim_R(mean = 1e+05, log_sd = 0.5)
 
-sim_Z(mean = 0.5, sd_log = 0.7)
+sim_Z(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0)
 
 sim_N0(N0 = "exp")
 }
@@ -16,7 +16,11 @@ sim_N0(N0 = "exp")
 \item{mean}{One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
 rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.}
 
-\item{sd_log}{Standard deviation of the variable in the log scale.}
+\item{log_sd}{Standard deviation of the variable in the log scale.}
+
+\item{phi_age}{Autoregressive parameter for the age dimension.}
+
+\item{phi_year}{Autoregressive parameter for the year dimension.}
 
 \item{N0}{Either specify "exp" or numeric vector of starting abundance excluding the first age.
 If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
@@ -27,16 +31,22 @@ These functions return a function to use inside \code{\link{sim_abundance}}.
 Given parameters, it generates N0, R and Z values.
 }
 \details{
-sim_R and sim_Z simply generate uncorrelated recruitment or mortality
-values from a log normal distribution.
+sim_R simply generates uncorrelated recruitment values from a log normal distribution.
+sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
+in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
 }
 \examples{
 sim_abundance(R = sim_R(mean = 100000, sd = 4))
 sim_abundance(years = 1:20, R = sim_R(mean = c(rep(100000, 10), rep(10000, 10))))
-sim_abundance(Z = sim_Z(mean = 0.6, sd = 1.5))
-Za_dev <- c(-0.3, -0.1, 0.2, 0.3, 0.2, 0.1)
-Zy_dev <- c(0.5, -0.2, 0.1, -0.1, 0.5, 0.7, 0.8, 1.2, 0.9, 0.3, -0.1)
+sim_abundance(Z = sim_Z(mean = 0.6, log_sd = 0))
+Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
+Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-sim_abundance(ages = 1:6, years = 1:11, Z = sim_Z(mean = Z_mat))
+sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(mean = Z_mat), R = sim_R(log_sd = 0.5))
 
+}
+\references{
+Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
+Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
+Fisheries and Aquatic Sciences 73 (2): 296–308.
 }

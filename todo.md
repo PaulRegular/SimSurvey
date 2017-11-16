@@ -1,7 +1,6 @@
 ## TODO
 
-- Add dynamic plus group
-- Refine the breaks using a named matrix approach (ages "1-2", "3-4", years = ...); add expand_par_mat helper function
+- Add dynamic plus group?
 - Add Cadigan style age x year covariance function
 - Use the age x year covariance function to improve space-year-size simulation
 - Work on sim_distribution function
