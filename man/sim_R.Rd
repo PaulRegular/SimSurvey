@@ -36,7 +36,7 @@ sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise val
 in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
 }
 \examples{
-sim_abundance(R = sim_R(mean = 100000, sd = 4))
+sim_abundance(R = sim_R(mean = 100000, log_sd = 4))
 sim_abundance(years = 1:20, R = sim_R(mean = c(rep(100000, 10), rep(10000, 10))))
 sim_abundance(Z = sim_Z(mean = 0.6, log_sd = 0))
 Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)

@@ -7,46 +7,41 @@
 library(SimSurvey)
 
 
-sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0) {
-  function(ages = NULL, years = NULL) {
+sim_ay_covar <- function(sd = 0.5, phi_age = 0.7, phi_year = 0.9) {
+  function(ages = NULL, years = NULL, cells = NULL, w = NULL) {
 
     na <- length(ages)
     ny <- length(years)
-    if (is.matrix(mean) && (nrow(mean) != na | ncol(mean) != ny)) {
-      stop("The matrix of means supplied for Z != number of years and/or ages.")
-    }
-
-    Z <- matrix(NA, nrow = na, ncol = ny,
-                dimnames = list(age = ages, year = years))
+    nc <- length(cells)
+    E <- array(rep(NA, nc * na * ny), dim = c(nc, na, ny),
+               dimnames = list(cell = cells, age = ages, year = years))
     pc_age <- sqrt(1 - phi_age * phi_age)
     pc_year <- sqrt(1 - phi_year * phi_year)
     for (j in seq_along(years)) {
       for (i in seq_along(ages)) {
         if ((i == 1) & (j == 1)) {
           m <- 0
-          s <- log_sd / pc_age
-          Z[i, j] <- rnorm(1, m, s)
+          s <- sd / pc_age
+          E[, i, j] <- w %*% rnorm(nc, m, s)
         }
         if ((i > 1) & (j == 1)) {
-          m <- phi_age * Z[i - 1, j]
-          s <- log_sd / pc_year
-          Z[i, j] <- rnorm(1, m, s)
+          m <- phi_age * E[, i - 1, j]
+          s <- sd / pc_year
+          E[, i, j] <- w %*% rnorm(nc, m, s)
         }
         if ((i == 1) & (j > 1)) {
-          m <- phi_year * Z[i, j - 1]
-          s <- log_sd / pc_age
-          Z[i, j] <- rnorm(1, m, s)
+          m <- phi_year * E[, i, j - 1]
+          s <- sd / pc_age
+          E[, i, j] <- w %*% rnorm(nc, m, s)
         }
         if ((i > 1) & (j > 1)) {
-          m <- phi_year * Z[i, j - 1] + phi_age * (Z[i - 1, j] - phi_year * Z[i - 1, j - 1])
-          s <- log_sd
-          Z[i, j] <- rnorm(1, m, s)
+          m <- phi_year * E[, i, j - 1] + phi_age * (E[, i - 1, j] - phi_year * E[, i - 1, j - 1])
+          s <- sd
+          E[, i, j] <- w %*% rnorm(nc, m, s)
         }
       }
     }
-    Z <- log(mean) + Z
-    exp(Z)
-
+    E
   }
 }
 

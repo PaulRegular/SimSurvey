@@ -1,7 +1,6 @@
 ## TODO
 
 - Add dynamic plus group?
-- Add Cadigan style age x year covariance function
 - Use the age x year covariance function to improve space-year-size simulation
 - Work on sim_distribution function
 - Create more complex mortality simulation (autocovariance between years and age / separate Z and M effects / etc.)

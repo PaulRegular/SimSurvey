@@ -4,7 +4,7 @@
 \alias{sim_abundance}
 \title{Simulate basic population dynamics model}
 \usage{
-sim_abundance(ages = 1:12, years = 1:20, Z = sim_Z(), R = sim_R(),
+sim_abundance(ages = 1:14, years = 1:20, Z = sim_Z(), R = sim_R(),
   N0 = sim_N0())
 }
 \arguments{
