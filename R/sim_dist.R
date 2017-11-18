@@ -149,19 +149,19 @@ parabolic_fun <- function(mu = 200, sigma = 100, scale = TRUE) {
 #' @export
 
 sim_distribution <- function(pop = sim_abundance(),
-                             grid = survey_grid,
+                             grid = sim_grid(),
                              space_covar = sim_sp_covar(),
                              ay_covar = sim_ay_covar(phi_age = 0.05, phi_year = 0),
                              depth_par = parabolic_fun()
 ) {
 
   pop = sim_abundance()
-  grid = survey_grid
+  grid = sim_grid(space_covar = NULL)
   space_covar = sim_sp_covar(range = 50, sd = 0.1)
   ay_covar = sim_ay_covar(sd = 0.1, phi_age = c(rep(0, 4), rep(0.8, 10)), phi_year = 0)
 
   ## Spatial covariance
-  grid_dat <- data.frame(rasterToPoints(grid))
+  grid_dat <- data.frame(raster::rasterToPoints(grid))
   xy <- grid_dat[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
@@ -170,7 +170,7 @@ sim_distribution <- function(pop = sim_abundance(),
   E <- ay_covar(ages = pop$ages, years = pop$years, cells = grid_dat$cell, w = w)
 
   for (i in seq_along(pop$years)) {
-    plot(rasterFromXYZ(data.frame(xy, E[, , i])))
+    raster::plot(raster::rasterFromXYZ(data.frame(xy, E[, , i])))
   }
 
 

@@ -4,7 +4,7 @@
 \alias{sim_distribution}
 \title{Simulate spatial and temporal distribution}
 \usage{
-sim_distribution(pop = sim_abundance(), grid = survey_grid,
+sim_distribution(pop = sim_abundance(), grid = sim_grid(),
   space_covar = sim_sp_covar(), ay_covar = sim_ay_covar(phi_age = 0.05,
   phi_year = 0), depth_par = parabolic_fun())
 }
