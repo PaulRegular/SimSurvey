@@ -13,6 +13,7 @@
 #' @param N0 Either specify "exp" or numeric vector of starting abundance excluding the first age.
 #' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
 #' \deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}
+#' @param plot produce a simple plot of the simulated values?
 #'
 #' @details sim_R simply generates uncorrelated recruitment values from a log normal distribution.
 #' sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
@@ -33,20 +34,21 @@
 #'
 #' @export
 #' @rdname sim_R
-sim_R <- function(mean = 100000, log_sd = 0.5) {
+sim_R <- function(mean = 100000, log_sd = 0.5, plot = FALSE) {
   function(years = NULL) {
     if (length(mean) > 1 && length(mean) != length(years)) {
       stop("The number of means supplied for recruitment != number of years.")
     }
     r <- rnorm(length(years), mean = log(mean), sd = log_sd)
     names(r) <- years
+    if (plot) { plot(years, exp(r), type = "l", main = "sim_R", xlab = "Year", ylab = "Recruitment") }
     exp(r)
   }
 }
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0) {
+sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0, plot = FALSE) {
   function(ages = NULL, years = NULL) {
 
     na <- length(ages)
@@ -84,6 +86,7 @@ sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0) {
       }
     }
     Z <- log(mean) + Z
+    if (plot) { image(years, ages, t(exp(Z)), main = "sim_Z", xlab = "Year", ylab = "Age") }
     exp(Z)
 
   }
@@ -91,7 +94,7 @@ sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0) {
 
 #' @export
 #' @rdname sim_R
-sim_N0 <- function(N0 = "exp") {
+sim_N0 <- function(N0 = "exp", plot = FALSE) {
   function(R0 = NULL, Z0 = NULL, ages = NULL) {
     if (length(N0) == 1 && N0 == "exp") {
       N0 <- rep(NA, length(ages))
@@ -102,6 +105,7 @@ sim_N0 <- function(N0 = "exp") {
     } else{
       N0 <- c(R0, N0)
     }
+    if (plot) { plot(ages, N0, type = "h", xlab = "Age", ylab = "N0") }
     N0
   }
 }

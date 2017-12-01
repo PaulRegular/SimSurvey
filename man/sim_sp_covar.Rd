@@ -5,16 +5,22 @@
 \alias{sim_ay_covar}
 \title{Simulate exponential or Matern covariance}
 \usage{
-sim_sp_covar(range = 200, sd = 0.5, model = "matern")
+sim_sp_covar(range = 100, sd = 0.1, model = "matern")
 
-sim_ay_covar(sd = 0.5, phi_age = 0.7, phi_year = 0.9)
+sim_ay_covar(sd = 2, phi_age = 0.5, phi_year = 0.05)
 }
 \arguments{
 \item{range}{Decorrelation range}
 
-\item{sd}{Spatial variance}
+\item{sd}{Variance}
 
 \item{model}{String indicating either "exponential" or "matern" as the correlation function}
+
+\item{phi_age}{Defines autocorrelation through ages. Can be one value or a vector of the same
+length as ages}
+
+\item{phi_year}{Defines autocorrelation through years. Can be one value or a vector of the same
+length as years}
 }
 \description{
 These functions return a function to use inside \code{\link{sim_distribution}}.

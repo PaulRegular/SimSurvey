@@ -12,13 +12,17 @@
 #'
 #' @description These functions return a function to use inside \code{\link{sim_distribution}}.
 #'
-#' @param range  Decorrelation range
-#' @param sd     Spatial variance
-#' @param model  String indicating either "exponential" or "matern" as the correlation function
+#' @param range    Decorrelation range
+#' @param sd       Variance
+#' @param phi_age  Defines autocorrelation through ages. Can be one value or a vector of the same
+#'                 length as ages
+#' @param phi_year Defines autocorrelation through years. Can be one value or a vector of the same
+#'                 length as years
+#' @param model    String indicating either "exponential" or "matern" as the correlation function
 #'
 #' @rdname sim_sp_covar
 #' @export
-sim_sp_covar <- function(range = 200, sd = 0.5, model = "matern") {
+sim_sp_covar <- function(range = 100, sd = 0.1, model = "matern") {
   function(x = NULL) {
     d <- .dist(x)
     cormat <- switch(model,
@@ -41,7 +45,7 @@ sim_sp_covar <- function(range = 200, sd = 0.5, model = "matern") {
 
 #' @rdname sim_sp_covar
 #' @export
-sim_ay_covar <- function(sd = 0.5, phi_age = 0.7, phi_year = 0.9) {
+sim_ay_covar <- function(sd = 2, phi_age = 0.5, phi_year = 0.05) {
   function(ages = NULL, years = NULL, cells = NULL, w = NULL) {
 
     na <- length(ages)
@@ -63,8 +67,8 @@ sim_ay_covar <- function(sd = 0.5, phi_age = 0.7, phi_year = 0.9) {
     }
 
 
-    E <- array(rep(NA, nc * na * ny), dim = c(nc, na, ny),
-               dimnames = list(cell = cells, age = ages, year = years))
+    E <- array(rep(NA, na * ny * nc), dim = c(na, ny, nc),
+               dimnames = list(age = ages, year = years, cell = cells))
     pc_age <- sqrt(1 - phi_age ^ 2)
     pc_year <- sqrt(1 - phi_year ^ 2)
     for (j in seq_along(years)) {
@@ -72,22 +76,22 @@ sim_ay_covar <- function(sd = 0.5, phi_age = 0.7, phi_year = 0.9) {
         if ((i == 1) & (j == 1)) {
           m <- 0
           s <- sd / pc_age[i]
-          E[, i, j] <- w %*% rnorm(nc, m, s)
+          E[i, j, ] <- w %*% rnorm(nc, m, s)
         }
         if ((i > 1) & (j == 1)) {
-          m <- phi_age[i] * E[, i - 1, j]
+          m <- phi_age[i] * E[i - 1, j, ]
           s <- sd / pc_year[j]
-          E[, i, j] <- w %*% rnorm(nc, m, s)
+          E[i, j, ] <- w %*% rnorm(nc, m, s)
         }
         if ((i == 1) & (j > 1)) {
-          m <- phi_year[j] * E[, i, j - 1]
+          m <- phi_year[j] * E[i, j - 1, ]
           s <- sd / pc_age[i]
-          E[, i, j] <- w %*% rnorm(nc, m, s)
+          E[i, j, ] <- w %*% rnorm(nc, m, s)
         }
         if ((i > 1) & (j > 1)) {
-          m <- phi_year[j] * E[, i, j - 1] + phi_age[i] * (E[, i - 1, j] - phi_year[j] * E[, i - 1, j - 1])
+          m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
           s <- sd
-          E[, i, j] <- w %*% rnorm(nc, m, s)
+          E[i, j, ] <- w %*% rnorm(nc, m, s)
         }
       }
     }
@@ -99,34 +103,19 @@ sim_ay_covar <- function(sd = 0.5, phi_age = 0.7, phi_year = 0.9) {
 
 #' Define relationships with covariates
 #'
-#' @description  Simple closures used to define relationships with covariates
+#' @description  Closure to be used in \code{\link{sim_distribution}}
 #'
-#' @param beta,mu,sigma Parameters
-#' @param scale Center effect around zero?
+#' @param alpha,mu,sigma  Parameters
+#' @param plot            Produce a simple plot of the simulated values?
 #'
-#' @rdname linear_rel
+#' @rdname gaussian_fun
 #' @export
-linear_fun <- function(alpha = 0, beta = NULL, scale = TRUE) {
-  function(x = NULL) {
-    y <- alpha + beta * x
-    if (scale) {
-      y - mean(y)
-    } else {
-      y
-    }
-  }
-}
 
-#' @rdname linear_rel
-#' @export
-parabolic_fun <- function(mu = 200, sigma = 100, scale = TRUE) {
+gaussian_fun <- function(alpha = 1, mu = 250, sigma = 100, plot = FALSE) {
   function(x = NULL) {
-    y <- -(((x - mu)^2) / (2 * sigma ^ 2))
-    if (scale) {
-      y - mean(y)
-    } else {
-      y
-    }
+    y <- alpha * exp(-(((x - mu)^2) / (2 * sigma ^ 2)))
+    if (plot) { plot(x, y, main = "gaussian_fun", type = "l") }
+    y
   }
 }
 
@@ -135,13 +124,18 @@ parabolic_fun <- function(mu = 200, sigma = 100, scale = TRUE) {
 #'
 #' @description Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
 #' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
-#' applies correlated space, time and size error to simulate the distribution
+#' applies correlated space, age and year error to simulate the distribution
 #' of the population.
 #'
-#' @param pop An abundance at age matrix with ages defining the rows and years defining
-#' the columns (i.e. same structure as a matrix provided by \code{\link{sim_abundance}})
-#' @param grid A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
-#' grid with the same structure as \code{\link{survey_grid}}
+#' @param pop         An abundance at age matrix like one produced by \code{\link{sim_abundance}})
+#' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}
+#'                    or one produced by \code{\link{sim_grid}}
+#' @param space_covar Closure for simulating spatial covariance
+#' @param ay_covar    Closure for simulating age-year covariance
+#' @param depth_par   Closure for defining relationship between abundance and depth
+#'
+#' @details The addition of space-age-year error will result in slight discreptancies between
+#'          input and output abundance at age
 #'
 #' @examples
 #' sim_distribution()
@@ -151,72 +145,34 @@ parabolic_fun <- function(mu = 200, sigma = 100, scale = TRUE) {
 sim_distribution <- function(pop = sim_abundance(),
                              grid = sim_grid(),
                              space_covar = sim_sp_covar(),
-                             ay_covar = sim_ay_covar(phi_age = 0.05, phi_year = 0),
-                             depth_par = parabolic_fun()
-) {
+                             ay_covar = sim_ay_covar(),
+                             depth_par = gaussian_fun()) {
 
-  pop = sim_abundance()
-  grid = sim_grid(space_covar = NULL)
-  space_covar = sim_sp_covar(range = 50, sd = 0.1)
-  ay_covar = sim_ay_covar(sd = 0.1, phi_age = c(rep(0, 4), rep(0.8, 10)), phi_year = 0)
-
-  ## Spatial covariance
+  ## Space-age-year autoregressive process
   grid_dat <- data.frame(raster::rasterToPoints(grid))
   xy <- grid_dat[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
+  error <- ay_covar(ages = pop$ages, years = pop$years, cells = grid_dat$cell, w = w)
 
-  ## Space-age-year autoregressive process
-  E <- ay_covar(ages = pop$ages, years = pop$years, cells = grid_dat$cell, w = w)
+  ## Define probability of inhabiting each cell and distribute fish through the cells
+  prob <- depth_par(grid_dat$depth)
+  prob <- prob / sum(prob)  # make the values sum to 1
+  N <- outer(pop$N, prob)
+  dimnames(N) <- dimnames(error)
 
-  for (i in seq_along(pop$years)) {
-    raster::plot(raster::rasterFromXYZ(data.frame(xy, E[, , i])))
-  }
+  ## Add space-age-year error to log abundance
+  N <- exp(log(N) + error)
 
+  ## Addition of error generates slight differences in the abundance at age
+  ## Update pop$N
+  pop$N <- apply(N, c(1, 2), sum)
 
+  ## Output as data.frame
+  df_N <- as.data.frame.table(N, responseName = "N", stringsAsFactors = FALSE)
+  df_N <- merge(grid_dat, df_N, by = "cell")
 
-  ## Distribute abundance equally through the domaine and convert
-  ## cell specific abundance to density
-  den <- replicate(nrow(grid_dat), pop$N / nrow(grid_dat) / prod(res(grid)))
-  den <- aperm(den, c(3, 1, 2)) # match dim of e
-  dimnames(den) <- dimnames(e)
-
-  ## Depth covariate (TODO: think up a better way to generate the depth effect array)
-  depth <- replicate(n = length(pop$years) * length(pop$ages),
-                     depth_par(grid_dat$depth), simplify = FALSE)
-  depth <- array(unlist(depth), dim = dim(e),
-                 dimnames = dimnames(e))
-
-  ## Apply covariate effect and error to calculate density in each cell
-  ## log-normal model
-  eta <- log(den) + depth + e
-  den <- exp(eta)
-
-
-  # for(j in seq_along(pop$ages)) {
-  #   xy$n <- den[, j, 2]
-  #   plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = j)
-  # }
-  # for(k in seq_along(pop$years)) {
-  #   xy$n <- den[, 1, k]
-  #   plot(rasterFromXYZ(xy[, c("x", "y", "n")]), main = k)
-  # }
-
-  N <- den * prod(res(grid))
-  round(apply(N, c(2, 3), sum))
-  round(pop$N)
-  for (j in seq_along(pop$years)) {
-    plot(apply(N, c(2, 3), sum)[, j], type = "s")
-    lines(pop$N[, j], type = "s", col = "red")
-  }
-
-
-
-  message("TODO: clean up sim_distribution function and improve documentation")
-
-
-  den
-
+  c(pop, list(grid = grid, sp_N = df_N))
 
 }
 

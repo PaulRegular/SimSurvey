@@ -1,13 +1,9 @@
 ## TODO
 
+- Work up some simple plotting functions
 - Improve documentation of sim_distribution and sim_ay_covar functions
 - Add dynamic plus group?
-- Work on sim_distribution function
 - Create more complex mortality simulation (autocovariance between years and age / separate Z and M effects / etc.)
-- Consider random walk over time to help build a longer space-size-time series
-- Look into building the simulation using R-INLA (see Chapter 8 of book)
-- Perhaps sim_abundance should be based on SAM formulation?
 - Consider adding temperature as a covariate
 - Add ERROR checking
-- Convert from sp to sf
-- Convert draft paper to Rmd
+- Convert from sp to sf?

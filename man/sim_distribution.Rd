@@ -5,21 +5,30 @@
 \title{Simulate spatial and temporal distribution}
 \usage{
 sim_distribution(pop = sim_abundance(), grid = sim_grid(),
-  space_covar = sim_sp_covar(), ay_covar = sim_ay_covar(phi_age = 0.05,
-  phi_year = 0), depth_par = parabolic_fun())
+  space_covar = sim_sp_covar(), ay_covar = sim_ay_covar(),
+  depth_par = gaussian_fun())
 }
 \arguments{
-\item{pop}{An abundance at age matrix with ages defining the rows and years defining
-the columns (i.e. same structure as a matrix provided by \code{\link{sim_abundance}})}
+\item{pop}{An abundance at age matrix like one produced by \code{\link{sim_abundance}})}
 
-\item{grid}{A \code{\link{SpatialPolygonsDataFrame}} defining a regular or irregular
-grid with the same structure as \code{\link{survey_grid}}}
+\item{grid}{A raster object defining the survey grid, like \code{\link{survey_grid}}
+or one produced by \code{\link{sim_grid}}}
+
+\item{space_covar}{Closure for simulating spatial covariance}
+
+\item{ay_covar}{Closure for simulating age-year covariance}
+
+\item{depth_par}{Closure for defining relationship between abundance and depth}
 }
 \description{
 Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
 and a survey grid (like \code{\link{survey_grid}}) to populate, this function
-applies correlated space, time and size error to simulate the distribution
+applies correlated space, age and year error to simulate the distribution
 of the population.
+}
+\details{
+The addition of space-age-year error will result in slight discreptancies between
+         input and output abundance at age
 }
 \examples{
 sim_distribution()

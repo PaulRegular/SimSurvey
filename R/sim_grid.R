@@ -41,8 +41,8 @@ sim_grid <- function(x_range = c(-150, 150), y_range = c(-150, 150),
 
   ## set-up raster
   r <- raster::raster(xmn = x_range[1], xmx = x_range[2],
-              ymn = y_range[1], ymx = y_range[2],
-              res = res, crs = "+proj=utm +units=km")
+                      ymn = y_range[1], ymx = y_range[2],
+                      res = res, crs = "+proj=utm +units=km")
   xy <- as.data.frame(raster::rasterToPoints(r))
 
   ## simulate depth
@@ -79,4 +79,3 @@ sim_grid <- function(x_range = c(-150, 150), y_range = c(-150, 150),
   r
 
 }
-

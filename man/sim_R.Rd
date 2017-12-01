@@ -6,17 +6,20 @@
 \alias{sim_N0}
 \title{Simulate startinig abundance, random recruitment and total mortality}
 \usage{
-sim_R(mean = 1e+05, log_sd = 0.5)
+sim_R(mean = 1e+05, log_sd = 0.5, plot = FALSE)
 
-sim_Z(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0)
+sim_Z(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0,
+  plot = FALSE)
 
-sim_N0(N0 = "exp")
+sim_N0(N0 = "exp", plot = FALSE)
 }
 \arguments{
 \item{mean}{One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
 rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.}
 
 \item{log_sd}{Standard deviation of the variable in the log scale.}
+
+\item{plot}{produce a simple plot of the simulated values?}
 
 \item{phi_age}{Autoregressive parameter for the age dimension.}
 
