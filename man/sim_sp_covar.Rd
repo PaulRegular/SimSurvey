@@ -7,7 +7,7 @@
 \usage{
 sim_sp_covar(range = 100, sd = 0.1, model = "matern")
 
-sim_ay_covar(sd = 2, phi_age = 0.5, phi_year = 0.05)
+sim_ay_covar(sd = 10, phi_age = 0.8, phi_year = 0.2)
 }
 \arguments{
 \item{range}{Decorrelation range}

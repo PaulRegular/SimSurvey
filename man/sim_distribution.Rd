@@ -6,7 +6,7 @@
 \usage{
 sim_distribution(pop = sim_abundance(), grid = sim_grid(),
   space_covar = sim_sp_covar(), ay_covar = sim_ay_covar(),
-  depth_par = gaussian_fun())
+  depth_par = parabola_fun())
 }
 \arguments{
 \item{pop}{An abundance at age matrix like one produced by \code{\link{sim_abundance}})}
@@ -27,8 +27,9 @@ applies correlated space, age and year error to simulate the distribution
 of the population.
 }
 \details{
-The addition of space-age-year error will result in slight discreptancies between
-         input and output abundance at age
+This function mainly operates in logit space. Specifically, the probability of
+simulated fish inhabiting a cell is a function of a parabolic relationship with depth
+and space, age, and year autocorrelated errors.
 }
 \examples{
 sim_distribution()
