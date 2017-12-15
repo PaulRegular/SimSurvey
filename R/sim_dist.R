@@ -108,13 +108,13 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5) {
 #' @param alpha,mu,sigma  Parameters that control the shape of the parabola
 #' @param plot            Produce a simple plot of the simulated values?
 #'
-#' @rdname parabola_fun
+#' @rdname sim_parabola
 #' @export
 
-parabola_fun <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
+sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
   function(x = NULL) {
     y <- alpha - (((x - mu)^2) / (2 * sigma ^ 2))
-    if (plot) { plot(x, y, main = "parabola_fun", type = "l") }
+    if (plot) { plot(x, y, main = "sim_parabola", type = "l") }
     y
   }
 }
@@ -147,7 +147,7 @@ sim_distribution <- function(pop = sim_abundance(),
                              grid = sim_grid(),
                              space_covar = sim_sp_covar(),
                              ay_covar = sim_ay_covar(),
-                             depth_par = parabola_fun()) {
+                             depth_par = sim_parabola()) {
 
   ## Space-age-year autoregressive process
   grid_dat <- data.frame(raster::rasterToPoints(grid))

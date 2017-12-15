@@ -6,7 +6,7 @@
 \usage{
 sim_distribution(pop = sim_abundance(), grid = sim_grid(),
   space_covar = sim_sp_covar(), ay_covar = sim_ay_covar(),
-  depth_par = parabola_fun())
+  depth_par = sim_parabola())
 }
 \arguments{
 \item{pop}{An abundance at age matrix like one produced by \code{\link{sim_abundance}})}
