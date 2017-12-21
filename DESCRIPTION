@@ -18,5 +18,10 @@ Imports:
     raster,
     rgeos
 Suggests:
-    fields
+    fields,
+    rmarkdown,
+    flexdashboard,
+    plotly,
+    shiny,
+    viridis
 RoxygenNote: 6.0.1

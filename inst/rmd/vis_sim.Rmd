@@ -1,0 +1,115 @@
+---
+title: "Simulation Explorer"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+
+library(plotly)
+library(viridis)
+library(shiny)
+e <- new.env() # make a new environment to keep the global clean
+e$sim <- temp  # temp object (in global) created by vis_sim function
+rm(temp)       # clean-up
+e$ages <- e$sim$ages
+e$years <- e$sim$years
+e$vis_distribution <- "sp_N" %in% names(e$sim)
+
+```
+
+
+Abundance
+================================================================================
+
+Row
+--------------------------------------------------------------------------------
+
+### Total abundance
+
+```{r}
+e$tot <- data.frame(Year = e$years, N = colSums(e$sim$N))
+e$tot$text <- paste0("Year: ", e$tot$year, "\nN: ", round(e$tot$N))
+plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
+        type = "scatter", mode = "lines", data = e$tot) %>%
+  layout(xaxis = list(rangeslider = list(type = "date")))
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Abundance at age
+
+```{r}
+e$d <- as.data.frame.table(e$sim$N, responseName = "N")
+names(e$d) <- c("Age", "Year", "N")
+e$d$text <- paste0("Age: ", e$d$Age, "\nYear: ", e$d$Year, "\nN: ", round(e$d$N))
+plot_ly(x = ~Age, y = ~Year, z = ~N, color = ~Age,
+        text = ~text, hoverinfo = "text",
+        colors = viridis(length(e$ages)),
+        type = "scatter3d", mode = "lines",
+        line = list(width = 8),
+        data = e$d)
+```
+
+
+### Total mortality
+
+```{r}
+plot_ly(x = e$ages, y = e$years, z = e$sim$Z, type = "surface") %>% 
+  layout(
+    scene = list(
+      xaxis = list(title = "Age"),
+      yaxis = list(title = "Year"),
+      zaxis = list(title = "Z")
+    ))
+```
+
+
+
+Distribution { `r if(!e$vis_distribution) ".hidden"`}
+================================================================================
+
+Column {.sidebar}
+--------------------------------------------------------------------------------
+
+```{r}
+
+sliderInput("age", "Age", min = min(e$ages), max = max(e$ages), 
+            value = 1, step = 1)
+sliderInput("year", "Year", min = min(e$years), max = max(e$years), 
+            value = 1, step = 1)
+selectInput("type", "Type", choices = c("surface", "heatmap", "contour"), 
+            selected = "surface")
+checkboxInput("freez", label = "Free z limits?", value = FALSE)
+
+```
+
+Column
+--------------------------------------------------------------------------------
+
+### Distribution
+
+```{r, eval=e$vis_distribution}
+
+e$d <- e$sim$sp_N
+e$x <- sort(unique(e$d$x))
+e$y <- sort(unique(e$d$y))
+e$p <- plot_ly(x = e$x, y = e$y)
+
+renderPlotly({
+  e$z <- t(xtabs(N ~ x + y, subset = age == input$age & year == input$year, data = e$d))
+  if (input$freez) {
+    e$r <- range(e$z)
+  } else {
+    e$r <- range(e$d$N)
+  }
+  add_trace(e$p, z = e$z, type = input$type, zauto = input$freez, zmin = min(e$d$N), zmax = max(e$d$N)) %>%
+    layout(autosize = TRUE,
+           scene = list(zaxis = list(title = "N", range = e$r)))
+})
+
+```
+
+
+
