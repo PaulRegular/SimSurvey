@@ -9,7 +9,7 @@ runtime: shiny
 library(plotly)
 library(viridis)
 library(shiny)
-e <- new.env() # make a new environment to keep the global clean
+e <- new.env() # make a new environment to keep the global clean (rmarkdown::run wants to work in the global)
 e$sim <- temp  # temp object (in global) created by vis_sim function
 rm(temp)       # clean-up
 e$ages <- e$sim$ages
@@ -29,7 +29,7 @@ Row
 
 ```{r}
 e$tot <- data.frame(Year = e$years, N = colSums(e$sim$N))
-e$tot$text <- paste0("Year: ", e$tot$year, "\nN: ", round(e$tot$N))
+e$tot$text <- paste0("Year: ", e$tot$Year, "\nN: ", round(e$tot$N))
 plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
         type = "scatter", mode = "lines", data = e$tot) %>%
   layout(xaxis = list(rangeslider = list(type = "date")))
