@@ -9,7 +9,7 @@ sim_distribution(pop = sim_abundance(), grid = sim_grid(),
   depth_par = sim_parabola())
 }
 \arguments{
-\item{pop}{An abundance at age matrix like one produced by \code{\link{sim_abundance}})}
+\item{pop}{An abundance at age matrix like one produced by \code{\link{sim_abundance}}}
 
 \item{grid}{A raster object defining the survey grid, like \code{\link{survey_grid}}
 or one produced by \code{\link{sim_grid}}}
