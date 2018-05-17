@@ -41,15 +41,15 @@ Row
 ### Abundance at age
 
 ```{r}
-e$d <- as.data.frame.table(e$sim$N, responseName = "N")
-names(e$d) <- c("Age", "Year", "N")
-e$d$text <- paste0("Age: ", e$d$Age, "\nYear: ", e$d$Year, "\nN: ", round(e$d$N))
-plot_ly(x = ~Age, y = ~Year, z = ~N, color = ~Age,
-        text = ~text, hoverinfo = "text",
-        colors = viridis(length(e$ages)),
-        type = "scatter3d", mode = "lines",
-        line = list(width = 8),
-        data = e$d)
+
+plot_ly(x = e$ages, y = e$years, z = e$sim$N, type = "surface") %>% 
+  layout(
+    scene = list(
+      xaxis = list(title = "Age"),
+      yaxis = list(title = "Year"),
+      zaxis = list(title = "N")
+    ))
+
 ```
 
 
