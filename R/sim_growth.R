@@ -41,3 +41,37 @@ sim_growth <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1, plot = FALSE) 
   }
 }
 
+
+
+sim <- sim_distribution(pop = sim_abundance(years = 1:10),
+                        grid = sim_grid(res = c(3.5, 3.5)),
+                        space_covar = sim_sp_covar(range = 50, sd = 0.1),
+                        ay_covar = sim_ay_covar(sd = 10,
+                                                phi_age = 0.5,
+                                                phi_year = 0.5),
+                        depth_par = sim_parabola(alpha = 0, sigma = 50))
+
+## Generate age-length keys
+growth <- sim_growth()
+g <- growth(ages = sim$ages)
+lengths <- as.numeric(colnames(g$inv_alk))
+
+## Expand abundance at age to abundance at age and length
+## (todo: clean up this code...it's clumsy)
+R <- t(replicate(ncol(g$inv_alk), sim$R)) * replicate(length(sim$years), g$inv_alk[as.character(sim$ages[1]), ])
+dimnames(R) <- list(length = lengths, year = sim$years)
+N0 <- g$inv_alk * replicate(ncol(g$inv_alk), sim$N0)
+N <- sapply(as.character(sim$years),
+            function(y) g$inv_alk * replicate(ncol(g$inv_alk), sim$N[, y]),
+            simplify = "array")
+dimnames(N) <- list(age = sim$ages, length = colnames(g$inv_alk), year = sim$years)
+# all.equal(sim$N, apply(N, FUN = sum, MARGIN = c(1, 3)))
+
+rowSums(head(sim$sp_N$N, 20) * g$inv_alk[head(as.character(sim$sp_N$age), 20), 1:10])
+
+long_inv_alk <- as.data.frame.table(g$inv_alk, responseName = "prop")
+sp_N <- merge(sim$sp_N, long_inv_alk, by = "age", all = TRUE)
+## Not going to work well...computational drain.
+## Simplify and minimize object size by simulating length of 'caught' fish
+
+
