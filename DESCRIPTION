@@ -16,7 +16,8 @@ BugReports: https://github.com/PaulRegular/SimSurvey/issues
 Imports:
     sp,
     raster,
-    rgeos
+    rgeos,
+    data.table
 Suggests:
     fields,
     rmarkdown,
