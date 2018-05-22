@@ -178,8 +178,10 @@ sim_distribution <- function(pop = sim_abundance(),
   df_N <- as.data.frame.table(prob, responseName = "prob", stringsAsFactors = FALSE)
   df_N <- data.frame(df_N, N = c(N))
   df_N <- merge(grid_dat, df_N, by = "cell")
+  df_N$year <- as.numeric(df_N$year)
+  df_N$age <- as.numeric(df_N$age)
 
-  c(pop, list(grid = grid, sp_N = df_N))
+  c(pop, list(grid = grid, sp_N = df_N[, setdiff(names(df_N), "prob")]))
 
 }
 
