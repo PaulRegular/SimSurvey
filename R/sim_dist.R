@@ -127,7 +127,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #' applies correlated space, age and year error to simulate the distribution
 #' of the population.
 #'
-#' @param pop         An abundance at age matrix like one produced by \code{\link{sim_abundance}}
+#' @param sim         An abundance at age matrix like one produced by \code{\link{sim_abundance}}
 #' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}
 #'                    or one produced by \code{\link{sim_grid}}
 #' @param space_covar Closure for simulating spatial covariance
@@ -143,7 +143,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #'
 #' @export
 
-sim_distribution <- function(pop = sim_abundance(),
+sim_distribution <- function(sim = sim_abundance(),
                              grid = sim_grid(),
                              space_covar = sim_sp_covar(),
                              ay_covar = sim_ay_covar(),
@@ -154,11 +154,11 @@ sim_distribution <- function(pop = sim_abundance(),
   xy <- grid_dat[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
-  error <- ay_covar(ages = pop$ages, years = pop$years, cells = grid_dat$cell, w = w)
+  error <- ay_covar(ages = sim$ages, years = sim$years, cells = grid_dat$cell, w = w)
 
   ## Relationship with depth
   depth <- depth_par(grid_dat$depth)
-  depth <- replicate(length(pop$years), replicate(length(pop$ages), depth))
+  depth <- replicate(length(sim$years), replicate(length(sim$ages), depth))
   depth <- aperm(depth, c(2, 3, 1))
   dimnames(depth) <- dimnames(error)
 
@@ -170,7 +170,7 @@ sim_distribution <- function(pop = sim_abundance(),
   prob <- aperm(prob, c(2, 3, 1))
 
   ## Distribute fish through the cells
-  N <- replicate(nrow(grid_dat), pop$N)
+  N <- replicate(nrow(grid_dat), sim$N)
   dimnames(N) <- dimnames(prob)
   N <- N * prob
 
@@ -181,7 +181,7 @@ sim_distribution <- function(pop = sim_abundance(),
   df_N$year <- as.numeric(df_N$year)
   df_N$age <- as.numeric(df_N$age)
 
-  c(pop, list(grid = grid, sp_N = df_N[, setdiff(names(df_N), "prob")]))
+  c(sim, list(grid = grid, sp_N = df_N[, setdiff(names(df_N), "prob")]))
 
 }
 
