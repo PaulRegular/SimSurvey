@@ -17,7 +17,8 @@ Imports:
     sp,
     raster,
     rgeos,
-    data.table
+    data.table,
+    magrittr
 Suggests:
     fields,
     rmarkdown,
