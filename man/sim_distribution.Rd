@@ -4,9 +4,8 @@
 \alias{sim_distribution}
 \title{Simulate spatial and temporal distribution}
 \usage{
-sim_distribution(sim = sim_abundance(), grid = sim_grid(),
-  space_covar = sim_sp_covar(), ay_covar = sim_ay_covar(),
-  depth_par = sim_parabola())
+sim_distribution(sim, grid = sim_grid(), space_covar = sim_sp_covar(),
+  ay_covar = sim_ay_covar(), depth_par = sim_parabola())
 }
 \arguments{
 \item{sim}{An abundance at age matrix like one produced by \code{\link{sim_abundance}}}

@@ -13,4 +13,4 @@ sim <- sim_abundance(years = 1:5, R = sim_R(mean = 1e+09)) %>%
   sim_survey(n_sims = 10)
 # vis_sim(sim)
 
-
+dat <- strat_data(sim)

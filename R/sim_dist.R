@@ -143,7 +143,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #'
 #' @export
 
-sim_distribution <- function(sim = sim_abundance(),
+sim_distribution <- function(sim,
                              grid = sim_grid(),
                              space_covar = sim_sp_covar(),
                              ay_covar = sim_ay_covar(),
