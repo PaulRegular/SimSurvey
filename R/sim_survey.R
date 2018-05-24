@@ -182,10 +182,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
     setdet$n <- round(setdet$I * (setdet$tow_area / setdet$cell_area))
   }
 
-  ## Add some sums to set data
-  setsum <- merge(sets, setdet[, list(N = sum(N), I = sum(I), n = sum(n)), by = "set"], by = "set")
-
-  ## Now expand to individuals and simulate length
+  ## Expand set catch to individuals and simulate length
   samp <- setdet[rep(seq(.N), n), list(set, age)]
   samp$id <- seq(nrow(samp))
   samp$length <- growth(samp$age)
@@ -193,8 +190,9 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   ## Sample lengths
   measured <- samp[, list(id = id[sample(.N, ifelse(.N > max_lengths, max_lengths, .N),
                                          replace = FALSE)]), by = "set"]
-  samp$length[!samp$id %in% measured$id] <- NA # clear lengths not 'sampled'
-  length_samp <- samp[!is.na(length), ]
+  samp$measured <- samp$id %in% measured$id # tag lengths collected
+  length_samp <- samp[samp$measured, ]
+  rm(measured)
 
   ## Sample ages
   length_breaks <- seq(0, max(length_samp$length, na.rm = TRUE) * 2, length_group)
@@ -203,16 +201,23 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > max_ages, max_ages, .N),
                                             replace = FALSE)]),
                       by = c("sim", "year", "division", "length_group")]
-  samp$age[!samp$id %in% aged$id] <- NA # clear ages not 'sampled'
+  samp$aged <- samp$id %in% aged$id # tag ages sampled
+  rm(aged)
 
   ## Simplify samp object
-  samp <- samp[!is.na(samp$length), list(set, id, length, age)]
+  samp <- samp[, list(set, id, length, age, measured, aged)]
+
+  ## Summarise set catch and sampling
+  setdet <- merge(sets, setdet[, list(N = sum(N), I = sum(I), n = sum(n)), by = "set"], by = "set")
+  setdet <- merge(setdet,
+                  samp[, list(n_measured = sum(measured), n_aged = sum(aged)), by = "set"],
+                  by = "set", all.x = TRUE)
+  setdet$n_measured[is.na(setdet$n_measured)] <- 0
+  setdet$n_aged[is.na(setdet$n_aged)] <- 0
 
   ## Add new stuff to main object
   sim$sp_N <- data.table(sim$sp_N)
   sim$sp_I <- sp_I
-  sim$sets <- sets
-  sim$setsum <- setsum
   sim$setdet <- setdet
   sim$samp <- samp
   sim
