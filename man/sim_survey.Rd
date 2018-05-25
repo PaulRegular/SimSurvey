@@ -5,8 +5,8 @@
 \title{Simulate stratified-random survey}
 \usage{
 sim_survey(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
-  resample_cells = FALSE, binom_error = FALSE, max_lengths = 100,
-  length_group = 3, max_ages = 10)
+  trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
+  max_lengths = 100, length_group = 3, max_ages = 10)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
@@ -18,6 +18,8 @@ a large number of simulations may max out your RAM}
 (returned values must be between 0 and 1)}
 
 \item{growth}{Closure, such as \code{\link{sim_vonB}}, for simulating length given age}
+
+\item{trawl_dim}{Trawl width and distance (same units as grid)}
 
 \item{resample_cells}{Allow resampling of sampling units (grid cells)?}
 

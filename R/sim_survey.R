@@ -148,6 +148,7 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @param q                   Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 #'                            (returned values must be between 0 and 1)
 #' @param growth              Closure, such as \code{\link{sim_vonB}}, for simulating length given age
+#' @param trawl_dim           Trawl width and distance (same units as grid)
 #' @param resample_cells      Allow resampling of sampling units (grid cells)?
 #' @param binom_error         Impose binomial error?
 #' @param max_lengths         Maximum number of lengths measured per set
@@ -162,7 +163,7 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #'
 
 sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
-                       resample_cells = FALSE, binom_error = FALSE,
+                       trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
                        max_lengths = 100, length_group = 3, max_ages = 10) {
 
   ## Round simulated population and calculate numbers available to survey
@@ -170,7 +171,8 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   sp_I <- sim_index(sim, n_sims = n_sims, q = q, binom_error = binom_error)
 
   ## Simulate sets conducted across survey grid
-  sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims)
+  sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
+                   trawl_dim = trawl_dim)
 
   ## Subset population to surveyed cells and simulate portion caught by survey
   ## (If more than one set is conducted in a cell, split population available to survey (I) amongst the sets)
