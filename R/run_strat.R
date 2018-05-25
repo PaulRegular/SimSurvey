@@ -127,7 +127,7 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
                         varYh = var(metric), nh = .N), by = strat_groups]
   strat_tab[, Nh := strat_area / tow_area] # number of sample units in each strat
   strat_tab[, Wh := Nh / sum(Nh), by = survey_groups]
-  strat_tab[, totals := Nh * sumYh / nh]
+  strat_tab[, total := Nh * sumYh / nh]
   strat_tab[, gh := Nh * (Nh - nh) / nh]
 
   ## survey.tab includes large-scale means,  such as mean weight per tow,  and totals,  such as total biomass + associated confidence intervals
@@ -143,9 +143,10 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
   survey_tab[sapply(survey_tab,  is.nan)] <- NA
 
   ## Rename cols
-  survey_tab <- survey_tab[, c(survey_groups,  "meanYst",  "meanYst_lcl", "meanYst_ucl",
+  survey_tab <- survey_tab[, c(survey_groups,  "n", "N", "meanYst",  "meanYst_lcl", "meanYst_ucl",
                                "sumYst", "sumYst_lcl", "sumYst_ucl"),  with = FALSE]
-  setnames(survey_tab, names(survey_tab), c(survey_groups, "mean", "mean_lcl", "mean_ucl",
+  setnames(survey_tab, names(survey_tab), c(survey_groups, "sets", "sampling_units",
+                                            "mean", "mean_lcl", "mean_ucl",
                                             "total", "total_lcl", "total_ucl"))
 
   ## return results (here I only return the survey_tab to minimize details and object size)

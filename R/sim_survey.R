@@ -71,6 +71,8 @@ round_sim <- function(sim) {
 #' @param min_sets         Minimum number of sets per strat
 #' @param set_den          Set density
 #' @param resample_cells   Allow resampling of sampling units (grid cells)?
+#'                         (Note: allowing resampling may create bias because
+#'                          depletion is imposed at the cell level)
 #'
 #' @export
 #'
@@ -105,7 +107,7 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 
   ## Simulate sets
   sets <- cells[, .SD[sample(.N, strat_sets, replace = resample_cells)], by = c("sim", "year", "strat")]
-  sets[, cell_sets := .N, by = c("year", "cell")] # useful for identifying cells with more than one set (when resample_units = TRUE)
+  sets[, cell_sets := .N, by = c("sim", "year", "cell")] # useful for identifying cells with more than one set (when resample_units = TRUE)
   sets$set <- seq(nrow(sets))
   sets
 
@@ -125,7 +127,7 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 
 sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) {
-  sp_N <- data.table(sim$sp_N[, c("cell", "age", "year", "N")]) # simplify to minimize object size
+  sp_N <- data.table(sim$sp_N[, c("cell", "age", "year", "N")])
   i <- rep(seq(nrow(sp_N)), times = n_sims)
   s <- rep(seq(n_sims), each = nrow(sp_N))
   sp_N <- sp_N[i, ]
@@ -168,6 +170,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
 
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
+  I <- sim$N * q(replicate(length(sim$years), sim$ages))
   sp_I <- sim_index(sim, n_sims = n_sims, q = q, binom_error = binom_error)
 
   ## Simulate sets conducted across survey grid
@@ -181,7 +184,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
     setdet$n <- rbinom(rep(1, nrow(setdet)), size = round(setdet$I / setdet$cell_sets),
                        prob = setdet$tow_area / setdet$cell_area)
   } else {
-    setdet$n <- round(setdet$I * (setdet$tow_area / setdet$cell_area))
+    setdet$n <- round((setdet$I / setdet$cell_sets) * (setdet$tow_area / setdet$cell_area))
   }
 
   ## Expand set catch to individuals and simulate length
@@ -219,7 +222,8 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
 
   ## Add new stuff to main object
   sim$sp_N <- data.table(sim$sp_N)
-  sim$sp_I <- sp_I
+  sim$I <- I
+  # sim$sp_I <- sp_I # exclude large object that may not need to be used
   sim$setdet <- setdet
   sim$samp <- samp
   sim
