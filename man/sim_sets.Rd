@@ -4,7 +4,7 @@
 \alias{sim_sets}
 \title{Simulate survey sets}
 \usage{
-sim_sets(sim, n_sims = 1, trawl_dim = c(1.5, 0.02), min_sets = 1,
+sim_sets(sim, n_sims = 1, trawl_dim = c(1.5, 0.02), min_sets = 2,
   set_den = 5/1000, resample_cells = FALSE)
 }
 \arguments{
@@ -16,9 +16,11 @@ sim_sets(sim, n_sims = 1, trawl_dim = c(1.5, 0.02), min_sets = 1,
 
 \item{min_sets}{Minimum number of sets per strat}
 
-\item{set_den}{Set density}
+\item{set_den}{Set density (number of sets per [grid unit] squared)}
 
-\item{resample_cells}{Allow resampling of sampling units (grid cells)?}
+\item{resample_cells}{Allow resampling of sampling units (grid cells)?
+(Note: allowing resampling may create bias because
+ depletion is imposed at the cell level)}
 }
 \description{
 Simulate survey sets

@@ -69,7 +69,7 @@ round_sim <- function(sim) {
 #' @param n_sims           Number of simulations to produce
 #' @param trawl_dim        Trawl width and distance (same units as grid)
 #' @param min_sets         Minimum number of sets per strat
-#' @param set_den          Set density
+#' @param set_den          Set density (number of sets per [grid unit] squared)
 #' @param resample_cells   Allow resampling of sampling units (grid cells)?
 #'                         (Note: allowing resampling may create bias because
 #'                          depletion is imposed at the cell level)
@@ -81,7 +81,7 @@ round_sim <- function(sim) {
 #'
 
 sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
-                     min_sets = 1, set_den = 5 / 1000, resample_cells = FALSE) {
+                     min_sets = 2, set_den = 3 / 1000, resample_cells = FALSE) {
 
   ## Strat area and sampling effort
   cells <- data.table(rasterToPoints(sim$grid))
@@ -153,9 +153,11 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @param trawl_dim           Trawl width and distance (same units as grid)
 #' @param resample_cells      Allow resampling of sampling units (grid cells)?
 #' @param binom_error         Impose binomial error?
-#' @param max_lengths         Maximum number of lengths measured per set
+#' @param min_sets            Minimum number of sets per strat
+#' @param set_den             Set density (number of sets per [grid unit] squared)
+#' @param lengths_cap         Maximum number of lengths measured per set
 #' @param length_group        Length group for otolith collection
-#' @param max_ages            Maximum number of otoliths to collect per length group per division per year
+#' @param ages_cap            Maximum number of otoliths to collect per length group per division per year
 #'
 #' @return A list including rounded population simulation, set locations and details
 #' and sampling details. Note that that N = "true" population, I = population available
@@ -166,7 +168,8 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 
 sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
                        trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
-                       max_lengths = 100, length_group = 3, max_ages = 10) {
+                       min_sets = 2, set_den = 3 / 1000, lengths_cap = 100,
+                       length_group = 3, ages_cap = 10) {
 
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
@@ -175,7 +178,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
 
   ## Simulate sets conducted across survey grid
   sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
-                   trawl_dim = trawl_dim)
+                   trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets)
 
   ## Subset population to surveyed cells and simulate portion caught by survey
   ## (If more than one set is conducted in a cell, split population available to survey (I) amongst the sets)
@@ -193,7 +196,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   samp$length <- growth(samp$age)
 
   ## Sample lengths
-  measured <- samp[, list(id = id[sample(.N, ifelse(.N > max_lengths, max_lengths, .N),
+  measured <- samp[, list(id = id[sample(.N, ifelse(.N > lengths_cap, lengths_cap, .N),
                                          replace = FALSE)]), by = "set"]
   samp$measured <- samp$id %in% measured$id # tag lengths collected
   length_samp <- samp[samp$measured, ]
@@ -203,7 +206,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   length_breaks <- seq(0, max(length_samp$length, na.rm = TRUE) * 2, length_group)
   length_samp$length_group <- cut(length_samp$length, length_breaks, right = FALSE)
   length_samp <- merge(sets[, list(set, sim, year, division)], length_samp, by = "set")
-  aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > max_ages, max_ages, .N),
+  aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
                                             replace = FALSE)]),
                       by = c("sim", "year", "division", "length_group")]
   samp$aged <- samp$id %in% aged$id # tag ages sampled

@@ -6,7 +6,8 @@
 \usage{
 sim_survey(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
   trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
-  max_lengths = 100, length_group = 3, max_ages = 10)
+  min_sets = 2, set_den = 5/1000, lengths_cap = 100, length_group = 3,
+  ages_cap = 10)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
@@ -25,11 +26,15 @@ a large number of simulations may max out your RAM}
 
 \item{binom_error}{Impose binomial error?}
 
-\item{max_lengths}{Maximum number of lengths measured per set}
+\item{min_sets}{Minimum number of sets per strat}
+
+\item{set_den}{Set density (number of sets per [grid unit] squared)}
+
+\item{lengths_cap}{Maximum number of lengths measured per set}
 
 \item{length_group}{Length group for otolith collection}
 
-\item{max_ages}{Maximum number of otoliths to collect per length group per division per year}
+\item{ages_cap}{Maximum number of otoliths to collect per length group per division per year}
 }
 \value{
 A list including rounded population simulation, set locations and details
