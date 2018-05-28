@@ -1,4 +1,28 @@
 
+
+#' Convert length to length group
+#'
+#' @description Helper function for converting lengths to length groups
+#' (Note: this isn't a general function; the output midpoints defining the
+#' groups alligns with DFO specific method/labeling)
+#'
+#' @param length       Interval from \code{\link{base::findInterval}}
+#' @param group        Length group used to cut the length data
+#'
+#' @export
+#'
+
+group_lengths <- function(length, group) {
+  breaks <- seq(0, max(length, na.rm = TRUE) * 2, group)
+  interval <- findInterval(length, breaks)
+  l <- breaks[interval]
+  if (group == 0.5 | group == 1) { m <- l }
+  if (group > 1) { m <- l + (0.5 * (group - 1)) }
+  m
+}
+
+
+
 #' Closure for simulating logistic curve
 #'
 #' @description This closure is useful for simulating q inside the
@@ -75,8 +99,6 @@ round_sim <- function(sim) {
 #'                          depletion is imposed at the cell level)
 #'
 #' @export
-#'
-#' @import data.table
 #'
 #'
 
@@ -203,8 +225,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   rm(measured)
 
   ## Sample ages
-  length_breaks <- seq(0, max(length_samp$length, na.rm = TRUE) * 2, length_group)
-  length_samp$length_group <- cut(length_samp$length, length_breaks, right = FALSE)
+  length_samp$length_group <- group_lengths(length_samp$length, length_group)
   length_samp <- merge(sets[, list(set, sim, year, division)], length_samp, by = "set")
   aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
                                             replace = FALSE)]),
@@ -224,7 +245,6 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   setdet$n_aged[is.na(setdet$n_aged)] <- 0
 
   ## Add new stuff to main object
-  sim$sp_N <- data.table(sim$sp_N)
   sim$I <- I
   # sim$sp_I <- sp_I # exclude large object that may not need to be used
   sim$setdet <- setdet

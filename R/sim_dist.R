@@ -142,6 +142,9 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #' sim_distribution()
 #'
 #' @export
+#'
+#' @import data.table
+#'
 
 sim_distribution <- function(sim,
                              grid = sim_grid(),
@@ -150,7 +153,7 @@ sim_distribution <- function(sim,
                              depth_par = sim_parabola()) {
 
   ## Space-age-year autoregressive process
-  grid_dat <- data.frame(raster::rasterToPoints(grid))
+  grid_dat <- data.table::data.table(raster::rasterToPoints(grid))
   xy <- grid_dat[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
@@ -176,12 +179,14 @@ sim_distribution <- function(sim,
 
   ## Output as data.frame
   df_N <- as.data.frame.table(prob, responseName = "prob", stringsAsFactors = FALSE)
-  df_N <- data.frame(df_N, N = c(N))
-  df_N <- merge(grid_dat, df_N, by = "cell")
+  df_N <- data.table::data.table(df_N, N = c(N))
   df_N$year <- as.numeric(df_N$year)
   df_N$age <- as.numeric(df_N$age)
+  df_N$cell <- as.numeric(df_N$cell)
+  df_N <- merge(grid_dat, df_N, by = "cell")
+  df_N$prob <- NULL
 
-  c(sim, list(grid = grid, sp_N = df_N[, setdiff(names(df_N), "prob")]))
+  c(sim, list(grid = grid, sp_N = df_N))
 
 }
 

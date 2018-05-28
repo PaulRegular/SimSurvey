@@ -3,7 +3,7 @@
 export("%>%")
 export(error_stats)
 export(fibonacci)
-export(mid_length)
+export(group_lengths)
 export(round_sim)
 export(run_strat)
 export(sim_N0)
