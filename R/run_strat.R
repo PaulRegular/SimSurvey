@@ -155,11 +155,13 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 }
 
 
-
-
 #' Run stratified analysis on simulated data
 #'
 #' @param sim    Simulation from \code{\link{sim_survey}}
+#'
+#' @return Adds stratified analysis results for the total population (\code{"total_strat"})
+#'         and the population aggregated by length group and age (\code{"length_strat"} and
+#'         \code{"age_strat"}, respectively) to the \code{sim} list.
 #'
 #' @export
 #'
@@ -179,7 +181,6 @@ run_strat <- function(sim) {
                      survey_groups = c("sim", "year"))
   sim$total_strat <- do.call(strat_means, strat_args)
 
-  sim$strat1 <- list()
   strat_args$data <- data$lf
   strat_args$strat_groups <- c(strat_args$strat_groups, "length")
   strat_args$survey_groups <- c(strat_args$survey_groups, "length")
@@ -197,7 +198,52 @@ run_strat <- function(sim) {
 
 
 
+#' Calculate error of stratified estimates
+#'
+#' @param sim   Object from \code{\link{run_strat}} (includes simulated population and
+#'              survey along with stratified analysis results)
+#'
+#' @return Adds details and summary stats to \code{sim} list. The \code{"details"}
+#'         object is a data.table that includes index estimates from the stratified
+#'         analysis (\code{"I_hat"}) along with the simulated index (\code{"I"}). The
+#'         \code{"summary"} object is a named vector including estimates of mean
+#'         absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
+#'         root mean squared error (\code{"RMSE"}).
+#'
+#' @export
+#'
 
+strat_error <- function(sim) {
+
+  ## total_strat
+  I_hat <- sim$total_strat[, list(sim, year, total)]
+  names(I_hat) <- c("sim", "year", "I_hat")
+  I <- data.frame(year = sim$years, I = colSums(sim$I))
+  comp <- merge(I_hat, I, by = "year")
+  comp$error <- comp$I_hat - comp$I
+  means <- c(MAE = mean(abs(comp$error)),
+             MSE = mean(comp$error ^ 2),
+             RMSE = sqrt(mean(comp$error ^ 2)))
+  sim$error$details$total_strat <- comp
+  sim$error$summary$total_strat <- means
+
+  ## age_strat
+  I_hat <- sim$age_strat[, list(sim, year, age, total)]
+  names(I_hat) <- c("sim", "year", "age", "I_hat")
+  I <- as.data.frame.table(sim$I, responseName = "I")
+  I$year <- as.numeric(I$year)
+  I$age <- as.numeric(I$age)
+  comp <- merge(I_hat, I, by = c("year", "age"))
+  comp$error <- comp$I_hat - comp$I
+  means <- c(MAE = mean(abs(comp$error)),
+             MSE = mean(comp$error ^ 2),
+             RMSE = sqrt(mean(comp$error ^ 2)))
+  sim$error$details$age_strat <- comp
+  sim$error$summary$age_strat <- means
+
+  sim
+
+}
 
 
 

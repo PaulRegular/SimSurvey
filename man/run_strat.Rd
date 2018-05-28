@@ -9,6 +9,11 @@ run_strat(sim)
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}
 }
+\value{
+Adds stratified analysis results for the total population (\code{"total_strat"})
+        and the population aggregated by length group and age (\code{"length_strat"} and
+        \code{"age_strat"}, respectively) to the \code{sim} list.
+}
 \description{
 Run stratified analysis on simulated data
 }
