@@ -23,6 +23,24 @@ mid_length <- function(cut_labs, length_group) {
 }
 
 
+#' Calculate common error statistics
+#'
+#' @param error Vector of errors
+#'
+#' @return Returns a named vector of error statistics including mean absolute
+#'         error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
+#'         root mean squared error (\code{"RMSE"})
+#'
+#' @export
+#'
+
+error_stats <- function(error) {
+  c(MAE = mean(abs(error)),
+    MSE = mean(error ^ 2),
+    RMSE = sqrt(mean(error ^ 2)))
+}
+
+
 #' Prepare simulated data for stratified analysis
 #'
 #' @description Generate set details (setdet), length-frequency (lf)
@@ -203,12 +221,11 @@ run_strat <- function(sim) {
 #' @param sim   Object from \code{\link{run_strat}} (includes simulated population and
 #'              survey along with stratified analysis results)
 #'
-#' @return Adds details and summary stats to \code{sim} list. The \code{"details"}
-#'         object is a data.table that includes index estimates from the stratified
-#'         analysis (\code{"I_hat"}) along with the simulated index (\code{"I"}). The
-#'         \code{"summary"} object is a named vector including estimates of mean
-#'         absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
-#'         root mean squared error (\code{"RMSE"}).
+#' @return Adds details and summary stats of stratified estimate error to the
+#'         \code{sim} list, ending with \code{"_strat_error"} or
+#'         \code{"_strat_error_stats"}. Error statistics includes mean absolute
+#'         error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
+#'         root mean squared error (\code{"RMSE"})
 #'
 #' @export
 #'
@@ -221,11 +238,9 @@ strat_error <- function(sim) {
   I <- data.frame(year = sim$years, I = colSums(sim$I))
   comp <- merge(I_hat, I, by = "year")
   comp$error <- comp$I_hat - comp$I
-  means <- c(MAE = mean(abs(comp$error)),
-             MSE = mean(comp$error ^ 2),
-             RMSE = sqrt(mean(comp$error ^ 2)))
-  sim$error$details$total_strat <- comp
-  sim$error$summary$total_strat <- means
+  means <- error_stats(comp$error)
+  sim$total_strat_error <- comp
+  sim$total_strat_error_stats <- means
 
   ## age_strat
   I_hat <- sim$age_strat[, list(sim, year, age, total)]
@@ -235,11 +250,9 @@ strat_error <- function(sim) {
   I$age <- as.numeric(I$age)
   comp <- merge(I_hat, I, by = c("year", "age"))
   comp$error <- comp$I_hat - comp$I
-  means <- c(MAE = mean(abs(comp$error)),
-             MSE = mean(comp$error ^ 2),
-             RMSE = sqrt(mean(comp$error ^ 2)))
-  sim$error$details$age_strat <- comp
-  sim$error$summary$age_strat <- means
+  means <- error_stats(comp$error)
+  sim$age_strat_error <- comp
+  sim$age_strat_error_stats <- means
 
   sim
 

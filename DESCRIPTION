@@ -18,7 +18,8 @@ Imports:
     raster,
     rgeos,
     data.table,
-    magrittr
+    magrittr,
+    progress
 Suggests:
     fields,
     rmarkdown,

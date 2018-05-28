@@ -11,12 +11,11 @@ strat_error(sim)
 survey along with stratified analysis results)}
 }
 \value{
-Adds details and summary stats to \code{sim} list. The \code{"details"}
-        object is a data.table that includes index estimates from the stratified
-        analysis (\code{"I_hat"}) along with the simulated index (\code{"I"}). The
-        \code{"summary"} object is a named vector including estimates of mean
-        absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
-        root mean squared error (\code{"RMSE"}).
+Adds details and summary stats of stratified estimate error to the
+        \code{sim} list, ending with \code{"_strat_error"} or
+        \code{"_strat_error_stats"}. Error statistics includes mean absolute
+        error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
+        root mean squared error (\code{"RMSE"})
 }
 \description{
 Calculate error of stratified estimates

@@ -6,7 +6,7 @@
 \usage{
 sim_survey(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
   trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
-  min_sets = 2, set_den = 3/1000, lengths_cap = 100, length_group = 3,
+  min_sets = 2, set_den = 3/1000, lengths_cap = 400, length_group = 1,
   ages_cap = 10)
 }
 \arguments{

@@ -1,9 +1,6 @@
 
 library(SimSurvey)
 
-sim <- sim_abundance(years = 1:100)
-# vis_sim(sim)
-
 set.seed(438)
 pop <- sim_abundance(years = 1:10, R = sim_R(mean = 1e+09)) %>%
   sim_distribution(grid = sim_grid(res = c(3.5, 3.5)),
@@ -15,5 +12,19 @@ pop <- sim_abundance(years = 1:10, R = sim_R(mean = 1e+09)) %>%
 survey <- sim_survey(pop, n_sims = 10) %>%
   run_strat() %>% strat_error()
 
+
+res <- test_surveys(pop, n_sims = 5, n_loops = 2,
+                    set_den = c(0.5, 1, 2, 3) / 1000,
+                    lengths_cap = c(100, 400), ages_cap = 10)
+
+
+library(plotly)
+plot_ly() %>%
+  add_lines(data = res$total_strat_error, x = ~year, y = ~I_hat, split = ~sim,
+            size = I(1), color = ~I("grey"), alpha = 0.4, frame = ~survey,
+            showlegend = FALSE) %>%
+  add_lines(x = ~unique(year), y = ~unique(I), color = I("black"), size = I(1)) %>%
+  layout(yaxis = list(title = "I"),
+         xaxis = list(title = "Year"))
 
 
