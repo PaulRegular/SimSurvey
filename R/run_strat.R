@@ -177,23 +177,28 @@ run_strat <- function(sim) {
                      metric = "n",
                      strat_groups = c("sim", "year", "division", "strat", "strat_area", "tow_area"),
                      survey_groups = c("sim", "year"))
-  strat2 <- do.call(strat_means, strat_args)
+  sim$total_strat <- do.call(strat_means, strat_args)
 
-  strat1 <- list()
+  sim$strat1 <- list()
   strat_args$data <- data$lf
   strat_args$strat_groups <- c(strat_args$strat_groups, "length")
   strat_args$survey_groups <- c(strat_args$survey_groups, "length")
-  strat1[["length"]] <- do.call(strat_means, strat_args)
+  sim$length_strat <- do.call(strat_means, strat_args)
 
   strat_args$data <- data$af
   strat_args$strat_groups[strat_args$strat_groups == "length"] <- "age"
   strat_args$survey_groups[strat_args$survey_groups == "length"] <- "age"
-  strat1[["age"]] <- do.call(strat_means, strat_args)
+  sim$age_strat <- do.call(strat_means, strat_args)
 
   ## Return results
-  list(strat2 = strat2, strat1 = strat1)
+  sim
 
 }
+
+
+
+
+
 
 
 
