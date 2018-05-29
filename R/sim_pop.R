@@ -7,6 +7,7 @@
 #'
 #' @param mean One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
 #' rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.
+#' @param random_walk Simulate recruitment as a random walk?
 #' @param log_sd Standard deviation of the variable in the log scale.
 #' @param phi_age Autoregressive parameter for the age dimension.
 #' @param phi_year Autoregressive parameter for the year dimension.
@@ -15,7 +16,7 @@
 #' \deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}
 #' @param plot produce a simple plot of the simulated values?
 #'
-#' @details sim_R simply generates uncorrelated recruitment values from a log normal distribution.
+#' @details sim_R generates uncorrelated recruitment values or random walk values from a log normal distribution.
 #' sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
 #' in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
 #'
@@ -34,12 +35,14 @@
 #'
 #' @export
 #' @rdname sim_R
-sim_R <- function(mean = 100000, log_sd = 0.5, plot = FALSE) {
+sim_R <- function(mean = 100000, log_sd = 0.5, random_walk = TRUE, plot = FALSE) {
   function(years = NULL) {
     if (length(mean) > 1 && length(mean) != length(years)) {
       stop("The number of means supplied for recruitment != number of years.")
     }
-    r <- rnorm(length(years), mean = log(mean), sd = log_sd)
+    e <- rnorm(length(years), mean = 0, sd = log_sd)
+    if (random_walk) e <- cumsum(e)
+    r <- log(mean) + e
     names(r) <- years
     if (plot) { plot(years, exp(r), type = "l", main = "sim_R", xlab = "Year", ylab = "Recruitment") }
     exp(r)
@@ -48,7 +51,7 @@ sim_R <- function(mean = 100000, log_sd = 0.5, plot = FALSE) {
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0, plot = FALSE) {
+sim_Z <- function(mean = 0.7, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
   function(ages = NULL, years = NULL) {
 
     na <- length(ages)

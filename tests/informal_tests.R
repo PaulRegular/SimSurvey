@@ -13,7 +13,7 @@ survey <- sim_survey(pop, n_sims = 10) %>%
   run_strat() %>% strat_error()
 
 setMKLthreads(1) # turn off MKL hyperthreading
-res <- test_surveys(pop, n_sims = 10, n_loops = 50, cores = 8)
+res <- test_surveys(pop, n_sims = 5, n_loops = 100, cores = 8)
 setMKLthreads() # turn hyperthreading on again
 
 

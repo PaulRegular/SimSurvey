@@ -48,6 +48,11 @@ sim_sp_covar <- function(range = 50, sd = 0.1, model = "matern") {
 sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5) {
   function(ages = NULL, years = NULL, cells = NULL, w = NULL) {
 
+    # Simple description of covariance:
+    # In 2D: X_ay = X_a,y-1 + X_a-1,y - X_a-1,y-1 + error
+    # at 1st age it is random walk in year,
+    # and first year it is random walk in age
+
     na <- length(ages)
     ny <- length(years)
     nc <- length(cells)
@@ -143,7 +148,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #'
 #' @export
 #'
-#' @import data.table
+#' @rawNamespace import(data.table, except = shift)
 #'
 
 sim_distribution <- function(sim,

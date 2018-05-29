@@ -1,5 +1,12 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+*.shp
+*.sbx
+*.sbn
+*.dbf
+*.prj
+*.shp.xml
+*.shx
 sim_survey_paper.docx

@@ -6,9 +6,9 @@
 \alias{sim_N0}
 \title{Simulate startinig abundance, random recruitment and total mortality}
 \usage{
-sim_R(mean = 1e+05, log_sd = 0.5, plot = FALSE)
+sim_R(mean = 1e+05, log_sd = 0.5, random_walk = FALSE, plot = FALSE)
 
-sim_Z(mean = 0.5, log_sd = 0.5, phi_age = 0, phi_year = 0,
+sim_Z(mean = 0.7, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5,
   plot = FALSE)
 
 sim_N0(N0 = "exp", plot = FALSE)
@@ -18,6 +18,8 @@ sim_N0(N0 = "exp", plot = FALSE)
 rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.}
 
 \item{log_sd}{Standard deviation of the variable in the log scale.}
+
+\item{random_walk}{Simulate recruitment as a random walk?}
 
 \item{plot}{produce a simple plot of the simulated values?}
 
@@ -34,7 +36,7 @@ These functions return a function to use inside \code{\link{sim_abundance}}.
 Given parameters, it generates N0, R and Z values.
 }
 \details{
-sim_R simply generates uncorrelated recruitment values from a log normal distribution.
+sim_R generates uncorrelated recruitment values or random walk values from a log normal distribution.
 sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
 in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
 }
