@@ -19,7 +19,10 @@ Imports:
     rgeos,
     data.table,
     magrittr,
-    progress
+    progress,
+    doParallel,
+    parallel,
+    foreach
 Suggests:
     fields,
     rmarkdown,

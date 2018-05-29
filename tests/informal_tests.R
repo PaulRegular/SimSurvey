@@ -9,13 +9,15 @@ pop <- sim_abundance(years = 1:10, R = sim_R(mean = 1e+09)) %>%
                    depth_par = sim_parabola(alpha = 0, sigma = 50))
 # vis_sim(pop)
 
-survey <- sim_survey(pop, n_sims = 10) %>%
-  run_strat() %>% strat_error()
+# survey <- sim_survey(pop, n_sims = 10) %>%
+#   run_strat() %>% strat_error()
 
 
-res <- test_surveys(pop, n_sims = 5, n_loops = 2,
+setMKLthreads(1) # turn off MKL hyperthreading
+res <- test_surveys(pop, n_sims = 10, n_loops = 50, cores = 7,
                     set_den = c(0.5, 1, 2, 3) / 1000,
                     lengths_cap = c(100, 400), ages_cap = 10)
+setMKLthreads() # turn hyperthreading on again
 
 
 library(plotly)

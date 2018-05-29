@@ -13,6 +13,7 @@
 #'                          simulations run will be the product of \code{n_sims} and \code{n_loops}
 #'                          arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
 #'                          will be easier on RAM, but slower.
+#' @param cores             Number of cores to use in parallel
 #' @param set_den           Vector of set densities (number of sets per [grid unit] squared)
 #' @param lengths_cap       Vector of maximum number of lengths measured per set
 #' @param ages_cap          Vector of maximum number of otoliths to collect per length group
@@ -29,9 +30,12 @@
 #' @export
 #'
 #' @import progress
+#' @import doParallel
+#' @import parallel
+#' @import foreach
 #'
 
-test_surveys <- function(sim, n_sims = 10, n_loops = 10,
+test_surveys <- function(sim, n_sims = 10, n_loops = 10, cores = 2,
                          set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
                          lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60, 90, 100, 200, 400, 600, 1000),
                          ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60),
@@ -50,10 +54,10 @@ test_surveys <- function(sim, n_sims = 10, n_loops = 10,
 
   for (i in surveys$survey) {
 
-    loop_error <- vector("list", n_loops)
-    sim_counter <- 0
-
-    for (j in seq(n_loops)) {
+    cl <- makeCluster(cores) # use parallel computation
+    registerDoParallel(cl)
+    loop_error <- foreach(j = seq(n_loops),
+                          .packages = "SimSurvey") %dopar% {
       res <- sim_survey(sim, n_sims = n_sims,
                         set_den = surveys$set_den[i],
                         lengths_cap = surveys$lengths_cap[i],
@@ -61,13 +65,12 @@ test_surveys <- function(sim, n_sims = 10, n_loops = 10,
                         ...) %>%
         run_strat() %>% strat_error()
       total_strat_error <- res$total_strat_error
-      total_strat_error$sim <- total_strat_error$sim + sim_counter
+      total_strat_error$sim <- total_strat_error$sim + (j * n_sims - n_sims)
       age_strat_error <- res$age_strat_error
-      age_strat_error$sim <- age_strat_error$sim + sim_counter
-      sim_counter <- sim_counter + n_sims
-      loop_error[[j]]$total_strat_error <- total_strat_error
-      loop_error[[j]]$age_strat_error <- age_strat_error
+      age_strat_error$sim <- age_strat_error$sim + (j * n_sims - n_sims)
+      list(total_strat_error = total_strat_error, age_strat_error = age_strat_error)
     }
+    stopCluster(cl) # stop parallel process
 
     total_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "total_strat_error"))
     age_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "age_strat_error"))

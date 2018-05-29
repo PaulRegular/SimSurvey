@@ -4,9 +4,10 @@
 \alias{test_surveys}
 \title{Test sampling design of multiple surveys}
 \usage{
-test_surveys(sim, n_sims = 10, n_loops = 10, set_den = c(0.3, 0.5, 0.8, 1,
-  2, 3, 6, 9)/1000, lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60, 90, 100, 200,
-  400, 600, 1000), ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60), ...)
+test_surveys(sim, n_sims = 10, n_loops = 10, cores = 2, set_den = c(0.3,
+  0.5, 0.8, 1, 2, 3, 6, 9)/1000, lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60,
+  90, 100, 200, 400, 600, 1000), ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60),
+  ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
@@ -18,6 +19,8 @@ Requesting a large number of simulations here may max out your RAM.}
 simulations run will be the product of \code{n_sims} and \code{n_loops}
 arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
 will be easier on RAM, but slower.}
+
+\item{cores}{Number of cores to use in parallel}
 
 \item{set_den}{Vector of set densities (number of sets per [grid unit] squared)}
 
