@@ -197,10 +197,12 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   sim <- round_sim(sim)
   I <- sim$N * q(replicate(length(sim$years), sim$ages))
   sp_I <- sim_index(sim, n_sims = n_sims, q = q, binom_error = binom_error)
+  setkeyv(sp_I, c("sim", "year", "cell"))
 
   ## Simulate sets conducted across survey grid
   sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
                    trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets)
+  setkeyv(sets, c("sim", "year", "cell"))
 
   ## Subset population to surveyed cells and simulate portion caught by survey
   ## (If more than one set is conducted in a cell, split population available to survey (I) amongst the sets)
@@ -211,6 +213,8 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
   } else {
     setdet$n <- round((setdet$I / setdet$cell_sets) * (setdet$tow_area / setdet$cell_area))
   }
+  setkeyv(setdet, "set")
+  setkeyv(sets, "set")
 
   ## Expand set catch to individuals and simulate length
   samp <- setdet[rep(seq(.N), n), list(set, age)]
@@ -232,6 +236,7 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
                       by = c("sim", "year", "division", "length_group")]
   samp$aged <- samp$id %in% aged$id # tag ages sampled
   rm(aged)
+  rm(length_samp)
 
   ## Simplify samp object
   samp <- samp[, list(set, id, length, age, measured, aged)]

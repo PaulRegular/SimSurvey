@@ -154,6 +154,7 @@ sim_distribution <- function(sim,
 
   ## Space-age-year autoregressive process
   grid_dat <- data.table::data.table(raster::rasterToPoints(grid))
+  setkeyv(grid_dat, "cell")
   xy <- grid_dat[, c("x", "y")]
   Sigma_space <- space_covar(xy)
   w <- t(chol(Sigma_space))
@@ -183,10 +184,10 @@ sim_distribution <- function(sim,
   df_N$year <- as.numeric(df_N$year)
   df_N$age <- as.numeric(df_N$age)
   df_N$cell <- as.numeric(df_N$cell)
-  df_N <- merge(grid_dat, df_N, by = "cell")
   df_N$prob <- NULL
+  setkeyv(df_N, "cell")
 
-  c(sim, list(grid = grid, sp_N = df_N))
+  c(sim, list(grid = grid, grid_xy = grid_dat, sp_N = df_N))
 
 }
 

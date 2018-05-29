@@ -31,12 +31,12 @@ error_stats <- function(error) {
 strat_data <- function(sim, length_group = 3) {
 
   ## Extract setdet and samp objects, and add sim and year to samp data
-  setdet <- copy(sim$setdet)
-  samp <- copy(sim$samp)
+  setdet <- sim$setdet
+  samp <- sim$samp
   samp <- merge(setdet[, list(set, sim, year)], samp, by = "set")
 
   ## Construct length-frequency table
-  lf <- copy(samp)
+  lf <- samp
   lf[, n := .N, by = "set"]
   lf <- lf[lf$measured, ]
   lf[, n_lengths := .N, by = "set"]
@@ -50,17 +50,19 @@ strat_data <- function(sim, length_group = 3) {
 
   ## Add zeros to length-frequency table
   cj <- CJ(set = setdet$set, length = sort(unique(lf$length)), unique = TRUE)
+  setkeyv(cj, c("set", "length"))
   cj <- merge(setdet[, list(set, sim, year)], cj, by = "set")
   lf <- merge(cj, lf, by = c("set", "length"), all = TRUE)
   lf$length_freq[is.na(lf$length_freq)] <- 0 # replace NA's with 0's
 
   ## Construct age-length key by sim and year
-  ag <- copy(samp)
+  ag <- samp
   ag <- ag[ag$aged, ] # discard records without corresponding length and age values
   ag$length <- group_lengths(ag$length, length_group)
   alk <- ag[, list(age_freq = .N), by = c("sim", "year", "length", "age")] # combined alk
   alk[, age_tot := sum(age_freq), by = c("sim", "year", "length")]
   alk[, age_prop := age_freq / age_tot, by = c("sim", "year", "length")]
+  setkeyv(alk, c("sim", "year", "length"))
 
   ## Merge lf and alk objects
   alf <- merge(lf, alk, by = c("sim", "year", "length"), all = TRUE, allow.cartesian = TRUE)
@@ -77,6 +79,7 @@ strat_data <- function(sim, length_group = 3) {
   ## Simplify/order and return data
   lf <- lf[, c("set", "length", "length_freq"), with = FALSE]
   setkeyv(lf, c("set", "length"))
+  setkeyv(af, c("set", "age"))
   setnames(lf, "length_freq", "n")
   setnames(af, "age_freq", "n")
   list(setdet = setdet, lf = lf, af = af)
