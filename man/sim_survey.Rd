@@ -4,10 +4,10 @@
 \alias{sim_survey}
 \title{Simulate stratified-random survey}
 \usage{
-sim_survey(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
+sim_survey(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
   trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
   min_sets = 2, set_den = 3/1000, lengths_cap = 400, length_group = 1,
-  ages_cap = 10)
+  ages_cap = 10, light = TRUE)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
@@ -34,7 +34,10 @@ a large number of simulations may max out your RAM}
 
 \item{length_group}{Length group for otolith collection}
 
-\item{ages_cap}{Maximum number of otoliths to collect per length group per division per year}
+\item{ages_cap}{Maximum number of otoliths to collect per length group
+per division per year}
+
+\item{light}{Drop some objects from the output to keep object size low?}
 }
 \value{
 A list including rounded population simulation, set locations and details

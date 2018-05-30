@@ -179,7 +179,9 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @param set_den             Set density (number of sets per [grid unit] squared)
 #' @param lengths_cap         Maximum number of lengths measured per set
 #' @param length_group        Length group for otolith collection
-#' @param ages_cap            Maximum number of otoliths to collect per length group per division per year
+#' @param ages_cap            Maximum number of otoliths to collect per length group
+#'                            per division per year
+#' @param light               Drop some objects from the output to keep object size low?
 #'
 #' @return A list including rounded population simulation, set locations and details
 #' and sampling details. Note that that N = "true" population, I = population available
@@ -188,10 +190,10 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @export
 #'
 
-sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB(),
+sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
                        trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
                        min_sets = 2, set_den = 3 / 1000, lengths_cap = 400,
-                       length_group = 1, ages_cap = 10) {
+                       length_group = 1, ages_cap = 10, light = TRUE) {
 
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
@@ -240,8 +242,10 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
 
   ## Simplify samp object
   samp <- samp[, list(set, id, length, age, measured, aged)]
+  if (light) samp$id <- NULL
 
   ## Summarise set catch and sampling
+  if (!light) full_setdet <- setdet
   setdet <- merge(sets, setdet[, list(N = sum(N), I = sum(I), n = sum(n)), by = "set"], by = "set")
   setdet <- merge(setdet,
                   samp[, list(n_measured = sum(measured), n_aged = sum(aged)), by = "set"],
@@ -251,7 +255,8 @@ sim_survey <- function(sim, n_sims = 10, q = sim_logistic(), growth = sim_vonB()
 
   ## Add new stuff to main object
   sim$I <- I
-  # sim$sp_I <- sp_I # exclude large object that may not need to be used
+  if (!light) sim$sp_I <- sp_I
+  if (!light) sim$full_setdet <- full_setdet
   sim$setdet <- setdet
   sim$samp <- samp
   sim
