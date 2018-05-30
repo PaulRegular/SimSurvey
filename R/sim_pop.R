@@ -144,7 +144,7 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #' @export
 #'
 
-sim_abundance <- function(ages = 1:14, years = 1:20,
+sim_abundance <- function(ages = 1:20, years = 1:20,
                           Z = sim_Z(), R = sim_R(), N0 = sim_N0()) {
 
   ## Simple error check

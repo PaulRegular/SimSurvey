@@ -35,7 +35,7 @@ group_lengths <- function(length, group) {
 #' @export
 #'
 
-sim_logistic <- function(k = 2, x0 = 2, plot = FALSE) {
+sim_logistic <- function(k = 2, x0 = 2.5, plot = FALSE) {
   function(x = NULL) {
     y <- 1 / (1 + exp(-k * (x - x0)))
     if (plot) plot(x, y, type = "b")
@@ -57,7 +57,7 @@ sim_logistic <- function(k = 2, x0 = 2, plot = FALSE) {
 #'
 
 sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
-                     digits = 1, plot = FALSE) {
+                     digits = 0, plot = FALSE) {
   function(age = NULL) {
     pred_length <- Linf - (Linf - L0) * exp(-K * age)
     log_length <- rnorm(length(age), log(pred_length), sd = log_sd)
