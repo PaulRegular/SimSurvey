@@ -5,7 +5,7 @@
 \alias{sim_ay_covar}
 \title{Simulate exponential or Matern covariance}
 \usage{
-sim_sp_covar(range = 50, sd = 0.1, model = "matern")
+sim_sp_covar(range = 50, sd = 1, model = "matern")
 
 sim_ay_covar(sd = 10, phi_age = 0.5, phi_year = 0.5)
 }

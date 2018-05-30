@@ -14,16 +14,22 @@ length(unique(survey_grid$strat))
 # 44
 mean(table(values(survey_grid$strat)) * res(survey_grid))
 # 449.4992
+range(values(survey_grid$depth), na.rm = TRUE)
+# -7.372526 920.745896
 
 grid <- sim_grid(x_range = c(-150, 150), y_range = c(-150, 150), res = c(3.5, 3.5),
-              depth_range = c(1, 500), n_div = 2, strat_breaks = seq(0, 500, by = 20))
+                 shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
+                 n_div = 2, strat_breaks = seq(0, 1000, by = 20))
 prod(res(grid)) * ncell(grid)
 # 90601
 length(unique(grid$strat))
-# 50
+# 52
 mean(table(values(grid$strat)) * res(grid))
-# 517.72
+# 497.8077
+range(values(grid$depth), na.rm = TRUE)
+# 9.880198 980.900238
 plot(grid)
+plot(rasterToPolygons(grid$strat, dissolve = TRUE))
 
 ## default settings of sim_grid() are similar to 3Ps, except here we have 2 divisions
 ## could use 3Ps survey_grid, but will use a sim_grid for simplicity
@@ -98,17 +104,18 @@ plot_ly(data = af[af$survey.year == 2009, ]) %>%
 ## hoever, correlation is strong across age. Less strong through time.
 
 ## Roughly based on parameter estimates from NCAM
-grid <- sim_grid(x_range = c(-150, 150), y_range = c(-150, 150), res = c(5, 5),
-                 depth_range = c(1, 500), n_div = 2, strat_breaks = seq(0, 500, by = 20))
+grid <- sim_grid(x_range = c(-150, 150), y_range = c(-150, 150), res = c(3.5, 3.5),
+                 shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
+                 n_div = 2, strat_breaks = seq(0, 1000, by = 20))
 abundance <- sim_abundance(years = 1:10,
                            R = sim_R(mean = 100000000, log_sd = 0.4,
                                      random_walk = TRUE),
                            Z = sim_Z(mean = 0.5, log_sd = 0.2,
                                      phi_age = 0.9, phi_year = 0.5))
 distribution <- sim_distribution(abundance, grid = grid,
-                                 space_covar = sim_sp_covar(range = 50, sd = 0.1),
-                                 ay_covar = sim_ay_covar(sd = 10, phi_age = 0.8, phi_year = 0),
-                                 depth_par = sim_parabola(alpha = 0, mu = 250, sigma = 50))
+                                 space_covar = sim_sp_covar(range = 30, sd = 1),
+                                 ay_covar = sim_ay_covar(sd = 5, phi_age = 0, phi_year = 0),
+                                 depth_par = sim_parabola(mu = 250, sigma = 50))
 survey <- sim_survey(distribution, n_sims = 1, light = FALSE)
 
 sim_af <- survey$full_setdet
@@ -124,3 +131,21 @@ plot_ly(data = sim_af[sim_af$year == 1, ]) %>%
   add_markers(x = ~x, y = ~y, size = ~n, frame = ~age,
               sizes = c(5, 500), showlegend = FALSE) %>%
   animation_opts(frame = 5)
+
+## Revisit the covar sd's and keep tweaking until you land on something that looks right
+
+
+
+space_covar <- sim_sp_covar(range = 30, sd = 1)
+xy <- survey$grid_xy[, c("x", "y")]
+Sigma_space <- space_covar(xy)
+w <- t(chol(Sigma_space))
+nc <- nrow(xy)
+xy$e <- w %*% rnorm(nc, 0, 1)
+plot_ly(data = xy, x = ~x, y = ~y, z = ~e) %>% add_heatmap()
+
+
+
+
+
+

@@ -22,7 +22,7 @@
 #'
 #' @rdname sim_sp_covar
 #' @export
-sim_sp_covar <- function(range = 50, sd = 0.1, model = "matern") {
+sim_sp_covar <- function(range = 50, sd = 1, model = "matern") {
   function(x = NULL) {
     d <- .dist(x)
     cormat <- switch(model,

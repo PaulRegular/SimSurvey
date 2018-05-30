@@ -4,9 +4,10 @@
 \alias{sim_grid}
 \title{Simulate depth stratified survey grid}
 \usage{
-sim_grid(x_range = c(-150, 150), y_range = c(-150, 150), res = c(3.5,
-  3.5), depth_range = c(1, 500), n_div = 2, strat_breaks = seq(0, 500, by
-  = 20), space_covar = NULL)
+sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5,
+  3.5), shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
+  n_div = 1, strat_breaks = seq(0, 1000, by = 20), strat_splits = 2,
+  space_covar = NULL)
 }
 \arguments{
 \item{x_range}{Range (min x, max x) in x dimension in km}
@@ -15,22 +16,29 @@ sim_grid(x_range = c(-150, 150), y_range = c(-150, 150), res = c(3.5,
 
 \item{res}{Resolution, in km, of the grid cells}
 
+\item{shelf_depth}{Approximate depth of the shelf in m}
+
+\item{shelf_width}{Approximate width of the shelf in km}
+
 \item{depth_range}{Range (min depth, max depth) in depth in m}
 
 \item{n_div}{Number of divisions to iniclude}
 
 \item{strat_breaks}{Define strata given these depth breaks}
 
+\item{strat_splits}{Number of times to split strat}
+
 \item{space_covar}{Supply \code{\link{sim_sp_covar}} closure to add covariance to depth
-to make it look more realistic.}
+to make it look more realistic. Con: strata may end up being
+poorly definied...}
 }
 \value{
 Returns RasterBrick of the same structure as \code{\link{survey_grid}}
 }
 \description{
 This function sets up a depth stratified survey grid. A simple gradient in depth
-is simulated with a shallow portion, shelf and deep portion. Adding covariance
-to the depth simulation is an option.
+is simulated using \code{\link{spline}} with a shallow portion, shelf and
+deep portion. Adding covariance to the depth simulation is an option.
 }
 \examples{
 r <- sim_grid()

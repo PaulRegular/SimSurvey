@@ -1,25 +1,22 @@
 
-## helper function for squishing values between a new range
-## ...perhaps a sloppy work-around to get what I want
-.range <- function(x, to = c(-1, 1)) {
-  (x - min(x))/(max(x) - min(x)) * (to[2] - to[1]) + to[1]
-}
-
-
 #' Simulate depth stratified survey grid
 #'
 #' This function sets up a depth stratified survey grid. A simple gradient in depth
-#' is simulated with a shallow portion, shelf and deep portion. Adding covariance
-#' to the depth simulation is an option.
+#' is simulated using \code{\link{spline}} with a shallow portion, shelf and
+#' deep portion. Adding covariance to the depth simulation is an option.
 #'
 #' @param x_range      Range (min x, max x) in x dimension in km
 #' @param y_range      Range (min y, max y) in y dimension in km
 #' @param res          Resolution, in km, of the grid cells
+#' @param shelf_depth  Approximate depth of the shelf in m
+#' @param shelf_width  Approximate width of the shelf in km
 #' @param depth_range  Range (min depth, max depth) in depth in m
 #' @param n_div        Number of divisions to iniclude
 #' @param strat_breaks Define strata given these depth breaks
+#' @param strat_splits Number of times to split strat
 #' @param space_covar  Supply \code{\link{sim_sp_covar}} closure to add covariance to depth
-#'                     to make it look more realistic.
+#'                     to make it look more realistic. Con: strata may end up being
+#'                     poorly definied...
 #'
 #' @return Returns RasterBrick of the same structure as \code{\link{survey_grid}}
 #'
@@ -32,12 +29,11 @@
 #' @import raster
 #'
 
-sim_grid <- function(x_range = c(-150, 150), y_range = c(-150, 150),
-                     res = c(3.5, 3.5), depth_range = c(1, 500),
-                     n_div = 2, strat_breaks = seq(0, 500, by = 20),
-                     space_covar = NULL) {
-
-  # sim_sp_covar(range = 500, sd = 0.2)
+sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
+                     res = c(3.5, 3.5), shelf_depth = 200,
+                     shelf_width = 100, depth_range = c(0, 1000),
+                     n_div = 1, strat_breaks = seq(0, 1000, by = 20),
+                     strat_splits = 2, space_covar = NULL) {
 
   ## set-up raster
   r <- raster::raster(xmn = x_range[1], xmx = x_range[2],
@@ -53,10 +49,15 @@ sim_grid <- function(x_range = c(-150, 150), y_range = c(-150, 150),
   } else {
     e <- 0
   }
-  x <- .range(xy$x)
-  y <- .range(xy$y)
-  xy$depth <- x ^ 3 + e
-  xy$depth <- .range(xy$depth, to = depth_range)
+  sx <- c(x_range[1], -shelf_width, -shelf_width / 2,
+          0, shelf_width / 2, shelf_width, x_range[2])
+  sy <- c(depth_range[1], rep(shelf_depth, 5), depth_range[2])
+  s <- spline(sx, sy, n = nrow(xy))
+  depth <- s$y[findInterval(xy$x, s$x)] + e
+  depth[depth < depth_range[1]] <- depth_range[1] + 1 # impose depth range
+  depth[depth > depth_range[2]] <- depth_range[2] - 1
+  depth <- round(depth) # 1 m res ought to be good
+  xy$depth <- depth
 
   ## add cell number
   xy$cell <- seq(nrow(xy))
@@ -75,6 +76,15 @@ sim_grid <- function(x_range = c(-150, 150), y_range = c(-150, 150),
   xy <- as.data.frame(raster::rasterToPoints(r))
   xy$strat <- (xy$division * 100000) + xy$strat
   xy$strat <- as.numeric(as.factor(xy$strat))
+
+  ## split strat
+  xy <- data.table::data.table(xy)
+  xy[, split := as.numeric(cut(cell, breaks = strat_splits)), by = "strat"]
+  xy$strat <- (xy$split * 10000) + xy$strat
+  xy$strat <- as.numeric(as.factor(xy$strat))
+  xy$split <- NULL
+
+  ## convert to raster and return
   r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km")
   r
 
