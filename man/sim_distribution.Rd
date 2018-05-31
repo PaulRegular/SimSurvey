@@ -26,9 +26,9 @@ applies correlated space, age and year error to simulate the distribution
 of the population.
 }
 \details{
-This function mainly operates in logit space. Specifically, the probability of
-simulated fish inhabiting a cell is a function of a parabolic relationship with depth
-and space, age, and year autocorrelated errors.
+This function simulates the probability of simulated fish inhabiting
+a cell as a function of a parabolic relationship with depth and space, age,
+and year autocorrelated errors.
 }
 \examples{
 sim_distribution()

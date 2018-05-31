@@ -5,12 +5,14 @@
 \alias{sim_ay_covar}
 \title{Simulate exponential or Matern covariance}
 \usage{
-sim_sp_covar(range = 50, sd = 1, model = "matern")
+sim_sp_covar(range = 40, lambda = 1, sd = 0.1, model = "matern")
 
 sim_ay_covar(sd = 10, phi_age = 0.5, phi_year = 0.5)
 }
 \arguments{
 \item{range}{Decorrelation range}
+
+\item{lambda}{Controls the degree of smoothness of Matern covariance process}
 
 \item{sd}{Variance}
 
