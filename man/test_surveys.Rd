@@ -4,13 +4,14 @@
 \alias{test_surveys}
 \title{Test sampling design of multiple surveys}
 \usage{
-test_surveys(sim, n_sims = 10, n_loops = 10, cores = 2, set_den = c(0.3,
-  0.5, 0.8, 1, 2, 3, 6, 9)/1000, lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60,
-  90, 100, 200, 400, 600, 1000), ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60),
-  ...)
+test_surveys(sim, surveys = expand_surveys(), n_sims = 1, n_loops = 100,
+  cores = 2, ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
+
+\item{surveys}{A data.frame or data.table with a sequence of surveys and their settings
+with a format like the data.table returned by \code{\link{expand_surveys}}.}
 
 \item{n_sims}{Number of times to simulate a survey over the simulated population.
 Requesting a large number of simulations here may max out your RAM.}
@@ -18,16 +19,9 @@ Requesting a large number of simulations here may max out your RAM.}
 \item{n_loops}{Number of times to run the \code{\link{sim_survey}} function. Total
 simulations run will be the product of \code{n_sims} and \code{n_loops}
 arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
-will be easier on RAM, but slower.}
+will be easier on RAM, but may be slower.}
 
-\item{cores}{Number of cores to use in parallel}
-
-\item{set_den}{Vector of set densities (number of sets per [grid unit] squared)}
-
-\item{lengths_cap}{Vector of maximum number of lengths measured per set}
-
-\item{ages_cap}{Vector of maximum number of otoliths to collect per length group
-per division per year}
+\item{cores}{Number of cores to use in parallel. More cores should speed up the process.}
 
 \item{...}{Additional arguments to pass to \code{\link{sim_survey}}.}
 }

@@ -1,5 +1,27 @@
 
 
+#' Set-up a series of surveys from all combinations of settings supplied
+#'
+#' @description Function is simply a wrapper for \code{\link{base::expand.grid}} that
+#' adds a survey number to the returned object
+#'
+#' @param set_den           Vector of set densities (number of sets per [grid unit] squared)
+#' @param lengths_cap       Vector of maximum number of lengths measured per set
+#' @param ages_cap          Vector of maximum number of otoliths to collect per length group
+#'                          per division per year
+#'
+#' @export
+#'
+
+expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
+                           lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60, 90, 100, 200,
+                                           400, 600, 1000),
+                           ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60)) {
+  surveys <- expand.grid(set_den = set_den, lengths_cap = lengths_cap, ages_cap = ages_cap)
+  data.table(survey = seq.int(nrow(surveys)), surveys)
+}
+
+
 #' Test sampling design of multiple surveys
 #'
 #' @description   This function allows a series of sampling design settings to
@@ -7,17 +29,15 @@
 #' supplied settings (\code{set_den}, \code{lengths_cap}, \code{ages_cap}) are tested.
 #'
 #' @param sim               Simulation from \code{\link{sim_distribution}}.
+#' @param surveys           A data.frame or data.table with a sequence of surveys and their settings
+#'                          with a format like the data.table returned by \code{\link{expand_surveys}}.
 #' @param n_sims            Number of times to simulate a survey over the simulated population.
 #'                          Requesting a large number of simulations here may max out your RAM.
 #' @param n_loops           Number of times to run the \code{\link{sim_survey}} function. Total
 #'                          simulations run will be the product of \code{n_sims} and \code{n_loops}
 #'                          arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
-#'                          will be easier on RAM, but slower.
-#' @param cores             Number of cores to use in parallel
-#' @param set_den           Vector of set densities (number of sets per [grid unit] squared)
-#' @param lengths_cap       Vector of maximum number of lengths measured per set
-#' @param ages_cap          Vector of maximum number of otoliths to collect per length group
-#'                          per division per year
+#'                          will be easier on RAM, but may be slower.
+#' @param cores             Number of cores to use in parallel. More cores should speed up the process.
 #' @param ...               Additional arguments to pass to \code{\link{sim_survey}}.
 #'
 #' @return Adds a table of survey designs tested. Also adds details and summary
@@ -35,14 +55,8 @@
 #' @import foreach
 #'
 
-test_surveys <- function(sim, n_sims = 10, n_loops = 10, cores = 2,
-                         set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
-                         lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60, 90, 100, 200, 400, 600, 1000),
-                         ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60),
-                         ...) {
-
-  surveys <- expand.grid(set_den = set_den, lengths_cap = lengths_cap, ages_cap = ages_cap)
-  surveys$survey <- seq(nrow(surveys))
+test_surveys <- function(sim, surveys = expand_surveys(), n_sims = 1,
+                         n_loops = 100, cores = 2, ...) {
 
   survey_error <- vector("list", nrow(surveys))
 

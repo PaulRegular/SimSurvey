@@ -2,6 +2,7 @@
 
 export("%>%")
 export(error_stats)
+export(expand_surveys)
 export(fibonacci)
 export(group_lengths)
 export(object_size)

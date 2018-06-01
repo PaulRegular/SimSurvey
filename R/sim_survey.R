@@ -35,7 +35,7 @@ group_lengths <- function(length, group) {
 #' @export
 #'
 
-sim_logistic <- function(k = 2, x0 = 2.5, plot = FALSE) {
+sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
   function(x = NULL) {
     y <- 1 / (1 + exp(-k * (x - x0)))
     if (plot) plot(x, y, type = "b")

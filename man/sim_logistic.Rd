@@ -4,7 +4,7 @@
 \alias{sim_logistic}
 \title{Closure for simulating logistic curve}
 \usage{
-sim_logistic(k = 2, x0 = 2.5, plot = FALSE)
+sim_logistic(k = 2, x0 = 3, plot = FALSE)
 }
 \arguments{
 \item{k}{The steepness of the curve}
