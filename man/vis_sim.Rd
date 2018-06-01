@@ -2,12 +2,13 @@
 % Please edit documentation in R/vis_sim.R
 \name{vis_sim}
 \alias{vis_sim}
-\title{Make a flexdashboard for visualizing population simulation}
+\title{Make a flexdashboard for visualizing the simulation}
 \usage{
 vis_sim(sim, ...)
 }
 \arguments{
-\item{sim}{Object produced by \code{\link{sim_abundance}} or \code{\link{sim_distribution}}}
+\item{sim}{Object produced by \code{\link{sim_abundance}}, \code{\link{sim_distribution}},
+\code{\link{sim_survey}} or \code{\link{test_surveys}}.}
 
 \item{...}{Additional arguments to send to \link[rmarkdown]{run}}
 }

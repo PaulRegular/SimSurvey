@@ -22,12 +22,12 @@ Imports:
     progress,
     doParallel,
     parallel,
-    foreach
+    foreach,
+    plotly
 Suggests:
     fields,
     rmarkdown,
     flexdashboard,
-    plotly,
     shiny,
     viridis
 RoxygenNote: 6.0.1
