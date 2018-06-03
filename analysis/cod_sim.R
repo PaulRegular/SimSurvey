@@ -26,8 +26,9 @@ pop <- sim_abundance(ages = 1:20,
                    space_covar = sim_sp_covar(range = 40,
                                               sd = 0.1),
                    ay_covar = sim_ay_covar(sd = 10,
-                                           phi_age = c(rep(0.1, 3), rep(0.9, 17)),
-                                           phi_year = 0.7),
+                                           phi_age = 0.1,
+                                           phi_year = 0.8,
+                                           group_ages = 5:20),
                    depth_par = sim_parabola(mu = 250,
                                             sigma = 50))
 

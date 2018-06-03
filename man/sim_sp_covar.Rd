@@ -7,14 +7,15 @@
 \usage{
 sim_sp_covar(range = 40, lambda = 1, sd = 0.1, model = "matern")
 
-sim_ay_covar(sd = 10, phi_age = 0.5, phi_year = 0.5)
+sim_ay_covar(sd = 10, phi_age = 0.5, phi_year = 0.5, group_ages = NULL,
+  group_years = NULL)
 }
 \arguments{
 \item{range}{Decorrelation range}
 
 \item{lambda}{Controls the degree of smoothness of Matern covariance process}
 
-\item{sd}{Variance}
+\item{sd}{Variance (can be age specific in \code{sim_ay_covar}).}
 
 \item{model}{String indicating either "exponential" or "matern" as the correlation function}
 
@@ -23,6 +24,10 @@ length as ages}
 
 \item{phi_year}{Defines autocorrelation through years. Can be one value or a vector of the same
 length as years}
+
+\item{group_ages}{Make space-age-year variance equal across these ages}
+
+\item{group_years}{Make space-age-year variance equal across these years}
 }
 \description{
 These functions return a function to use inside \code{\link{sim_distribution}}.

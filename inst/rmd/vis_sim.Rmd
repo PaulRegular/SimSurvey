@@ -7,7 +7,6 @@ always_allow_html: yes
 ```{r setup, echo=FALSE}
 library(plotly)
 library(viridis)
-knitr::opts_knit$set(root.dir = tmp$output_dir)
 knitr::opts_chunk$set(echo = FALSE, fig.height = 7, fig.width = 8)
 ```
 
@@ -73,6 +72,7 @@ renderPlotly({
   plot_distribution(sim, ages = input$age, year = input$year, type = input$type,
                     scale = input$scale)
 })
+
 ```
 
 

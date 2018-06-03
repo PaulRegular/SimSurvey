@@ -12,14 +12,16 @@
 #'
 #' @description These functions return a function to use inside \code{\link{sim_distribution}}.
 #'
-#' @param range    Decorrelation range
-#' @param lambda   Controls the degree of smoothness of Matern covariance process
-#' @param sd       Variance
-#' @param phi_age  Defines autocorrelation through ages. Can be one value or a vector of the same
-#'                 length as ages
-#' @param phi_year Defines autocorrelation through years. Can be one value or a vector of the same
-#'                 length as years
-#' @param model    String indicating either "exponential" or "matern" as the correlation function
+#' @param range       Decorrelation range
+#' @param lambda      Controls the degree of smoothness of Matern covariance process
+#' @param sd          Variance (can be age specific in \code{sim_ay_covar}).
+#' @param phi_age     Defines autocorrelation through ages. Can be one value or a vector of the same
+#'                    length as ages
+#' @param phi_year    Defines autocorrelation through years. Can be one value or a vector of the same
+#'                    length as years
+#' @param group_ages  Make space-age-year variance equal across these ages
+#' @param group_years Make space-age-year variance equal across these years
+#' @param model       String indicating either "exponential" or "matern" as the correlation function
 #'
 #' @rdname sim_sp_covar
 #' @export
@@ -45,7 +47,8 @@ sim_sp_covar <- function(range = 40, lambda = 1, sd = 0.1, model = "matern") {
 
 #' @rdname sim_sp_covar
 #' @export
-sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5) {
+sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5,
+                         group_ages = NULL, group_years = NULL) {
   function(ages = NULL, years = NULL, cells = NULL, w = NULL) {
 
     # Simple description of covariance:
@@ -56,6 +59,13 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5) {
     na <- length(ages)
     ny <- length(years)
     nc <- length(cells)
+    if (length(sd) == 1) {
+      sd <- rep(sd, na)
+    } else {
+      if (length(sd) != na) {
+        stop("The number of sd values supplied != number of ages.")
+      }
+    }
     if (length(phi_age) == 1) {
       phi_age <- rep(phi_age, na)
     } else {
@@ -70,7 +80,14 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5) {
         stop("The number of phi_year values supplied != number of years.")
       }
     }
-
+    age_map <- as.character(ages)
+    if (!is.null(group_ages)) {
+      age_map[ages %in% group_ages] <- paste(range(group_ages), collapse = ":")
+    }
+    year_map <- as.character(years)
+    if (!is.null(group_years)) {
+      year_map[years %in% group_years] <- paste(range(group_years), collapse = ":")
+    }
 
     E <- array(rep(NA, na * ny * nc), dim = c(na, ny, nc),
                dimnames = list(age = ages, year = years, cell = cells))
@@ -80,23 +97,41 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5) {
       for (i in seq_along(ages)) {
         if ((i == 1) & (j == 1)) {
           m <- 0
-          s <- sd / pc_age[i]
+          s <- sd[i] / pc_age[i]
           E[i, j, ] <- w %*% rnorm(nc, m, s)
         }
         if ((i > 1) & (j == 1)) {
-          m <- phi_age[i] * E[i - 1, j, ]
-          s <- sd / pc_year[j]
-          E[i, j, ] <- w %*% rnorm(nc, m, s)
+          if (age_map[i] == age_map[i - 1]) {
+            E[i, j, ] <- E[i - 1, j, ]
+          } else {
+            m <- phi_age[i] * E[i - 1, j, ]
+            s <- sd[i] / pc_year[j]
+            E[i, j, ] <- w %*% rnorm(nc, m, s)
+          }
         }
         if ((i == 1) & (j > 1)) {
-          m <- phi_year[j] * E[i, j - 1, ]
-          s <- sd / pc_age[i]
-          E[i, j, ] <- w %*% rnorm(nc, m, s)
+          if (year_map[j] == year_map[j - 1]) {
+            E[i, j, ] <- E[i, j - 1, ]
+          } else {
+            m <- phi_year[j] * E[i, j - 1, ]
+            s <- sd[i] / pc_age[i]
+            E[i, j, ] <- w %*% rnorm(nc, m, s)
+          }
         }
         if ((i > 1) & (j > 1)) {
-          m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
-          s <- sd
-          E[i, j, ] <- w %*% rnorm(nc, m, s)
+
+          if (age_map[i] == age_map[i - 1]) {
+            E[i, j, ] <- E[i - 1, j, ]
+          }
+          if (year_map[j] == year_map[j - 1]) {
+            E[i, j, ] <- E[i, j - 1, ]
+          }
+          if ((age_map[i] != age_map[i - 1]) & (year_map[j] != year_map[j - 1])) {
+            m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
+            s <- sd[i]
+            E[i, j, ] <- w %*% rnorm(nc, m, s)
+          }
+
         }
       }
     }

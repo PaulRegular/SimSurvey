@@ -88,22 +88,52 @@ af$age <- as.integer(gsub("af", "", af$age))
 ## - Abundance parameters and catchability curve roughly based on NCAM estimates
 ## - Distribution parameters manually tweaked until results roughly corresponded to
 ##   observations from 3Ps cod
-abundance <- sim_abundance(ages = 1:20, years = 1:20,
-                           R = sim_R(mean = 100000000, log_sd = 0.5,
-                                     random_walk = TRUE),
-                           Z = sim_Z(mean = 0.5, log_sd = 0.2,
-                                     phi_age = 0.9, phi_year = 0.5))
-grid <- sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5, 3.5),
-                 shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
-                 n_div = 1, strat_breaks = seq(0, 1000, by = 20), strat_splits = 2)
-distribution <- sim_distribution(abundance, grid = grid,
-                                 space_covar = sim_sp_covar(range = 40, sd = 0.1),
-                                 ay_covar = sim_ay_covar(sd = 10,
-                                                         phi_age = c(rep(0.1, 3), rep(0.9, 17)),
-                                                         phi_year = 0.7),
-                                 depth_par = sim_parabola(mu = 250, sigma = 50))
-survey <- sim_survey(distribution, n_sims = 1, light = FALSE,
-                     set_den = 3 / 1000, lengths_cap = 400, ages_cap = 10,
+set.seed(438)
+pop <- sim_abundance(ages = 1:20,
+                     years = 1:20,
+                     R = sim_R(mean = 100000000,
+                               log_sd = 0.5,
+                               random_walk = TRUE),
+                     Z = sim_Z(mean = 0.5,
+                               log_sd = 0.2,
+                               phi_age = 0.9,
+                               phi_year = 0.5)) %>%
+  sim_distribution(grid = sim_grid(x_range = c(-140, 140),
+                                   y_range = c(-140, 140),
+                                   res = c(3.5, 3.5),
+                                   shelf_depth = 200,
+                                   shelf_width = 100,
+                                   depth_range = c(0, 1000),
+                                   n_div = 1,
+                                   strat_breaks = seq(0, 1000, by = 20),
+                                   strat_splits = 2),
+                   space_covar = sim_sp_covar(range = 40,
+                                              sd = 0.1),
+                   ay_covar = sim_ay_covar(sd = 10,
+                                           phi_age = 0.1,
+                                           phi_year = 0.8,
+                                           group_ages = 5:20),
+                   depth_par = sim_parabola(mu = 250,
+                                            sigma = 50))
+
+## Quick look at distribution
+sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
+for (j in rev(pop$ages)) {
+  z <- xtabs(N ~ x + y, subset = age == j & year == 20, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("age", j))
+}
+for (i in rev(pop$years)) {
+  z <- xtabs(N ~ x + y, subset = age == 10 & year == i, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
+}
+
+
+survey <- sim_survey(pop,
+                     n_sims = 1,
+                     light = FALSE,
+                     set_den = 3 / 1000,
+                     lengths_cap = 400,
+                     ages_cap = 10,
                      q = sim_logistic(k = 2, x0 = 3),
                      growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0))
 
@@ -151,47 +181,62 @@ sim_I <- survey$setdet
 plot(as.numeric(data_I$max.depth), data_I$number, xlab = "depth",
      ylab = "number", main = "real data", xlim = c(0, 1000))
 plot(sim_I$depth, sim_I$n, xlab = "depth",
-     ylab = "number", main = "real data", xlim = c(0, 1000))
+     ylab = "number", main = "simulated data", xlim = c(0, 1000))
 
 
 ## Now size up the distribution
+
+symbols(setdet$long.start, setdet$lat.start,
+        circles = sqrt(setdet$number / pi),
+        inches = 0.1, main = "real data",
+        xlab = "x", ylab = "y")
+symbols(survey$setdet$x, survey$setdet$y,
+        circles = sqrt(survey$setdet$n / pi),
+        inches = 0.1, main = "simulated data",
+        xlab = "x", ylab = "y")
+
 
 ## Real data (hold age or year and animate the other)
 plot_ly(data = af[af$age == 5, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 500), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af[af$survey.year == 2014, ]) %>%
+plot_ly(data = af[af$survey.year == 2013, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 500), showlegend = FALSE) %>%
-  animation_opts(frame = 5)
+  animation_opts(frame = 500)
 ## Younger ages (< 4) are somewhat random (because of distribution or catchability?),
 ## hoever, correlation is strong across age. Less strong through time.
 
-## Simulated data (hold age or year and animate the other)
-sp_N <- merge(survey$grid_xy, survey$sp_N, by = "cell")
-plot_ly(data = sp_N[age == 1, ]) %>%
-  add_markers(x = ~x, y = ~y, color = ~N, frame = ~year,
-              symbol = I(15))
-plot_ly(data = sp_N[year == 1, ]) %>%
-  add_markers(x = ~x, y = ~y, color = ~N, frame = ~age,
-              symbol = I(15))
 
 ## Hold age or year and animate the other
-## (Plotly was acting up with the animated bubble plots, so went for a base solution)
-sim_af <- data.frame(survey$full_setdet)
-for (a in rev(survey$ages)) {
-  d <- sim_af[sim_af$year == 1 & sim_af$age == a, ]
-  radius <- sqrt( d$n / pi )
-  symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("age", a),
-          xlab = "x", ylab = "y")
-}
-for (y in rev(survey$years)) {
-  d <- sim_af[sim_af$year == y & sim_af$age == 1, ]
-  radius <- sqrt( d$n / pi )
-  symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("year", y),
-          xlab = "x", ylab = "y")
-}
+# sim_af <- data.frame(survey$full_setdet)
+# for (a in rev(survey$ages)) {
+#   d <- sim_af[sim_af$year == 1 & sim_af$age == a, ]
+#   radius <- sqrt( d$n / pi )
+#   symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("age", a),
+#           xlab = "x", ylab = "y")
+# }
+# for (y in rev(survey$years)) {
+#   d <- sim_af[sim_af$year == y & sim_af$age == 1, ]
+#   radius <- sqrt( d$n / pi )
+#   symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("year", y),
+#           xlab = "x", ylab = "y")
+# }
 
+sim_af %>%
+  filter(age == 4) %>%
+  group_by(year) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
+          sizes = c(5, 500), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 5)
+sim_af %>%
+  filter(year == 20) %>%
+  group_by(age) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
+          sizes = c(5, 500), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 500)
 
 
