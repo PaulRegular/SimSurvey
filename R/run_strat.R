@@ -221,10 +221,14 @@ strat_error <- function(sim) {
   ## age_strat
   I_hat <- sim$age_strat[, list(sim, year, age, total)]
   names(I_hat) <- c("sim", "year", "age", "I_hat")
+  say <- expand.grid(sim = seq(max(sim$total_strat$sim)),
+                     year = sim$years, age = sim$ages)
+  I_hat <- merge(say, I_hat, by = c("sim", "year", "age"), all = TRUE) # expand to all ages
+  I_hat$I_hat[is.na(I_hat$I_hat)] <- 0                                 # fill missing ages with zero
   I <- as.data.frame.table(sim$I, responseName = "I")
   I$year <- as.numeric(I$year)
   I$age <- as.numeric(I$age)
-  comp <- merge(I_hat, I, by = c("year", "age"))
+  comp <- merge(data.table(I_hat), data.table(I), by = c("year", "age"))
   comp$error <- comp$I_hat - comp$I
   means <- error_stats(comp$error)
   sim$age_strat_error <- comp

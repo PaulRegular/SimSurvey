@@ -58,6 +58,35 @@ setMKLthreads() # turn hyperthreading on again
 
 
 
+sim <- res
+d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+z1 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 3e-03)
+z2 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 9e-03)
+z3 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 1e-03)
+z4 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 5e-04)
+x <- as.numeric(colnames(z1))
+y <- as.numeric(rownames(z1))
+plot_ly(x = ~x, y = ~y) %>%
+  add_surface(z = ~z1) %>%
+  add_surface(z = ~z2) %>%
+  add_surface(z = ~z3) %>%
+  add_surface(z = ~z4)
+
+## Look into the zeros at older ages
+
+s1 <- sim$age_strat_error %>%
+  filter(survey == 1)
+unique(s1$age)
+
+
+
+d %>%
+  filter(set_den == 3e-03) %>%
+  plot_ly(x = ~lengths_cap, y = ~ages_cap, z = ~RMSE) %>%
+  add_heatmap()
+
+
+
 
 ## Simulate one survey
 survey <- sim_survey(pop,
@@ -67,9 +96,22 @@ survey <- sim_survey(pop,
                      lengths_cap = 400,
                      ages_cap = 10,
                      q = sim_logistic(k = 2, x0 = 3),
-                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0))
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
+  run_strat() %>% strat_error()
 
 
 
+
+survey <- sim_survey(pop,
+                     n_sims = 1,
+                     light = FALSE,
+                     set_den = 2 / 1000,
+                     lengths_cap = 400,
+                     ages_cap = 10,
+                     q = sim_logistic(k = 2, x0 = 3),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
+  run_strat() %>% strat_error()
+
+survey$age_strat_error
 
 
