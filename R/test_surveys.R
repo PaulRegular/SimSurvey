@@ -80,7 +80,8 @@ expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
 
 }
 
-.test_fin <- function(sim = NULL, surveys = NULL, survey_error = NULL) {
+.test_fin <- function(sim = NULL, surveys = NULL, survey_error = NULL,
+                      export = NULL, export_dir = NULL) {
 
   total_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "total_strat_error"))
   age_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "age_strat_error"))
@@ -94,6 +95,11 @@ expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
   sim$total_strat_error_stats <- total_strat_error_stats
   sim$age_strat_error <- age_strat_error
   sim$age_strat_error_stats <- age_strat_error_stats
+
+  if (!is.null(export)) {
+    save(sim, file = file.path(export_dir, "test_output.RData"))
+  }
+
   sim
 
 }
@@ -148,7 +154,8 @@ test_surveys <- function(sim, surveys = expand_surveys(), n_sims = 1,
   survey_error <- .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export = export,
              export_dir = export_dir, survey_error = NULL, ...)
-  .test_fin(sim = sim, surveys = surveys, survey_error = survey_error)
+  .test_fin(sim = sim, surveys = surveys, survey_error = survey_error,
+            export = export, export_dir = export_dir)
 
 
 }
@@ -167,6 +174,7 @@ resume_test <- function(dir = NULL) {
   survey_error <- .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
                              n_loops = n_loops, cores = cores, export = export,
                              export_dir = export_dir, survey_error = survey_error, ...)
-  .test_fin(sim = sim, surveys = surveys, survey_error = survey_error)
+  .test_fin(sim = sim, surveys = surveys, survey_error = survey_error,
+            export = export, export_dir = export_dir)
 }
 

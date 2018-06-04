@@ -36,19 +36,23 @@ pop <- sim_abundance(ages = 1:20,
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
 res <- test_surveys(pop,
-                    surveys = expand_surveys(set_den = c(0.3, 0.5, 0.8,
-                                                         1, 2, 3, 6, 9) / 1000,
-                                             lengths_cap = c(2, 3, 5, 8, 10, 20,
-                                                             30, 60, 90, 100, 200,
-                                                             400, 600, 1000),
-                                             ages_cap = c(2, 3, 5, 8, 10,
-                                                          20, 30, 60)),
+                    # surveys = expand_surveys(set_den = c(0.3, 0.5, 0.8,
+                    #                                      1, 2, 3, 6, 9) / 1000,
+                    #                          lengths_cap = c(2, 3, 5, 8, 10, 20,
+                    #                                          30, 60, 90, 100, 200,
+                    #                                          400, 600, 1000),
+                    #                          ages_cap = c(2, 3, 5, 8, 10,
+                    #                                       20, 30, 60)),
+                    surveys = expand_surveys(set_den = c(0.5, 1, 3, 9) / 1000,
+                                             lengths_cap = c(3, 8, 20, 60, 100,
+                                                             400, 1000),
+                                             ages_cap = c(3, 8, 20, 60)),
                     n_sims = 5,
-                    n_loops = 100,
+                    n_loops = 50,
                     cores = 6,
                     q = sim_logistic(k = 2, x0 = 3),
                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
-                    export = "analysis")
+                    export = "analysis/cod_sim_exports")
 # res <- resume_test(dir = "analysis/2018-05-31_test")
 setMKLthreads() # turn hyperthreading on again
 
