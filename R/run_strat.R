@@ -51,7 +51,7 @@ strat_data <- function(sim, length_group = 3) {
   ## Add zeros to length-frequency table
   cj <- CJ(set = setdet$set, length = sort(unique(lf$length)), unique = TRUE)
   setkeyv(cj, c("set", "length"))
-  cj <- merge(setdet[, list(set, sim, year)], cj, by = "set")
+  cj <- merge(setdet[, list(set, sim, year)], cj, by = "set", all = TRUE)
   lf <- merge(cj, lf, by = c("set", "length"), all = TRUE)
   lf$length_freq[is.na(lf$length_freq)] <- 0 # replace NA's with 0's
 
@@ -152,6 +152,7 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' Run stratified analysis on simulated data
 #'
 #' @param sim    Simulation from \code{\link{sim_survey}}
+#' @param length_group  Size of the length frequency bins
 #'
 #' @return Adds stratified analysis results for the total population (\code{"total_strat"})
 #'         and the population aggregated by length group and age (\code{"length_strat"} and
@@ -160,10 +161,10 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' @export
 #'
 
-run_strat <- function(sim) {
+run_strat <- function(sim, length_group = 3) {
 
   ## Prep data for strat_means function
-  data <- strat_data(sim)
+  data <- strat_data(sim, length_group = length_group)
   data$setdet <- data$setdet[, c("sim", "year", "division", "strat", "strat_area", "tow_area", "set", "n"), with = FALSE]
   data$lf <- merge(data$setdet[, setdiff(names(data$setdet), "n"), with = FALSE], data$lf, by = "set", all = TRUE)
   data$af <- merge(data$setdet[, setdiff(names(data$setdet), "n"), with = FALSE], data$af, by = "set", all = TRUE)

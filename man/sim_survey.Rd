@@ -5,7 +5,7 @@
 \title{Simulate stratified-random survey}
 \usage{
 sim_survey(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
-  trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
+  trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = TRUE,
   min_sets = 2, set_den = 3/1000, lengths_cap = 400, length_group = 1,
   ages_cap = 10, light = TRUE)
 }
@@ -24,7 +24,8 @@ a large number of simulations may max out your RAM}
 
 \item{resample_cells}{Allow resampling of sampling units (grid cells)?}
 
-\item{binom_error}{Impose binomial error?}
+\item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
+at older ages because of more frequent rounding to zero.}
 
 \item{min_sets}{Minimum number of sets per strat}
 

@@ -4,10 +4,12 @@
 \alias{run_strat}
 \title{Run stratified analysis on simulated data}
 \usage{
-run_strat(sim)
+run_strat(sim, length_group = 3)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}
+
+\item{length_group}{Size of the length frequency bins}
 }
 \value{
 Adds stratified analysis results for the total population (\code{"total_strat"})

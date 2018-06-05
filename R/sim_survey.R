@@ -174,7 +174,8 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @param growth              Closure, such as \code{\link{sim_vonB}}, for simulating length given age
 #' @param trawl_dim           Trawl width and distance (same units as grid)
 #' @param resample_cells      Allow resampling of sampling units (grid cells)?
-#' @param binom_error         Impose binomial error?
+#' @param binom_error         Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
+#'                            at older ages because of more frequent rounding to zero.
 #' @param min_sets            Minimum number of sets per strat
 #' @param set_den             Set density (number of sets per [grid unit] squared)
 #' @param lengths_cap         Maximum number of lengths measured per set
@@ -191,7 +192,7 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #'
 
 sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
-                       trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = FALSE,
+                       trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = TRUE,
                        min_sets = 2, set_den = 3 / 1000, lengths_cap = 400,
                        length_group = 1, ages_cap = 10, light = TRUE) {
 

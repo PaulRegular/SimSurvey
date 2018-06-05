@@ -38,5 +38,6 @@ import(foreach)
 import(parallel)
 import(plotly)
 import(progress)
-import(raster)
+import(raster, except = select)
+
 importFrom(magrittr,"%>%")

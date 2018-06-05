@@ -57,7 +57,7 @@ res <- test_surveys(pop,
 setMKLthreads() # turn hyperthreading on again
 
 
-
+library(plotly)
 sim <- res
 d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
 z1 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 3e-03)
@@ -66,26 +66,28 @@ z3 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 1e-03
 z4 <- xtabs(RMSE ~ ages_cap + lengths_cap, data = d, subset = d$set_den == 5e-04)
 x <- as.numeric(colnames(z1))
 y <- as.numeric(rownames(z1))
-plot_ly(x = ~x, y = ~y) %>%
+plot_ly(x = ~x, y = ~y, showscale = FALSE) %>%
   add_surface(z = ~z1) %>%
   add_surface(z = ~z2) %>%
   add_surface(z = ~z3) %>%
   add_surface(z = ~z4)
 
-## Look into the zeros at older ages
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+sub_d <- d[d$set_den == 9e-03 & d$lengths_cap == 1000 & d$ages_cap == 60 & d$age == 10
+           & d$year == 2, ]
+hist(sub_d$I_hat, breaks = 50)
+abline(v = sub_d$I[1], col = "red")
+## Estimate is biased at older ages. Should it be?
 
-s1 <- sim$age_strat_error %>%
-  filter(survey == 1)
-unique(s1$age)
-
-
-
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
 d %>%
-  filter(set_den == 3e-03) %>%
-  plot_ly(x = ~lengths_cap, y = ~ages_cap, z = ~RMSE) %>%
-  add_heatmap()
-
-
+  filter(age == 11 & survey == 100) %>%
+  group_by(sim) %>%
+  plot_ly() %>%
+  add_lines(x = ~year, y = ~I_hat, size = I(0.5), alpha = 0.5,
+            name = "estimate", color = I("steelblue")) %>%
+  add_lines(x = ~unique(year), y = ~unique(I), name = "true", color = I("black"))
+## high level of precision, but biased and it shouldn't be...check strat code
 
 
 ## Simulate one survey
@@ -103,15 +105,16 @@ survey <- sim_survey(pop,
 
 
 survey <- sim_survey(pop,
-                     n_sims = 1,
+                     n_sims = 10,
                      light = FALSE,
-                     set_den = 2 / 1000,
-                     lengths_cap = 400,
-                     ages_cap = 10,
+                     set_den = 10 / 1000,
+                     lengths_cap = Inf,
+                     ages_cap = Inf,
                      q = sim_logistic(k = 2, x0 = 3),
-                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
+                     binom_error = TRUE) %>%
   run_strat() %>% strat_error()
 
-survey$age_strat_error
+hist(survey$age_strat_error[age == 12, ]$error, breaks = 50)
 
 

@@ -26,7 +26,7 @@
 #' r <- sim_grid()
 #' raster::plot(r)
 #'
-#' @import raster
+#' @rawNamespace import(raster, except = select)
 #'
 
 sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
