@@ -191,7 +191,37 @@ plot_sets <- function(sim, sim_num = 1) {
 ## The lack of percision at low set densities and high sampling efforts
 ## may be related to the unbalanced effort in narrow strata??
 
+## May also be related to mismatch between 1 cm length sampling bin and 3 cm strat binning
+
+## Also size up the composite age distribution sampled by the survey at low
+## set densities. Composite may be poor at low densities and increased length
+## sampling may increase variance because of that
 
 
 
+
+survey <- sim_survey(pop,
+                     n_sims = 1,
+                     light = FALSE,
+                     set_den = 0.5 / 1000,
+                     lengths_cap = 1000,
+                     ages_cap = 10,
+                     q = sim_logistic(k = 2, x0 = 3),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
+                     binom_error = TRUE) %>%
+  run_strat() %>% strat_error()
+
+d <- merge(survey$setdet, survey$samp, by = "set")
+d <- d[d$year == 14, ]
+true_dist <- obs_dist <- samp_dist <- survey$I[, "14"]
+obs_dist[] <- samp_dist[] <- 0
+temp <- table(d$age)
+obs_dist[names(temp)] <- temp
+temp <- table(d$age[d$measured])
+samp_dist[names(temp)] <- temp
+b <- barplot(true_dist / sum(true_dist), ylim = c(0, 1))
+lines(x = b[, 1], y = obs_dist / sum(obs_dist), col = "red")
+lines(x = b[, 1], y = samp_dist / sum(samp_dist), col = "blue")
+
+## low set density results != random sample
 
