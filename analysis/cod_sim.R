@@ -73,21 +73,45 @@ plot_ly(x = ~x, y = ~y, showscale = FALSE) %>%
   add_surface(z = ~z4)
 
 d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-sub_d <- d[d$set_den == 9e-03 & d$lengths_cap == 1000 & d$ages_cap == 60 & d$age == 10
-           & d$year == 2, ]
-hist(sub_d$I_hat, breaks = 50)
-abline(v = sub_d$I[1], col = "red")
-## Estimate is biased at older ages. Should it be?
+x1 <- d$error[d$lengths_cap == 20 & d$ages_cap == 8 & d$age == 3]
+x2 <- d$error[d$lengths_cap == 1000 & d$ages_cap == 60 & d$age == 3]
+hist(x1, breaks = 100, xlim = range(c(x1, x2)))
+hist(x2, breaks = 100, xlim = range(c(x1, x2)))
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[, list(RMSE = SimSurvey::error_stats(error)["RMSE"]),
+       by = c("survey", "set_den", "lengths_cap", "ages_cap", "age")]
+plot_ly(data = d[d$set_den == 5e-04 & d$age == 3, ], x = ~ages_cap, y = ~lengths_cap, z = ~RMSE) %>%
+  add_heatmap()
+
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+sub_d <- d[d$set_den == 5e-04 & d$lengths_cap == 1000 & d$ages_cap == 60, ]
+hist(sub_d$error, breaks = 500)
+hist(sub_d$error, breaks = 500, xlim = c(-1e+08, 1e+08))
 
 d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
 d %>%
-  filter(age == 11 & survey == 100) %>%
+  filter(age == 3 & set_den == 5e-04 & lengths_cap == 1000 & ages_cap == 60) %>%
   group_by(sim) %>%
   plot_ly() %>%
   add_lines(x = ~year, y = ~I_hat, size = I(0.5), alpha = 0.5,
             name = "estimate", color = I("steelblue")) %>%
   add_lines(x = ~unique(year), y = ~unique(I), name = "true", color = I("black"))
-## high level of precision, but biased and it shouldn't be...check strat code
+
+d %>%
+  filter(year == 14 & set_den == 5e-04 & lengths_cap == 1000 & ages_cap == 60) %>%
+  group_by(sim) %>%
+  plot_ly() %>%
+  add_lines(x = ~age, y = ~I_hat, size = I(0.5), alpha = 0.5,
+            name = "estimate", color = I("steelblue")) %>%
+  add_lines(x = ~unique(age), y = ~unique(I), name = "true", color = I("black"))
+
+## larger error in the core of the index??
+
+d %>%
+  filter(age == 3 & set_den == 5e-04 & lengths_cap == 1000 & ages_cap == 60 &
+           error > 500000000)
 
 
 ## Simulate one survey
@@ -116,5 +140,58 @@ survey <- sim_survey(pop,
   run_strat() %>% strat_error()
 
 hist(survey$age_strat_error[age == 12, ]$error, breaks = 50)
+
+
+survey <- sim_survey(pop,
+                     n_sims = 20,
+                     light = FALSE,
+                     set_den = 9 / 1000,
+                     lengths_cap = 1000,
+                     ages_cap = 60,
+                     q = sim_logistic(k = 2, x0 = 3),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
+                     binom_error = TRUE) %>%
+  run_strat() %>% strat_error()
+
+
+## Quick look at distribution
+sp_N <- data.frame(merge(survey$sp_N, survey$grid_xy, by = "cell"))
+for (j in rev(survey$ages)) {
+  z <- xtabs(N ~ x + y, subset = age == j & year == 13, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("age", j))
+}
+for (i in rev(survey$years)) {
+  z <- xtabs(N ~ x + y, subset = age == 10 & year == i, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
+}
+
+sim_af <- survey$full_setdet
+sim_af %>%
+  filter(age == 3 & sim == 1) %>%
+  group_by(year) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
+          text = ~set, sizes = c(5, 500), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 5)
+
+
+one_samp <- survey$samp[set == 1383, ]
+hist(one_samp$length[sample.int(nrow(one_samp), 7000)], breaks = 100)
+
+
+
+
+plot_sets <- function(sim, sim_num = 1) {
+  sim$setdet %>%
+    filter(sim == sim_num) %>%
+    plot_ly(x = ~x, y = ~y, size = ~n+1, frame = ~year,
+            text = ~paste("n:", n)) %>%
+    add_markers()
+}
+## The lack of percision at low set densities and high sampling efforts
+## may be related to the unbalanced effort in narrow strata??
+
+
+
 
 

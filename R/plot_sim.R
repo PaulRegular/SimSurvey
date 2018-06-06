@@ -67,5 +67,3 @@ plot_distribution <- function(sim, ages = 1, years = 1,
 }
 
 
-
-
