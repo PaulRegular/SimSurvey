@@ -73,6 +73,16 @@ xy <- cbind(-setdet$long.start, setdet$lat.start) %>%
 names(xy) <- c("easting", "northing")
 setdet <- cbind(setdet, xy)
 
+## Set density
+den <- setdet[rec == 5, list(n = .N), by = c("survey.year", "strat", "strat.area")]
+den <- den[, list(strat_area_nm = sum(strat.area),
+                  strat_area_km = sum(strat.area * 3.4299),
+                  den_km = sum(n) / sum(strat.area * 3.4299),
+                  den_nm = sum(n) / sum(strat.area / 200)), by = c("survey.year")]
+den
+## ~ 0.003 sets per km^2
+## ~ 2 sets per 200 sq. NM
+
 ## Melt age frequency data
 af <- data.table::melt(setdet,
                        id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing"),

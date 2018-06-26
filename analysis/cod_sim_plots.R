@@ -3,7 +3,7 @@ library(plotly)
 load("analysis/cod_sim_exports/2018-06-06_test/test_output.RData")
 
 d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-d <- d[d$set_den >= 0.001, ]
+d <- d[d$set_den >= 0.001 & d$set_den <= 0.006, ]
 split_d <- split(d, d$set_den)
 split_d <- lapply(split_d, function(.) {
   xtabs(RMSE ~ ages_cap + lengths_cap, data = ., subset = NULL)
