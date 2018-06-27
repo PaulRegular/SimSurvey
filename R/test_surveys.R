@@ -80,8 +80,8 @@ expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
 
 }
 
-.test_fin <- function(sim = NULL, surveys = NULL, survey_error = NULL,
-                      export = NULL, export_dir = NULL) {
+.test_fin <- function(sim = NULL,  n_sims = NULL, surveys = NULL, keep_details = NULL,
+                      survey_error = NULL, export = NULL, export_dir = NULL, ...) {
 
   total_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "total_strat_error"))
   age_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "age_strat_error"))
@@ -95,6 +95,22 @@ expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
   sim$total_strat_error_stats <- total_strat_error_stats
   sim$age_strat_error <- age_strat_error
   sim$age_strat_error_stats <- age_strat_error_stats
+
+  i <- which(surveys$survey == keep_details)
+  res <- sim_survey(sim, n_sims = n_sims,
+                    set_den = surveys$set_den[i],
+                    lengths_cap = surveys$lengths_cap[i],
+                    ages_cap = surveys$ages_cap[i],
+                    light = FALSE,
+                    ...) %>% run_strat()
+  sim$I <- res$I
+  sim$sp_I <- res$sp_I
+  sim$full_setdet <- res$full_setdet
+  sim$setdet <- res$setdet
+  sim$samp <- res$samp
+  sim$total_strat <- res$total_strat
+  sim$length_strat <- res$length_strat
+  sim$age_strat <- res$age_strat
 
   if (!is.null(export)) {
     save(sim, file = file.path(export_dir, "test_output.RData"))
@@ -115,6 +131,9 @@ expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
 #' @param sim               Simulation from \code{\link{sim_distribution}}.
 #' @param surveys           A data.frame or data.table with a sequence of surveys and their settings
 #'                          with a format like the data.table returned by \code{\link{expand_surveys}}.
+#' @param keep_details      Keep details of a specific survey in the data.frame supplied to \code{surveys}.
+#'                          Survey and stratified analysis details are dropped for the other surveys to
+#'                          minimize object size.
 #' @param n_sims            Number of times to simulate a survey over the simulated population.
 #'                          Requesting a large number of simulations here may max out your RAM.
 #' @param n_loops           Number of times to run the \code{\link{sim_survey}} function. Total
@@ -141,8 +160,8 @@ expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
 #' @import foreach
 #'
 
-test_surveys <- function(sim, surveys = expand_surveys(), n_sims = 1,
-                         n_loops = 100, cores = 2, export = NULL, ...) {
+test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
+                         n_sims = 1, n_loops = 100, cores = 2, export = NULL, ...) {
 
   if (!is.null(export)) {
     export_dir <- file.path(export, paste0(Sys.Date(), "_test"))
@@ -155,7 +174,8 @@ test_surveys <- function(sim, surveys = expand_surveys(), n_sims = 1,
              n_loops = n_loops, cores = cores, export = export,
              export_dir = export_dir, survey_error = NULL, ...)
   .test_fin(sim = sim, surveys = surveys, survey_error = survey_error,
-            export = export, export_dir = export_dir)
+            n_sims = n_sims, keep_details = keep_details,
+            export = export, export_dir = export_dir, ...)
 
 
 }
@@ -175,6 +195,7 @@ resume_test <- function(dir = NULL) {
                              n_loops = n_loops, cores = cores, export = export,
                              export_dir = export_dir, survey_error = survey_error, ...)
   .test_fin(sim = sim, surveys = surveys, survey_error = survey_error,
-            export = export, export_dir = export_dir)
+            n_sims = n_sims, keep_details = keep_details,
+            export = export, export_dir = export_dir, ...)
 }
 

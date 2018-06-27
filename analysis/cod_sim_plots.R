@@ -3,7 +3,7 @@ library(SimSurvey)
 library(plotly)
 library(data.table)
 
-load("analysis/cod_sim_exports/2018-06-06_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-06-27_test/test_output.RData")
 
 plot_error_surface(sim)
 
@@ -22,7 +22,7 @@ survey <- sim_survey(pop,
                      ages_cap = 10,
                      q = sim_logistic(k = 2, x0 = 3),
                      growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
-  run_strat() %>% strat_error()
+  run_strat()
 
 
 

@@ -4,14 +4,18 @@
 \alias{test_surveys}
 \title{Test sampling design of multiple surveys}
 \usage{
-test_surveys(sim, surveys = expand_surveys(), n_sims = 1, n_loops = 100,
-  cores = 2, export = NULL, ...)
+test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
+  n_sims = 1, n_loops = 100, cores = 2, export = NULL, ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
 
 \item{surveys}{A data.frame or data.table with a sequence of surveys and their settings
 with a format like the data.table returned by \code{\link{expand_surveys}}.}
+
+\item{keep_details}{Keep details of a specific survey in the data.frame supplied to \code{surveys}.
+Survey and stratified analysis details are dropped for the other surveys to
+minimize object size.}
 
 \item{n_sims}{Number of times to simulate a survey over the simulated population.
 Requesting a large number of simulations here may max out your RAM.}
