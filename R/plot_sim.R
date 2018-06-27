@@ -5,13 +5,16 @@
 #' visuals of values produced by \code{\link{sim_abundance}},
 #' \code{\link{sim_distribution}}, etc.
 #'
-#' @param sim    Object returned by \code{\link{sim_abundance}},
-#'               \code{\link{sim_distribution}}, etc.
-#' @param mat    Name of matrix in \code{sim} list to plot.
-#' @param ages   Subset data to one or more ages.
-#' @param years  Subset data to one or more years.
-#' @param scale  Plot response on "natural" or "log" scale?
-#' @param ...    Additional arguments to pass to \code{\link{plotly::plot_ly}}.
+#' @param sim      Object returned by \code{\link{sim_abundance}},
+#'                 \code{\link{sim_distribution}}, etc.
+#' @param mat      Name of matrix in \code{sim} list to plot.
+#' @param ages     Subset data to one or more ages.
+#' @param years    Subset data to one or more years.
+#' @param scale    Plot response on "natural" or "log" scale?
+#' @param survey   Subset to specific survey
+#' @param max_sims Maximum number of sims to plot
+#' @param facet_by Facet plot by "age" or "year"?
+#' @param ...      Additional arguments to pass to \code{\link{plotly::plot_ly}}.
 #'
 #' @import plotly
 #'
@@ -66,4 +69,88 @@ plot_distribution <- function(sim, ages = 1, years = 1,
 
 }
 
+
+#' @export
+#' @rdname plot_trend
+plot_error_surface <- function(sim) {
+
+  d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+  split_d <- split(d, d$set_den)
+  split_d <- lapply(split_d, function(.) {
+    xtabs(RMSE ~ ages_cap + lengths_cap, data = ., subset = NULL)
+  })
+  x <- sort(unique(d$lengths_cap))
+  y <- sort(unique(d$ages_cap))
+
+  p <- plot_ly(x = ~x, y = ~y, cmin = min(d$RMSE), cmax = max(d$RMSE))
+  visible <- showscale <- rep(TRUE, length(split_d))
+  steps <- list()
+  showscale <- c(TRUE, rep(FALSE, length(split_d) - 1))
+  for (i in seq_along(split_d)) {
+    vis <- rep(FALSE, length(split_d))
+    vis[i] <- TRUE
+    p <- p %>% add_surface(z = split_d[[i]],
+                           visible = i == 1,
+                           showscale = vis,
+                           name = names(split_d)[i],
+                           colorbar = list(title = "RMSE"))
+    steps[[i]] <- list(args = list(list(visible = vis,
+                                        showscale = vis)),
+                       method = "update",
+                       label = names(split_d)[i])
+    if (i == length(split_d)) {
+      steps[[i + 1]] <- list(args = list(list(visible = rep(TRUE, length(split_d)),
+                                              showscale = showscale)),
+                             method = "update",
+                             label = "all")
+    }
+  }
+
+  p %>%
+    layout(sliders = list(list(
+      currentvalue = list(prefix = "Set density: "),
+      steps = steps
+    )),
+    scene = list(
+      xaxis = list(title = "max(lengths)"),
+      yaxis = list(title = "max(ages)"),
+      zaxis = list(title = "RMSE",
+                   range = range(d$RMSE)),
+      camera = list(eye = list(x = 1.5, y = 1.5, z = 1.5))
+    ))
+
+}
+
+
+#' @export
+#' @rdname plot_trend
+plot_true_vs_est <- function(sim, survey = 1, max_sims = 50,  facet_by = "age") {
+
+  d <- sim$age_strat_error
+  s <- survey
+  sub_d <- d[d$survey == s, ]
+  sub_sims <- sample(unique(d$sim), ifelse(max(d$sim) > max_sims, max_sims, max(d$sims)))
+  sub_d <- sub_d[sub_d$sim %in% sub_sims, ]
+
+  if (facet_by == "age") {
+    p <- ggplot(data = sub_d, aes(x = year, group = sim)) +
+      geom_line(aes(y = I_hat), color = "grey50", alpha = 0.5, size = 0.1) +
+      geom_line(aes(y = I), size = 0.3) +
+      xlab("Year") + ylab("Index") +
+      facet_wrap(~ age, scales = "free_y") +
+      theme_minimal() + theme(axis.text.y = element_blank(),
+                              axis.ticks.y = element_blank())
+  } else {
+    p <- ggplot(data = sub_d, aes(x = age, group = sim)) +
+      geom_line(aes(y = I_hat), color = "grey50", alpha = 0.5, size = 0.1) +
+      geom_line(aes(y = I), size = 0.3) +
+      xlab("Age") + ylab("Index") +
+      facet_wrap(~ year, scales = "free_y") +
+      theme_minimal() + theme(axis.text.y = element_blank(),
+                              axis.ticks.y = element_blank())
+  }
+
+  ggplotly(p)
+
+}
 

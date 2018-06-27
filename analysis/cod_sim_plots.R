@@ -1,87 +1,16 @@
 
+library(SimSurvey)
 library(plotly)
+library(data.table)
+
 load("analysis/cod_sim_exports/2018-06-06_test/test_output.RData")
 
-d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-d <- d[d$set_den >= 0.001 & d$set_den <= 0.006, ]
-split_d <- split(d, d$set_den)
-split_d <- lapply(split_d, function(.) {
-  xtabs(RMSE ~ ages_cap + lengths_cap, data = ., subset = NULL)
-})
-x <- sort(unique(d$lengths_cap))
-y <- sort(unique(d$ages_cap))
+plot_error_surface(sim)
 
-p <- plot_ly(x = ~x, y = ~y, cmin = min(d$RMSE), cmax = max(d$RMSE))
-visible <- showscale <- rep(TRUE, length(split_d))
-steps <- list()
-showscale <- c(TRUE, rep(FALSE, length(split_d) - 1))
-for (i in seq_along(split_d)) {
-  vis <- rep(FALSE, length(split_d))
-  vis[i] <- TRUE
-  p <- p %>% add_surface(z = split_d[[i]],
-                         visible = i == 1,
-                         showscale = vis,
-                         name = names(split_d)[i],
-                         colorbar = list(title = "RMSE"))
-  steps[[i]] <- list(args = list(list(visible = vis,
-                                      showscale = vis)),
-                     method = "update",
-                     label = names(split_d)[i])
-  if (i == length(split_d)) {
-    steps[[i + 1]] <- list(args = list(list(visible = rep(TRUE, length(split_d)),
-                                            showscale = showscale)),
-                           method = "update",
-                           label = "all")
-  }
-}
+plot_true_vs_est(sim, survey = 542, max_sims = 100, facet_by = "age")
 
-p %>%
-  layout(sliders = list(list(
-    currentvalue = list(prefix = "Set density: "),
-    steps = steps
-  )),
-  scene = list(
-    xaxis = list(title = "max(lengths)"),
-    yaxis = list(title = "max(ages)"),
-    zaxis = list(title = "RMSE",
-                 range = range(d$RMSE)),
-    camera = list(eye = list(x = 1.5, y = 1.5, z = 1.5))
-  ))
+plot_true_vs_est(sim, survey = 542, max_sims = 100, facet_by = "year")
 
-
-
-
-
-
-
-
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-sub_d <- d[d$set_den == 5e-04 & d$lengths_cap == 1000 & d$ages_cap == 60, ]
-hist(sub_d$error, breaks = 500)
-hist(sub_d$error, breaks = 500, xlim = c(-1e+08, 1e+08))
-
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d %>%
-  filter(age == 3 & set_den == 5e-04 & lengths_cap == 1000 & ages_cap == 60) %>%
-  group_by(sim) %>%
-  plot_ly() %>%
-  add_lines(x = ~year, y = ~I_hat, size = I(0.5), alpha = 0.5,
-            name = "estimate", color = I("steelblue")) %>%
-  add_lines(x = ~unique(year), y = ~unique(I), name = "true", color = I("black"))
-
-d %>%
-  filter(year == 14 & set_den == 5e-04 & lengths_cap == 1000 & ages_cap == 60) %>%
-  group_by(sim) %>%
-  plot_ly() %>%
-  add_lines(x = ~age, y = ~I_hat, size = I(0.5), alpha = 0.5,
-            name = "estimate", color = I("steelblue")) %>%
-  add_lines(x = ~unique(age), y = ~unique(I), name = "true", color = I("black"))
-
-## larger error in the core of the index??
-
-d %>%
-  filter(age == 3 & set_den == 5e-04 & lengths_cap == 1000 & ages_cap == 60 &
-           error > 500000000)
 
 
 ## Simulate one survey

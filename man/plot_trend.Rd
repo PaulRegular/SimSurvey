@@ -4,6 +4,8 @@
 \alias{plot_trend}
 \alias{plot_surface}
 \alias{plot_distribution}
+\alias{plot_error_surface}
+\alias{plot_true_vs_est}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, ...)
@@ -12,6 +14,10 @@ plot_surface(sim, mat = "N", ...)
 
 plot_distribution(sim, ages = 1, years = 1, type = "contour",
   axes = TRUE, scale = "natural", ...)
+
+plot_error_surface(sim)
+
+plot_true_vs_est(sim, survey = 1, max_sims = 50, facet_by = "age")
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -26,6 +32,12 @@ plot_distribution(sim, ages = 1, years = 1, type = "contour",
 \item{years}{Subset data to one or more years.}
 
 \item{scale}{Plot response on "natural" or "log" scale?}
+
+\item{survey}{Subset to specific survey}
+
+\item{max_sims}{Maximum number of sims to plot}
+
+\item{facet_by}{Facet plot by "age" or "year"?}
 }
 \description{
 These functions are simple plotting helpers to get some quick
