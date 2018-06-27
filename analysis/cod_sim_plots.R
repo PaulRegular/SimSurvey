@@ -11,6 +11,8 @@ plot_true_vs_est(sim, survey = 542, max_sims = 100, facet_by = "age")
 
 plot_true_vs_est(sim, survey = 542, max_sims = 100, facet_by = "year")
 
+plot_error_cross_sections(sim)
+
 
 
 ## Simulate one survey

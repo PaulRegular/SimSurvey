@@ -124,6 +124,57 @@ plot_error_surface <- function(sim) {
 
 #' @export
 #' @rdname plot_trend
+plot_error_cross_sections <- function(sim) {
+
+  d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+
+  a <- list(
+    text = "",
+    font = list(size = 18, color = "black"),
+    xref = "paper",
+    yref = "paper",
+    yanchor = "bottom",
+    xanchor = "center",
+    align = "center",
+    x = 0.5,
+    y = 1,
+    showarrow = FALSE
+  )
+
+  a$text <- "Change set density"
+  set_p <- d %>%
+    mutate(combo = paste("max(lengths) =", lengths_cap, "| max(ages) = ", ages_cap)) %>%
+    group_by(combo) %>%
+    plot_ly() %>% add_lines(x = ~set_den, y = ~RMSE, text = ~combo,
+                            name = "Change set density", showlegend = FALSE,
+                            color = I("black"), alpha = 0.5, size = I(0.5)) %>%
+    layout(xaxis = list(title = "Set density"), annotations = a)
+
+  a$text <- "Change length sampling"
+  len_p <- d %>%
+    mutate(combo = paste("set density =", set_den, "| max(ages) = ", ages_cap)) %>%
+    group_by(combo) %>%
+    plot_ly() %>% add_lines(x = ~lengths_cap, y = ~RMSE, text = ~combo,
+                            name = "Change length sampling", showlegend = FALSE,
+                            color = I("black"), alpha = 0.5, size = I(0.5)) %>%
+    layout(xaxis = list(title = "max(lengths)"), annotations = a)
+
+  a$text <- "Change age sampling"
+  age_p <- d %>%
+    mutate(combo = paste("set density =", set_den, "| max(lengths) = ", lengths_cap)) %>%
+    group_by(combo) %>%
+    plot_ly() %>% add_lines(x = ~ages_cap, y = ~RMSE, text = ~combo,
+                            name = "Change age sampling", showlegend = FALSE,
+                            color = I("black"), alpha = 0.8, size = I(0.5)) %>%
+    layout(xaxis = list(title = "max(ages)"), annotations = a)
+
+  subplot(set_p, len_p, age_p, nrows = 1, shareY = TRUE, titleX = TRUE)
+
+}
+
+
+#' @export
+#' @rdname plot_trend
 plot_true_vs_est <- function(sim, survey = 1, max_sims = 50,  facet_by = "age") {
 
   d <- sim$age_strat_error

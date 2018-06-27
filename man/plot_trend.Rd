@@ -5,6 +5,7 @@
 \alias{plot_surface}
 \alias{plot_distribution}
 \alias{plot_error_surface}
+\alias{plot_error_cross_sections}
 \alias{plot_true_vs_est}
 \title{Simple plotting functions}
 \usage{
@@ -16,6 +17,8 @@ plot_distribution(sim, ages = 1, years = 1, type = "contour",
   axes = TRUE, scale = "natural", ...)
 
 plot_error_surface(sim)
+
+plot_error_cross_sections(sim)
 
 plot_true_vs_est(sim, survey = 1, max_sims = 50, facet_by = "age")
 }
