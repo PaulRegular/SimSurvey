@@ -7,6 +7,7 @@
 \alias{plot_error_surface}
 \alias{plot_error_cross_sections}
 \alias{plot_true_vs_est}
+\alias{plot_samp_dist}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, ...)
@@ -20,7 +21,9 @@ plot_error_surface(sim)
 
 plot_error_cross_sections(sim)
 
-plot_true_vs_est(sim, survey = 1, max_sims = 50, facet_by = "age")
+plot_true_vs_est(sim, which_survey = 1, max_sims = 50, facet_by = "age")
+
+plot_samp_dist(sim, which_year = 1, which_sim = 1)
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -36,11 +39,15 @@ plot_true_vs_est(sim, survey = 1, max_sims = 50, facet_by = "age")
 
 \item{scale}{Plot response on "natural" or "log" scale?}
 
-\item{survey}{Subset to specific survey}
+\item{which_survey}{Subset to specific survey}
 
 \item{max_sims}{Maximum number of sims to plot}
 
 \item{facet_by}{Facet plot by "age" or "year"?}
+
+\item{which_year}{Subset to specific year}
+
+\item{which_sim}{Subset to specific sim}
 }
 \description{
 These functions are simple plotting helpers to get some quick

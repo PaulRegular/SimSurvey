@@ -5,16 +5,18 @@
 #' visuals of values produced by \code{\link{sim_abundance}},
 #' \code{\link{sim_distribution}}, etc.
 #'
-#' @param sim      Object returned by \code{\link{sim_abundance}},
-#'                 \code{\link{sim_distribution}}, etc.
-#' @param mat      Name of matrix in \code{sim} list to plot.
-#' @param ages     Subset data to one or more ages.
-#' @param years    Subset data to one or more years.
-#' @param scale    Plot response on "natural" or "log" scale?
-#' @param survey   Subset to specific survey
-#' @param max_sims Maximum number of sims to plot
-#' @param facet_by Facet plot by "age" or "year"?
-#' @param ...      Additional arguments to pass to \code{\link{plotly::plot_ly}}.
+#' @param sim            Object returned by \code{\link{sim_abundance}},
+#'                       \code{\link{sim_distribution}}, etc.
+#' @param mat            Name of matrix in \code{sim} list to plot.
+#' @param ages           Subset data to one or more ages.
+#' @param years          Subset data to one or more years.
+#' @param scale          Plot response on "natural" or "log" scale?
+#' @param which_survey   Subset to specific survey
+#' @param which_year     Subset to specific year
+#' @param which_sim      Subset to specific sim
+#' @param max_sims       Maximum number of sims to plot
+#' @param facet_by       Facet plot by "age" or "year"?
+#' @param ...            Additional arguments to pass to \code{\link{plotly::plot_ly}}.
 #'
 #' @import plotly
 #'
@@ -175,11 +177,10 @@ plot_error_cross_sections <- function(sim) {
 
 #' @export
 #' @rdname plot_trend
-plot_true_vs_est <- function(sim, survey = 1, max_sims = 50,  facet_by = "age") {
+plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "age") {
 
   d <- sim$age_strat_error
-  s <- survey
-  sub_d <- d[d$survey == s, ]
+  sub_d <- d[d$survey == which_survey, ]
   sub_sims <- sample(unique(d$sim), ifelse(max(d$sim) > max_sims, max_sims, max(d$sims)))
   sub_d <- sub_d[sub_d$sim %in% sub_sims, ]
 
@@ -205,3 +206,73 @@ plot_true_vs_est <- function(sim, survey = 1, max_sims = 50,  facet_by = "age") 
 
 }
 
+#' @export
+#' @rdname plot_trend
+plot_samp_dist <- function(sim, which_year = 1, which_sim = 1) {
+
+  ax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    tickcolor = toRGB("white")
+  )
+
+  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
+  df_strat <- fortify(sp_strat) %>% group_by(group)
+
+  setdet <- sim$setdet
+  setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
+  samp <- merge(setdet[, c("year", "sim", "set", "x", "y")],
+                sim$samp, by = "set")
+
+  d <- crosstalk::SharedData$new(samp, ~set)
+
+  base <- plot_ly(data = d)
+
+  sp_p <- base %>%
+    group_by(set) %>%
+    summarise(x = unique(x), y = unique(y), n = n()) %>%
+    add_markers(x = ~x, y = ~y, size = ~n, text = ~n,
+                sizes = c(5, 500), name = "n", color = I("black"),
+                showlegend = FALSE) %>%
+    add_markers(data = setdet[setdet$n == 0, ],
+                x = ~x, y = ~y, text = ~n, size = I(5), symbol = I(4),
+                name = "zero", color = I("grey"),
+                showlegend = FALSE) %>%
+    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
+              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
+              alpha = 0.1) %>%
+    layout(xaxis = ax, yaxis = c(list(scaleanchor = "x"), ax))
+
+  lf_p <- base %>%
+    group_by(set) %>%
+    filter(measured) %>%
+    add_histogram(x = ~length, color = I("black"),
+                  showlegend = FALSE, name = "Length distribution",
+                  marker = list(color = toRGB("black"),
+                                line = list(color = toRGB("white"),
+                                            width = 0.2))) %>%
+    layout(xaxis = list(title = "Length"),
+           yaxis = list(title = ""))
+
+  af_p <- base %>%
+    group_by(set) %>%
+    filter(aged) %>%
+    add_histogram(x = ~age, color = I("black"),
+                  showlegend = FALSE, name = "Age distribution",
+                  marker = list(color = toRGB("black"),
+                                line = list(color = toRGB("white"),
+                                            width = 0.2))) %>%
+    layout(xaxis = list(title = "Age"),
+           yaxis = list(title = ""))
+
+  subplot(sp_p,
+          subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
+                  margin = 0.1),
+          nrows = 1, margin = 0.02, widths = c(0.6, 0.4),
+          titleX = TRUE, titleY = TRUE) %>%
+    layout(title = "Survey sampling")
+
+}
