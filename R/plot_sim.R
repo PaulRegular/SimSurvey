@@ -16,17 +16,19 @@
 #' @param which_sim      Subset to specific sim
 #' @param max_sims       Maximum number of sims to plot
 #' @param facet_by       Facet plot by "age" or "year"?
+#' @param col            Plot color
+#' @param cols           Plot colors
 #' @param ...            Additional arguments to pass to \code{\link{plotly::plot_ly}}.
 #'
 #' @import plotly
 #'
 #' @export
 #' @rdname plot_trend
-plot_trend <- function(sim, ...) {
+plot_trend <- function(sim, col = viridis::viridis(1), ...) {
   tot <- data.frame(Year = sim$years, N = colSums(sim$N))
   tot$text <- paste0("Year: ", tot$Year, "\nN: ", round(tot$N))
   plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
-          type = "scatter", mode = "lines", data = tot, ...)
+          type = "scatter", mode = "lines", color = I(col), data = tot, ...)
 }
 
 #' @export
@@ -48,14 +50,15 @@ plot_distribution <- function(sim, ages = 1, years = 1,
                               type = "contour", axes = TRUE,
                               scale = "natural", ...) {
 
-  ax <- list(
+  xax <- list(
     title = "",
     zeroline = FALSE,
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    ticks = "inside"
+    tickcolor = toRGB("white")
   )
+  yax <- c(scaleanchor = "x", xax)
 
   xyz <- data.frame(merge(sim$grid_xy, sim$sp_N, by = "cell"))
   if (scale == "log") xyz$N <- log(xyz$N)
@@ -65,7 +68,11 @@ plot_distribution <- function(sim, ages = 1, years = 1,
     sub_xyz <- xyz[xyz$age == g$age[i] & xyz$year == g$year[i], ]
     p[[i]] <- plot_ly(x = ~x, y = ~y, z = ~N, data = sub_xyz, type = type,
                       name = paste0("a", g$age[i], ", y", g$year[i]), ...)
-    if (!axes) p[[i]] <- p[[i]] %>% layout(xaxis = ax, yaxis = ax)
+    if (!axes) {
+      p[[i]] <- p[[i]] %>% layout(xaxis = xax, yaxis = yax)
+    } else {
+      p[[i]] <- p[[i]] %>% layout(yaxis = list(scaleanchor = "x"))
+    }
   }
   subplot(p, nrows = length(ages), shareX = TRUE, shareY = TRUE)
 
@@ -126,7 +133,7 @@ plot_error_surface <- function(sim) {
 
 #' @export
 #' @rdname plot_trend
-plot_error_cross_sections <- function(sim) {
+plot_error_cross_sections <- function(sim, col = viridis::viridis(1)) {
 
   d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
 
@@ -145,29 +152,29 @@ plot_error_cross_sections <- function(sim) {
 
   a$text <- "Change set density"
   set_p <- d %>%
-    mutate(combo = paste("max(lengths) =", lengths_cap, "| max(ages) = ", ages_cap)) %>%
+    mutate(combo = paste("max(lengths):", lengths_cap, "<br>max(ages):", ages_cap)) %>%
     group_by(combo) %>%
     plot_ly() %>% add_lines(x = ~set_den, y = ~RMSE, text = ~combo,
                             name = "Change set density", showlegend = FALSE,
-                            color = I("black"), alpha = 0.5, size = I(0.5)) %>%
+                            color = I(col), alpha = 0.5, size = I(0.5)) %>%
     layout(xaxis = list(title = "Set density"), annotations = a)
 
   a$text <- "Change length sampling"
   len_p <- d %>%
-    mutate(combo = paste("set density =", set_den, "| max(ages) = ", ages_cap)) %>%
+    mutate(combo = paste("set density:", set_den, "<br>max(ages):", ages_cap)) %>%
     group_by(combo) %>%
     plot_ly() %>% add_lines(x = ~lengths_cap, y = ~RMSE, text = ~combo,
                             name = "Change length sampling", showlegend = FALSE,
-                            color = I("black"), alpha = 0.5, size = I(0.5)) %>%
+                            color = I(col), alpha = 0.5, size = I(0.5)) %>%
     layout(xaxis = list(title = "max(lengths)"), annotations = a)
 
   a$text <- "Change age sampling"
   age_p <- d %>%
-    mutate(combo = paste("set density =", set_den, "| max(lengths) = ", lengths_cap)) %>%
+    mutate(combo = paste("set density:", set_den, "<br>max(lengths):", lengths_cap)) %>%
     group_by(combo) %>%
     plot_ly() %>% add_lines(x = ~ages_cap, y = ~RMSE, text = ~combo,
                             name = "Change age sampling", showlegend = FALSE,
-                            color = I("black"), alpha = 0.8, size = I(0.5)) %>%
+                            color = I(col), alpha = 0.8, size = I(0.5)) %>%
     layout(xaxis = list(title = "max(ages)"), annotations = a)
 
   subplot(set_p, len_p, age_p, nrows = 1, shareY = TRUE, titleX = TRUE)
@@ -177,7 +184,8 @@ plot_error_cross_sections <- function(sim) {
 
 #' @export
 #' @rdname plot_trend
-plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "age") {
+plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "age",
+                             cols = viridis::viridis(3)) {
 
   d <- sim$age_strat_error
   sub_d <- d[d$survey == which_survey, ]
@@ -186,16 +194,16 @@ plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "
 
   if (facet_by == "age") {
     p <- ggplot(data = sub_d, aes(x = year, group = sim)) +
-      geom_line(aes(y = I_hat), color = "grey50", alpha = 0.5, size = 0.1) +
-      geom_line(aes(y = I), size = 0.3) +
+      geom_line(aes(y = I_hat), color = I(cols[2]), alpha = 0.2, size = 0.1) +
+      geom_line(aes(y = I), color = I(cols[1]), size = 0.1) +
       xlab("Year") + ylab("Index") +
       facet_wrap(~ age, scales = "free_y") +
       theme_minimal() + theme(axis.text.y = element_blank(),
                               axis.ticks.y = element_blank())
   } else {
     p <- ggplot(data = sub_d, aes(x = age, group = sim)) +
-      geom_line(aes(y = I_hat), color = "grey50", alpha = 0.5, size = 0.1) +
-      geom_line(aes(y = I), size = 0.3) +
+      geom_line(aes(y = I_hat), color = I(cols[2]), alpha = 0.2, size = 0.1) +
+      geom_line(aes(y = I), color = I(cols[1]), size = 0.1) +
       xlab("Age") + ylab("Index") +
       facet_wrap(~ year, scales = "free_y") +
       theme_minimal() + theme(axis.text.y = element_blank(),
@@ -208,9 +216,10 @@ plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "
 
 #' @export
 #' @rdname plot_trend
-plot_samp_dist <- function(sim, which_year = 1, which_sim = 1) {
+plot_samp_dist <- function(sim, which_year = 1, which_sim = 1,
+                           col = viridis::viridis(1)) {
 
-  ax <- list(
+  xax <- list(
     title = "",
     zeroline = FALSE,
     showline = FALSE,
@@ -218,9 +227,10 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1) {
     showgrid = FALSE,
     tickcolor = toRGB("white")
   )
+  yax <- c(scaleanchor = "x", xax)
 
   sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- fortify(sp_strat) %>% group_by(group)
+  df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
@@ -235,23 +245,23 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1) {
     group_by(set) %>%
     summarise(x = unique(x), y = unique(y), n = n()) %>%
     add_markers(x = ~x, y = ~y, size = ~n, text = ~n,
-                sizes = c(5, 500), name = "n", color = I("black"),
+                color = I(col), sizes = c(5, 500), name = "n",
                 showlegend = FALSE) %>%
-    add_markers(data = setdet[setdet$n == 0, ],
+    add_markers(data = setdet[setdet$n == 0, ], color = I(col),
                 x = ~x, y = ~y, text = ~n, size = I(5), symbol = I(4),
-                name = "zero", color = I("grey"),
+                name = "zero", alpha = 0.5,
                 showlegend = FALSE) %>%
     add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
               hoverinfo = "none", size = I(0.5), showlegend = FALSE,
               alpha = 0.1) %>%
-    layout(xaxis = ax, yaxis = c(list(scaleanchor = "x"), ax))
+    layout(xaxis = xax, yaxis = yax)
 
   lf_p <- base %>%
     group_by(set) %>%
     filter(measured) %>%
-    add_histogram(x = ~length, color = I("black"),
-                  showlegend = FALSE, name = "Length distribution",
-                  marker = list(color = toRGB("black"),
+    add_histogram(x = ~length, showlegend = FALSE,
+                  name = "Length distribution",
+                  marker = list(color = toRGB(col),
                                 line = list(color = toRGB("white"),
                                             width = 0.2))) %>%
     layout(xaxis = list(title = "Length"),
@@ -260,9 +270,9 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1) {
   af_p <- base %>%
     group_by(set) %>%
     filter(aged) %>%
-    add_histogram(x = ~age, color = I("black"),
-                  showlegend = FALSE, name = "Age distribution",
-                  marker = list(color = toRGB("black"),
+    add_histogram(x = ~age, showlegend = FALSE,
+                  name = "Age distribution",
+                  marker = list(color = toRGB(col),
                                 line = list(color = toRGB("white"),
                                             width = 0.2))) %>%
     layout(xaxis = list(title = "Age"),
@@ -272,7 +282,6 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1) {
           subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
                   margin = 0.1),
           nrows = 1, margin = 0.02, widths = c(0.6, 0.4),
-          titleX = TRUE, titleY = TRUE) %>%
-    layout(title = "Survey sampling")
+          titleX = TRUE, titleY = TRUE)
 
 }

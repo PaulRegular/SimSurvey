@@ -10,7 +10,7 @@
 \alias{plot_samp_dist}
 \title{Simple plotting functions}
 \usage{
-plot_trend(sim, ...)
+plot_trend(sim, col = viridis::viridis(1), ...)
 
 plot_surface(sim, mat = "N", ...)
 
@@ -19,15 +19,19 @@ plot_distribution(sim, ages = 1, years = 1, type = "contour",
 
 plot_error_surface(sim)
 
-plot_error_cross_sections(sim)
+plot_error_cross_sections(sim, col = viridis::viridis(1))
 
-plot_true_vs_est(sim, which_survey = 1, max_sims = 50, facet_by = "age")
+plot_true_vs_est(sim, which_survey = 1, max_sims = 50, facet_by = "age",
+  cols = viridis::viridis(3))
 
-plot_samp_dist(sim, which_year = 1, which_sim = 1)
+plot_samp_dist(sim, which_year = 1, which_sim = 1,
+  col = viridis::viridis(1))
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
 \code{\link{sim_distribution}}, etc.}
+
+\item{col}{Plot color}
 
 \item{...}{Additional arguments to pass to \code{\link{plotly::plot_ly}}.}
 
@@ -44,6 +48,8 @@ plot_samp_dist(sim, which_year = 1, which_sim = 1)
 \item{max_sims}{Maximum number of sims to plot}
 
 \item{facet_by}{Facet plot by "age" or "year"?}
+
+\item{cols}{Plot colors}
 
 \item{which_year}{Subset to specific year}
 
