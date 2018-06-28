@@ -57,3 +57,10 @@ res <- test_surveys(pop,
 # res <- resume_test(dir = "analysis/cod_sim_exports/2018-06-27_test")
 setMKLthreads() # turn hyperthreading on again
 
+
+## visualize results
+load("analysis/cod_sim_exports/2018-06-27_test/test_output.RData")
+vis_sim(sim)
+
+
+

@@ -197,18 +197,19 @@ plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "
       geom_line(aes(y = I_hat), color = I(cols[2]), alpha = 0.2, size = 0.1) +
       geom_line(aes(y = I), color = I(cols[1]), size = 0.1) +
       xlab("Year") + ylab("Index") +
-      facet_wrap(~ age, scales = "free_y") +
-      theme_minimal() + theme(axis.text.y = element_blank(),
-                              axis.ticks.y = element_blank())
+      facet_wrap(~ age, scales = "free_y")
   } else {
     p <- ggplot(data = sub_d, aes(x = age, group = sim)) +
       geom_line(aes(y = I_hat), color = I(cols[2]), alpha = 0.2, size = 0.1) +
       geom_line(aes(y = I), color = I(cols[1]), size = 0.1) +
       xlab("Age") + ylab("Index") +
-      facet_wrap(~ year, scales = "free_y") +
-      theme_minimal() + theme(axis.text.y = element_blank(),
-                              axis.ticks.y = element_blank())
+      facet_wrap(~ year, scales = "free_y")
+
   }
+
+  p <- p + theme_minimal() + theme(axis.text.y = element_blank(),
+                                   axis.ticks.y = element_blank(),
+                                   plot.margin = unit(c(0.1, 0.1, 0.5, 0.5), "cm"))
 
   ggplotly(p)
 
@@ -249,7 +250,7 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1,
                 showlegend = FALSE) %>%
     add_markers(data = setdet[setdet$n == 0, ], color = I(col),
                 x = ~x, y = ~y, text = ~n, size = I(5), symbol = I(4),
-                name = "zero", alpha = 0.5,
+                name = "zero", alpha = 0.2,
                 showlegend = FALSE) %>%
     add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
               hoverinfo = "none", size = I(0.5), showlegend = FALSE,

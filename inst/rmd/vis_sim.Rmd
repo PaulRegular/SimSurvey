@@ -1,13 +1,13 @@
 ---
 title: "Simulation Explorer"
 output: flexdashboard::flex_dashboard
-always_allow_html: yes
+runtime: shiny
 ---
 
 ```{r setup, echo=FALSE}
 library(plotly)
 library(viridis)
-knitr::opts_chunk$set(echo = FALSE, fig.height = 7, fig.width = 8)
+knitr::opts_chunk$set(echo = FALSE, fig.height = 7, fig.width = 8, cache = FALSE)
 ```
 
 ```{r data, include=FALSE}
@@ -70,10 +70,88 @@ Column
 ```{r, eval = "sp_N" %in% names(sim)}
 renderPlotly({
   plot_distribution(sim, ages = input$age, year = input$year, type = input$type,
-                    scale = input$scale)
+                    scale = input$scale, axes = FALSE)
 })
 
 ```
 
 
 
+Survey { `r if(!"sp_I" %in% names(sim)) ".hidden"`}
+================================================================================
+
+Column {.sidebar}
+--------------------------------------------------------------------------------
+
+```{r}
+sliderInput("samp_year", "Year", 
+            min = min(sim$years), max = max(sim$years), 
+            value = 1, step = 1)
+sliderInput("samp_sim", "Simulation", 
+            min = min(sim$setdet$sim), max = max(sim$setdet$sim), 
+            value = 1, step = 1)
+```
+
+Column
+--------------------------------------------------------------------------------
+
+### Survey sampling
+
+```{r, eval = "sp_I" %in% names(sim)}
+renderPlotly({
+  plot_samp_dist(sim, which_year = input$samp_year, which_sim = input$samp_sim)
+})
+```
+
+
+Estimates { `r if(!"age_strat_error" %in% names(sim)) ".hidden"`}
+================================================================================
+
+Column {.sidebar}
+--------------------------------------------------------------------------------
+
+```{r}
+selectInput("set_den", "Set density", 
+            choices = sort(unique(sim$surveys$set_den)))
+selectInput("lengths_cap", "max(lengths)", 
+            choices = sort(unique(sim$surveys$lengths_cap)))
+selectInput("ages_cap", "max(ages)", 
+            choices = sort(unique(sim$surveys$ages_cap)))
+selectInput("facet_by", "Facet by", 
+            choices = c("age", "year"))
+```
+
+Column
+--------------------------------------------------------------------------------
+
+### True population size vs. stratified estimates
+
+```{r, eval = "age_strat_error" %in% names(sim)}
+renderPlotly({
+  surveys <- sim$surveys
+  i <- surveys$survey[surveys$set_den == input$set_den & 
+                      surveys$lengths_cap == input$lengths_cap &
+                      surveys$ages_cap == input$ages_cap]
+  plot_true_vs_est(sim, which_survey = i, facet_by = input$facet_by,
+                   max_sims = 100)
+})
+```
+
+
+Error { `r if(!"surveys" %in% names(sim)) ".hidden"`}
+================================================================================
+
+Column  {.tabset}
+--------------------------------------------------------------------------------
+
+### Error surface
+
+```{r, eval = "surveys" %in% names(sim)}
+plot_error_surface(sim)
+```
+
+### Error cross-sections
+
+```{r, eval = "surveys" %in% names(sim)}
+plot_error_cross_sections(sim)
+```
