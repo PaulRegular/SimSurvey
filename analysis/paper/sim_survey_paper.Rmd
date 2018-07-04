@@ -40,8 +40,10 @@ $$
 
 This structure allows for autocorrelation in process errors over ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and time). Overall, this  formulation allows for the simulation of an array of population dynamics that one might expect to observe.
 
+The next step in the simulation is to distribute the abundance-at-age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ locations was generated with a resolution of $r$, a depth gratient, $S$ depth-based strata and $D$ divisions. The depth gradient was set-up to have a sigmoid shape with a depth range of $[d_{min}, d_{max}]$, shelf depth of $d_{shelf}$ and a shelf width of $w_{shelf}$. The probability of fish inhabiting each cell in the grid was then simulated by defining covariance between space, time and age. Matern covariance was used to control the level of spatial aggregation:
 
-
+$$Cov(s_i, s_j) = \sigma_s^2 \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left \|s_i - s_j \right\|) K_{\lambda}(\kappa \left \|s_i - s_j \right\|)$$
+where $\left \|s_i - s_j \right\|$ is the Euclidean distance between two locations, $\sigma_s^2$ is the marginal variance, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ are parameters of the covariance [@blangiardo2015].
 
 
 # Acknowledgements
