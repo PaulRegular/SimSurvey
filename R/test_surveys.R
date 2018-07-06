@@ -13,10 +13,9 @@
 #' @export
 #'
 
-expand_surveys <- function(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9) / 1000,
-                           lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60, 90, 100, 200,
-                                           400, 600, 1000),
-                           ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60)) {
+expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
+                           lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
+                           ages_cap = c(2, 5, 10, 20, 50)) {
   surveys <- expand.grid(set_den = set_den, lengths_cap = lengths_cap, ages_cap = ages_cap)
   data.table(survey = seq.int(nrow(surveys)), surveys)
 }

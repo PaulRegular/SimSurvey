@@ -9,7 +9,7 @@
 }
 
 ## Helper function for spatial covariance
-.sp_covar <- function(x = NULL, range = 40, lambda = 1, sd = 1, model = "matern") {
+.sp_covar <- function(x = NULL, range = 50, lambda = 1, sd = 1, model = "matern") {
   d <- .dist(x)
   cormat <- switch(model,
                    exponential = {
@@ -44,7 +44,7 @@
 #'
 #' @export
 
-sim_ays_covar <- function(sd = 10, range = 40, lambda = 1, model = "matern",
+sim_ays_covar <- function(sd = 0.5, range = 50, lambda = 1, model = "matern",
                           phi_age = 0.5, phi_year = 0.5,
                           group_ages = NULL, group_years = NULL) {
   function(x = NULL, ages = NULL, years = NULL, cells = NULL) {

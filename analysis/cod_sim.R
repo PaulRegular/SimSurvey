@@ -7,7 +7,7 @@ library(SimSurvey)
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 100000000,
+                     R = sim_R(mean = 30000000,
                                log_sd = 0.5,
                                random_walk = TRUE),
                      Z = sim_Z(mean = 0.5,
@@ -23,31 +23,26 @@ pop <- sim_abundance(ages = 1:20,
                                    n_div = 1,
                                    strat_breaks = seq(0, 1000, by = 20),
                                    strat_splits = 2),
-                   space_covar = sim_sp_covar(range = 40,
-                                              sd = 0.1),
-                   ay_covar = sim_ay_covar(sd = 10,
-                                           phi_age = 0.1,
-                                           phi_year = 0.8,
-                                           group_ages = 5:20),
-                   depth_par = sim_parabola(mu = 250,
-                                            sigma = 50))
+                   ays_covar = sim_ays_covar(sd = 2.8,
+                                             range = 300,
+                                             phi_age = 0.1,
+                                             phi_year = 0.9,
+                                             group_ages = 5:20),
+                   depth_par = sim_parabola(mu = 200,
+                                            sigma = 70))
 
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
-surveys <- expand_surveys(set_den = c(0.3, 0.5, 0.8,
-                                      1, 2, 3, 6, 9) / 1000,
-                          lengths_cap = c(2, 3, 5, 8, 10, 20,
-                                          30, 60, 90, 100, 200,
-                                          400, 600, 1000),
-                          ages_cap = c(2, 3, 5, 8, 10,
-                                       20, 30, 60))
-surveys[surveys$set_den == 0.003 &
-          surveys$lengths_cap == 400 &
-          surveys$ages_cap == 10, ]    ## survey 542 ~ roughly current protocol
+surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
+                          lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
+                          ages_cap = c(2, 5, 10, 20, 50))
+surveys[surveys$set_den == 0.002 &
+          surveys$lengths_cap == 500 &
+          surveys$ages_cap == 10, ]    ## survey 98 ~ roughly current protocol
 res <- test_surveys(pop,
                     surveys = surveys,
-                    keep_details = 542,
+                    keep_details = 98,
                     n_sims = 5,
                     n_loops = 100,
                     cores = 6,

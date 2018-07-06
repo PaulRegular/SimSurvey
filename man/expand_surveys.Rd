@@ -4,9 +4,8 @@
 \alias{expand_surveys}
 \title{Set-up a series of surveys from all combinations of settings supplied}
 \usage{
-expand_surveys(set_den = c(0.3, 0.5, 0.8, 1, 2, 3, 6, 9)/1000,
-  lengths_cap = c(2, 3, 5, 8, 10, 20, 30, 60, 90, 100, 200, 400, 600, 1000),
-  ages_cap = c(2, 3, 5, 8, 10, 20, 30, 60))
+expand_surveys(set_den = c(0.5, 1, 2, 5, 10)/1000, lengths_cap = c(5, 10,
+  20, 50, 100, 500, 1000), ages_cap = c(2, 5, 10, 20, 50))
 }
 \arguments{
 \item{set_den}{Vector of set densities (number of sets per [grid unit] squared)}
