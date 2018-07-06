@@ -192,6 +192,32 @@ plot(as.numeric(data_I$max.depth), data_I$number, xlab = "depth",
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
 
+## Compare intra-haul correlation
+idvar <- c("vessel", "trip", "set", "year")
+sub_lf <- merge(out$raw.data$set.details[, idvar], con.lf, by = idvar)
+sub_lf$set <- as.numeric(as.factor(with(sub_lf, paste(vessel, trip, set, year))))
+ind <- grep("^bin|^set$", names(con.lf)) # get length frequencies and expand to samples
+lf <- sub_lf[, ind]
+len_samp <- data.table::melt(lf, id.vars = "set")
+len_samp <- len_samp[len_samp$value > 0, ]
+len_samp$value <- round(len_samp$value)
+len_samp$length <- as.numeric(gsub("bin", "", len_samp$variable))
+len_samp <- len_samp[rep(row.names(len_samp), len_samp$value), c("set", "length")]
+len_samp <- data.table(len_samp)
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "real data")
+icc(len_samp$length, len_samp$set)
+
+len_samp <- survey$samp[survey$samp$measured, ]
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "simulated data")
+icc(len_samp$length, len_samp$set)
+
+
 
 ## Now size up the distribution
 
