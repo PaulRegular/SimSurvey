@@ -101,7 +101,7 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 100000000,
+                     R = sim_R(mean = 30000000,
                                log_sd = 0.5,
                                random_walk = TRUE),
                      Z = sim_Z(mean = 0.5,
@@ -117,23 +117,22 @@ pop <- sim_abundance(ages = 1:20,
                                    n_div = 1,
                                    strat_breaks = seq(0, 1000, by = 20),
                                    strat_splits = 2),
-                   space_covar = sim_sp_covar(range = 40,
-                                              sd = 0.1),
-                   ay_covar = sim_ay_covar(sd = 10,
-                                           phi_age = 0.1,
-                                           phi_year = 0.8,
-                                           group_ages = 5:20),
-                   depth_par = sim_parabola(mu = 250,
-                                            sigma = 50))
+                   ays_covar = sim_ays_covar(sd = 2.8,
+                                             range = 300,
+                                             phi_age = 0.1,
+                                             phi_year = 0.9,
+                                             group_ages = 5:20),
+                   depth_par = sim_parabola(mu = 200,
+                                            sigma = 70))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
 for (j in rev(pop$ages)) {
-  z <- xtabs(N ~ x + y, subset = age == j & year == 20, data = sp_N)
+  z <- xtabs(N ~ x + y, subset = age == j & year == 1, data = sp_N)
   image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("age", j))
 }
 for (i in rev(pop$years)) {
-  z <- xtabs(N ~ x + y, subset = age == 10 & year == i, data = sp_N)
+  z <- xtabs(N ~ x + y, subset = age == 1 & year == i, data = sp_N)
   image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
 }
 
@@ -207,13 +206,13 @@ symbols(survey$setdet$x, survey$setdet$y,
 
 
 ## Real data (hold age or year and animate the other)
-plot_ly(data = af[af$age == 5, ]) %>%
+plot_ly(data = af[af$age == 3, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
-              sizes = c(5, 500), showlegend = FALSE) %>%
+              sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
 plot_ly(data = af[af$survey.year == 2013, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
-              sizes = c(5, 500), showlegend = FALSE) %>%
+              sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 ## Younger ages (< 4) are somewhat random (because of distribution or catchability?),
 ## hoever, correlation is strong across age. Less strong through time.
@@ -234,18 +233,19 @@ plot_ly(data = af[af$survey.year == 2013, ]) %>%
 #           xlab = "x", ylab = "y")
 # }
 
+sim_af <- data.frame(survey$full_setdet)
 sim_af %>%
-  filter(age == 4) %>%
+  filter(age == 3) %>%
   group_by(year) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
-          sizes = c(5, 500), showlegend = FALSE) %>%
+          sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
   animation_opts(frame = 5)
 sim_af %>%
   filter(year == 20) %>%
   group_by(age) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
-          sizes = c(5, 500), showlegend = FALSE) %>%
+          sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
   animation_opts(frame = 500)
 

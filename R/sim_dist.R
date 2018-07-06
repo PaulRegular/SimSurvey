@@ -8,13 +8,32 @@
   }
 }
 
-#' Simulate exponential or Matern covariance
+## Helper function for spatial covariance
+.sp_covar <- function(x = NULL, range = 40, lambda = 1, sd = 1, model = "matern") {
+  d <- .dist(x)
+  cormat <- switch(model,
+                   exponential = {
+                     exp(-d / range)
+                   },
+                   matern = {
+                     kappa <- sqrt(8 * lambda) / range # approximate kappa from range as per R-INLA book
+                     2 ^ (1 - lambda) / gamma(lambda) * (kappa * d) ^ lambda *
+                       besselK(x = d * kappa, nu = lambda)
+                   },
+                   stop("wrong or no specification of covariance model"))
+
+  diag(cormat) <- 1
+  covar <- (sd ^ 2) * cormat
+  covar
+}
+
+#' Simulate age-year-space covariance
 #'
 #' @description These functions return a function to use inside \code{\link{sim_distribution}}.
 #'
 #' @param range       Decorrelation range
 #' @param lambda      Controls the degree of smoothness of Matern covariance process
-#' @param sd          Variance (can be age specific in \code{sim_ay_covar}).
+#' @param sd          Variance (can be age specific).
 #' @param phi_age     Defines autocorrelation through ages. Can be one value or a vector of the same
 #'                    length as ages
 #' @param phi_year    Defines autocorrelation through years. Can be one value or a vector of the same
@@ -23,38 +42,20 @@
 #' @param group_years Make space-age-year variance equal across these years
 #' @param model       String indicating either "exponential" or "matern" as the correlation function
 #'
-#' @rdname sim_sp_covar
 #' @export
-sim_sp_covar <- function(range = 40, lambda = 1, sd = 0.1, model = "matern") {
-  function(x = NULL) {
-    d <- .dist(x)
-    cormat <- switch(model,
-                     exponential = {
-                       exp(-d / range)
-                     },
-                     matern = {
-                       kappa <- sqrt(8 * lambda) / range # approximate kappa from range as per R-INLA book
-                       2 ^ (1 - lambda) / gamma(lambda) * (kappa * d) ^ lambda *
-                         besselK(x = d * kappa, nu = lambda)
-                     },
-                     stop("wrong or no specification of covariance model"))
 
-    diag(cormat) <- 1
-    covar <- (sd ^ 2) * cormat
-    covar
-  }
-}
-
-#' @rdname sim_sp_covar
-#' @export
-sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5,
-                         group_ages = NULL, group_years = NULL) {
-  function(ages = NULL, years = NULL, cells = NULL, w = NULL) {
+sim_ays_covar <- function(sd = 10, range = 40, lambda = 1, model = "matern",
+                          phi_age = 0.5, phi_year = 0.5,
+                          group_ages = NULL, group_years = NULL) {
+  function(x = NULL, ages = NULL, years = NULL, cells = NULL) {
 
     # Simple description of covariance:
     # In 2D: X_ay = X_a,y-1 + X_a-1,y - X_a-1,y-1 + error
     # at 1st age it is random walk in year,
     # and first year it is random walk in age
+
+    # There are probably better, more elegant and computationally efficient solutions
+    # to this problem.
 
     na <- length(ages)
     ny <- length(years)
@@ -97,8 +98,12 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5,
       for (i in seq_along(ages)) {
         if ((i == 1) & (j == 1)) {
           m <- 0
-          s <- sd[i] / pc_age[i]
-          E[i, j, ] <- w %*% rnorm(nc, m, s)
+          s <- sd[i] / (pc_age[i] * pc_year[j])
+          if (!exists("w1")) { # chol is costly, therefore only calculate once
+            Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
+            w1 <- t(chol(Sigma))
+          }
+          E[i, j, ] <- m + w1 %*% rnorm(nc)
         }
         if ((i > 1) & (j == 1)) {
           if (age_map[i] == age_map[i - 1]) {
@@ -106,7 +111,11 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5,
           } else {
             m <- phi_age[i] * E[i - 1, j, ]
             s <- sd[i] / pc_year[j]
-            E[i, j, ] <- w %*% rnorm(nc, m, s)
+            if (!exists("w2")) {
+              Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
+              w2 <- t(chol(Sigma))
+            }
+            E[i, j, ] <- m + w2 %*% rnorm(nc)
           }
         }
         if ((i == 1) & (j > 1)) {
@@ -115,7 +124,11 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5,
           } else {
             m <- phi_year[j] * E[i, j - 1, ]
             s <- sd[i] / pc_age[i]
-            E[i, j, ] <- w %*% rnorm(nc, m, s)
+            if (!exists("w3")) {
+              Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
+              w3 <- t(chol(Sigma))
+            }
+            E[i, j, ] <- m + w3 %*% rnorm(nc)
           }
         }
         if ((i > 1) & (j > 1)) {
@@ -129,7 +142,11 @@ sim_ay_covar <- function(sd = 10, phi_age = 0.5, phi_year = 0.5,
           if ((age_map[i] != age_map[i - 1]) & (year_map[j] != year_map[j - 1])) {
             m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
             s <- sd[i]
-            E[i, j, ] <- w %*% rnorm(nc, m, s)
+            if (!exists("w4")) { # chol is costly, therefore only calculate once
+              Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
+              w4 <- t(chol(Sigma))
+            }
+            E[i, j, ] <- m + w4 %*% rnorm(nc)
           }
 
         }
@@ -170,8 +187,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #' @param sim         An abundance at age matrix like one produced by \code{\link{sim_abundance}}
 #' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}
 #'                    or one produced by \code{\link{sim_grid}}
-#' @param space_covar Closure for simulating spatial covariance
-#' @param ay_covar    Closure for simulating age-year covariance
+#' @param ays_covar   Closure for simulating age-year-space covariance
 #' @param depth_par   Closure for defining relationship between abundance and depth
 #'
 #' @details This function simulates the probability of simulated fish inhabiting
@@ -188,17 +204,14 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 
 sim_distribution <- function(sim,
                              grid = sim_grid(),
-                             space_covar = sim_sp_covar(),
-                             ay_covar = sim_ay_covar(),
+                             ays_covar = sim_ays_covar(),
                              depth_par = sim_parabola()) {
 
   ## Space-age-year autoregressive process
   grid_dat <- data.table::data.table(raster::rasterToPoints(grid))
   setkeyv(grid_dat, "cell")
   xy <- grid_dat[, c("x", "y")]
-  Sigma_space <- space_covar(xy)
-  w <- t(chol(Sigma_space))
-  error <- ay_covar(ages = sim$ages, years = sim$years, cells = grid_dat$cell, w = w)
+  error <- ays_covar(x = xy, ages = sim$ages, years = sim$years, cells = grid_dat$cell)
 
   ## Relationship with depth
   depth <- depth_par(grid_dat$depth)

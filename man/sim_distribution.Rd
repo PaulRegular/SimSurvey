@@ -4,8 +4,8 @@
 \alias{sim_distribution}
 \title{Simulate spatial and temporal distribution}
 \usage{
-sim_distribution(sim, grid = sim_grid(), space_covar = sim_sp_covar(),
-  ay_covar = sim_ay_covar(), depth_par = sim_parabola())
+sim_distribution(sim, grid = sim_grid(), ays_covar = sim_ays_covar(),
+  depth_par = sim_parabola())
 }
 \arguments{
 \item{sim}{An abundance at age matrix like one produced by \code{\link{sim_abundance}}}
@@ -13,9 +13,7 @@ sim_distribution(sim, grid = sim_grid(), space_covar = sim_sp_covar(),
 \item{grid}{A raster object defining the survey grid, like \code{\link{survey_grid}}
 or one produced by \code{\link{sim_grid}}}
 
-\item{space_covar}{Closure for simulating spatial covariance}
-
-\item{ay_covar}{Closure for simulating age-year covariance}
+\item{ays_covar}{Closure for simulating age-year-space covariance}
 
 \item{depth_par}{Closure for defining relationship between abundance and depth}
 }

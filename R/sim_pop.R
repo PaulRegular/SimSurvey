@@ -68,7 +68,7 @@ sim_Z <- function(mean = 0.7, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot 
       for (i in seq_along(ages)) {
         if ((i == 1) & (j == 1)) {
           m <- 0
-          s <- log_sd / pc_age
+          s <- log_sd / (pc_age * pc_year)
           Z[i, j] <- rnorm(1, m, s)
         }
         if ((i > 1) & (j == 1)) {
