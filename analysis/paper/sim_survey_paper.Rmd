@@ -38,7 +38,7 @@ The next step in the simulation is to distribute the abundance-at-age matrix sim
 
 $$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
 
-Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or disperson of abundance around the mean. This helps simulate depth preferences of praticular fish. Residual noise $\xi_{a,y,s}$, which is assumed to follow $\xi_{a,y,s} \sim N(0, \Sigma_{a,y,s})$, is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Matérn covariance was controled by a variance ($\sigma_s^2$), smoothing ($\lambda$) and scaling parameter ($\kappa$) [@Blangiardo2015]. Like the process error, age and year covariance was controled by a variance parameter ($\sigma_{\xi}^2$) and two correlation parameters ($\varphi_{\xi, age}$ and $\varphi_{\xi, year}$). In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. A more detailed description of the space-age-year covariance is included in Appendix 1.
+Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or disperson of abundance around the mean. This helps simulate depth preferences of praticular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [@Blangiardo2015] and correlation across ages and years was controled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. A more detailed description of the space-age-year covariance is included in Appendix 1.
 
 The final step in the simulation is to conduct a stratified random survey over the age-year-space array generated using formula described above.
 
@@ -51,16 +51,14 @@ The final step in the simulation is to conduct a stratified random survey over t
 
 # Appendix 1: age-year-space covariance
 
-The simulation applied in this paper was set-up to control covariance across ages, years and space. Matern covariance was used to control the level of spatial aggregation:
+The simulation applied in this paper was set-up to control covariance across ages, years and space. To do this we used a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. As described in Appendix A in Cadigan [-@Cadigan2016], the age-year covariance can be broken down into a series of AR(1) processes. We integrate Matérn covariance into this series of equations:
 
-$$\Sigma_{s} = Cov(s_i, s_j) = \sigma_s^2 \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$ 
+$$\xi_{a,y,s} \sim \left\{\begin{matrix} MVN\left (0, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a = 1, y = 1 & \\  MVN\left (\varphi_{year} \xi_{1, y - 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)} \boldsymbol{R}_s \right ) & a = 1, y > 1 & \\ MVN\left (\varphi_{age} \xi_{a - 1, 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a > 1, y = 1 & \\ MVN\left (\varphi_{year} \xi_{a, y - 1, s} + \varphi_{age} (\xi_{a - 1, y, s} - \varphi_{year} \xi_{a - 1, y - 1, s}), \sigma_\xi^2 \boldsymbol{R}_s \right ) & a > 1, y > 1 & \end{matrix}\right.$$
 
-where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\sigma_s^2$ is the marginal variance, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ are parameters of the covariance [@Blangiardo2015]. This spatial covariance was used in conjunction with covariance described in Cadigan [-@Cadigan2016] to simulate error across ages, years and space:
+Where $MVN$ indicates the multivariate normal distribution, $\sigma_\xi^2$ controls the variance of the process, $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$ control correlation in the age and year dimension and $\boldsymbol{R}_s$ is defined by Matérn correlation:
 
-$$\xi_{a,y,s} = \left\{\begin{matrix}
- 0 + v_{a,y} + s_{s} & i = 1, j = 1 & \\ 
- &  & 
-\end{matrix}\right.$$
+$$\boldsymbol{R}_s = \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$
+where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ control the smoothness and scale of the spatial process [@Blangiardo2015]. With this structure, simulated error is correlated across ages, years and space.
 
 
 # References
