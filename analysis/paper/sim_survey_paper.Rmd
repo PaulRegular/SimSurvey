@@ -52,47 +52,70 @@ $$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{trawl}}{A_{cell}} q_a )$$
 Where $n_{a,y,s}$ is the number of fish sampled by a set, $A_{trawl}$ indicates the area covered by the trawl, $A_{cell}$ is the area of a grid cell (i.e. $R^2$), and $q_a$ is the catchability coefficient of each age. Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the original von Bertalanffy growth curve [@Cailliet2006]:
 
 $$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
-Where $l_{\infty}$ is the mean asymptotic lengths, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division.
+Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division.
 
 ## Simulation settings
 
-Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:test). 
+Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:par). A series of ### surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests).
 
 
 # Tables
 
-Table: (\#tab:test) Parameter descriptions, symbols and settings used in the cod case study.
+Table: (\#tab:par) Parameter descriptions, symbols and global settings used in the cod case study.
 
-                                       **Parameter name**                   **Symbol**      **Setting**
----------------------------------------------------------   --------------------------   --------------
-                                              *Abundance*
-                                                     Ages                          $a$             1:20
-                                                    Years                          $y$             1:20
-                                         Mean recruitment                      $\mu_r$              30M
-                    Standard deviation of log-recruitment                   $\sigma_r$              0.5
-                                     Mean total mortality                      $\mu_Z$              0.7
-                    Standard deviation of total mortality                   $\sigma_Z$              0.2
-  Correlation across ages in error around total mortality      $\varphi_{\delta, age}$              0.9
- Correlation across years in error around total mortality     $\varphi_{\delta, year}$              0.5
-                                                   *Grid*
-                                               Grid cells                          $s$           1:6400
-                                               Resolution                          $r$           3.5 km
-                                              Shelf depth                  $d_{shelf}$            200 m
-                                              Shelf width                  $w_{shelf}$           100 km
-                                              Depth range         $[d_{min}, d_{max}]$    [0 m, 1000 m]
-                                      Number of divisions                    $N_{div}$                1
-                                         Number of strata                  $N_{strat}$               42
-                                           *Distribution*
-        Standard deviation of age-year-space distribution               $\sigma_{\xi}$              2.8
-                        Smoothness of spatial correlation                    $\lambda$                1
-                             Range of spatial correlation                          $r$            50 km
-          Correlation across ages in spatial distribution         $\varphi_{\xi, age}$             0.1*
-         Correlation across years in spatial distribution        $\varphi_{\xi, year}$              0.9
-            Depth at which abundance is typically highest                      $\mu_d$            200 m
-                Dispersion around depth of peak abundance                   $\sigma_d$             70 m
-         
-
+|                                       **Parameter name** |                 **Symbol** |    **Setting** |
+|:-------------------------------------------------------- | :------------------------- | :------------- |
+|                                              *Abundance* |                            |                |  
+|                                                     Ages |                        $a$ |           1:20 |
+|                                                    Years |                        $y$ |           1:20 |
+|                                         Mean recruitment |                    $\mu_r$ |            30M |
+|                    Standard deviation of log-recruitment |                 $\sigma_r$ |            0.5 |
+|                                     Mean total mortality |                    $\mu_Z$ |            0.7 |
+|                    Standard deviation of total mortality |                 $\sigma_Z$ |            0.2 |
+|  Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |            0.9 |
+| Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |            0.5 |
+|                                                          |                            |                |  
+|                                                   *Grid* |                            |                | 
+|                                               Grid cells |                        $s$ |         1:6400 |
+|                                               Resolution |                        $R$ |         3.5 km |
+|                                              Shelf depth |                $d_{shelf}$ |          200 m |
+|                                              Shelf width |                $w_{shelf}$ |         100 km |
+|                                              Depth range |       $[d_{min}, d_{max}]$ |  [0 m, 1000 m] |
+|                                      Number of divisions |                  $N_{div}$ |              1 |
+|                                         Number of strata |                $N_{strat}$ |             42 |
+|                                                          |                            |                |  
+|                                           *Distribution* |                            |                | 
+|        Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |            2.8 |
+|                        Smoothness of spatial correlation |                  $\lambda$ |              1 |
+|                             Range of spatial correlation |                        $r$ |          50 km |
+|          Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |           0.1* |
+|         Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |            0.9 |
+|            Depth at which abundance is typically highest |                    $\mu_d$ |          200 m |
+|                Dispersion around depth of peak abundance |                 $\sigma_d$ |           70 m |
+|                                                          |                            |                |  
+|                                                 *Survey* |                            |                |
+|                                  Area covered by a trawl |                $A_{trawl}$ |     0.03 km^2^ |
+|              Steepness of logistic curve of catchability |                        $k$ |              2 |
+|               Midpoint of logistic curve of catchability |                      $x_0$ |              3 |
+|                                   Mean asymptotic length |               $l_{\infty}$ |            120 |
+|                                          Length at birth |                      $l_0$ |              5 |
+|                                              Growth rate |                        $K$ |            0.1 |
+|                                             Length group |                $l_{group}$ |              1 |  
 \* Distribution set to be equal for ages 5+
+
+
+Table: (\#tab:tests) Descriptions and settings of different survey sampling protocol tested in the cod case study. All possible combinations of the options below were tested.
+
+|      **Parameter name** |      **Symbol** |                                       **Setting** |
+|:----------------------- | :-------------- | :------------------------------------------------ |
+|             Set density |      $D_{sets}$ |    0.0005, 0.001, 0.002, 0.005, 0.01 sets / km^2^ |
+|  Length sampling effort |   $M_{lengths}$ |        5, 10, 20, 50, 100, 500, 100 lengths / set |
+|     Age sampling effort |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
+
+
+
+
+
          
                                            
          
