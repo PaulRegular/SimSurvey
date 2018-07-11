@@ -11,7 +11,13 @@ csl: ices-journal-of-marine-science.csl
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../..")
 ```
+
+```{r data, include = FALSE}
+load("analysis/cod_sim_exports/2018-07-07_test/test_output.RData")
+```
+
 
 # Abstract
 
@@ -54,10 +60,16 @@ Where $n_{a,y,s}$ is the number of fish sampled by a set, $A_{trawl}$ indicates 
 $$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
 Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division.
 
-## Simulation settings
+## Simulation settings and analysis
 
-Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:par). A series of ### surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests).
+Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:par). A series of `r nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain an estimate of abundance at age for each year for each simulation, $\hat{I}_{a,y,k}$. We used root-mean-squared error (RMSE) as a measure of the percision and bias of the abundance estimates from each survey:
 
+$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})}{N_a N_y N_k}}$$
+Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
+
+# Results
+
+# Discussion
 
 # Tables
 
