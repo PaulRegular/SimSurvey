@@ -18,6 +18,7 @@
 #' @param facet_by       Facet plot by "age" or "year"?
 #' @param col            Plot color
 #' @param cols           Plot colors
+#' @param main           Plot title
 #' @param ...            Additional arguments to pass to \code{\link{plotly::plot_ly}}.
 #'
 #' @import plotly
@@ -284,5 +285,108 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1,
                   margin = 0.1),
           nrows = 1, margin = 0.02, widths = c(0.6, 0.4),
           titleX = TRUE, titleY = TRUE)
+
+}
+
+
+#' @export
+#' @rdname plot_trend
+plot_total_abundance <- function(sim, which_year = 1, main = "") {
+
+  m <- list(
+    l = 0,
+    r = 0,
+    b = 0,
+    t = 0,
+    pad = 0
+  )
+
+  xax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    tickcolor = toRGB("white")
+  )
+  yax <- c(scaleanchor = "x", xax)
+
+  sp_N_tot <- sim$sp_N[year == which_year, list(N = sum(N)), by = c("year", "cell")]
+  xyz <- merge(sim$grid_xy, sp_N_tot, by = "cell")
+  size <- unique(diff(pretty(xyz$N, 25)))
+
+  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
+  df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
+
+  abun_plot <- plot_ly() %>%
+    add_trace(x = ~x, y = ~y, z = ~N, data = xyz, type = "contour",
+              contours = list(coloring = "lines", start = 0, end = max(xyz$N),
+                              size = size)) %>%
+    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
+              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
+              alpha = 0.1) %>%
+    colorbar(ticklen = 0, ypad = 20, xpad = 0, outlinewidth = 0, thickness = 10) %>%
+    layout(xaxis = xax, yaxis = yax, margin = m, legend = list(x = 0.5, y = 0.5),
+           annotations = list(text = main, xref = "paper", yref = "paper",
+                              x = 0.08, y = 1, showarrow = FALSE))
+  abun_plot
+
+}
+
+
+#' @export
+#' @rdname plot_trend
+plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
+
+  m <- list(
+    l = 0,
+    r = 0,
+    b = 0,
+    t = 0,
+    pad = 0
+  )
+
+  xax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    tickcolor = toRGB("white")
+  )
+  yax <- c(scaleanchor = "x", xax)
+
+  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
+  df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
+
+  setdet <- sim$setdet
+  setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
+
+  breaks <- pretty(setdet$n, 10)
+  breaks[breaks == 0] <- 1
+  labs <- c("0", breaks)
+  breaks[length(breaks)] <- max(setdet$n) + 1
+  breaks <- c(0, breaks)
+  setdet$n_int <- findInterval(setdet$n, breaks)
+  setdet$n_size <- breaks[setdet$n_int]
+  setdet$n_cat <- labs[setdet$n_int]
+  setdet$n_cat <- factor(setdet$n_cat, levels = labs)
+
+  set_plot <- plot_ly() %>%
+    add_markers(data = setdet,
+                x = ~x, y = ~y, size = ~n_size, color = ~n_cat, sizes = c(1, 30),
+                colors = viridis::viridis(100), alpha = 0.8, text = ~n) %>%
+    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
+              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
+              alpha = 0.1) %>%
+    layout(xaxis = xax, yaxis = yax, legend = list(x = 1, y = 0.9),
+           annotations = list(
+             list(text = "n", xref = "paper", yref = "paper",
+                              x = 1.06, y = 0.95, showarrow = FALSE),
+             list(text = main, xref = "paper", yref = "paper",
+                  x = 0.08, y = 1, showarrow = FALSE)
+           ),
+           margin = m)
+  set_plot
 
 }

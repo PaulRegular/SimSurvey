@@ -57,5 +57,13 @@ setMKLthreads() # turn hyperthreading on again
 load("analysis/cod_sim_exports/2018-07-07_test/test_output.RData")
 vis_sim(sim)
 
+abun_plot <- plot_total_abundance(sim)
+set_plot <- plot_set_catch(sim)
+export(abun_plot, file = "analysis/paper/figures/total_abundance.png",
+       vwidth = 1000, vheight = 800, zoom = 20)
+
+# plotly_IMAGE(abun_plot, out_file = "analysis/paper/figures/total_abundance.png")
+
+
 
 

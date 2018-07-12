@@ -8,6 +8,8 @@
 \alias{plot_error_cross_sections}
 \alias{plot_true_vs_est}
 \alias{plot_samp_dist}
+\alias{plot_total_abundance}
+\alias{plot_set_catch}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, col = viridis::viridis(1), ...)
@@ -26,6 +28,10 @@ plot_true_vs_est(sim, which_survey = 1, max_sims = 50, facet_by = "age",
 
 plot_samp_dist(sim, which_year = 1, which_sim = 1,
   col = viridis::viridis(1))
+
+plot_total_abundance(sim, which_year = 1, main = "")
+
+plot_set_catch(sim, which_year = 1, which_sim = 1, main = "")
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -54,6 +60,8 @@ plot_samp_dist(sim, which_year = 1, which_sim = 1,
 \item{which_year}{Subset to specific year}
 
 \item{which_sim}{Subset to specific sim}
+
+\item{main}{Plot title}
 }
 \description{
 These functions are simple plotting helpers to get some quick
