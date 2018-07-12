@@ -10,11 +10,20 @@ csl: ices-journal-of-marine-science.csl
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      dev = "png",
+                      dpi = 300)
 knitr::opts_knit$set(root.dir = "../..")
 ```
 
 ```{r data, include = FALSE}
+library(SimSurvey)
+library(plotly)
+library(raster)
+library(lattice)
+library(viridis)
 load("analysis/cod_sim_exports/2018-07-07_test/test_output.RData")
 ```
 
@@ -73,6 +82,26 @@ Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, res
 
 # Discussion
 
+
+
+# Acknowledgements
+
+- Feedback and advice: Alejandro Buren, Mariano Koen-Alonso, Karen Dwyer, Joanne Morgan, Geoff Evans, Don Power, Brian Healey, Martha Robertson, Danny Ings, Don Stansbury, Mark Simpson, Derek Osborne, Peter Upward, Brad Squires, Dwayne Pittman, Paul Higdon
+- Dave Cote for a review of a previous version of this manuscript
+
+
+# Appendix 1: age-year-space covariance
+
+The simulation applied in this paper was set-up to control covariance across ages, years and space. To do this we used a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. As described in Appendix A in Cadigan [-@Cadigan2016], the age-year covariance can be broken down into a series of AR(1) processes. We integrate Matérn covariance into this series of equations:
+
+$$\xi_{a,y,s} \sim \left\{\begin{matrix} MVN\left (0, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a = 1, y = 1 & \\  MVN\left (\varphi_{year} \xi_{1, y - 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)} \boldsymbol{R}_s \right ) & a = 1, y > 1 & \\ MVN\left (\varphi_{age} \xi_{a - 1, 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a > 1, y = 1 & \\ MVN\left (\varphi_{year} \xi_{a, y - 1, s} + \varphi_{age} (\xi_{a - 1, y, s} - \varphi_{year} \xi_{a - 1, y - 1, s}), \sigma_\xi^2 \boldsymbol{R}_s \right ) & a > 1, y > 1 & \end{matrix}\right.$$
+
+Where $MVN$ indicates the multivariate normal distribution, $\sigma_\xi^2$ controls the variance of the process, $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$ control correlation in the age and year dimension and $\boldsymbol{R}_s$ is defined by Matérn correlation:
+
+$$\boldsymbol{R}_s = \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$
+where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ control the smoothness and scale of the spatial process [@Blangiardo2015]. With this structure, simulated error is correlated across ages, years and space.
+
+
 # Tables
 
 Table: (\#tab:par) Parameter descriptions, symbols and global settings used in the cod case study.
@@ -127,31 +156,68 @@ Table: (\#tab:tests) Descriptions and settings of different survey sampling prot
 |     Age sampling effort |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
 
 
+# Figures
 
+```{r ex_fig, fig.height = 3.8, fig.width = 8.5}
 
+which_year <- 7
+which_sim <- 4
 
-         
-                                           
-         
+sp_N_tot <- sim$sp_I[year == which_year & sim == which_sim, list(N = sum(I)), by = c("year", "cell")]
+xyz <- merge(sim$grid_xy, sp_N_tot, by = "cell")
+size <- unique(diff(pretty(xyz$N, 25)))
 
-          
+sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
+df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
 
+r <- raster::rasterFromXYZ(xyz[, c("x", "y", "N")])
+l <- rasterToContour(r, levels = pretty(xyz$N, 20))
+df_lines <- suppressWarnings(fortify(l))
+levels <- as.numeric(as.character(l$level))
+levels <- paste0(levels / 1000, "k")
+labs <- levels
+labs[seq_along(labs) %% 2 == 0] <- ""
+levels <- factor(levels, levels = levels)
+names(levels) <- rownames(as.data.frame(l))
+df_lines$level <- levels[df_lines$id]
 
-# Acknowledgements
+abun_plot <- ggplot() +
+  geom_path(data = df_strat, aes(x = long, y = lat, group = group), 
+            color = "grey", size = 0.05) +
+  geom_path(data = df_lines, aes(x = long, y = lat, group = group, color = level),
+            size = 0.3) +
+  scale_color_viridis(labels = labs, discrete = TRUE, name = "N") + 
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  coord_equal() +
+  theme_void() + guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
+                                             default.unit = "cm", ncol = 1)) +
+  theme(legend.justification = c(0, 1),
+        plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
 
-- Feedback and advice: Alejandro Buren, Mariano Koen-Alonso, Karen Dwyer, Joanne Morgan, Geoff Evans, Don Power, Brian Healey, Martha Robertson, Danny Ings, Don Stansbury, Mark Simpson, Derek Osborne, Peter Upward, Brad Squires, Dwayne Pittman, Paul Higdon
-- Dave Cote for a review of a previous version of this manuscript
+setdet <- sim$setdet
+setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
 
-# Appendix 1: age-year-space covariance
+set_plot <- ggplot() +
+  geom_path(data = df_strat, aes(x = long, y = lat, group = group), 
+            color = "grey", size = 0.05) +
+  geom_point(data = setdet, aes(x = x, y = y, size = n, color = n), alpha = 0.8) +
+  scale_size_area(name = "   n", max_size = 10, breaks = pretty(setdet$n, 8)) +
+  scale_color_viridis(name = "   n", breaks = pretty(setdet$n, 8)) + 
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  coord_equal() +
+  theme_void() + guides(color = guide_legend(keywidth = 0.4, keyheight = 0.2, default.unit = "cm")) +
+  theme(legend.justification = c(0, 1),
+        plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
 
-The simulation applied in this paper was set-up to control covariance across ages, years and space. To do this we used a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. As described in Appendix A in Cadigan [-@Cadigan2016], the age-year covariance can be broken down into a series of AR(1) processes. We integrate Matérn covariance into this series of equations:
+p <- cowplot::plot_grid(abun_plot, set_plot, labels = c("a)", "b)"), align = "hv",
+                   label_fontface = "plain")
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/abun_and_sets_example.pdf",
+                   base_height = 3.8, base_width = 8.5)
+p
 
-$$\xi_{a,y,s} \sim \left\{\begin{matrix} MVN\left (0, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a = 1, y = 1 & \\  MVN\left (\varphi_{year} \xi_{1, y - 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)} \boldsymbol{R}_s \right ) & a = 1, y > 1 & \\ MVN\left (\varphi_{age} \xi_{a - 1, 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a > 1, y = 1 & \\ MVN\left (\varphi_{year} \xi_{a, y - 1, s} + \varphi_{age} (\xi_{a - 1, y, s} - \varphi_{year} \xi_{a - 1, y - 1, s}), \sigma_\xi^2 \boldsymbol{R}_s \right ) & a > 1, y > 1 & \end{matrix}\right.$$
-
-Where $MVN$ indicates the multivariate normal distribution, $\sigma_\xi^2$ controls the variance of the process, $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$ control correlation in the age and year dimension and $\boldsymbol{R}_s$ is defined by Matérn correlation:
-
-$$\boldsymbol{R}_s = \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$
-where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ control the smoothness and scale of the spatial process [@Blangiardo2015]. With this structure, simulated error is correlated across ages, years and space.
+```
 
 
 # References

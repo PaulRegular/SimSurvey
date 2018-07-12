@@ -379,10 +379,10 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
     add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
               hoverinfo = "none", size = I(0.5), showlegend = FALSE,
               alpha = 0.1) %>%
-    layout(xaxis = xax, yaxis = yax, legend = list(x = 1, y = 0.9),
+    layout(xaxis = xax, yaxis = yax, legend = list(x = 1, y = 0.85),
            annotations = list(
              list(text = "n", xref = "paper", yref = "paper",
-                              x = 1.06, y = 0.95, showarrow = FALSE),
+                              x = 1.09, y = 0.9, showarrow = FALSE),
              list(text = main, xref = "paper", yref = "paper",
                   x = 0.08, y = 1, showarrow = FALSE)
            ),
