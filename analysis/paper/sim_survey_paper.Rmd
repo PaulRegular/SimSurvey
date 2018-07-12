@@ -24,6 +24,7 @@ library(plotly)
 library(raster)
 library(lattice)
 library(viridis)
+library(data.table)
 load("analysis/cod_sim_exports/2018-07-07_test/test_output.RData")
 ```
 
@@ -78,7 +79,7 @@ Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, res
 
 # Results
 
-
+- add population trend plot?
 
 # Discussion
 
@@ -158,6 +159,50 @@ Table: (\#tab:tests) Descriptions and settings of different survey sampling prot
 
 # Figures
 
+```{r fig_fun}
+
+## http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
+format_si <- function(...) {
+  # Format a vector of numeric values according
+  # to the International System of Units.
+  # http://en.wikipedia.org/wiki/SI_prefix
+  #
+  # Based on code by Ben Tupper
+  # https://stat.ethz.ch/pipermail/r-help/2012-January/299804.html
+  # Args:
+  #   ...: Args passed to format()
+  #
+  # Returns:
+  #   A function to format a vector of strings using
+  #   SI prefix notation
+  #
+  
+  function(x) {
+    limits <- c(1e-24, 1e-21, 1e-18, 1e-15, 1e-12,
+                1e-9,  1e-6,  1e-3,  1e0,   1e3,
+                1e6,   1e9,   1e12,  1e15,  1e18,
+                1e21,  1e24)
+    prefix <- c("y",   "z",   "a",   "f",   "p",
+                "n",   "µ",   "m",   " ",   "k",
+                "M",   "G",   "T",   "P",   "E",
+                "Z",   "Y")
+  
+    # Vector with array indices according to position in intervals
+    i <- findInterval(abs(x), limits)
+  
+    # Set prefix to " " for very small values < 1e-24
+    i <- ifelse(i == 0, which(limits == 1e0), i)
+
+    paste0(format(round(x/limits[i], 1),
+                 trim = TRUE, scientific = FALSE, ...),
+          prefix[i])
+  }
+}
+si <- format_si()
+
+```
+
+
 ```{r ex_fig, fig.height = 3.8, fig.width = 8.5}
 
 which_year <- 7
@@ -174,7 +219,7 @@ r <- raster::rasterFromXYZ(xyz[, c("x", "y", "N")])
 l <- rasterToContour(r, levels = pretty(xyz$N, 20))
 df_lines <- suppressWarnings(fortify(l))
 levels <- as.numeric(as.character(l$level))
-levels <- paste0(levels / 1000, "k")
+levels <- si(levels)
 labs <- levels
 labs[seq_along(labs) %% 2 == 0] <- ""
 levels <- factor(levels, levels = levels)
@@ -218,6 +263,38 @@ cowplot::save_plot(plot = p, filename = "analysis/paper/figures/abun_and_sets_ex
 p
 
 ```
+
+
+```{r est_fig, fig.height = 9, fig.width = 8.5}
+
+which_survey <- 98
+
+d <- sim$age_strat_error
+d <- d[d$survey == which_survey & d$sim %in% 1:10, ]
+d$age[d$age > 15] <- 15 # aggregate beyond 15
+d$age <- as.character(d$age)
+d$age[d$age == "15"] <- "15+"
+d$age <- factor(d$age, levels = c(as.character(1:14), "15+"))
+d <- d[, list(I_hat = sum(I_hat), I = sum(I)), by = c("year", "age", "sim")]
+
+p <- ggplot(data = d) + 
+  geom_line(aes(x = year, y = I_hat, color = sim, group = sim), size = 0.3) +
+  geom_line(aes(x = year, y = I), color = viridis::viridis(1), size = 0.7) +
+  scale_color_viridis(begin = 0.5, guide = FALSE) +
+  facet_wrap(~age, scales = "free_y", dir = "v", nrow = 5) +
+  xlab("Year") + ylab("Abundance index") +
+  theme_minimal() +
+  scale_y_continuous(labels = format_si()) +
+  scale_x_continuous(expand = c(0.01, 0)) +
+  theme(legend.justification = c(0, 1),
+        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
+
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est.pdf",
+                   base_height = 9, base_width = 8.5)
+p
+
+```
+
 
 
 # References
