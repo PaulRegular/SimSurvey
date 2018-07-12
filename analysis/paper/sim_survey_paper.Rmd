@@ -153,7 +153,7 @@ Table: (\#tab:tests) Descriptions and settings of different survey sampling prot
 |      **Parameter name** |      **Symbol** |                                       **Setting** |
 |:----------------------- | :-------------- | :------------------------------------------------ |
 |             Set density |      $D_{sets}$ |    0.0005, 0.001, 0.002, 0.005, 0.01 sets / km^2^ |
-|  Length sampling effort |   $M_{lengths}$ |        5, 10, 20, 50, 100, 500, 100 lengths / set |
+|  Length sampling effort |   $M_{lengths}$ |       5, 10, 20, 50, 100, 500, 1000 lengths / set |
 |     Age sampling effort |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
 
 
@@ -295,6 +295,70 @@ p
 
 ```
 
+
+```{r error_fig, fig.height = 3, fig.width = 8.5, results = "hide"}
+
+trellis_theme <- list(
+  box.3d = list(col = "darkgrey"), 
+  axis.line = list(col = "transparent"),
+  strip.background = list(col = "transparent"), 
+  strip.border = list(col = "transparent"),
+   layout.heights = list(
+        top.padding = 0,
+        main.key.padding = 0,
+        key.axis.padding = 0,
+        axis.xlab.padding = 0,
+        xlab.key.padding = 0,
+        key.sub.padding = 0,
+        bottom.padding = -5
+    ),
+    layout.widths = list(
+        left.padding = 0,
+        key.ylab.padding = 0,
+        ylab.axis.padding = 0,
+        axis.key.padding = 0,
+        right.padding = 1
+    )
+)
+
+zscale_format <- function(lim, logsc = FALSE, ...) {
+    ans <- zscale.components.default(lim, logsc = logsc, ...)
+    ans$left$labels$labels <- si(ans$left$labels$at)
+    ans
+}
+
+d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+# d <- d[d$set_den != 0.0005, ]
+d <- d[d$set_den %in% c(0.0005, 0.002, 0.01)]
+set_den <- sort(unique(d$set_den))
+d$set_den <- factor(d$set_den)
+options(scipen = 999)
+labs <- sapply(seq_along(set_den), function(i) as.expression(bquote(D[sets] == .(set_den[i]))), 
+               USE.NAMES = FALSE)
+zlabs <- list(at = pretty(d$RMSE), labels = si(pretty(d$RMSE)))
+
+pdf("analysis/paper/figures/error_wireframe.pdf", height = 3, width = 8.5)
+
+p <- wireframe(RMSE ~  lengths_cap * ages_cap | set_den, data = d,
+          as.table = TRUE, drape = TRUE, col = "white", lwd = 0.5,
+          strip = strip.custom(factor.levels = labs),
+          scales = list(arrows = FALSE, cex = 0.7, z = zlabs),
+          col.regions = viridis::viridis(100),
+          screen = list(z = 230, x = 300), 
+          xlab = list(expression(M[lengths]), rot = 25), 
+          ylab = list(expression(M[ages]), rot = -15), 
+          zlab = list("RMSE", rot = 95),
+          colorkey = list(labels = zlabs, height = 0.6,
+                          axis.line = list(col = "darkgrey")),
+          par.settings = trellis_theme)
+p <- update(p, layout = c(3, 1))
+p
+
+dev.off()
+
+p
+
+```
 
 
 # References
