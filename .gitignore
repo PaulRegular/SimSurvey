@@ -11,3 +11,6 @@
 *.shx
 sim_survey_paper.docx
 .Rproj.user
+sim_survey_paper_cache/
+sim_survey_paper_files/
+
