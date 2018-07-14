@@ -205,7 +205,7 @@ si <- format_si()
 ```
 
 
-```{r sp-fig, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^."}
+```{r sp-fig, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^. Grey lines indicate depth-based survey strata."}
 
 which_year <- 7
 which_sim <- 4
@@ -267,23 +267,23 @@ p
 ```
 
 
-```{r est-fit, cache = TRUE, fig.height = 9, fig.width = 8.5, fig.cap = "- Stratified estimates of abundance at age across years from 10 simulations of a survey with a set density of 0.002 sets / km^2^ and sampling caps of 500 lengths per set and 10 ages per length group. The heavy dark line indicates the true tred in the population available to the survey."}
+```{r est-fit, cache = TRUE, fig.height = 8, fig.width = 7, fig.cap = "- Stratified estimates of abundance at age across years from 10 simulations of a survey with a set density of 0.002 sets / km^2^ and sampling caps of 500 lengths per set and 10 ages per length group. The heavy dark line indicates the true tred in the population available to the survey."}
 
 which_survey <- 98
 
 d <- sim$age_strat_error
-d <- d[d$survey == which_survey & d$sim %in% 1:10, ]
-d$age[d$age > 15] <- 15 # aggregate beyond 15
+d <- d[d$survey == which_survey & d$sim %in% 1:1000, ]
+d$age[d$age > 8] <- 8 # aggregate beyond 10
 d$age <- as.character(d$age)
-d$age[d$age == "15"] <- "15+"
-d$age <- factor(d$age, levels = c(as.character(1:14), "15+"))
+d$age[d$age == "8"] <- "8+"
+d$age <- factor(d$age, levels = c(as.character(1:7), "8+"))
 d <- d[, list(I_hat = sum(I_hat), I = sum(I)), by = c("year", "age", "sim")]
 
 p <- ggplot(data = d) + 
-  geom_line(aes(x = year, y = I_hat, color = sim, group = sim), size = 0.3) +
+  geom_line(aes(x = year, y = I_hat, color = sim, group = sim), size = 0.1) +
   geom_line(aes(x = year, y = I), color = viridis::viridis(1), size = 0.7) +
   scale_color_viridis(begin = 0.5, guide = FALSE) +
-  facet_wrap(~age, scales = "free_y", dir = "v", nrow = 5) +
+  facet_wrap(~age, scales = "free_y", dir = "v", nrow = 4) +
   xlab("Year") + ylab("Abundance index") +
   theme_minimal() +
   scale_y_continuous(labels = format_si()) +
@@ -292,7 +292,7 @@ p <- ggplot(data = d) +
         plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
 
 cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est.pdf",
-                   base_height = 9, base_width = 8.5)
+                   base_height = 8, base_width = 7)
 p
 
 ```
@@ -361,6 +361,67 @@ dev.off()
 p
 
 ```
+
+
+```{r age-fig, fig.width = 7, fig.height = 6}
+
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_year <- 5
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[d$sim %in% 1:1000 & d$year == which_year & d$set_den %in% which_set_dens &
+         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+d$age[d$age > 8] <- 8 # aggregate beyond 8
+d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
+       by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
+
+p <- ggplot(data = d) + 
+  geom_line(aes(x = age, y = I_hat, color = sim, group = sim), size = 0.1) +
+  geom_line(aes(x = age, y = I), color = viridis::viridis(1), size = 0.5) +
+  scale_color_viridis(begin = 0.5, guide = FALSE) +
+  facet_grid(set_den ~ lengths_cap) +
+  xlab("Age") + ylab("Abundance index") +
+  theme_minimal() +
+  scale_y_continuous(labels = format_si()) +
+  scale_x_continuous(expand = c(0.01, 0), 
+                     labels = c("2", "4", "6", "8+"), 
+                     breaks = seq(2, 8 , 2)) +
+  theme(legend.justification = c(0, 1),
+        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
+
+p
+
+```
+
+
+```{r year-fig, fig.width = 7, fig.height = 6}
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_age <- 4
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[d$sim %in% 1:1000 & d$age == which_age & d$set_den %in% which_set_dens &
+         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+
+p <- ggplot(data = d) + 
+  geom_line(aes(x = year, y = I_hat, color = sim, group = sim), size = 0.1) +
+  geom_line(aes(x = year, y = I), color = viridis::viridis(1), size = 0.5) +
+  scale_color_viridis(begin = 0.5, guide = FALSE) +
+  facet_grid(set_den ~ lengths_cap) +
+  xlab("Year") + ylab("Abundance index") +
+  theme_minimal() +
+  scale_y_continuous(labels = format_si()) +
+  scale_x_continuous(expand = c(0.01, 0)) +
+  theme(legend.justification = c(0, 1),
+        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
+
+p
+
+```
+
 
 
 # References
