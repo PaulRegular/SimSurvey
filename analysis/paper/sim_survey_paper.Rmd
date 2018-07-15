@@ -134,7 +134,7 @@ Table: (\#tab:par) - Parameter descriptions, symbols and global settings used in
 |        Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |            2.8 |
 |                        Smoothness of spatial correlation |                  $\lambda$ |              1 |
 |                             Range of spatial correlation |                        $r$ |          50 km |
-|          Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |           0.1* |
+|          Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |           0.5* |
 |         Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |            0.9 |
 |            Depth at which abundance is typically highest |                    $\mu_d$ |          200 m |
 |                Dispersion around depth of peak abundance |                 $\sigma_d$ |           70 m |
@@ -365,22 +365,36 @@ p
 
 ```{r age-fig, fig.width = 7, fig.height = 6}
 
-
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
 which_year <- 5
 
 d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$sim %in% 1:1000 & d$year == which_year & d$set_den %in% which_set_dens &
+d <- d[d$year == which_year & d$set_den %in% which_set_dens &
          d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
 d$age[d$age > 8] <- 8 # aggregate beyond 8
 d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
        by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
 
-p <- ggplot(data = d) + 
-  geom_line(aes(x = age, y = I_hat, color = sim, group = sim), size = 0.1) +
-  geom_line(aes(x = age, y = I), color = viridis::viridis(1), size = 0.5) +
-  scale_color_viridis(begin = 0.5, guide = FALSE) +
+## quantiles for fan plot
+quants <- seq(90, 10, by = -10)
+ints <- lapply(quants, function(q) {
+  d[, list(prob = paste0(q, "%"),
+           lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+           upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
+    by = c("year", "age", "set_den", "lengths_cap")]
+})
+ints <- rbindlist(ints)
+ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+
+true <- d[d$sim == 1, ]
+
+cols <- viridis::viridis(3)
+ggplot(data = ints) + 
+  geom_ribbon(aes(x = age, ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
+  geom_line(aes(x = age, y = I), data = d, color = cols[1], size = 1) +
+  scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
+  scale_alpha_discrete(name = "Pr") + 
   facet_grid(set_den ~ lengths_cap) +
   xlab("Age") + ylab("Abundance index") +
   theme_minimal() +
@@ -388,10 +402,11 @@ p <- ggplot(data = d) +
   scale_x_continuous(expand = c(0.01, 0), 
                      labels = c("2", "4", "6", "8+"), 
                      breaks = seq(2, 8 , 2)) +
+  guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
+                              default.unit = "cm", ncol = 1)) +
   theme(legend.justification = c(0, 1),
         plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
 
-p
 
 ```
 
@@ -400,28 +415,49 @@ p
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
-which_age <- 4
+which_age <- 6
 
 d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$sim %in% 1:1000 & d$age == which_age & d$set_den %in% which_set_dens &
-         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+d <- d[d$age == which_age & d$set_den %in% which_set_dens &
+       d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
 
-p <- ggplot(data = d) + 
-  geom_line(aes(x = year, y = I_hat, color = sim, group = sim), size = 0.1) +
-  geom_line(aes(x = year, y = I), color = viridis::viridis(1), size = 0.5) +
-  scale_color_viridis(begin = 0.5, guide = FALSE) +
+## quantiles for fan plot
+quants <- seq(90, 10, by = -10)
+ints <- lapply(quants, function(q) {
+  d[, list(prob = paste0(q, "%"),
+           lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+           upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
+    by = c("year", "age", "set_den", "lengths_cap")]
+})
+ints <- rbindlist(ints)
+ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+
+true <- d[d$sim == 1, ]
+
+cols <- viridis::viridis(3)
+ggplot(data = ints) + 
+  geom_ribbon(aes(x = year, ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
+  geom_line(aes(x = year, y = I), data = d, color = cols[1], size = 1) +
+  scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
+  scale_alpha_discrete(name = "Pr") + 
   facet_grid(set_den ~ lengths_cap) +
   xlab("Year") + ylab("Abundance index") +
   theme_minimal() +
   scale_y_continuous(labels = format_si()) +
   scale_x_continuous(expand = c(0.01, 0)) +
+  guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
+                              default.unit = "cm", ncol = 1)) +
   theme(legend.justification = c(0, 1),
         plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
 
-p
-
 ```
 
+
+## Figure to-dos
+
+- Fix facet labels (make them look like the wireframe plot)
+- Add RMSE label to colorkey in wireframe plot
+- Change vis_sim estimates plot to fan plots like used here
 
 
 # References
