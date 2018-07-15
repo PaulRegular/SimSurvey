@@ -25,7 +25,7 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
-load("analysis/cod_sim_exports/2018-07-07_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-07-13_test/test_output.RData")
 ```
 
 
@@ -208,7 +208,7 @@ si <- format_si()
 ```{r sp-fig, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^. Grey lines indicate depth-based survey strata."}
 
 which_year <- 7
-which_sim <- 4
+which_sim <- 1
 
 sp_N_tot <- sim$sp_I[year == which_year & sim == which_sim, list(N = sum(I)), by = c("year", "cell")]
 xyz <- merge(sim$grid_xy, sp_N_tot, by = "cell")
@@ -272,7 +272,7 @@ p
 which_survey <- 98
 
 d <- sim$age_strat_error
-d <- d[d$survey == which_survey & d$sim %in% 1:1000, ]
+d <- d[d$survey == which_survey & d$sim %in% 1:10, ]
 d$age[d$age > 8] <- 8 # aggregate beyond 10
 d$age <- as.character(d$age)
 d$age[d$age == "8"] <- "8+"
@@ -367,7 +367,7 @@ p
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
-which_year <- 5
+which_year <- 7
 
 d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
 d <- d[d$year == which_year & d$set_den %in% which_set_dens &
@@ -415,7 +415,7 @@ ggplot(data = ints) +
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
-which_age <- 6
+which_age <- 4
 
 d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
 d <- d[d$age == which_age & d$set_den %in% which_set_dens &
@@ -452,6 +452,46 @@ ggplot(data = ints) +
 
 ```
 
+
+```{r tot-fig, fig.width = 7, fig.height = 3}
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+
+d <- merge(sim$surveys, sim$total_strat_error, by = "survey")
+d <- d[d$set_den %in% which_set_dens & 
+         d$lengths_cap == 100 & d$ages_cap == 10, ] ## length and age sampling not a factor here
+
+## quantiles for fan plot
+quants <- seq(90, 10, by = -10)
+ints <- lapply(quants, function(q) {
+  d[, list(prob = paste0(q, "%"),
+           lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+           upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
+    by = c("year", "set_den")]
+})
+ints <- rbindlist(ints)
+ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+
+true <- d[d$sim == 1, ]
+
+cols <- viridis::viridis(3)
+ggplot(data = ints) + 
+  geom_ribbon(aes(x = year, ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
+  geom_line(aes(x = year, y = I), data = d, color = cols[1], size = 1) +
+  scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
+  scale_alpha_discrete(name = "Pr") + 
+  facet_wrap(~ set_den, nrow = 1) +
+  xlab("Year") + ylab("Abundance index") +
+  theme_minimal() +
+  scale_y_continuous(labels = format_si()) +
+  scale_x_continuous(expand = c(0.01, 0)) +
+  guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
+                              default.unit = "cm", ncol = 1)) +
+  theme(legend.justification = c(0, 1),
+        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
+
+```
 
 ## Figure to-dos
 

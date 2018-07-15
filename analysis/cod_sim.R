@@ -25,7 +25,7 @@ pop <- sim_abundance(ages = 1:20,
                                    strat_splits = 2),
                    ays_covar = sim_ays_covar(sd = 2.8,
                                              range = 300,
-                                             phi_age = 0.1,
+                                             phi_age = 0.5,
                                              phi_year = 0.9,
                                              group_ages = 5:20),
                    depth_par = sim_parabola(mu = 200,
@@ -49,12 +49,12 @@ res <- test_surveys(pop,
                     q = sim_logistic(k = 2, x0 = 3),
                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
                     export = "analysis/cod_sim_exports")
-# res <- resume_test(dir = "analysis/cod_sim_exports/2018-07-07_test")
+# res <- resume_test(dir = "analysis/cod_sim_exports/2018-07-13_test")
 setMKLthreads() # turn hyperthreading on again
 
 
 ## visualize results
-load("analysis/cod_sim_exports/2018-07-07_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-07-13_test/test_output.RData")
 vis_sim(sim)
 
 

@@ -119,7 +119,7 @@ pop <- sim_abundance(ages = 1:20,
                                    strat_splits = 2),
                    ays_covar = sim_ays_covar(sd = 2.8,
                                              range = 300,
-                                             phi_age = 0.1,
+                                             phi_age = 0.5,
                                              phi_year = 0.9,
                                              group_ages = 5:20),
                    depth_par = sim_parabola(mu = 200,
@@ -232,7 +232,7 @@ symbols(survey$setdet$x, survey$setdet$y,
 
 
 ## Real data (hold age or year and animate the other)
-plot_ly(data = af[af$age == 3, ]) %>%
+plot_ly(data = af[af$age == 5, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
@@ -261,14 +261,14 @@ plot_ly(data = af[af$survey.year == 2013, ]) %>%
 
 sim_af <- data.frame(survey$full_setdet)
 sim_af %>%
-  filter(age == 3) %>%
+  filter(age == 5) %>%
   group_by(year) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
           sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
   animation_opts(frame = 5)
 sim_af %>%
-  filter(year == 20) %>%
+  filter(year == 5) %>%
   group_by(age) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
           sizes = c(5, 1000), showlegend = FALSE) %>%
