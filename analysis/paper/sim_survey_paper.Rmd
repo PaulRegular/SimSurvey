@@ -202,6 +202,73 @@ format_si <- function(...) {
 }
 si <- format_si()
 
+## little helper function for the fan plot
+fan_plot <- function(d, x = "Age", total_strat = FALSE) {
+  
+  if (total_strat) {
+    ints_by = c("year", "set_den")
+  } else {
+    ints_by = c("year", "age", "set_den", "lengths_cap")
+  }
+  
+  ## quantiles for fan plot
+  quants <- seq(90, 10, by = -10)
+  ints <- lapply(quants, function(q) {
+    d[, list(prob = paste0(q, "%"),
+             lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+             upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
+      by = ints_by]
+  })
+  ints <- rbindlist(ints)
+  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+  
+  true <- d[d$sim %in% 1:3, ]
+  
+  if (x == "Age") {
+    p <- ggplot(data = ints, aes(x = age))
+    xlabs <- c("2", "4", "6", "8+")
+    xbreaks <- seq(2, 8 , 2)
+  }
+  if (x == "Year") {
+    p <- ggplot(data = ints, aes(x = year))
+    xlabs <- waiver()
+    xbreaks <- waiver()
+  }
+  
+  p <-  p + 
+    geom_ribbon(aes(ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
+    geom_line(aes(y = I), data = true, color = viridis::viridis(1), size = 0.7) +
+    scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
+    scale_alpha_discrete(name = "Pr") + 
+    xlab(x) + ylab("Abundance index") +
+    scale_y_continuous(labels = format_si()) +
+    scale_x_continuous(expand = c(0.01, 0), 
+                       labels = xlabs, 
+                       breaks = xbreaks) +
+    guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
+                                default.unit = "cm", ncol = 1))
+  
+  if (total_strat) {
+    p <- p + facet_wrap(~ set_den, nrow = 1,
+                        labeller = label_bquote(cols = D[sets]==.(set_den)))
+  } else {
+    p <- p + facet_grid(lengths_cap ~ set_den, 
+                        labeller = label_bquote(cols = D[sets]==.(set_den),
+                                                rows = M[lengths]==.(lengths_cap)))
+  }
+  
+  p + theme_bw() +
+    theme(legend.justification = c(0, 1),
+          plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"),
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          strip.background = element_blank(),
+          panel.border = element_rect(fill = NA, color = "darkgrey", size = 0.4),
+          axis.ticks = element_line(color = "darkgrey", size = 0.4))
+  
+}
+
+
 ```
 
 
@@ -266,36 +333,67 @@ p
 
 ```
 
+\pagebreak
 
-```{r est-fit, cache = TRUE, fig.height = 8, fig.width = 7, fig.cap = "- Stratified estimates of abundance at age across years from 10 simulations of a survey with a set density of 0.002 sets / km^2^ and sampling caps of 500 lengths per set and 10 ages per length group. The heavy dark line indicates the true tred in the population available to the survey."}
+```{r tot-fig, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."}
 
-which_survey <- 98
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
 
-d <- sim$age_strat_error
-d <- d[d$survey == which_survey & d$sim %in% 1:10, ]
-d$age[d$age > 8] <- 8 # aggregate beyond 10
-d$age <- as.character(d$age)
-d$age[d$age == "8"] <- "8+"
-d$age <- factor(d$age, levels = c(as.character(1:7), "8+"))
-d <- d[, list(I_hat = sum(I_hat), I = sum(I)), by = c("year", "age", "sim")]
+d <- merge(sim$surveys, sim$total_strat_error, by = "survey")
+d <- d[d$set_den %in% which_set_dens & 
+         d$lengths_cap == 100 & d$ages_cap == 10, ] ## length and age sampling not a factor here
 
-p <- ggplot(data = d) + 
-  geom_line(aes(x = year, y = I_hat, color = sim, group = sim), size = 0.1) +
-  geom_line(aes(x = year, y = I), color = viridis::viridis(1), size = 0.7) +
-  scale_color_viridis(begin = 0.5, guide = FALSE) +
-  facet_wrap(~age, scales = "free_y", dir = "v", nrow = 4) +
-  xlab("Year") + ylab("Abundance index") +
-  theme_minimal() +
-  scale_y_continuous(labels = format_si()) +
-  scale_x_continuous(expand = c(0.01, 0)) +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
-
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est.pdf",
-                   base_height = 8, base_width = 7)
+p <- fan_plot(d, x = "Year", total_strat = TRUE)
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/total_strat_true_vs_est.pdf",
+                   base_height = 3, base_width = 8)
 p
 
 ```
+
+\pagebreak
+
+
+```{r age-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."}
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_year <- 7
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[d$year == which_year & d$set_den %in% which_set_dens &
+         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+d$age[d$age > 8] <- 8 # aggregate beyond 8
+d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
+       by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
+
+p <- fan_plot(d, x = "Age")
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_age.pdf",
+                   base_height = 6, base_width = 8)
+p
+
+```
+
+\pagebreak
+
+```{r year-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true tred in the population available to the survey."}
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_age <- 4
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[d$age == which_age & d$set_den %in% which_set_dens &
+       d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+
+p <- fan_plot(d, x = "Year")
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_year.pdf",
+                   base_height = 6, base_width = 8)
+p
+
+```
+
+\pagebreak
 
 
 ```{r error-fig, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represnet the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)"}
@@ -322,6 +420,11 @@ trellis_theme <- list(
         right.padding = 1
     )
 )
+
+# wireframe_legend <- packGrob(
+#   draw.colorkey(key = list(col = viridis::viridis, at = do.breaks(range(z),100))), 
+#   textGrob("RMSE", x = 0, y = 0.5, just = c("left", "centre")), 
+#   height = unit(2, "lines"), side = "top", dynamic = TRUE)
 
 zscale_format <- function(lim, logsc = FALSE, ...) {
     ans <- zscale.components.default(lim, logsc = logsc, ...)
@@ -355,149 +458,16 @@ p <- wireframe(RMSE ~  lengths_cap * ages_cap | set_den, data = d,
           par.settings = trellis_theme)
 p <- update(p, layout = c(3, 1))
 p
+grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
 
-dev.off()
+invisible(dev.off())
 
 p
+grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
 
 ```
 
-
-```{r age-fig, fig.width = 7, fig.height = 6}
-
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_year <- 7
-
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$year == which_year & d$set_den %in% which_set_dens &
-         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
-d$age[d$age > 8] <- 8 # aggregate beyond 8
-d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
-       by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
-
-## quantiles for fan plot
-quants <- seq(90, 10, by = -10)
-ints <- lapply(quants, function(q) {
-  d[, list(prob = paste0(q, "%"),
-           lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-           upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
-    by = c("year", "age", "set_den", "lengths_cap")]
-})
-ints <- rbindlist(ints)
-ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-
-true <- d[d$sim == 1, ]
-
-cols <- viridis::viridis(3)
-ggplot(data = ints) + 
-  geom_ribbon(aes(x = age, ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
-  geom_line(aes(x = age, y = I), data = d, color = cols[1], size = 1) +
-  scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
-  scale_alpha_discrete(name = "Pr") + 
-  facet_grid(set_den ~ lengths_cap) +
-  xlab("Age") + ylab("Abundance index") +
-  theme_minimal() +
-  scale_y_continuous(labels = format_si()) +
-  scale_x_continuous(expand = c(0.01, 0), 
-                     labels = c("2", "4", "6", "8+"), 
-                     breaks = seq(2, 8 , 2)) +
-  guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
-                              default.unit = "cm", ncol = 1)) +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
-
-
-```
-
-
-```{r year-fig, fig.width = 7, fig.height = 6}
-
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_age <- 4
-
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$age == which_age & d$set_den %in% which_set_dens &
-       d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
-
-## quantiles for fan plot
-quants <- seq(90, 10, by = -10)
-ints <- lapply(quants, function(q) {
-  d[, list(prob = paste0(q, "%"),
-           lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-           upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
-    by = c("year", "age", "set_den", "lengths_cap")]
-})
-ints <- rbindlist(ints)
-ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-
-true <- d[d$sim == 1, ]
-
-cols <- viridis::viridis(3)
-ggplot(data = ints) + 
-  geom_ribbon(aes(x = year, ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
-  geom_line(aes(x = year, y = I), data = d, color = cols[1], size = 1) +
-  scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
-  scale_alpha_discrete(name = "Pr") + 
-  facet_grid(set_den ~ lengths_cap) +
-  xlab("Year") + ylab("Abundance index") +
-  theme_minimal() +
-  scale_y_continuous(labels = format_si()) +
-  scale_x_continuous(expand = c(0.01, 0)) +
-  guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
-                              default.unit = "cm", ncol = 1)) +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
-
-```
-
-
-```{r tot-fig, fig.width = 7, fig.height = 3}
-
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-
-d <- merge(sim$surveys, sim$total_strat_error, by = "survey")
-d <- d[d$set_den %in% which_set_dens & 
-         d$lengths_cap == 100 & d$ages_cap == 10, ] ## length and age sampling not a factor here
-
-## quantiles for fan plot
-quants <- seq(90, 10, by = -10)
-ints <- lapply(quants, function(q) {
-  d[, list(prob = paste0(q, "%"),
-           lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-           upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
-    by = c("year", "set_den")]
-})
-ints <- rbindlist(ints)
-ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-
-true <- d[d$sim == 1, ]
-
-cols <- viridis::viridis(3)
-ggplot(data = ints) + 
-  geom_ribbon(aes(x = year, ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
-  geom_line(aes(x = year, y = I), data = d, color = cols[1], size = 1) +
-  scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
-  scale_alpha_discrete(name = "Pr") + 
-  facet_wrap(~ set_den, nrow = 1) +
-  xlab("Year") + ylab("Abundance index") +
-  theme_minimal() +
-  scale_y_continuous(labels = format_si()) +
-  scale_x_continuous(expand = c(0.01, 0)) +
-  guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
-                              default.unit = "cm", ncol = 1)) +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"))
-
-```
-
-## Figure to-dos
-
-- Fix facet labels (make them look like the wireframe plot)
-- Add RMSE label to colorkey in wireframe plot
-- Change vis_sim estimates plot to fan plots like used here
+\pagebreak
 
 
 # References

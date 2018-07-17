@@ -94,22 +94,22 @@ pop <- sim_abundance(ages = 1:20,
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
-surveys <- expand_surveys(set_den = c(0.5, 2, 10) / 1000,
-                          lengths_cap = c(10, 100, 500, 1000),
-                          ages_cap = c(2, 10, 50))
+surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
+                          lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
+                          ages_cap = c(2, 5, 10, 20, 50))
 surveys[surveys$set_den == 0.002 &
           surveys$lengths_cap == 500 &
-          surveys$ages_cap == 10, ]    ## survey 20 ~ roughly current protocol
+          surveys$ages_cap == 10, ]    ## survey 98 ~ roughly current protocol
 sim <- test_surveys(pop,
                     surveys = surveys,
-                    keep_details = 20,
+                    keep_details = 98,
                     n_sims = 5,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 2, x0 = 3),
                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
                     export = "analysis/cod_sim_exports")
-# sim <- resume_test(dir = "analysis/cod_sim_exports/2018-07-15_test")
+# sim <- resume_test(dir = "analysis/cod_sim_exports/2018-07-16_test")
 setMKLthreads() # turn hyperthreading on again
 
 
