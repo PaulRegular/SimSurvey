@@ -93,18 +93,6 @@ Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, res
 - Dave Cote for a review of a previous version of this manuscript
 
 
-# Appendix 1: age-year-space covariance
-
-The simulation applied in this paper was set-up to control covariance across ages, years and space. To do this we used a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. As described in Appendix A in Cadigan [-@Cadigan2016], the age-year covariance can be broken down into a series of AR(1) processes. We integrate Matérn covariance into this series of equations:
-
-$$\xi_{a,y,s} \sim \left\{\begin{matrix} MVN\left (0, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a = 1, y = 1 & \\  MVN\left (\varphi_{year} \xi_{1, y - 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)} \boldsymbol{R}_s \right ) & a = 1, y > 1 & \\ MVN\left (\varphi_{age} \xi_{a - 1, 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a > 1, y = 1 & \\ MVN\left (\varphi_{year} \xi_{a, y - 1, s} + \varphi_{age} (\xi_{a - 1, y, s} - \varphi_{year} \xi_{a - 1, y - 1, s}), \sigma_\xi^2 \boldsymbol{R}_s \right ) & a > 1, y > 1 & \end{matrix}\right.$$
-
-Where $MVN$ indicates the multivariate normal distribution, $\sigma_\xi^2$ controls the variance of the process, $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$ control correlation in the age and year dimension and $\boldsymbol{R}_s$ is defined by Matérn correlation:
-
-$$\boldsymbol{R}_s = \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$
-where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ control the smoothness and scale of the spatial process [@Blangiardo2015]. With this structure, simulated error is correlated across ages, years and space.
-
-
 # Tables
 
 Table: (\#tab:par) - Parameter descriptions, symbols and global settings used in the cod case study.
@@ -333,7 +321,7 @@ p
 
 ```
 
-\pagebreak
+<br>
 
 ```{r tot-fig, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."}
 
@@ -351,7 +339,7 @@ p
 
 ```
 
-\pagebreak
+<br>
 
 
 ```{r age-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."}
@@ -374,9 +362,9 @@ p
 
 ```
 
-\pagebreak
+<br>
 
-```{r year-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true tred in the population available to the survey."}
+```{r year-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."}
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
@@ -393,10 +381,10 @@ p
 
 ```
 
-\pagebreak
+<br>
 
 
-```{r error-fig, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represnet the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)"}
+```{r error-fig, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)."}
 
 trellis_theme <- list(
   box.3d = list(col = "darkgrey"), 
@@ -420,11 +408,6 @@ trellis_theme <- list(
         right.padding = 1
     )
 )
-
-# wireframe_legend <- packGrob(
-#   draw.colorkey(key = list(col = viridis::viridis, at = do.breaks(range(z),100))), 
-#   textGrob("RMSE", x = 0, y = 0.5, just = c("left", "centre")), 
-#   height = unit(2, "lines"), side = "top", dynamic = TRUE)
 
 zscale_format <- function(lim, logsc = FALSE, ...) {
     ans <- zscale.components.default(lim, logsc = logsc, ...)
@@ -467,7 +450,117 @@ grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
 
 ```
 
-\pagebreak
+<br>
+
+
+
+# Appendix 1: age-year-space covariance
+
+The simulation applied in this paper was set-up to control covariance across ages, years and space. To do this we used a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. As described in Appendix A in Cadigan [-@Cadigan2016], the age-year covariance can be broken down into a series of AR(1) processes. We integrate Matérn covariance into this series of equations:
+
+$$\xi_{a,y,s} \sim \left\{\begin{matrix} MVN\left (0, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a = 1, y = 1 & \\  MVN\left (\varphi_{year} \xi_{1, y - 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{age}^2)} \boldsymbol{R}_s \right ) & a = 1, y > 1 & \\ MVN\left (\varphi_{age} \xi_{a - 1, 1, s}, \frac{\sigma_\xi^2}{(1 - \varphi_{year}^2)} \boldsymbol{R}_s \right ) & a > 1, y = 1 & \\ MVN\left (\varphi_{year} \xi_{a, y - 1, s} + \varphi_{age} (\xi_{a - 1, y, s} - \varphi_{year} \xi_{a - 1, y - 1, s}), \sigma_\xi^2 \boldsymbol{R}_s \right ) & a > 1, y > 1 & \end{matrix}\right.$$
+
+Where $MVN$ indicates the multivariate normal distribution, $\sigma_\xi^2$ controls the variance of the process, $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$ control correlation in the age and year dimension and $\boldsymbol{R}_s$ is defined by Matérn correlation:
+
+$$\boldsymbol{R}_s = \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$
+where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ control the smoothness and scale of the spatial process [@Blangiardo2015]. With this structure, simulated error is correlated across ages, years and space.
+
+
+# Appendix 2: results in the absence of intra-haul correlation
+
+In addition to the simulation run presented in body of this paper, which simulates surveys over a population that forms age-specific clusters, we also simulated surveys over a population that assumes the same spatial clustering across all age groups. There is therefore no intra-haul correlation in this series of surveys. Aside from this change to the spatial distribution settings, all other settings were kept the same. Results are presented below in Figures A1, A2 and A3. Aside from systematic underestimation in the low set density scenarios, there are little signs of clear bias in the stratified estimates. The bias present under the low set density scenario is likely related to the disproportionate sampling of the narrow shallow and deep strata in the survey grid. The lack of bias from the other scenarios help verify the issues introduced by age-specific clustering to stratified estimates of abundance at age. These results also indicate that little precision is gained by increasing length or age sampling effort beyond 100 lengths per set and 10 ages per length group, respectively. Given this result, it is probably not unreasonable to speculate that such sampling effort helps define the shape of the age distribution, but extra effort does little to improve estimates of abundance at age; such gains are only obtained by increasing set density.
+
+```{r appen-data}
+## this export holds the same distribution test
+load("analysis/cod_sim_exports/2018-07-16_test/test_output.RData")
+```
+
+
+```{r appen-age-fig, cache = TRUE, fig.width = 8, fig.height = 6}
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_year <- 7
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[d$year == which_year & d$set_den %in% which_set_dens &
+         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+d$age[d$age > 8] <- 8 # aggregate beyond 8
+d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
+       by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
+
+p <- fan_plot(d, x = "Age")
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/appen_true_vs_est_by_age.pdf",
+                   base_height = 6, base_width = 8)
+p
+
+```
+Figure A1 - Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey.
+
+<br>
+
+```{r appen-year-fig, cache = TRUE, fig.width = 8, fig.height = 6}
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_age <- 4
+
+d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
+d <- d[d$age == which_age & d$set_den %in% which_set_dens &
+       d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+
+p <- fan_plot(d, x = "Year")
+cowplot::save_plot(plot = p, filename = "analysis/paper/figures/appen_true_vs_est_by_year.pdf",
+                   base_height = 6, base_width = 8)
+p
+
+```
+Figure A2 - Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey.
+
+
+<br>
+
+
+```{r appen-error-fig, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide"}
+
+d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+# d <- d[d$set_den != 0.0005, ]
+d <- d[d$set_den %in% c(0.0005, 0.002, 0.01)]
+set_den <- sort(unique(d$set_den))
+d$set_den <- factor(d$set_den)
+options(scipen = 999)
+labs <- sapply(seq_along(set_den), function(i) as.expression(bquote(D[sets] == .(set_den[i]))), 
+               USE.NAMES = FALSE)
+zlabs <- list(at = pretty(d$RMSE), labels = si(pretty(d$RMSE)))
+
+pdf("analysis/paper/figures/appen_error_wireframe.pdf", height = 3, width = 8.5)
+
+p <- wireframe(RMSE ~  lengths_cap * ages_cap | set_den, data = d,
+          as.table = TRUE, drape = TRUE, col = "white", lwd = 0.5,
+          strip = strip.custom(factor.levels = labs),
+          scales = list(arrows = FALSE, cex = 0.7, z = zlabs),
+          col.regions = viridis::viridis(100),
+          screen = list(z = 230, x = 300), 
+          xlab = list(expression(M[lengths]), rot = 25), 
+          ylab = list(expression(M[ages]), rot = -15), 
+          zlab = list("RMSE", rot = 95),
+          colorkey = list(labels = zlabs, height = 0.6,
+                          axis.line = list(col = "darkgrey")),
+          par.settings = trellis_theme)
+p <- update(p, layout = c(3, 1))
+p
+grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
+
+invisible(dev.off())
+
+p
+grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
+
+```
+Figure A3 - Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$).
+
+<br>
+
 
 
 # References

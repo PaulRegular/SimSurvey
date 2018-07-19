@@ -114,7 +114,7 @@ setMKLthreads() # turn hyperthreading on again
 
 
 ## visualize results
-load("analysis/cod_sim_exports/2018-07-15_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-07-16_test/test_output.RData")
 vis_sim(sim)
 
 
