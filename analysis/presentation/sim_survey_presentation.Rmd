@@ -1,0 +1,94 @@
+---
+title: "Using simulation to optimize the sampling design of fisheries-independent trawl surveys"
+author: "Paul M. Regular & Fran Mowbray"
+date: "September XX, 2018"
+output:
+  ioslides_presentation:
+    widescreen: true
+    incremental: true
+    logo: dfo_logo.png
+    css: dfo_style.css
+---
+
+<style>
+
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      dev = "png",
+                      dpi = 300)
+knitr::opts_knit$set(root.dir = "../..")
+```
+
+
+```{r data, include = FALSE}
+library(SimSurvey)
+library(plotly)
+library(raster)
+library(lattice)
+library(viridis)
+library(data.table)
+# load("analysis/cod_sim_exports/2018-07-13_test/test_output.RData")
+```
+
+## Fisheries-independent trawl surveys
+
+<div class="columns-2">
+
+- Conducted by many RFMOs
+- Becoming increasingly important in stock assessment
+- Very costly 💰
+- General goal:
+    - Maximize information & minimize expenses
+
+<p class="forceBreak"></p>
+
+<br>
+<img src="graphics/teleost_twitter_crop.jpg" width="400"/>
+<font size="1"> 
+&nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">@CoastGuardCAN</a>
+</font>
+
+</div>
+
+
+## Fisheries-independent trawl surveys
+
+<div class="columns-2">
+
+How much survey effort is enough?
+
+1. Sub-sampling
+    - Truth unknown
+    - Small sample size effect
+2. Simulation
+    - Truth controlled
+    - Reality?
+    
+<p class="forceBreak"></p>
+
+<br>
+<img src="graphics/teleost_twitter_crop.jpg" width="400"/>
+<font size="1"> 
+&nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">@CoastGuardCAN</a>
+</font>
+
+</div>
+
+
+## **Reality is complicated** {data-background=graphics/school_light.png data-background-size=cover}
+
+- **Spatial aggregation**
+- **Habitat preferences**
+- **Survey design**
+
+
+

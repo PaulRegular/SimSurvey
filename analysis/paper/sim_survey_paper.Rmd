@@ -10,6 +10,9 @@ csl: ices-journal-of-marine-science.csl
 ---
 
 ```{r setup, include=FALSE}
+
+devtools::install_github("rstudio/rmarkdown@v1.10")
+
 knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       warning = FALSE,
@@ -31,7 +34,7 @@ load("analysis/cod_sim_exports/2018-07-13_test/test_output.RData")
 
 # Abstract
 
-A central question to fish stock assessments is: how many samples are needed to adequately represent the population being monitored? For assessments based on trawl surveys, our ability to estimate population characteristics, such as abundance at age, is affected by multiple levels of sampling (i.e. the number of sets, lengths and ages sampled in a survey). We therefore need to assess the impact of haul design and length and age sampling on survey accuracy to determine optimal sampling effort. In this study we simulated repeated stratified-random samples from a spatially correlated field of simulated fish. These samples were then analyzed and estimates of abundance at age were compared against a known truth. By varying the sampling protocol, we demonstrate that increasing the number of sets conducted per stratum provides the greatest gains in precision when sampling a clustered population. Increasing length and age sampling efforts also improved abundance estimates, but to a lesser extent. These results indicate that length and age sampling efforts for some species(e.g. cod *Gadus morhua*) in the trawl survey conducted by regional fisheries management organizations can be scaled back without significant losses to precision. Time saved by reducing said sampling may afford more time to conduct additional sets and/or increase sampling efforts of other species. While this simulation is tailored to a specific case, the method may be adapted to different systems and survey procedures.
+A central question to fish stock assessments is: how many samples are needed to adequately represent the population being monitored? For assessments based on trawl surveys, our ability to estimate population characteristics, such as abundance at age, is affected by multiple levels of sampling (i.e. the number of sets, lengths and ages sampled in a survey). We therefore need to assess the impact of haul design and length and age sampling on survey accuracy to determine optimal sampling effort. In this study we simulated repeated stratified-random samples from a spatially correlated field of simulated fish. These samples were then analyzed and estimates of abundance at age were compared against a known truth. By varying the sampling protocol, we demonstrate that increasing the number of sets conducted per stratum provides the greatest gains in precision when sampling a clustered population. Increasing length and age sampling efforts also improved abundance estimates, but to a lesser extent. These results indicate that length and age sampling efforts for some species(e.g. cod *Gadus morhua*) in trawl surveys conducted by regional fisheries management organizations can be scaled back without significant losses to precision. Time saved by reducing said sampling may afford more time to conduct additional sets and/or increase sampling efforts of other species. While this simulation is tailored to a specific case, the method may be adapted to different systems and survey procedures.
 
 **Keywords** - length and age distribution; simulation; spatial correlation; stratified analysis; statistical assessment models; survey design
 
