@@ -1,13 +1,14 @@
 ---
 title: "Using simulation to optimize the sampling design of fisheries-independent trawl surveys"
 author: "Paul M. Regular & Fran Mowbray"
-date: "September XX, 2018"
+date: "September 6^th^, 2018"
 output:
   ioslides_presentation:
     widescreen: true
     incremental: true
     logo: dfo_logo.png
     css: dfo_style.css
+bibliography: references.bib
 ---
 
 <style>
@@ -37,11 +38,17 @@ library(lattice)
 library(viridis)
 library(data.table)
 # load("analysis/cod_sim_exports/2018-07-13_test/test_output.RData")
+
+boat_txt <- '<br>
+<img src="graphics/teleost_twitter_crop.jpg" width="400"/>
+<font size="1"> 
+<br>
+&nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">Canadian Coast Guard | Twitter</a>
+</font>'
+
 ```
 
-## Fisheries-independent trawl surveys
-
-<div class="columns-2">
+## Fisheries-independent trawl surveys {.columns-2}
 
 - Conducted by many RFMOs
 - Becoming increasingly important in stock assessment
@@ -51,44 +58,85 @@ library(data.table)
 
 <p class="forceBreak"></p>
 
-<br>
-<img src="graphics/teleost_twitter_crop.jpg" width="400"/>
-<font size="1"> 
-&nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">@CoastGuardCAN</a>
-</font>
-
-</div>
+```{r results = "asis"}
+cat(boat_txt)
+```
 
 
-## Fisheries-independent trawl surveys
+## Fisheries-independent trawl surveys {.columns-2}
 
-<div class="columns-2">
-
-How much survey effort is enough?
-
-1. Sub-sampling
-    - Truth unknown
-    - Small sample size effect
-2. Simulation
-    - Truth controlled
-    - Reality?
+- How much survey effort is enough?
+    - Difficult to answer
+        - Multi-stage sampling
+        - Intra-haul correlation
     
 <p class="forceBreak"></p>
 
-<br>
-<img src="graphics/teleost_twitter_crop.jpg" width="400"/>
-<font size="1"> 
-&nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">@CoastGuardCAN</a>
-</font>
+```{r results = "asis"}
+cat(boat_txt)
+```
 
-</div>
+
+## Multi-stage sampling
+
+Surveys are generally designed to:
+
+<font size="8"> 1 </font> | <font size="8"> 2 </font> | <font size="8"> 3 </font>
+:----: | :----: | :----:
+Conduct sets at multiple locations | Sub-sample catch for length measurements | Sub-sampling length groups for age determination
+<img src="graphics/trawl_survey_crop.jpg" height="180"/> | <img src="graphics/cod_length.jpg" height="120"/> | <img src="graphics/Otoliths2_crop.jpg" height="140"/>
+
+## Intra-haul correlation
+
+Sampling clusters of fish that have similar characteristics (e.g. length)
+
+- Results in samples with positive intra-haul correlation
+    - Reduces effective sample size
+
+<center> <img src="graphics/plos_figure_crop.png" height="300"/> 
+<br>
+<font size="1"> 
+Graphic from <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002915">Tunstrøm et al (2013) PLoS Comput Biol 9(2): e1002915.</a> 
+</font>
+</center>
+
+## Fisheries-independent trawl surveys {.columns-2}
+
+- How much survey effort is enough?
+    - Attempt to answer using:
+        - Sub-sampling
+            - Based in reality
+            - Truth unknown
+        - Simulation
+            - Truth known
+            - Reality?
+    
+<p class="forceBreak"></p>
+
+```{r results = "asis"}
+cat(boat_txt)
+```
 
 
 ## **Reality is complicated** {data-background=graphics/school_light.png data-background-size=cover}
 
+- **Dynamic abundance**
 - **Spatial aggregation**
-- **Habitat preferences**
 - **Survey design**
+- **_Objective: build a simulation that emulates reality_**
 
 
+## Step 1: Simulate abundance
+
+- Common cohort model
+    - $N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$
+- First year filled via exponential decay
+    -  $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$
+- Random-walk in recruitment
+    - $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, where $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$
+- Total mortality correlated across ages and years
+    - $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$, where $\delta_{a,y} \sim N(0, \Sigma_{a,y})$
+        - Using covariance, $\Sigma_{a,y}$, described in Cadigan [-@Cadigan2016]
+
+## References
 

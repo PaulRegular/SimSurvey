@@ -11,6 +11,7 @@
 *.shx
 *.png
 *.jpg
+*.svg
 *.html
 sim_survey_paper.docx
 .Rproj.user

@@ -45,3 +45,38 @@ li:first-child {
 }
 
 
+/* table style */
+/* https://stackoverflow.com/questions/25869429/custom-table-with-r-markdown-v2-and-ioslides */
+table,
+.table-condensed,
+table.rmdtable {
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+table,
+.table-condensed,
+table.rmdtable,
+table.rmdtable .header th,
+.table > thead > tr > th {
+  border-collapse: collapse;
+  border-style: solid;
+  border-spacing: 0;
+  border-width: medium 0 medium 0;
+  border-color: inherit
+}
+table.rmdtable th,
+table.rmdtable td,
+table th,
+table.rmdtable tr > td:first-child,
+table.rmdtable .even {
+  font-size: 100%;
+  padding: 0.4em 0.5em;
+  color: inherit;
+  background: #FFF;
+  font-weight: normal;
+}
+.table > tbody > tr > td {
+  border-width: 0;
+}
+
