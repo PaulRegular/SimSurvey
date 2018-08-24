@@ -35,7 +35,7 @@ plot_trend <- function(sim, col = viridis::viridis(1), ...) {
 #' @export
 #' @rdname plot_trend
 plot_surface <- function(sim, mat = "N", ...) {
-  plot_ly(x = sim$ages, y = sim$years, z = sim[[mat]], type = "surface",
+  plot_ly(x = sim$ages, y = sim$years, z = t(sim[[mat]]), type = "surface",
           ...) %>%
     layout(
       scene = list(
