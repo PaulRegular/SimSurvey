@@ -4,6 +4,7 @@
 \alias{plot_trend}
 \alias{plot_surface}
 \alias{plot_distribution}
+\alias{plot_distribution_slider}
 \alias{plot_error_surface}
 \alias{plot_error_cross_sections}
 \alias{plot_true_vs_est}
@@ -18,6 +19,8 @@ plot_surface(sim, mat = "N", ...)
 
 plot_distribution(sim, ages = 1, years = 1, type = "contour",
   axes = TRUE, scale = "natural", ...)
+
+plot_distribution_slider(sim, ages = 1, years = 1)
 
 plot_error_surface(sim)
 

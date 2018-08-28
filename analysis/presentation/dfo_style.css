@@ -80,3 +80,16 @@ table.rmdtable .even {
   border-width: 0;
 }
 
+/* tighter margins */
+.tighter > p {
+  margin-top: -25px;
+}
+
+/* header format */
+h3 {
+  font-size: 25px;
+  margin-top: -50px;
+}
+
+
+

@@ -24,8 +24,8 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       warning = FALSE, 
-                      fig.height = 4.5, 
-                      fig.width = 10)
+                      fig.width = 10, 
+                      fig.height = 5)
 knitr::opts_knit$set(root.dir = "../..")
 ```
 
@@ -33,6 +33,7 @@ knitr::opts_knit$set(root.dir = "../..")
 ```{r data, include = FALSE}
 library(SimSurvey)
 library(plotly)
+library(crosstalk)
 library(raster)
 library(lattice)
 library(viridis)
@@ -45,6 +46,16 @@ boat_txt <- '<br>
 <br>
 &nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">Canadian Coast Guard | Twitter</a>
 </font>'
+
+## wrapper for layout with some different defaults for this slideshow
+tight_layout <- function(p, 
+                         plot_bgcolor = "transparent",
+                         paper_bgcolor = "transparent",
+                         margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
+                         font = list(size = 14), ..., data = NULL) {
+  layout(p, plot_bgcolor = plot_bgcolor, paper_bgcolor = paper_bgcolor,
+         margin = margin, font = font, ..., data = data)
+}
 
 ```
 
@@ -140,32 +151,25 @@ cat(boat_txt)
     - $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$, where $\delta_{a,y} \sim N(0, \Sigma_{a,y})$
         - Using covariance, $\Sigma_{a,y}$, described in Cadigan [-@Cadigan2016]
 
-## Simulate abundance
+## Simulate abundance {.tighter}
 
-Trend in total abundance
+### Trend in total abundance
 
-<dev class = "centered"> 
+<dev class = "left">
 <!-- There is a bug somewhere...had to contain plotly plots in a dev to get it working -->
 ```{r}
 plot_trend(sim) %>% 
-  layout(plot_bgcolor = "transparent",
-         paper_bgcolor = "transparent",
-         margin = list(l = 70, r = 0, t = 0, b = 40, pad = 0),
-         font = list(size = 14))
+  tight_layout(margin = list(l = 70, r = 0, t = 0, b = 40, pad = 0))
 ```
 </dev>
 
-## Simulate abundance
+## Simulate abundance {.tighter}
 
-Trend in abundance at age
+### Trend in abundance at age
 
-<dev class = "centered">
+<dev class = "left">
 ```{r}
-plot_surface(sim) %>% 
-  layout(plot_bgcolor = "transparent",
-         paper_bgcolor = "transparent",
-         margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
-         font = list(size = 14))
+plot_surface(sim) %>% tight_layout()
 ```
 </dev>
 
@@ -178,11 +182,45 @@ plot_surface(sim) %>%
         - $\eta_{a,y,s} = \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s}$
         - $\xi_{a,y,s}$ is a combination of Matérn covariance and the age-year covariance described in Cadigan [-@Cadigan2016]
 
+
+## Simulate spatial aggregation  {.tighter}
+
+### Square grid with depth gradient
+
+<dev class = "left">
+```{r}
+plot_ly(data = sim$grid_xy, x = ~x, y = ~y, z = ~depth, type = "heatmap") %>%
+  colorbar(title = "Depth") %>%
+  tight_layout(yaxis = list(title = "", scaleanchor = "x", zeroline = FALSE, 
+                            showgrid = FALSE, showticklabels = FALSE,
+                            tickcolor = "transparent"),
+               xaxis = list(title = "", zeroline = FALSE, 
+                            showgrid = FALSE, showticklabels = FALSE,
+                            tickcolor = "transparent"))
+```
+</dev>
+
+
+## Simulate spatial aggregation {.tighter}
+
+### Distribution for ages 1-6 in years 1-6
+
+<dev class = "left">
+```{r}
+plot_distribution_slider(sim, ages = 1:6, years = 1:6) %>% 
+  tight_layout(margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
+```
+</dev>
+
+
 ## Todo
 
 - Try and figure out the bug that prevents the plotly plots from working in this part of the slideshow (alternate fix to containing it in a device)
 - Figure out how to use the Google Font with plotly
 - Set-up global layout arguents somehow
+- Figure out how to make a sub-title for a slide below main title
+- Reverse color ramp in grid figure
+- Frame by year for spatial abundance plot (consider fixing one year, animate age / fix age and animate year)
 
 ## References
 

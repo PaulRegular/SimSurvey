@@ -57,7 +57,7 @@ plot_distribution <- function(sim, ages = 1, years = 1,
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = toRGB("white")
+    tickcolor = "transparent"
   )
   yax <- c(scaleanchor = "x", xax)
 
@@ -76,6 +76,60 @@ plot_distribution <- function(sim, ages = 1, years = 1,
     }
   }
   subplot(p, nrows = length(ages), shareX = TRUE, shareY = TRUE)
+
+}
+
+
+#' @export
+#' @rdname plot_trend
+plot_distribution_slider <- function(sim, ages = 1, years = 1) {
+
+  xax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    tickcolor = "transparent"
+  )
+  yax <- c(scaleanchor = "x", xax)
+
+  d <- merge(sim$grid_xy, sim$sp_N[age %in% ages & year %in% years, ], by = "cell")
+  d$ay <- paste(d$age, d$year, sep = "-")
+  split_d <- split(d, d$ay)
+  split_d <- lapply(split_d, function(.) {
+    xtabs(N ~ x + y, data = ., subset = NULL)
+  })
+  x <- sort(unique(d$x))
+  y <- sort(unique(d$y))
+
+  p <- plot_ly(x = ~x, y = ~y)
+  visible <- rep(TRUE, length(split_d))
+  showscale <- rep(FALSE, length(split_d))
+  showscale[1] <- TRUE
+  steps <- list()
+  for (i in seq_along(split_d)) {
+    vis <- rep(FALSE, length(split_d))
+    vis[i] <- TRUE
+    p <- p %>% add_trace(type = "contour",
+                         z = split_d[[i]],
+                         visible = i == 1,
+                         showscale = vis,
+                         name = names(split_d)[i],
+                         colorbar = list(title = "N")) %>%
+      layout(xaxis = xax, yaxis = yax)
+
+    steps[[i]] <- list(args = list(list(visible = vis,
+                                        showscale = vis)),
+                       method = "update",
+                       label = names(split_d)[i])
+  }
+
+  p %>%
+    layout(sliders = list(list(
+      currentvalue = list(prefix = "Age-Year: "),
+      steps = steps
+    )))
 
 }
 
