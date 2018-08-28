@@ -52,7 +52,8 @@ tight_layout <- function(p,
                          plot_bgcolor = "transparent",
                          paper_bgcolor = "transparent",
                          margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
-                         font = list(size = 14), ..., data = NULL) {
+                         font = list(size = 14, family = "'Montserrat', sans-serif"), 
+                         ..., data = NULL) {
   layout(p, plot_bgcolor = plot_bgcolor, paper_bgcolor = paper_bgcolor,
          margin = margin, font = font, ..., data = data)
 }
@@ -213,14 +214,42 @@ plot_distribution_slider(sim, ages = 1:6, years = 1:6) %>%
 </dev>
 
 
+## Simulate survey
+
+- Split grid into $N_{div}$ divisions and $N_{strat}$ depth-based strata
+- Set allocation defined by specifying set density, $D_{sets}$
+- Binomial sampling was used to simulate catch:
+    - $n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{trawl}}{A_{cell}} q_a )$
+    - Accounts for trawl size relative to cell size, $\frac{A_{trawl}}{A_{cell}}$, and catchability, $q_a$ (controled using a logistic curve)
+    
+## Simulate survey
+
+- Lengths simulated using the original von Bertalanffy growth curve [@Cailliet2006]:
+    - $log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$, where $\varepsilon \sim N(0, \sigma_{l}^2)$
+- Sub-sampling is then conducted
+    - A maximum number of lengths are measured per set, $M_{lengths}$
+    - A maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division
+
+
+## Simulate survey {.tighter}
+
+### Catch in year 1 survey simulation 1
+
+<dev class = "left">
+```{r}
+plot_samp_dist(sim) %>% 
+  tight_layout(margin = list(l = 0, r = 0, t = 0, b = 40, pad = 0))
+```
+</dev>
+
+
+## Acknowledgements
+
+- Todo
+
 ## Todo
 
 - Try and figure out the bug that prevents the plotly plots from working in this part of the slideshow (alternate fix to containing it in a device)
-- Figure out how to use the Google Font with plotly
-- Set-up global layout arguents somehow
-- Figure out how to make a sub-title for a slide below main title
-- Reverse color ramp in grid figure
-- Frame by year for spatial abundance plot (consider fixing one year, animate age / fix age and animate year)
 
-## References
+## References {.smaller}
 

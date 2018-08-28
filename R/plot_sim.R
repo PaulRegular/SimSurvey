@@ -281,7 +281,7 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1,
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = toRGB("white")
+    tickcolor = "transparent"
   )
   yax <- c(scaleanchor = "x", xax)
 
@@ -361,7 +361,7 @@ plot_total_abundance <- function(sim, which_year = 1, main = "") {
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = toRGB("white")
+    tickcolor = "transparent"
   )
   yax <- c(scaleanchor = "x", xax)
 
@@ -406,7 +406,7 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = toRGB("white")
+    tickcolor = "transparent"
   )
   yax <- c(scaleanchor = "x", xax)
 
