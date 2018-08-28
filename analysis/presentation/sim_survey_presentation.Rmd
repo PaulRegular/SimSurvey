@@ -137,7 +137,6 @@ cat(boat_txt)
 - **Spatial aggregation**
 - **Survey design**
 - **_Objective: build a simulation that emulates reality_**
-- **_Roughly based simulation on 3Ps Cod_**
 
 
 ## Simulate abundance
@@ -190,7 +189,9 @@ plot_surface(sim) %>% tight_layout()
 
 <dev class = "left">
 ```{r}
-plot_ly(data = sim$grid_xy, x = ~x, y = ~y, z = ~depth, type = "heatmap") %>%
+plot_ly(data = sim$grid_xy, x = ~x, y = ~y, color = ~depth, 
+        symbol = I(15), size = I(4.5), name = "grid", type = "scatter", 
+        text = ~depth) %>%
   colorbar(title = "Depth") %>%
   tight_layout(yaxis = list(title = "", scaleanchor = "x", zeroline = FALSE, 
                             showgrid = FALSE, showticklabels = FALSE,
@@ -242,6 +243,26 @@ plot_samp_dist(sim) %>%
 ```
 </dev>
 
+## Settings and analysis {.build}
+
+- Roughly based simulation on 3Ps Cod
+- A series of 175 surveys were tested
+
+|      **Parameter name** |      **Symbol** |                                       **Setting** |
+|:----------------------- | :-------------- | :------------------------------------------------ |
+|             Set density |      $D_{sets}$ |    0.0005, 0.001, 0.002, 0.005, 0.01 sets / km^2^ |
+|  Length sampling effort |   $M_{lengths}$ |       5, 10, 20, 50, 100, 500, 1000 lengths / set |
+|     Age sampling effort |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
+
+
+## Settings and analysis
+
+- Each survey was run 1000 times over the same population
+- Abundance estimates, $\hat{I}_{a,y,k}$, were obtained using a stratified analysis [@Smith1981]
+- Used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance estimates from each survey:
+    - $RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})}{N_a N_y N_k}}$
+    - Where $I_{a,y}$ is the true abundance available to the survey
+- Powered by R and worked into a package (https://github.com/PaulRegular/SimSurvey)
 
 ## Acknowledgements
 
