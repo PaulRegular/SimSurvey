@@ -38,10 +38,11 @@ plot_total_abundance(sim, which_year = 1, main = "")
 
 plot_set_catch(sim, which_year = 1, which_sim = 1, main = "")
 
-plot_age_strat_fan(sim, surveys = 1, select_by = "year", quants = seq(90,
-  10, by = -10), ...)
+plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
+  select_by = "year", quants = seq(90, 10, by = -10), ...)
 
-plot_total_strat_fan(sim, surveys = 1, quants = seq(90, 10, by = -10), ...)
+plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
+  ...)
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},

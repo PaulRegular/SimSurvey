@@ -451,12 +451,13 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
 
 #' @export
 #' @rdname plot_trend
-plot_age_strat_fan <- function(sim, surveys = 1, select_by = "year",
+plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
+                               ages = 1:10, select_by = "year",
                                quants = seq(90, 10, by = -10),
                                ...) {
 
   d <- sim$age_strat_error
-  sub_d <- d[survey %in% surveys, ]
+  sub_d <- d[survey %in% surveys & year %in% years & age %in% ages, ]
   true <- sub_d[sim == 1, list(year, age, survey, I)]
 
   ## Calculate a series of quantiles
@@ -488,7 +489,7 @@ plot_age_strat_fan <- function(sim, surveys = 1, select_by = "year",
 
   crosstalk::bscols(
     list(
-      htmltools::HTML("<br>"),
+      htmltools::div(style = htmltools::css(height = "10px")), # small margin
       f,
       filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
       filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
@@ -512,7 +513,7 @@ plot_age_strat_fan <- function(sim, surveys = 1, select_by = "year",
 
 #' @export
 #' @rdname plot_trend
-plot_total_strat_fan <- function(sim, surveys = 1,
+plot_total_strat_fan <- function(sim, surveys = 1:5,
                                  quants = seq(90, 10, by = -10),
                                  ...) {
 
@@ -539,7 +540,7 @@ plot_total_strat_fan <- function(sim, surveys = 1,
 
   crosstalk::bscols(
     list(
-      htmltools::HTML("<br>"),
+      htmltools::div(style = htmltools::css(height = "10px")), # small margin
       filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
     ),
     plot_ly(data = shared_ints, x = ~year, height = "100%") %>%

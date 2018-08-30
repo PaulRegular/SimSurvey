@@ -266,18 +266,49 @@ plot_samp_dist(sim) %>%
 - Powered by R and worked into a package (https://github.com/PaulRegular/SimSurvey)
 
 
-## Age strat
+## Truth vs. estimate
 
-### Some results
+### Total abundance
 
 <dev class = "left">
 ```{r}
-plot_age_strat_fan(sim, surveys = 1:5, 
-                   plot_bgcolor = "transparent",
-                   paper_bgcolor = "transparent",
+plot_total_strat_fan(sim, surveys = 1:5, 
+                     plot_bgcolor = "transparent", paper_bgcolor = "transparent",
+                     font = list(size = 14, family = "'Montserrat', sans-serif"))
+```
+</dev>
+
+
+## Truth vs. estimate
+
+### Abundance at age
+
+<dev class = "left">
+```{r}
+surveys <- sim$surveys[set_den %in% c(0.0005, 0.001, 0.002, 0.01) &
+                         lengths_cap %in% c(10, 100, 500, 1000) &
+                         ages_cap %in% c(5, 10, 50), ]
+plot_age_strat_fan(sim, surveys = surveys$survey, 
+                   years = 1:5, ages = sim$ages, select_by = "year",
+                   plot_bgcolor = "transparent", paper_bgcolor = "transparent",
                    font = list(size = 14, family = "'Montserrat', sans-serif"))
 ```
 </dev>
+
+
+## Truth vs. estimate
+
+### Abundance at age
+
+<dev class = "left">
+```{r}
+plot_age_strat_fan(sim, surveys = surveys$survey, 
+                   ages = 2:6, years = sim$years, select_by = "age",
+                   plot_bgcolor = "transparent", paper_bgcolor = "transparent",
+                   font = list(size = 14, family = "'Montserrat', sans-serif"))
+```
+</dev>
+
 
 
 ## Acknowledgements
