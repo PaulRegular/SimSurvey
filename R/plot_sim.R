@@ -488,6 +488,7 @@ plot_age_strat_fan <- function(sim, surveys = 1, select_by = "year",
 
   crosstalk::bscols(
     list(
+      htmltools::HTML("<br>"),
       f,
       filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
       filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
@@ -502,7 +503,54 @@ plot_age_strat_fan <- function(sim, surveys = 1, select_by = "year",
                 showlegend = FALSE) %>%
       layout(yaxis = list(title = "Abundance index",
                           range = c(min(ints$lower), max(ints$upper))),
-             xaxis = list(title = xlab)),
+             xaxis = list(title = xlab), ...),
+    widths = c(3, NA)
+  )
+
+}
+
+
+#' @export
+#' @rdname plot_trend
+plot_total_strat_fan <- function(sim, surveys = 1,
+                                 quants = seq(90, 10, by = -10),
+                                 ...) {
+
+  d <- sim$total_strat_error
+  sub_d <- d[survey %in% surveys, ]
+  true <- sub_d[sim == 1, list(year, survey, I)]
+
+  ## Calculate a series of quantiles
+  ints <- lapply(quants, function(q) {
+    sub_d[, list(prob = paste0(q, "%"),
+                 lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+                 upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+          by = c("year", "survey")]
+  })
+  ints <- rbindlist(ints)
+  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+
+  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
+  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
+                    ints$lengths_cap, ints$ages_cap, sep = "-")
+  ints <- merge(ints, true, by = c("year", "survey"))
+
+  shared_ints <- crosstalk::SharedData$new(ints)
+
+  crosstalk::bscols(
+    list(
+      htmltools::HTML("<br>"),
+      filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
+    ),
+    plot_ly(data = shared_ints, x = ~year, height = "100%") %>%
+      add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
+                  color = ~prob, colors = viridis::viridis(nlevels(ints$prob)),
+                  showlegend = FALSE) %>%
+      add_lines(y = ~I, color = I("black"), name = "True",
+                showlegend = FALSE) %>%
+      layout(yaxis = list(title = "Abundance index",
+                          range = c(min(ints$lower), max(ints$upper))),
+             xaxis = list(title = "Year"), ...),
     widths = c(3, NA)
   )
 

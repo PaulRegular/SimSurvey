@@ -11,8 +11,8 @@
 \alias{plot_samp_dist}
 \alias{plot_total_abundance}
 \alias{plot_set_catch}
-\alias{plot_true_vs_est_fan}
 \alias{plot_age_strat_fan}
+\alias{plot_total_strat_fan}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, col = viridis::viridis(1), ...)
@@ -38,11 +38,10 @@ plot_total_abundance(sim, which_year = 1, main = "")
 
 plot_set_catch(sim, which_year = 1, which_sim = 1, main = "")
 
-plot_true_vs_est_fan(sim, surveys = 1, frame = "year", quants = seq(90,
-  10, by = -10))
+plot_age_strat_fan(sim, surveys = 1, select_by = "year", quants = seq(90,
+  10, by = -10), ...)
 
-plot_age_strat_fan(sim, surveys = 1, x = "age", quants = seq(90, 10, by =
-  -10), ...)
+plot_total_strat_fan(sim, surveys = 1, quants = seq(90, 10, by = -10), ...)
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -74,7 +73,7 @@ plot_age_strat_fan(sim, surveys = 1, x = "age", quants = seq(90, 10, by =
 
 \item{main}{Plot title}
 
-\item{frame}{Frame plots by "age" or "year"?}
+\item{select_by}{Select plot by "age" or "year"?}
 
 \item{quants}{Quantile intervals to display on fan plot}
 
