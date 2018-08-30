@@ -159,7 +159,8 @@ cat(boat_txt)
 <!-- There is a bug somewhere...had to contain plotly plots in a dev to get it working -->
 ```{r}
 plot_trend(sim) %>% 
-  tight_layout(margin = list(l = 70, r = 0, t = 0, b = 40, pad = 0))
+  tight_layout(yaxis = list(rangemode = "tozero"),
+               margin = list(l = 70, r = 0, t = 0, b = 40, pad = 0))
 ```
 </dev>
 
@@ -263,6 +264,8 @@ plot_samp_dist(sim) %>%
     - $RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})}{N_a N_y N_k}}$
     - Where $I_{a,y}$ is the true abundance available to the survey
 - Powered by R and worked into a package (https://github.com/PaulRegular/SimSurvey)
+
+
 
 ## Acknowledgements
 

@@ -16,6 +16,9 @@
 #' @param which_sim      Subset to specific sim
 #' @param max_sims       Maximum number of sims to plot
 #' @param facet_by       Facet plot by "age" or "year"?
+#' @param survey         Subset data to one or more surveys.
+#' @param frame          Frame plots by "age" or "year"?
+#' @param quants         Quantile intervals to display on fan plot
 #' @param col            Plot color
 #' @param cols           Plot colors
 #' @param main           Plot title
@@ -436,7 +439,7 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
     layout(xaxis = xax, yaxis = yax, legend = list(x = 1, y = 0.85),
            annotations = list(
              list(text = "n", xref = "paper", yref = "paper",
-                              x = 1.09, y = 0.9, showarrow = FALSE),
+                  x = 1.09, y = 0.9, showarrow = FALSE),
              list(text = main, xref = "paper", yref = "paper",
                   x = 0.08, y = 1, showarrow = FALSE)
            ),
@@ -444,3 +447,99 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
   set_plot
 
 }
+
+
+## helper function for making a fan plot
+## column named prob is expected in d
+.add_fan <- function(p, x = NULL, ymin = NULL, ymax = NULL, ..., data = NULL) {
+  if (is.null(data)) data <- plotly_data(p)
+  cols <- toRGB(viridis::viridis(nlevels(data$prob) - 1),
+                alpha = seq(0.1, 1, length = nlevels(data$prob) - 1))
+  cols[length(cols) + 1] <- toRGB(viridis::viridis(1), alpha = 1)
+  names(cols) <- levels(data$prob)
+  for (q in levels(data$prob)) {
+    p <- p %>% add_ribbons(data = data[data$prob == q, ],
+                           ymin = ymin, ymax = ymax, name = q,
+                           fillcolor = cols[q],
+                           line = list(color = cols[q],
+                                       width = ifelse(q == "True", 1.6, 0)),
+                           ...)
+  }
+  p
+}
+
+#' @export
+#' @rdname plot_trend
+plot_true_vs_est_fan <- function(sim, surveys = 1, frame = "year",
+                                 quants = seq(90, 10, by = -10)) {
+
+  if (frame == "year") {
+    f <- ~year
+    x <- ~age
+    flab <- "Year: "
+    xlab <- "Age"
+  } else {
+    f <- ~age
+    x <- ~year
+    flab <- "Age: "
+    xlab <- "Year"
+  }
+
+  d <- sim$age_strat_error
+  sub_d <- d[survey %in% surveys, ]
+
+  ## Calculate a series of quantiles
+  ints <- lapply(quants, function(q) {
+    sub_d[, list(prob = paste0(q, "%"),
+                 lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+                 upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+          by = c("age", "year", "survey")]
+  })
+  ints <- rbindlist(ints)
+  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+  true <- sub_d[sub_d$sim == 1, ]
+  true <- data.table(age = true$age, year = true$year, survey = true$survey,
+                     prob = "True", lower = true$I, upper = true$I)
+  ints <- rbind(ints, true)
+
+  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
+  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
+                    ints$lengths_cap, ints$ages_cap, sep = "-")
+
+  split_ints <- split(ints, ints$lab)
+
+  p <- plot_ly(x = x, frame = f)
+  buttons <- list()
+  for (i in seq_along(split_ints)) {
+    vis <- rep(FALSE, length(split_ints))
+    vis[i] <- TRUE
+    p <- p %>%
+      .add_fan(data = split_ints[[i]],
+               ymin = ~lower, ymax = ~upper,
+               visible = i == 1)
+    buttons[[i]] <- list(method = "restyle",
+                         args = list("visible", rep(vis, each = nlevels(ints$prob))),
+                         label = names(split_ints[i]))
+  }
+
+
+  p %>%
+    layout(xaxis = list(title = xlab),
+           yaxis = list(title = "Abundance index"),
+           updatemenus = list(list(y = 0.9, x = -0.4,
+                                   pad = list('t' = 10),
+                                   xanchor = "center", yanchor = "top",
+                                   xref = "paper", yref = "paper",
+                                   buttons = buttons)),
+           annotations = list(text = "<b>Survey scenario</b><br>(D<sub>sets</sub>-M<sub>lengths</sub>-M<sub>ages</sub>)",
+                              y = 0.9, x = -0.4,
+                              xanchor = "center", yanchor = "bottom",
+                              xref = "paper", yref = "paper",
+                              showarrow = FALSE)) %>%
+    animation_opts(1000, transition = 0) %>%
+    animation_slider(currentvalue = list(prefix = flab)) %>%
+    animation_button(visible = FALSE)
+
+
+}
+
