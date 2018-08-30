@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       warning = FALSE, 
                       fig.width = 10, 
-                      fig.height = 5)
+                      fig.height = 5.2)
 knitr::opts_knit$set(root.dir = "../..")
 ```
 
@@ -265,6 +265,19 @@ plot_samp_dist(sim) %>%
     - Where $I_{a,y}$ is the true abundance available to the survey
 - Powered by R and worked into a package (https://github.com/PaulRegular/SimSurvey)
 
+
+## Age strat
+
+### Some results
+
+<dev class = "left">
+```{r}
+plot_age_strat_fan(sim, surveys = 1:5, 
+                   plot_bgcolor = "transparent",
+                   paper_bgcolor = "transparent",
+                   font = list(size = 14, family = "'Montserrat', sans-serif"))
+```
+</dev>
 
 
 ## Acknowledgements
