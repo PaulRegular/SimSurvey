@@ -94,10 +94,11 @@ cat(boat_txt)
 
 Surveys are generally designed to:
 
-<font size="8"> 1 </font> | <font size="8"> 2 </font> | <font size="8"> 3 </font>
+<font size="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 </font> | <font size="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 </font> | <font size="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 </font>
 :----: | :----: | :----:
 Conduct sets at multiple locations | Sub-sample catch for length measurements | Sub-sampling length groups for age determination
 <img src="graphics/trawl_survey_crop.jpg" height="180"/> | <img src="graphics/cod_length.jpg" height="120"/> | <img src="graphics/Otoliths2_crop.jpg" height="140"/>
+
 
 ## Intra-haul correlation
 
@@ -156,7 +157,6 @@ cat(boat_txt)
 ### Trend in total abundance
 
 <dev class = "left">
-<!-- There is a bug somewhere...had to contain plotly plots in a dev to get it working -->
 ```{r}
 plot_trend(sim) %>% 
   tight_layout(yaxis = list(rangemode = "tozero"),
@@ -278,7 +278,6 @@ plot_total_strat_fan(sim, surveys = 1:5,
 ```
 </dev>
 
-
 ## Truth vs. estimate
 
 ### Abundance at age
@@ -310,14 +309,62 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
 </dev>
 
 
+## Truth vs. estimate {.tighter}
+
+### RMSE
+
+<dev class = "left">
+```{r}
+plot_error_surface(sim) %>% tight_layout()
+```
+</dev>
+
+## Truth vs. estimate {.smaller}
+
+### Recap
+
+- **Sets = primary sampling unit**
+    - Only way to improve stratified estimates of total abundance
+    - Best way to improve stratified estimates of abundance at age
+- **Increasing length sampling does not always improve estimates**
+    - At low set densities, more is worse
+    - At high set densities, more is better
+- **Sampling effort affects both bias and percision**
+    - Stratified estimates are supposed to be unbiased?!
+    - Likely related to age-specific clustering
+    
+## Check bias
+
+### Turned off age-specific clustering
+
+<dev class = "left">
+```{r}
+load("analysis/cod_sim_exports/2018-07-16_test/test_output.RData")
+plot_age_strat_fan(sim, surveys = surveys$survey,
+                   ages = 2:6, years = sim$years, select_by = "age",
+                   plot_bgcolor = "transparent", paper_bgcolor = "transparent",
+                   font = list(size = 14, family = "'Montserrat', sans-serif"))
+```
+</dev>
+
+
+## Check bias {.tighter}
+
+### Turned off age-specific clustering
+
+<dev class = "left">
+```{r}
+plot_error_surface(sim) %>% tight_layout()
+```
+</dev>
+
 
 ## Acknowledgements
 
 - Todo
 
-## Todo
 
-- Try and figure out the bug that prevents the plotly plots from working in this part of the slideshow (alternate fix to containing it in a device)
+<!-- There is a conflict somewhere...had to contain plotly plots in a dev to get it working and I had to add a bunch of spaces to fudge centering in one of the tables -->
 
 ## References {.smaller}
 
