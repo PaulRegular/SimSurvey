@@ -43,10 +43,10 @@ slides > slide:not(.nobackground):before {
 
 /* list spacing */
 li{
-    margin-top: 20px;
+    margin-top: 18px;
 }
 li:first-child {
-    margin-top:20px;
+    margin-top:18px;
 }
 
 

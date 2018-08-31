@@ -4,6 +4,8 @@ author: "Paul M. Regular & Fran Mowbray"
 date: "September 6^th^, 2018"
 output:
   ioslides_presentation:
+    mathjax: local
+    self_contained: false
     widescreen: true
     incremental: true
     logo: dfo_logo.png
@@ -222,7 +224,7 @@ plot_distribution_slider(sim, ages = 1:6, years = 1:6) %>%
 - Set allocation defined by specifying set density, $D_{sets}$
 - Binomial sampling was used to simulate catch:
     - $n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{trawl}}{A_{cell}} q_a )$
-    - Accounts for trawl size relative to cell size, $\frac{A_{trawl}}{A_{cell}}$, and catchability, $q_a$ (controled using a logistic curve)
+    - Accounts for trawl size relative to cell size, $\frac{A_{trawl}}{A_{cell}}$, and catchability, $q_a$ (controlled using a logistic curve)
     
 ## Simulate survey
 
@@ -315,7 +317,17 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
 
 <dev class = "left">
 ```{r}
-plot_error_surface(sim) %>% tight_layout()
+slide_font <- list(size = 14, color = rgb(121, 121, 121, maxColorValue = 255))
+surface_font <- list(titlefont = slide_font, 
+                     tickfont = slide_font)
+surface_scene <- list(
+  xaxis = surface_font,
+  yaxis = surface_font,
+  zaxis = surface_font
+)
+plot_error_surface(sim) %>% 
+  tight_layout(scene = surface_scene,
+               margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
 </dev>
 
@@ -339,6 +351,7 @@ plot_error_surface(sim) %>% tight_layout()
 
 <dev class = "left">
 ```{r}
+main_sim <- sim
 load("analysis/cod_sim_exports/2018-07-16_test/test_output.RData")
 plot_age_strat_fan(sim, surveys = surveys$survey,
                    ages = 2:6, years = sim$years, select_by = "age",
@@ -354,9 +367,80 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
 
 <dev class = "left">
 ```{r}
-plot_error_surface(sim) %>% tight_layout()
+plot_error_surface(sim) %>% 
+  tight_layout(scene = surface_scene,
+               margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
 </dev>
+
+
+## Check bias
+
+### Turned off age-specific clustering
+
+<br>
+
+>- Increases in secondary sampling does little to improve estimates
+>- Bias is negligible in this scenario
+
+
+## Interpretation
+
+Why is there bias? Why is extra sub-sampling ineffective or detrimental?
+
+- With age-specific clustering, fish of different ages are not encountered with equal probability
+    - A survey with few sets will be less likely to encounter groups in a tight cluster
+        - Survey-level length / age distribution ∴ more likely to be incomplete 
+            - Increasing length / age sampling cannot improve perception of the population-level distribution
+
+
+## Interpretation {.tighter .smaller}
+
+Ages caught and sampled in year 18 from one survey scenario:
+
+>- $D_{sets} = 0.002, M_{lengths} = 500, M_{ages} = 10$
+
+<dev class = "left">
+```{r, fig.height = 4.8}
+
+samp <- merge(main_sim$setdet, main_sim$samp, by = "set")
+samp <- samp[sim == 1 & year == 18, ]
+caught <- as.data.frame(table(samp$age))
+caught <- data.frame(group = "Caught", age = caught$Var1, freq = caught$Freq,
+                     prop = caught$Freq / sum(caught$Freq))
+measured <- as.data.frame(table(samp$age[samp$measured]))
+measured <- data.frame(group = "Sampled", age = measured$Var1, freq = measured$Freq,
+                       prop = measured$Freq / sum(measured$Freq))
+true <- data.frame(group = "True", age = sim$ages, freq = sim$I[, 1],
+                   prop = sim$I[, 1] / sum(sim$I[, 1]))
+d <- rbind(caught, measured, true)
+
+plot_ly(data = d) %>% 
+  add_lines(x = ~age, y = ~prop, color = ~group,
+            colors = rev(viridis::viridis(3))) %>% 
+  tight_layout(xaxis = list(title = "Age"),
+               yaxis = list(title = "Proportion"),
+               margin = list(r = 60))
+
+```
+</dev>
+
+## Conclusions
+
+- Increasing sub-sampling effort may be an inefficient means of improving population estimates
+    - Especially problimatic if sub-sampling affects primary sampling effort
+
+
+## Potential future directions
+
+- Taylor to other species and assess sampling protocol
+- Add a time component to assess trade-offs / efficiency
+- Assess the effects of
+    - Missing strata
+    - Variable trawl area
+- Use this as a platform to test spatial models
+- Use as an operating model for an MSE
+- Others?
 
 
 ## Acknowledgements
