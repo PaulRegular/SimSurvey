@@ -103,7 +103,7 @@ Next discuss trend...
 
 # Acknowledgements
 
-- Feedback and advice: Alejandro Buren, Mariano Koen-Alonso, Karen Dwyer, Joanne Morgan, Geoff Evans, Don Power, Brian Healey, Martha Robertson, Danny Ings, Don Stansbury, Mark Simpson, Derek Osborne, Peter Upward, Brad Squires, Dwayne Pittman, Paul Higdon
+- Feedback and advice: Alejandro Buren, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Dwayne Pittman, Don Power, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward
 - Dave Cote for a review of a previous version of this manuscript
 
 

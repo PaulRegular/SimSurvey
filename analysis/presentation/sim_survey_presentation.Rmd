@@ -427,8 +427,11 @@ plot_ly(data = d) %>%
 
 ## Conclusions
 
-- Increasing sub-sampling effort may be an inefficient means of improving population estimates
-    - Especially problimatic if sub-sampling affects primary sampling effort
+Increasing sub-sampling effort may be an inefficient means of improving population estimates
+
+- Large catches are relatively infrequent
+    - Samples in large sets are not independent
+        - If the goal is to maximize information, it is likely better to stop collecting psudoreplicates and, instead, focus efforts on other species or the next set
 
 
 ## Potential future directions
@@ -445,7 +448,8 @@ plot_ly(data = d) %>%
 
 ## Acknowledgements
 
-- Todo
+>- **Feedback and advice:** Alejandro Buren, Dave Cote, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Dwayne Pittman, Don Power, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward, ...
+>- **Support:** Fisheries and Oceans Canada and NSERC
 
 
 <!-- There is a conflict somewhere...had to contain plotly plots in a dev to get it working and I had to add a bunch of spaces to fudge centering in one of the tables -->
