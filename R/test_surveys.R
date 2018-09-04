@@ -50,22 +50,27 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                                               ages_cap = surveys$ages_cap[i],
                                               ...) %>%
                               run_strat() %>% strat_error()
+                            samp_totals <- res$samp_totals
+                            samp_totals$sim <- samp_totals$sim + (j * n_sims - n_sims)
                             total_strat_error <- res$total_strat_error
                             total_strat_error$sim <- total_strat_error$sim + (j * n_sims - n_sims)
                             age_strat_error <- res$age_strat_error
                             age_strat_error$sim <- age_strat_error$sim + (j * n_sims - n_sims)
-                            list(total_strat_error = total_strat_error, age_strat_error = age_strat_error)
+                            list(samp_totals = samp_totals,
+                                 total_strat_error = total_strat_error,
+                                 age_strat_error = age_strat_error)
                           }
     stopCluster(cl) # stop parallel process
 
+    samp_totals <- data.table::rbindlist(lapply(loop_error, `[[`, "samp_totals"))
     total_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "total_strat_error"))
     age_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "age_strat_error"))
+    samp_totals$survey <- i
     total_strat_error$survey <- i
     age_strat_error$survey <- i
+    survey_error[[i]]$samp_totals <- samp_totals
     survey_error[[i]]$total_strat_error <- total_strat_error
     survey_error[[i]]$age_strat_error <- age_strat_error
-    survey_error[[i]]$total_strat_error_stats <- c(survey = i, error_stats(total_strat_error$error))
-    survey_error[[i]]$age_strat_error_stats <- c(survey = i, error_stats(age_strat_error$error))
 
     if (!is.null(export)) {
       save(survey_error, file = file.path(export_dir, "survey_error.RData"))
@@ -82,18 +87,18 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 .test_fin <- function(sim = NULL,  n_sims = NULL, surveys = NULL, keep_details = NULL,
                       survey_error = NULL, export = NULL, export_dir = NULL, ...) {
 
-  total_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "total_strat_error"))
-  age_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "age_strat_error"))
-  total_strat_error_stats <- do.call(rbind, lapply(survey_error, `[[`, "total_strat_error_stats"))
-  total_strat_error_stats <- data.table::data.table(total_strat_error_stats)
-  age_strat_error_stats <- do.call(rbind, lapply(survey_error, `[[`, "age_strat_error_stats"))
-  age_strat_error_stats <- data.table::data.table(age_strat_error_stats)
-
   sim$surveys <- data.table::data.table(surveys)
-  sim$total_strat_error <- total_strat_error
-  sim$total_strat_error_stats <- total_strat_error_stats
-  sim$age_strat_error <- age_strat_error
-  sim$age_strat_error_stats <- age_strat_error_stats
+  sim$samp_totals <- do.call(rbind, lapply(survey_error, `[[`, "samp_totals"))
+  sim$total_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "total_strat_error"))
+  sim$age_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "age_strat_error"))
+  sim$total_strat_error_stats <- sim$total_strat_error[, list(MAE = mean(abs(error)),
+                                                              MSE = mean(error ^ 2),
+                                                              RMSE = sqrt(mean(error ^ 2))),
+                                                       by = "survey"]
+  sim$age_strat_error_stats <- sim$age_strat_error[, list(MAE = mean(abs(error)),
+                                                          MSE = mean(error ^ 2),
+                                                          RMSE = sqrt(mean(error ^ 2))),
+                                                   by = "survey"]
 
   i <- which(surveys$survey == keep_details)
   res <- sim_survey(sim, n_sims = n_sims,
@@ -148,7 +153,8 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'         stats of stratified estimate error to the \code{sim} list, ending with
 #'         \code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
 #'         includes mean absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}),
-#'         and root mean squared error (\code{"RMSE"}). Survey and stratified analysis
+#'         and root mean squared error (\code{"RMSE"}). Also adds a sample size summary table
+#'         (\code{"samp_totals"}) to the list. Survey and stratified analysis
 #'         details are not kept to minimize object size.
 #'
 #' @export

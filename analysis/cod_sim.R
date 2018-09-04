@@ -49,7 +49,7 @@ sim <- test_surveys(pop,
                     q = sim_logistic(k = 2, x0 = 3),
                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
                     export = "analysis/cod_sim_exports")
-# sim <- resume_test(dir = "analysis/cod_sim_exports/2018-07-13_test")
+# sim <- resume_test(dir = "analysis/cod_sim_exports/2018-09-04_test")
 setMKLthreads() # turn hyperthreading on again
 
 

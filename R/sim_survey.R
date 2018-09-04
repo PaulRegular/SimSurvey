@@ -254,12 +254,18 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
   setdet$n_measured[is.na(setdet$n_measured)] <- 0
   setdet$n_aged[is.na(setdet$n_aged)] <- 0
 
+  ## Further summarize samples
+  samp_totals <- setdet[, list(sets = .N, n_caught = sum(n),
+                               n_measured = sum(n_measured),
+                               n_aged = sum(n_aged)), by = c("sim", "year")]
+
   ## Add new stuff to main object
   sim$I <- I
   if (!light) sim$sp_I <- sp_I
   if (!light) sim$full_setdet <- full_setdet
   sim$setdet <- setdet
   sim$samp <- samp
+  sim$samp_totals <- samp_totals
   sim
 
 }
