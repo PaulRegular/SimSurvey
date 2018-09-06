@@ -98,7 +98,7 @@ Surveys are generally designed to:
 
 <font size="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 </font> | <font size="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 </font> | <font size="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 </font>
 :----: | :----: | :----:
-Conduct sets at multiple locations | Sub-sample catch for length measurements | Sub-sampling length groups for age determination
+Conduct sets at multiple locations | Sub-sample catch for length measurements | Sub-sample length groups for age determination
 <img src="graphics/trawl_survey_crop.jpg" height="180"/> | <img src="graphics/cod_length.jpg" height="120"/> | <img src="graphics/Otoliths2_crop.jpg" height="140"/>
 
 
@@ -140,6 +140,18 @@ cat(boat_txt)
 - **Spatial aggregation**
 - **Survey design**
 - **_Objective: build a simulation that emulates reality_**
+
+
+## Simulation steps {.smaller}
+
+1. **Simulate abundance**
+    - Common cohort model
+2. **Simulate spatial aggregation**
+    - Includes depth associations and noise correlated across space, years and ages
+3. **Simulate surveys**
+    - Stratified random surveys with different sampling protocol
+5. **Analyze**
+    - Conduct stratified analyses and compare <a href="javascript:slidedeck.loadSlide(20)">truth vs. estimate</a>
 
 
 ## Simulate abundance
@@ -380,58 +392,26 @@ plot_error_surface(sim) %>%
 
 <br>
 
->- Increases in secondary sampling does little to improve estimates
 >- Bias is negligible in this scenario
+>- Increases in secondary sampling does little to improve estimates
+
 
 
 ## Interpretation
 
 Why is there bias? Why is extra sub-sampling ineffective or detrimental?
 
-- With age-specific clustering, fish of different ages are not encountered with equal probability
-    - A survey with few sets will be less likely to encounter groups in a tight cluster
-        - Survey-level length / age distribution ∴ more likely to be incomplete 
-            - Increasing length / age sampling cannot improve perception of the population-level distribution
+- Likely related to age-specific clustering
+- Alternate analyses (e.g. ogmap, geostatistical models) may be able to account for such clustering and, therefore, provide estimates with less bias
+- Requires further investigation
 
-
-## Interpretation {.tighter .smaller}
-
-Ages caught and sampled in year 18 from one survey scenario:
-
->- $D_{sets} = 0.002, M_{lengths} = 500, M_{ages} = 10$
-
-<dev class = "left">
-```{r, fig.height = 4.8}
-
-samp <- merge(main_sim$setdet, main_sim$samp, by = "set")
-samp <- samp[sim == 1 & year == 18, ]
-caught <- as.data.frame(table(samp$age))
-caught <- data.frame(group = "Caught", age = caught$Var1, freq = caught$Freq,
-                     prop = caught$Freq / sum(caught$Freq))
-measured <- as.data.frame(table(samp$age[samp$measured]))
-measured <- data.frame(group = "Sampled", age = measured$Var1, freq = measured$Freq,
-                       prop = measured$Freq / sum(measured$Freq))
-true <- data.frame(group = "True", age = sim$ages, freq = sim$I[, 1],
-                   prop = sim$I[, 1] / sum(sim$I[, 1]))
-d <- rbind(caught, measured, true)
-
-plot_ly(data = d) %>% 
-  add_lines(x = ~age, y = ~prop, color = ~group,
-            colors = rev(viridis::viridis(3))) %>% 
-  tight_layout(xaxis = list(title = "Age"),
-               yaxis = list(title = "Proportion"),
-               margin = list(r = 60))
-
-```
-</dev>
 
 ## Conclusions
 
 Increasing sub-sampling effort may be an inefficient means of improving population estimates
 
-- Large catches are relatively infrequent
-    - Samples in large sets are not independent
-        - If the goal is to maximize information, it is likely better to stop collecting psudoreplicates and, instead, focus efforts on other species or the next set
+- Large catches are relatively infrequent and samples in these sets are not independent
+- If the goal is to maximize information, it is likely better to stop collecting psudoreplicates and, instead, focus efforts on other species or the next set
 
 
 ## Potential future directions
