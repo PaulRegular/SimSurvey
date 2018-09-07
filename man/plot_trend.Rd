@@ -13,6 +13,7 @@
 \alias{plot_set_catch}
 \alias{plot_age_strat_fan}
 \alias{plot_total_strat_fan}
+\alias{plot_effort_error_surface}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, col = viridis::viridis(1), ...)
@@ -43,6 +44,8 @@ plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
 
 plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
   ...)
+
+plot_effort_error_surface(sim, ...)
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},

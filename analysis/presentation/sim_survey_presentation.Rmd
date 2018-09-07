@@ -453,6 +453,16 @@ Results suggest that
 >- **Support:** Fisheries and Oceans Canada and NSERC
 
 
+## Sample size
+
+<dev class = "left">
+```{r}
+plot_effort_error_surface(main_sim, scene = surface_scene,
+                          margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
+```
+</dev>
+
+
 ## Code {.smaller}
 
 ### Population

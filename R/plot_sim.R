@@ -558,3 +558,56 @@ plot_total_strat_fan <- function(sim, surveys = 1:5,
 }
 
 
+#' @export
+#' @rdname plot_trend
+plot_effort_error_surface <- function(sim, ...) {
+
+  totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
+                                   n_measured = mean(n_measured), n_aged = mean(n_aged)),
+                            by = "survey"]
+  errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+  d <- merge(errors, totals, by = "survey")
+
+  d$text <- with(d, paste("<br>set density:", set_den,
+                          "<br>lengths cap:", lengths_cap,
+                          "<br>ages cap:", ages_cap,
+                          "<br><br>N sets:", n_sets,
+                          "<br>N lengths:", round(n_measured),
+                          "<br>N ages:", round(n_aged)))
+
+  shared_d <- crosstalk::SharedData$new(d)
+
+  crosstalk::bscols(
+    widths = c(3, NA),
+    list(
+      htmltools::div(style = htmltools::css(height = "10px")), # small margin
+      filter_select("n_sets", "N set", shared_d, ~n_sets, multiple = FALSE)
+    ),
+    plot_ly(data = shared_d, x = ~n_aged, y = ~n_measured, z = ~RMSE) %>%
+      add_trace(type = "mesh3d", flatshading = TRUE, intensity = ~RMSE, name = "RMSE",
+                hoverinfo = "skip", contour = list(show = TRUE, width = 15, color = toRGB("white"))) %>%
+      add_markers(z = ~RMSE, color = I("lightgrey"), size = I(1), name = "RMSE",
+                  text = ~text, hoverinfo = "text+z",
+                  showlegend = FALSE) %>%
+      add_markers(z = ~RMSE, color = I("lightgrey"), name = "RMSE",
+                  opacity = 0, text = ~text, hoverinfo = "text+z",
+                  showlegend = FALSE) %>%
+      layout(
+        scene = list(
+          xaxis = list(title = "N ages"),
+          yaxis = list(title = "N lengths"),
+          zaxis = list(title = "RMSE", range = range(d$RMSE)),
+          camera = list(eye = list(x = 2, y = 1.5, z = 1.5))
+        )) %>%
+      highlight(on = NULL)
+  )
+
+}
+
+
+
+
+
+
+
+
