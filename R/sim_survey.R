@@ -255,7 +255,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
   setdet$n_aged[is.na(setdet$n_aged)] <- 0
 
   ## Further summarize samples
-  samp_totals <- setdet[, list(sets = .N, n_caught = sum(n),
+  samp_totals <- setdet[, list(n_sets = .N, n_caught = sum(n),
                                n_measured = sum(n_measured),
                                n_aged = sum(n_aged)), by = c("sim", "year")]
 
@@ -271,5 +271,85 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
 }
 
 
+#' Simulate stratified random surveys using parallel computation
+#'
+#' This function is a wrapper for \code{\link{sim_survey}} except it allows for
+#' many more total itterations to be run than \code{\link{sim_survey}} before running
+#' into RAM limitations.
+#'
+#' @param sim               Simulation from \code{\link{sim_distribution}}
+#' @param n_sims            Number of times to simulate a survey over the simulated population.
+#'                          Requesting a large number of simulations here may max out your RAM.
+#' @param n_loops           Number of times to run the \code{\link{sim_survey}} function. Total
+#'                          simulations run will be the product of \code{n_sims} and \code{n_loops}
+#'                          arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
+#'                          will be easier on RAM, but may be slower.
+#' @param cores             Number of cores to use in parallel. More cores should speed up the process.
+#' @param quiet             Print message on what to expect for duration?
+#' @inheritDotParams sim_survey
+#'
+#' @details \code{\link{sim_survey}} is hard-wired here to be "light" to minimize object size.
+#'
+#' @export
+#'
 
+sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
+                                cores = 6, quiet = FALSE, ...) {
 
+  start <- Sys.time()
+  one_res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)
+  end <- Sys.time()
+  elapsed <- end - start
+  max_dur <- end + (elapsed * n_loops) - start
+
+  if (!quiet) {
+    message(paste("One run of sim_survey took ~",
+                  round(elapsed), attr(elapsed, "units"),
+                  "to run. It may take up to",
+                  round(max_dur), attr(max_dur, "units"),
+                  "to run all simulations."))
+  }
+
+  cl <- makeCluster(cores) # use parallel computation
+  registerDoParallel(cl)
+  loop_res <- foreach(j = seq(n_loops),
+                      .packages = "SimSurvey") %dopar% {
+                        res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)
+                        keep <- c("samp_totals", "setdet", "samp")
+                        loop_res <- lapply(keep, function(nm) {
+                          x <- res[[nm]]
+                          x$loop <- j
+                          x
+                        })
+                        names(loop_res) <- keep
+                        loop_res
+                      }
+  stopCluster(cl) # stop parallel process
+
+  ## Combine objects from loop
+  samp_totals <- data.table::rbindlist(lapply(loop_res, `[[`, "samp_totals"))
+  setdet <- data.table::rbindlist(lapply(loop_res, `[[`, "setdet"))
+  samp <- data.table::rbindlist(lapply(loop_res, `[[`, "samp"))
+
+  ## Fix numbering
+  samp_totals$new_sim <- samp_totals$sim + (samp_totals$loop * n_sims - n_sims)
+  setdet$new_sim <- setdet$sim + (setdet$loop * n_sims - n_sims)
+  setdet$new_set <- seq.int(nrow(setdet))
+  samp <- merge(samp, setdet[, list(set, loop, new_set)], by = c("set", "loop"),
+                sort = FALSE)
+  samp_totals$loop <- setdet$loop <- samp$loop <- NULL
+  samp_totals$sim <- setdet$sim <- NULL
+  setdet$set <- samp$set <- NULL
+  setnames(samp_totals, "new_sim", "sim")
+  setnames(setdet, "new_sim", "sim")
+  setnames(setdet, "new_set", "set")
+  setnames(samp, "new_set", "set")
+
+  ## Add new stuff to main object
+  sim$I <- one_res$I
+  sim$setdet <- setdet
+  sim$samp <- samp
+  sim$samp_totals <- samp_totals
+  sim
+
+}

@@ -31,6 +31,7 @@ pop <- sim_abundance(ages = 1:20,
                    depth_par = sim_parabola(mu = 200,
                                             sigma = 70))
 
+
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
