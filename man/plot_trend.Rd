@@ -45,7 +45,7 @@ plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
 plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
   ...)
 
-plot_effort_error_surface(sim, ...)
+plot_effort_error_surface(sim, autoscale = TRUE, ...)
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -80,6 +80,8 @@ plot_effort_error_surface(sim, ...)
 \item{select_by}{Select plot by "age" or "year"?}
 
 \item{quants}{Quantile intervals to display on fan plot}
+
+\item{autoscale}{Should axes automatically adjust or be fixed to the range of the data?}
 
 \item{survey}{Subset data to one or more surveys.}
 }

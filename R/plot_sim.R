@@ -22,6 +22,7 @@
 #' @param col            Plot color
 #' @param cols           Plot colors
 #' @param main           Plot title
+#' @param autoscale      Should axes automatically adjust or be fixed to the range of the data?
 #' @param ...            Additional arguments to pass to \code{\link{plotly::plot_ly}}.
 #'
 #' @import plotly
@@ -560,7 +561,7 @@ plot_total_strat_fan <- function(sim, surveys = 1:5,
 
 #' @export
 #' @rdname plot_trend
-plot_effort_error_surface <- function(sim, ...) {
+plot_effort_error_surface <- function(sim, autoscale = TRUE, ...) {
 
   totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
                                    n_measured = mean(n_measured), n_aged = mean(n_aged)),
@@ -575,17 +576,30 @@ plot_effort_error_surface <- function(sim, ...) {
                           "<br>N lengths:", round(n_measured),
                           "<br>N ages:", round(n_aged)))
 
+  xax <- list(title = "N ages")
+  yax <- list(title = "N lengths")
+  zax <- list(title = "RMSE")
+  cmin <- cmax <- NULL
+  if (!autoscale) {
+    xax$range <- range(d$n_aged)
+    yax$range <- range(d$n_measured)
+    zax$range <- range(d$RMSE)
+    cmin <- min(d$RMSE)
+    cmax <- max(d$RMSE)
+  }
+
   shared_d <- crosstalk::SharedData$new(d)
 
   crosstalk::bscols(
     widths = c(3, NA),
     list(
       htmltools::div(style = htmltools::css(height = "10px")), # small margin
-      filter_select("n_sets", "N set", shared_d, ~n_sets, multiple = FALSE)
+      filter_select("n_sets", "N sets", shared_d, ~n_sets, multiple = FALSE)
     ),
     plot_ly(data = shared_d, x = ~n_aged, y = ~n_measured, z = ~RMSE) %>%
       add_trace(type = "mesh3d", flatshading = TRUE, intensity = ~RMSE, name = "RMSE",
-                hoverinfo = "skip", contour = list(show = TRUE, width = 15, color = toRGB("white"))) %>%
+                hoverinfo = "skip", contour = list(show = TRUE, width = 15, color = toRGB("white")),
+                cmin = cmin, cmax = cmax) %>%
       add_markers(z = ~RMSE, color = I("lightgrey"), size = I(1), name = "RMSE",
                   text = ~text, hoverinfo = "text+z",
                   showlegend = FALSE) %>%
@@ -594,11 +608,11 @@ plot_effort_error_surface <- function(sim, ...) {
                   showlegend = FALSE) %>%
       layout(
         scene = list(
-          xaxis = list(title = "N ages"),
-          yaxis = list(title = "N lengths"),
-          zaxis = list(title = "RMSE", range = range(d$RMSE)),
+          xaxis = xax,
+          yaxis = yax,
+          zaxis = zax,
           camera = list(eye = list(x = 2, y = 1.5, z = 1.5))
-        )) %>%
+        ), ...) %>%
       highlight(on = NULL)
   )
 
