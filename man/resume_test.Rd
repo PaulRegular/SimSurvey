@@ -12,3 +12,6 @@ resume_test(dir = NULL)
 \description{
 Resume partial run of \code{\link{test_surveys}}
 }
+\details{
+Progress bar time estimates will be biased here by previous completions
+}

@@ -129,8 +129,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' Test sampling design of multiple surveys
 #'
 #' @description   This function allows a series of sampling design settings to
-#' be set and tested on the simulated population. All combinations of the
-#' supplied settings (\code{set_den}, \code{lengths_cap}, \code{ages_cap}) are tested.
+#' be set and tested on the simulated population.
 #'
 #' @param sim               Simulation from \code{\link{sim_distribution}}.
 #' @param surveys           A data.frame or data.table with a sequence of surveys and their settings
@@ -190,6 +189,8 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 #'
 #' @param dir  Export directory specified when \code{\link{test_surveys}} was run.
 #'
+#' @details Progress bar time estimates will be biased here by previous completions
+#'
 #' @export
 #'
 
@@ -203,4 +204,5 @@ resume_test <- function(dir = NULL) {
             n_sims = n_sims, keep_details = keep_details,
             export = export, export_dir = export_dir, ...)
 }
+
 

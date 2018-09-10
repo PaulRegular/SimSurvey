@@ -43,6 +43,5 @@ Adds a table of survey designs tested. Also adds details and summary
 }
 \description{
 This function allows a series of sampling design settings to
-be set and tested on the simulated population. All combinations of the
-supplied settings (\code{set_den}, \code{lengths_cap}, \code{ages_cap}) are tested.
+be set and tested on the simulated population.
 }

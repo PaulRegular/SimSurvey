@@ -414,18 +414,17 @@ plot_error_surface(sim, plot_by = "samples") %>%
 
 ### Turned off age-specific clustering
 
-<br>
+- In this scenario, 
+    - Bias is negligible
+    - Increasing sub-sampling is always beneficial
+        - No age-specific clustering means that one fish is as "effective" as the next
+    - Sub-sampling fewer fish at more locations appears better than many fish at fewer locations
+        - Though more sub-samples improve perception of the age-distribution, it does little to inform magnitude
 
-In this scenario, 
 
-- Bias is negligible
-- Increasing sub-sampling is always benifical
-- Sampling fewer fish at more locations appears better than many fish at fewer locations
+## Check bias
 
-
-## Interpretation
-
-Why is there bias? Why is extra sub-sampling sometimes useful and sometimes detrimental?
+Why is there bias in the main scenario? Why is extra sub-sampling sometimes useful / sometimes detrimental?
 
 - Likely related to age-specific clustering
 - Alternate analyses (e.g. ogmap, geostatistical models) may be able to account for such clustering and, therefore, provide estimates with less bias
