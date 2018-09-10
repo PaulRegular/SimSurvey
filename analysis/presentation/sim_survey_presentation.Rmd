@@ -1,7 +1,7 @@
 ---
 title: "Using simulation to optimize the sampling design of fisheries-independent trawl surveys"
 author: "Paul M. Regular & Fran Mowbray"
-date: "September 6^th^, 2018"
+date: "September 12^th^, 2018"
 output:
   ioslides_presentation:
     mathjax: local
@@ -275,7 +275,7 @@ plot_samp_dist(sim) %>%
 - Each survey was run 1000 times over the same population
 - Abundance estimates, $\hat{I}_{a,y,k}$, were obtained using a stratified analysis [@Smith1981]
 - Used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance estimates from each survey:
-    - $RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})}{N_a N_y N_k}}$
+    - $RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$
     - Where $I_{a,y}$ is the true abundance available to the survey
 - Powered by R and worked into a package (https://github.com/PaulRegular/SimSurvey)
 
@@ -334,7 +334,7 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
 
 ## Truth vs. estimate {.tighter}
 
-### RMSE
+### RMSE ~ sampling protocol
 
 <dev class = "left">
 ```{r}
@@ -346,11 +346,26 @@ surface_scene <- list(
   yaxis = surface_font,
   zaxis = surface_font
 )
-plot_error_surface(sim) %>% 
+plot_error_surface(sim, plot_by = "rule") %>% 
   tight_layout(scene = surface_scene,
                margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
 </dev>
+
+
+## Truth vs. estimate {.tighter}
+
+### RMSE ~ sample size
+
+<dev class = "left">
+```{r}
+plot_error_surface(sim, plot_by = "samples") %>% 
+  tight_layout(scene = surface_scene,
+               margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
+```
+</dev>
+
+
 
 ## Truth vs. estimate {.smaller}
 
@@ -373,7 +388,7 @@ plot_error_surface(sim) %>%
 <dev class = "left">
 ```{r}
 main_sim <- sim
-load("analysis/cod_sim_exports/2018-07-16_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-09-07_test/test_output.RData")
 plot_age_strat_fan(sim, surveys = surveys$survey,
                    ages = 2:6, years = sim$years, select_by = "age",
                    plot_bgcolor = "transparent", paper_bgcolor = "transparent",
@@ -388,7 +403,7 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
 
 <dev class = "left">
 ```{r}
-plot_error_surface(sim) %>% 
+plot_error_surface(sim, plot_by = "samples") %>% 
   tight_layout(scene = surface_scene,
                margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
@@ -401,9 +416,11 @@ plot_error_surface(sim) %>%
 
 <br>
 
->- Bias is negligible in this scenario
->- Increases in secondary sampling does little to improve estimates
+In this scenario, 
 
+- Bias is negligible
+- Increasing sub-sampling is always benifical
+- Sampling fewer fish at more locations appears better than many fish at fewer locations
 
 
 ## Interpretation
@@ -451,16 +468,6 @@ Results suggest that
 
 >- **Feedback and advice:** Alejandro Buren, Dave Cote, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Dwayne Pittman, Don Power, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward, ...
 >- **Support:** Fisheries and Oceans Canada and NSERC
-
-
-## Sample size
-
-<dev class = "left">
-```{r}
-plot_effort_error_surface(main_sim, scene = surface_scene,
-                          margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
-```
-</dev>
 
 
 ## Code {.smaller}

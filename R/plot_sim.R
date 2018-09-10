@@ -17,12 +17,12 @@
 #' @param max_sims       Maximum number of sims to plot
 #' @param facet_by       Facet plot by "age" or "year"?
 #' @param select_by      Select plot by "age" or "year"?
+#' @param plot_by        Plot error surface by "rule" or "samples"?
 #' @param survey         Subset data to one or more surveys.
 #' @param quants         Quantile intervals to display on fan plot
 #' @param col            Plot color
 #' @param cols           Plot colors
 #' @param main           Plot title
-#' @param autoscale      Should axes automatically adjust or be fixed to the range of the data?
 #' @param ...            Additional arguments to pass to \code{\link{plotly::plot_ly}}.
 #'
 #' @import plotly
@@ -140,54 +140,143 @@ plot_distribution_slider <- function(sim, ages = 1, years = 1) {
 
 #' @export
 #' @rdname plot_trend
-plot_error_surface <- function(sim) {
+plot_error_surface <- function(sim, plot_by = "rule") {
 
-  d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-  split_d <- split(d, d$set_den)
-  split_d <- lapply(split_d, function(.) {
-    xtabs(RMSE ~ ages_cap + lengths_cap, data = ., subset = NULL)
-  })
-  x <- sort(unique(d$lengths_cap))
-  y <- sort(unique(d$ages_cap))
+  totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
+                                   n_measured = mean(n_measured), n_aged = mean(n_aged)),
+                            by = "survey"]
+  errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+  d <- merge(errors, totals, by = "survey")
 
-  p <- plot_ly(x = ~x, y = ~y, cmin = min(d$RMSE), cmax = max(d$RMSE))
-  visible <- showscale <- rep(TRUE, length(split_d))
-  steps <- list()
-  showscale <- c(TRUE, rep(FALSE, length(split_d) - 1))
-  for (i in seq_along(split_d)) {
-    vis <- rep(FALSE, length(split_d))
-    vis[i] <- TRUE
-    p <- p %>% add_surface(z = split_d[[i]],
-                           visible = i == 1,
-                           showscale = vis,
-                           name = names(split_d)[i],
-                           colorbar = list(title = "RMSE"))
-    steps[[i]] <- list(args = list(list(visible = vis,
-                                        showscale = vis)),
-                       method = "update",
-                       label = names(split_d)[i])
-    if (i == length(split_d)) {
-      steps[[i + 1]] <- list(args = list(list(visible = rep(TRUE, length(split_d)),
-                                              showscale = showscale)),
-                             method = "update",
-                             label = "all")
-    }
+  d$text <- with(d, paste("<br>set density:", set_den,
+                          "<br>lengths cap:", lengths_cap,
+                          "<br>ages cap:", ages_cap,
+                          "<br><br>N sets:", n_sets,
+                          "<br>N lengths:", round(n_measured),
+                          "<br>N ages:", round(n_aged)))
+
+  if (plot_by == "rule") {
+    split_d <- split(d, d$set_den)
+    x <- sort(unique(d$ages_cap))
+    y <- sort(unique(d$lengths_cap))
+    marker_x <- ~ages_cap
+    marker_y <- ~lengths_cap
+    xlab <- "Ages cap"
+    ylab <- "Lengths cap"
+    slab <- "Set density"
+  }
+  if (plot_by == "samples") {
+    split_d <- split(d, d$n_sets)
+    x <- marker_x <- ~n_aged
+    y <- marker_y <- ~n_measured
+    xlab <- "N ages"
+    ylab <- "N lengths"
+    slab <- "N sets"
   }
 
+  p <- plot_ly(x = x, y = y)
+  splits <- vector("list", length(split_d) + 1)
+  splits[[1]] <- list(args = list(list(visible = rep(c(TRUE, FALSE, TRUE), length(split_d)),
+                                       showscale = c(TRUE, rep(FALSE, (length(split_d) * 3) - 1)))),
+                      method = "update",
+                      label = "all")
+  showscale <- c(TRUE, rep(FALSE, length(split_d) - 1))
+
+  for (i in seq_along(split_d)) {
+
+    vis <- replicate(length(split_d), c(FALSE, FALSE, FALSE), simplify = FALSE)
+    vis[[i]] <- c(FALSE, TRUE, TRUE)
+    if (plot_by == "rule") {
+      z <- xtabs(RMSE ~ ages_cap + lengths_cap, data = split_d[[i]], subset = NULL)
+      p <- p %>% add_surface(z = t(z),
+                             cmin = min(d$RMSE), cmax = max(d$RMSE),
+                             showscale = i == 1,
+                             name = names(split_d)[i],
+                             colorbar = list(title = "RMSE"),
+                             hoverinfo = "skip") %>%
+        add_surface(z = t(z),
+                    visible = FALSE,
+                    showscale = FALSE,
+                    name = names(split_d)[i],
+                    colorbar = list(title = "RMSE"),
+                    hoverinfo = "skip")
+    }
+    if (plot_by == "samples") {
+      p <- p %>% add_mesh(z = ~RMSE,
+                          intensity = ~RMSE,
+                          data = split_d[[i]],
+                          cmin = min(d$RMSE), cmax = max(d$RMSE),
+                          showscale = i == 1,
+                          name = names(split_d)[i],
+                          flatshading = TRUE,
+                          colorbar = list(title = "RMSE"),
+                          contour = list(show = TRUE, width = 15, color = toRGB("white")),
+                          hoverinfo = "skip") %>%
+        add_mesh(z = ~RMSE,
+                 intensity = ~RMSE,
+                 data = split_d[[i]],
+                 visible = FALSE,
+                 showscale = FALSE,
+                 name = names(split_d)[i],
+                 flatshading = TRUE,
+                 colorbar = list(title = "RMSE"),
+                 contour = list(show = TRUE, width = 15, color = toRGB("white")),
+                 hoverinfo = "skip")
+    }
+    p <- p %>%
+      add_markers(z = ~RMSE,
+                  x = marker_x,
+                  y = marker_y,
+                  data = split_d[[i]],
+                  text = ~text,
+                  hoverinfo = "text+z",
+                  name = names(split_d)[i],
+                  legendgroup = names(split_d)[i],
+                  color = I("grey30"),
+                  opacity = 0,
+                  visible = TRUE,
+                  showlegend = FALSE)
+    splits[[i + 1]] <- list(args = list(list(visible = unlist(vis),
+                                             showscale = unlist(vis))),
+                            method = "update",
+                            label = names(split_d)[i])
+
+  }
+
+
   p %>%
-    layout(sliders = list(list(
-      currentvalue = list(prefix = "Set density: "),
-      steps = steps
-    )),
-    scene = list(
-      xaxis = list(title = "max(lengths)"),
-      yaxis = list(title = "max(ages)"),
-      zaxis = list(title = "RMSE",
-                   range = range(d$RMSE)),
-      camera = list(eye = list(x = 1.5, y = 1.5, z = 1.5))
-    ))
+    layout(
+      updatemenus = list(
+        list(
+          y = 0.9,
+          x = 0,
+          xanchor = "center",
+          yanchor = "top",
+          buttons = splits
+        )
+      ),
+      annotations = list(
+        list(
+          text = slab,
+          y = 0.9,
+          x = 0,
+          borderpad = 5,
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        )
+      ),
+      scene = list(
+        xaxis = list(title = xlab),
+        yaxis = list(title = ylab),
+        zaxis = list(title = "RMSE"),
+        camera = list(eye = list(x = 1.5, y = 1.5, z = 1.5))
+      ))
 
 }
+
 
 
 #' @export
@@ -557,71 +646,5 @@ plot_total_strat_fan <- function(sim, surveys = 1:5,
   )
 
 }
-
-
-#' @export
-#' @rdname plot_trend
-plot_effort_error_surface <- function(sim, autoscale = TRUE, ...) {
-
-  totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
-                                   n_measured = mean(n_measured), n_aged = mean(n_aged)),
-                            by = "survey"]
-  errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-  d <- merge(errors, totals, by = "survey")
-
-  d$text <- with(d, paste("<br>set density:", set_den,
-                          "<br>lengths cap:", lengths_cap,
-                          "<br>ages cap:", ages_cap,
-                          "<br><br>N sets:", n_sets,
-                          "<br>N lengths:", round(n_measured),
-                          "<br>N ages:", round(n_aged)))
-
-  xax <- list(title = "N ages")
-  yax <- list(title = "N lengths")
-  zax <- list(title = "RMSE")
-  cmin <- cmax <- NULL
-  if (!autoscale) {
-    xax$range <- range(d$n_aged)
-    yax$range <- range(d$n_measured)
-    zax$range <- range(d$RMSE)
-    cmin <- min(d$RMSE)
-    cmax <- max(d$RMSE)
-  }
-
-  shared_d <- crosstalk::SharedData$new(d)
-
-  crosstalk::bscols(
-    widths = c(3, NA),
-    list(
-      htmltools::div(style = htmltools::css(height = "10px")), # small margin
-      filter_select("n_sets", "N sets", shared_d, ~n_sets, multiple = FALSE)
-    ),
-    plot_ly(data = shared_d, x = ~n_aged, y = ~n_measured, z = ~RMSE) %>%
-      add_trace(type = "mesh3d", flatshading = TRUE, intensity = ~RMSE, name = "RMSE",
-                hoverinfo = "skip", contour = list(show = TRUE, width = 15, color = toRGB("white")),
-                cmin = cmin, cmax = cmax) %>%
-      add_markers(z = ~RMSE, color = I("lightgrey"), size = I(1), name = "RMSE",
-                  text = ~text, hoverinfo = "text+z",
-                  showlegend = FALSE) %>%
-      add_markers(z = ~RMSE, color = I("lightgrey"), name = "RMSE",
-                  opacity = 0, text = ~text, hoverinfo = "text+z",
-                  showlegend = FALSE) %>%
-      layout(
-        scene = list(
-          xaxis = xax,
-          yaxis = yax,
-          zaxis = zax,
-          camera = list(eye = list(x = 2, y = 1.5, z = 1.5))
-        ), ...) %>%
-      highlight(on = NULL)
-  )
-
-}
-
-
-
-
-
-
 
 
