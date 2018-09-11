@@ -11,7 +11,7 @@ csl: ices-journal-of-marine-science.csl
 
 ```{r setup, include=FALSE}
 
-devtools::install_github("rstudio/rmarkdown@v1.10")
+# devtools::install_github("rstudio/rmarkdown@v1.10")
 
 knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
@@ -28,7 +28,7 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
-load("analysis/cod_sim_exports/2018-07-13_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-09-04_test/test_output.RData")
 ```
 
 
@@ -239,9 +239,9 @@ fan_plot <- function(d, x = "Age", total_strat = FALSE) {
   
   p <-  p + 
     geom_ribbon(aes(ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
-    geom_line(aes(y = I), data = true, color = viridis::viridis(1), size = 0.7) +
+    geom_line(aes(y = I), data = true, color = "black", size = 0.6) +
     scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
-    scale_alpha_discrete(name = "Pr") + 
+    scale_alpha_discrete(name = "Pr", range = c(0.5, 1)) + 
     xlab(x) + ylab("Abundance index") +
     scale_y_continuous(labels = format_si()) +
     scale_x_continuous(expand = c(0.01, 0), 
@@ -486,7 +486,7 @@ In addition to the run presented in body of this paper, which simulates surveys 
 
 ```{r appen-data}
 ## this export holds the same distribution test
-load("analysis/cod_sim_exports/2018-07-16_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-09-07_test/test_output.RData")
 ```
 
 
