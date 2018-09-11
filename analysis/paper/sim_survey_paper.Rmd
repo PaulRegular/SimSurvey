@@ -21,6 +21,7 @@ knitr::opts_chunk$set(echo = FALSE,
 knitr::opts_knit$set(root.dir = "../..")
 ```
 
+
 ```{r data, include = FALSE}
 library(SimSurvey)
 library(plotly)
@@ -32,138 +33,7 @@ load("analysis/cod_sim_exports/2018-09-04_test/test_output.RData")
 ```
 
 
-# Abstract
-
-A central question to fish stock assessments is: how many samples are needed to adequately represent the population being monitored? For assessments based on trawl surveys, our ability to estimate population characteristics, such as abundance at age, is affected by multiple levels of sampling (i.e. the number of sets, lengths and ages sampled in a survey). We therefore need to assess the impact of haul design and length and age sampling on survey accuracy to determine optimal sampling effort. In this study we simulated repeated stratified-random samples from a spatially correlated field of simulated fish. These samples were then analyzed and estimates of abundance at age were compared against a known truth. By varying the sampling protocol, we demonstrate that increasing the number of sets conducted per stratum provides the greatest gains in precision when sampling a clustered population. Increasing length and age sampling efforts also improved abundance estimates, but to a lesser extent. These results indicate that length and age sampling efforts for some species(e.g. cod *Gadus morhua*) in trawl surveys conducted by regional fisheries management organizations can be scaled back without significant losses to precision. Time saved by reducing said sampling may afford more time to conduct additional sets and/or increase sampling efforts of other species. While this simulation is tailored to a specific case, the method may be adapted to different systems and survey procedures.
-
-**Keywords** - length and age distribution; simulation; spatial correlation; stratified analysis; statistical assessment models; survey design
-
-# Introduction
-
-Fisheries-independent trawl surveys have become an increasingly important research tool for the management of dynamic fish stocks. These surveys provide reliable indices of population abundance as well as estimates of various population characteristics such as length and age frequencies [@Pennington1998]. While costly to obtain, this information forms the basis of of many stock assessments models used throughout the world. Effective and informed management decisions therefore require surveys that maximize information while minimizing the expense of data collection. Determining the number of samples required to adequately characterize a fish population is particularly challenging since data tend to be collected across one or more stages [@Aanes2015]. Optimal survey design is further complicated by the fact that trawls sample clusters of fish that tend to have similar characteristics, such as length, age and stomach contents. This phenomenon results in samples with positive intra-haul correlation, which can markedly reduce the effective sample size for estimating length and age frequencies of the target population [@Pennington1994; @Pennington2002; @Stewart2014]. The complexities of multi-stage sampling and intra-haul correlation make it difficult to answer the question *"how much sampling is enough?"*  
-
-Two main approaches have been applied to try and answer this question: one involves statistical estimators of effective sample size [@Pennington2002; @Stewart2014], and the other employs resampling methods to test alternate sampling protocol [@Cervino2006; @Zhang2013]. Both approaches have shown that lengths are usually oversampled and a reduction in said sampling can often be done without significant loss of accuracy [@Pennington2002]. The same result holds for other positively correlated characteristics, such as age [@Coggins2013] and stomach contents [@Bogstad1995]. Pennington and Vølstad [-@Pennington1994] concluded that the best way to improve the accuracy of surveys with strong intra-haul correlation is to take fewer samples per sampling unit and increase the total number of sampling locations. Few studies, however, have tested these conclusions using simulations. A key advantage of a pure simulation approach is that "true" population size and all stages of sampling can be controlled (set, length and age sampling protocol). The relative effects of each stage of sampling on our perception of the "truth" can then be tested. This level of testing is of particular importance for age composition estimates, and the contemporary age-based assessment models that rely on these estimates, as they are affected by all stages of sampling. A key challenge, of course, is building a simulation that emulates reality.  
-
-The objective of this paper is to use a realistic simulation to evaluate the efficacy of various sampling protocol. First we simulated a spatially autocorrelated target population, and then we simulated surveys over this field. Set density was varied across surveys, as was length and age sampling efforts. Estimates of abundance at age were then obtained using a standard stratified approach [@Smith1981] and deviation from the truth was assessed. Given previous findings, we predict that the greatest gains in precision will come from increasing the number of hauls; increased sampling of correlated variables (length and age) on a set by set basis will be relatively ineffective. The bottom trawl survey of cod (*Gadus morhua*) in NAFO division 3Ps, Newfoundland, was used as a case study for this analysis. While our case study is specific, we also hope that the approach presented here will provide a framework for optimizing sampling protocol for an array of species with different life-histories and distributions. To facilitate future work and collaborations, we have developed an R package for conducting the tests presented in this paper (https://github.com/PaulRegular/SimSurvey).
-
-# Methods
-
-## Simulate abundance
-
-The simulation presented here starts with a common cohort model where the abundance at age $a$ in year $y$ ($N_{a,y}$) equals the abundance of that cohort in the previous year multiplied by the survival rate, which is expressed in terms of total mortality ($Z_{a,y}$):
-
-$$N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$$
-Here, numbers-at-age in the first year are filled via exponential decay, $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$, numbers at age 1 (i.e. recruits) vary around a baseline value, $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, and total mortality is set to a baseline level plus process error, $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$. The error around the recruitment process was set to follow a random walk, $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$, and the process error was simulated using the covariance structure described in Cadigan [-@Cadigan2016], $\delta_{a,y} \sim N(0, \Sigma_{a,y})$. The covariance across ages and years is controlled by a process error variance parameter ($\sigma_{\delta}^2$) along with age and year correlation parameters ($\varphi_{\delta, age}$ and $\varphi_{\delta, year}$, respectively). This structure allows for autocorrelation in process errors across ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and time). Overall, this  formulation allows for the simulation of an array of population dynamics that one might expect to observe.
-
-## Simulate spatial distribution
-
-The next step in the simulation is to distribute the abundance-at-age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ locations was generated with a resolution of $R$ and a depth gradient. The depth gradient was set-up to have a sigmoid shape with a depth range of $[d_{min}, d_{max}]$, shelf depth of $d_{shelf}$ and a shelf width of $w_{shelf}$. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space
-
-$$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
-
-Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean. This helps simulate depth preferences of particular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controlled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [here we approximate $\kappa$ from a range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years was controlled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controlled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. Also note that numbers were rounded such that a discrete number of fish are in each cell of the grid. A more detailed description of the space-age-year covariance is included in Appendix 1.
-
-## Simulate survey
-
-The final step in the simulation is to conduct a stratified random survey over the age-year-space array generated using formula described above. First, the grid is divided into $N_{div}$ divisions and $N_{strat}$ depth-based strata. The area of each strata is calculated and this is used to define the sets to allocate to each strata under a particular set density, $D_{sets}$. The allocated number of cells are randomly selected in each strata and the number of fish caught in each set is calculated by applying binomial sampling of the fish in each sampled cell by the proportion of the area covered by the trawl and the catchability of each age:
-
-$$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{trawl}}{A_{cell}} q_a )$$
-Where $n_{a,y,s}$ is the number of fish sampled by a set, $A_{trawl}$ indicates the area covered by the trawl, $A_{cell}$ is the area of a grid cell (i.e. $R^2$), and $q_a$ is the catchability coefficient of each age. Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the original von Bertalanffy growth curve [@Cailliet2006]:
-
-$$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
-Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division.
-
-## Simulation settings and analysis
-
-Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:par). A series of `r nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain an estimate of abundance at age for each year for each simulation, $\hat{I}_{a,y,k}$. Intra-haul correlation (i.e. intraclass correlation) of the set catch was calculated by fitting a mixed-model to the lengths data with set as a random effect [fit using the lme4 package; @Bates2015]; variance estimates from this model were then plugged into the ICC(1) formula presented in McGraw and Wong [-@Mcgraw1996]. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance estimates from each survey:
-
-$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
-Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` [@R2017] and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
-
-# Results
-
-```{r icc, cache = TRUE}
-len_samp <- merge(sim$setdet, sim$samp, by = "set")
-len_samp <- len_samp[len_samp$sim == 1 & len_samp$measured, ]
-sim_icc <- round(icc(len_samp$length, len_samp$set), 1)
-sim_icc <- sprintf("%.2f", sim_icc)
-real_icc <- "0.70" # calculated in the file "imatate_cod_data.R"
-```
-
-
-A dynamic population that varies across ages, time and space is simulated with the parameter settings used here (Table \@ref(tab:par)). Figure \@ref(fig:sp-fig) depicts the aggregate distribution of the population in one year of the simulation and the corresponding catches of one stratified random survey over this population. Layered within this, of course, is the distributions of each age, as well as age and length sampling details. Though age-specific details are not depicted for simplicity, the general pattern of spatial aggregation apparent in Figure \@ref(fig:sp-fig) is similar across all ages. That is, all ages tend to aggregate in fairly dense clusters and low-density zones are fairly wide ranging. The survey, therefore, tends to be characterized by regions with large catches interspersed with regions of no catch (Figure \@ref(fig:sp-fig)). The samples within each successful set are also dynamic and rarely include all age groups. This is because only moderate correlation was imposed on the distributions of ages 1-5+, allowing individuals of different ages to occupy different locations. This results in an intra-haul correlation of approximately `r sim_icc`, which, in this case, is of equal magnitude to the intra-haul correlation observed across more than 20 years of survey data of 3Ps cod.
-
-Next discuss trend...
-
-
-
-# Discussion
-
-
-
-# Acknowledgements
-
-- Feedback and advice: Alejandro Buren, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Dwayne Pittman, Don Power, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward
-- Dave Cote for a review of a previous version of this manuscript
-
-
-# Tables
-
-Table: (\#tab:par) - Parameter descriptions, symbols and global settings used in the cod case study.
-
-|                                       **Parameter name** |                 **Symbol** |    **Setting** |
-|:-------------------------------------------------------- | :------------------------- | :------------- |
-|                                              *Abundance* |                            |                |  
-|                                                     Ages |                        $a$ |           1:20 |
-|                                                    Years |                        $y$ |           1:20 |
-|                                         Mean recruitment |                    $\mu_r$ |            30M |
-|                    Standard deviation of log-recruitment |                 $\sigma_r$ |            0.5 |
-|                                     Mean total mortality |                    $\mu_Z$ |            0.7 |
-|                    Standard deviation of total mortality |                 $\sigma_Z$ |            0.2 |
-|  Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |            0.9 |
-| Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |            0.5 |
-|                                                          |                            |                |  
-|                                                   *Grid* |                            |                | 
-|                                               Grid cells |                        $s$ |         1:6400 |
-|                                               Resolution |                        $R$ |         3.5 km |
-|                                              Shelf depth |                $d_{shelf}$ |          200 m |
-|                                              Shelf width |                $w_{shelf}$ |         100 km |
-|                                              Depth range |       $[d_{min}, d_{max}]$ |  [0 m, 1000 m] |
-|                                      Number of divisions |                  $N_{div}$ |              1 |
-|                                         Number of strata |                $N_{strat}$ |             42 |
-|                                                          |                            |                |  
-|                                           *Distribution* |                            |                | 
-|        Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |            2.8 |
-|                        Smoothness of spatial correlation |                  $\lambda$ |              1 |
-|                             Range of spatial correlation |                        $r$ |          50 km |
-|          Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |           0.5* |
-|         Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |            0.9 |
-|            Depth at which abundance is typically highest |                    $\mu_d$ |          200 m |
-|                Dispersion around depth of peak abundance |                 $\sigma_d$ |           70 m |
-|                                                          |                            |                |  
-|                                                 *Survey* |                            |                |
-|                                  Area covered by a trawl |                $A_{trawl}$ |     0.03 km^2^ |
-|              Steepness of logistic curve of catchability |                        $k$ |              2 |
-|               Midpoint of logistic curve of catchability |                      $x_0$ |              3 |
-|                                   Mean asymptotic length |               $l_{\infty}$ |            120 |
-|                                          Length at birth |                      $l_0$ |              5 |
-|                                              Growth rate |                        $K$ |            0.1 |
-|                                             Length group |                $l_{group}$ |              1 |  
-\* Distribution set to be equal for ages 5+
-
-
-Table: (\#tab:tests) - Descriptions and settings of different survey sampling protocol tested in the cod case study. All possible combinations of the options below were tested.
-
-|      **Parameter name** |      **Symbol** |                                       **Setting** |
-|:----------------------- | :-------------- | :------------------------------------------------ |
-|             Set density |      $D_{sets}$ |    0.0005, 0.001, 0.002, 0.005, 0.01 sets / km^2^ |
-|  Length sampling effort |   $M_{lengths}$ |       5, 10, 20, 50, 100, 500, 1000 lengths / set |
-|     Age sampling effort |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
-
-
-# Figures
-
-```{r fig_fun}
+```{r fun}
 
 ## http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
 format_si <- function(...) {
@@ -274,7 +144,188 @@ fan_plot <- function(d, x = "Age", total_strat = FALSE) {
 ```
 
 
-```{r sp-fig, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^. Grey lines indicate depth-based survey strata."}
+
+# Abstract
+
+A central question to fish stock assessments is: how many samples are needed to adequately represent the population being monitored? For assessments based on trawl surveys, our ability to estimate population characteristics, such as abundance at age, is affected by multiple levels of sampling (i.e. the number of sets, lengths and ages sampled in a survey). We therefore need to assess the impact of haul design and length and age sampling on survey accuracy to determine optimal sampling effort. In this study we simulated repeated stratified-random samples from a spatially correlated field of simulated fish. These samples were then analyzed and estimates of abundance at age were compared against a known truth. By varying the sampling protocol, we demonstrate that increasing the number of sets conducted per stratum provides the greatest gains in precision when sampling a clustered population. Increasing length and age sampling efforts also improved abundance estimates, but to a lesser extent. These results indicate that length and age sampling efforts for some species(e.g. cod *Gadus morhua*) in trawl surveys conducted by regional fisheries management organizations can be scaled back without significant losses to precision. Time saved by reducing said sampling may afford more time to conduct additional sets and/or increase sampling efforts of other species. While this simulation is tailored to a specific case, the method may be adapted to different systems and survey procedures.
+
+**Keywords** - length and age distribution; simulation; spatial correlation; stratified analysis; statistical assessment models; survey design
+
+# Introduction
+
+Fisheries-independent trawl surveys have become an increasingly important research tool for the management of dynamic fish stocks. These surveys provide reliable indices of population abundance as well as estimates of various population characteristics such as length and age frequencies [@Pennington1998]. While costly to obtain, this information forms the basis of of many stock assessments models used throughout the world. Effective and informed management decisions therefore require surveys that maximize information while minimizing the expense of data collection. Determining the number of samples required to adequately characterize a fish population is particularly challenging since data tend to be collected across one or more stages [@Aanes2015]. Optimal survey design is further complicated by the fact that trawls sample clusters of fish that tend to have similar characteristics, such as length, age and stomach contents. This phenomenon results in samples with positive intra-haul correlation, which can markedly reduce the effective sample size for estimating length and age frequencies of the target population [@Pennington1994; @Pennington2002; @Stewart2014]. The complexities of multi-stage sampling and intra-haul correlation make it difficult to answer the question *"how much sampling is enough?"*  
+
+Two main approaches have been applied to try and answer this question: one involves statistical estimators of effective sample size [@Pennington2002; @Stewart2014], and the other employs resampling methods to test alternate sampling protocol [@Cervino2006; @Zhang2013]. Both approaches have shown that lengths are usually oversampled and a reduction in said sampling can often be done without significant loss of accuracy [@Pennington2002]. The same result holds for other positively correlated characteristics, such as age [@Coggins2013] and stomach contents [@Bogstad1995]. Pennington and Vølstad [-@Pennington1994] concluded that the best way to improve the accuracy of surveys with strong intra-haul correlation is to take fewer samples per sampling unit and increase the total number of sampling locations. Few studies, however, have tested these conclusions using simulations. A key advantage of a pure simulation approach is that "true" population size and all stages of sampling can be controlled (set, length and age sampling protocol). The relative effects of each stage of sampling on our perception of the "truth" can then be tested. This level of testing is of particular importance for age composition estimates, and the contemporary age-based assessment models that rely on these estimates, as they are affected by all stages of sampling. A key challenge, of course, is building a simulation that emulates reality.  
+
+The objective of this paper is to use a realistic simulation to evaluate the efficacy of various sampling protocol. First we simulated a spatially autocorrelated target population, and then we simulated surveys over this field. Set density was varied across surveys, as was length and age sampling efforts. Estimates of abundance at age were then obtained using a standard stratified approach [@Smith1981] and deviation from the truth was assessed. Given previous findings, we predict that the greatest gains in precision will come from increasing the number of hauls; increased sampling of correlated variables (length and age) on a set by set basis will be relatively ineffective. The bottom trawl survey of cod (*Gadus morhua*) in NAFO division 3Ps, Newfoundland, was used as a case study for this analysis. While our case study is specific, we also hope that the approach presented here will provide a framework for optimizing sampling protocol for an array of species with different life-histories and distributions. To facilitate future work and collaborations, we have developed an R package for conducting the tests presented in this paper (https://github.com/PaulRegular/SimSurvey).
+
+# Methods
+
+## Simulate abundance
+
+The simulation presented here starts with a common cohort model where the abundance at age $a$ in year $y$ ($N_{a,y}$) equals the abundance of that cohort in the previous year multiplied by the survival rate, which is expressed in terms of total mortality ($Z_{a,y}$):
+
+$$N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$$
+Here, numbers-at-age in the first year are filled via exponential decay, $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$, numbers at age 1 (i.e. recruits) vary around a baseline value, $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, and total mortality is set to a baseline level plus process error, $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$. The error around the recruitment process was set to follow a random walk, $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$, and the process error was simulated using the covariance structure described in Cadigan [-@Cadigan2016], $\delta_{a,y} \sim N(0, \Sigma_{a,y})$. The covariance across ages and years is controlled by a process error variance parameter ($\sigma_{\delta}^2$) along with age and year correlation parameters ($\varphi_{\delta, age}$ and $\varphi_{\delta, year}$, respectively). This structure allows for autocorrelation in process errors across ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and time). Overall, this  formulation allows for the simulation of an array of population dynamics that one might expect to observe.
+
+## Simulate spatial distribution
+
+The next step in the simulation is to distribute the abundance-at-age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ locations was generated with a resolution of $R$ and a depth gradient. The depth gradient was set-up to have a sigmoid shape with a depth range of $[d_{min}, d_{max}]$, shelf depth of $d_{shelf}$ and a shelf width of $w_{shelf}$. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space
+
+$$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
+
+Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean. This helps simulate depth preferences of particular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controlled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [here we approximate $\kappa$ from a range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years was controlled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controlled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. Also note that numbers were rounded such that a discrete number of fish are in each cell of the grid. A more detailed description of the space-age-year covariance is included in Appendix 1.
+
+## Simulate survey
+
+The final step in the simulation is to conduct a stratified random survey over the age-year-space array generated using formula described above. First, the grid is divided into $N_{div}$ divisions and $N_{strat}$ depth-based strata. The area of each strata is calculated and this is used to define the sets to allocate to each strata under a particular set density, $D_{sets}$. The allocated number of cells are randomly selected in each strata and the number of fish caught in each set is calculated by applying binomial sampling of the fish in each sampled cell by the proportion of the area covered by the trawl and the catchability of each age:
+
+$$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{trawl}}{A_{cell}} q_a )$$
+Where $n_{a,y,s}$ is the number of fish sampled by a set, $A_{trawl}$ indicates the area covered by the trawl, $A_{cell}$ is the area of a grid cell (i.e. $R^2$), and $q_a$ is the catchability coefficient of each age. Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the original von Bertalanffy growth curve [@Cailliet2006]:
+
+$$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
+Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division.
+
+## Simulation settings and analysis
+
+Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:par). A series of `r nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain an estimate of abundance at age for each year for each simulation, $\hat{I}_{a,y,k}$. Intra-haul correlation (i.e. intraclass correlation) of the set catch was calculated by fitting a mixed-model to the lengths data with set as a random effect [fit using the lme4 package; @Bates2015]; variance estimates from this model were then plugged into the ICC(1) formula presented in McGraw and Wong [-@Mcgraw1996]. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance estimates from each survey:
+
+$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
+Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` [@R2017] and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
+
+# Results
+
+```{r icc, cache = TRUE}
+len_samp <- merge(sim$setdet, sim$samp, by = "set")
+len_samp <- len_samp[len_samp$sim == 1 & len_samp$measured, ]
+sim_icc <- round(icc(len_samp$length, len_samp$set), 1)
+sim_icc <- sprintf("%.2f", sim_icc)
+real_icc <- "0.70" # calculated in the file "imatate_cod_data.R"
+```
+
+
+A dynamic population that varies across ages, time and space is simulated with the parameter settings used here (Table \@ref(tab:par)). Figure \@ref(fig:sp) depicts the aggregate distribution of the population in one year of the simulation and the corresponding catches of one stratified random survey over this population. Layered within this, of course, is the distributions of each age, as well as age and length sampling details. Though age-specific details are not depicted for simplicity, the general pattern of spatial aggregation apparent in Figure \@ref(fig:sp) is similar across all ages. That is, all ages tend to aggregate in fairly dense clusters and low-density zones are fairly wide ranging. The survey, therefore, tends to be characterized by regions with large catches interspersed with regions of no catch (Figure \@ref(fig:sp)). The samples within each successful set are also dynamic and rarely include all age groups. This is because only moderate correlation was imposed on the distributions of ages 1-5+, allowing individuals of different ages to occupy different locations. This results in an intra-haul correlation of approximately `r sim_icc`, which, in this case, is of equal magnitude to the intra-haul correlation observed across more than 20 years of survey data of 3Ps cod.
+
+Next discuss trend...
+
+
+
+# Discussion
+
+
+
+# Acknowledgements
+
+- Feedback and advice: Alejandro Buren, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Dwayne Pittman, Don Power, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward
+- Dave Cote for a review of a previous version of this manuscript
+
+
+# Tables
+
+Table: (\#tab:par) - Parameter descriptions, symbols and global settings used in the cod case study.
+
+|                                       **Parameter name** |                 **Symbol** |    **Setting** |
+|:-------------------------------------------------------- | :------------------------- | :------------- |
+|                                              *Abundance* |                            |                |  
+|                                                     Ages |                        $a$ |           1:20 |
+|                                                    Years |                        $y$ |           1:20 |
+|                                         Mean recruitment |                    $\mu_r$ |            30M |
+|                    Standard deviation of log-recruitment |                 $\sigma_r$ |            0.5 |
+|                                     Mean total mortality |                    $\mu_Z$ |            0.7 |
+|                    Standard deviation of total mortality |                 $\sigma_Z$ |            0.2 |
+|  Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |            0.9 |
+| Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |            0.5 |
+|                                                          |                            |                |  
+|                                                   *Grid* |                            |                | 
+|                                               Grid cells |                        $s$ |         1:6400 |
+|                                               Resolution |                        $R$ |         3.5 km |
+|                                              Shelf depth |                $d_{shelf}$ |          200 m |
+|                                              Shelf width |                $w_{shelf}$ |         100 km |
+|                                              Depth range |       $[d_{min}, d_{max}]$ |  [0 m, 1000 m] |
+|                                      Number of divisions |                  $N_{div}$ |              1 |
+|                                         Number of strata |                $N_{strat}$ |             42 |
+|                                                          |                            |                |  
+|                                           *Distribution* |                            |                | 
+|        Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |            2.8 |
+|                        Smoothness of spatial correlation |                  $\lambda$ |              1 |
+|                             Range of spatial correlation |                        $r$ |          50 km |
+|          Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |           0.5* |
+|         Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |            0.9 |
+|            Depth at which abundance is typically highest |                    $\mu_d$ |          200 m |
+|                Dispersion around depth of peak abundance |                 $\sigma_d$ |           70 m |
+|                                                          |                            |                |  
+|                                                 *Survey* |                            |                |
+|                                  Area covered by a trawl |                $A_{trawl}$ |     0.03 km^2^ |
+|              Steepness of logistic curve of catchability |                        $k$ |              2 |
+|               Midpoint of logistic curve of catchability |                      $x_0$ |              3 |
+|                                   Mean asymptotic length |               $l_{\infty}$ |            120 |
+|                                          Length at birth |                      $l_0$ |              5 |
+|                                              Growth rate |                        $K$ |            0.1 |
+|                                             Length group |                $l_{group}$ |              1 |  
+\* Distribution set to be equal for ages 5+
+
+
+<br>
+
+
+Table: (\#tab:tests) - Descriptions and settings of different survey sampling protocol tested in the cod case study. All possible combinations of the options below were tested.
+
+|      **Parameter name** |      **Symbol** |                                       **Setting** |
+|:----------------------- | :-------------- | :------------------------------------------------ |
+|             Set density |      $D_{sets}$ |    0.0005, 0.001, 0.002, 0.005, 0.01 sets / km^2^ |
+|    Length sampling rule |   $M_{lengths}$ |       5, 10, 20, 50, 100, 500, 1000 lengths / set |
+|       Age sampling rule |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
+
+
+<br>
+
+
+Table: (\#tab:comp) - Root-mean-squared errors (RMSE) and number of samples [sets ($N_{sets}$), lengths ($N_{lengths}$) and ages ($N_{ages}$)] obtained from an array of surveys with different sampling protocol [set densities ($D_{sets}$), maximum sampling effort of lengths per set ($M_{lengths}$), and maximum number of ages to collect per length group ($M_{ages}$)]. Differences from the minimum RMSE value ($\Delta ~ RMSE$) within each set density option are presented to aid comparisons.
+
+```{r comp, results = "asis"}
+
+totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
+                                 n_measured = mean(n_measured), n_aged = mean(n_aged)),
+                          by = "survey"]
+errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+d <- merge(errors, totals, by = "survey")
+
+which_set_dens <- c(0.0005, 0.002, 0.01)
+which_len_caps <- c(10, 100, 1000)
+which_age_caps <- c(5, 10, 50)
+
+tab <- d[d$set_den %in% which_set_dens & d$lengths_cap %in% which_len_caps & 
+           d$ages_cap %in% which_age_caps, 
+         list(lengths_cap, ages_cap,
+              n_sets = round(n_sets), n_measured = round(n_measured), n_aged = round(n_aged),
+              RMSE = RMSE, delta_RMSE = RMSE - min(RMSE)), 
+         by = "set_den"]
+tab <- tab[order(set_den, delta_RMSE), ]
+tab$set_den <- formatC(tab$set_den)
+tab$set_den[tab$delta_RMSE != 0] <- NA
+tab$RMSE <- si(tab$RMSE)
+tab$delta_RMSE <- si(tab$delta_RMSE)
+
+split_tab <- split(tab, tab$n_sets)
+for (i in seq_along(split_tab)[-length(split_tab)]) {
+  split_tab[[i]] <- rbind(split_tab[[i]], data.table(RMSE = NA), fill = TRUE)
+}
+tab <- rbindlist(split_tab)
+
+names(tab) <- c("$D_{sets}$", "$M_{lengths}$", "$M_{ages}$", 
+                "$N_{sets}$", "$N_{lengths}$", "$N_{ages}$",
+                "$RMSE$", "$\\Delta ~ RMSE$")
+
+options(knitr.kable.NA = "")
+knitr::kable(tab, align = "r", format = "markdown")
+
+```
+
+
+
+# Figures
+
+```{r sp, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^. Grey lines indicate depth-based survey strata."}
 
 which_year <- 7
 which_sim <- 1
@@ -337,7 +388,7 @@ p
 
 <br>
 
-```{r tot-fig, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."}
+```{r tot, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."}
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
@@ -356,7 +407,7 @@ p
 <br>
 
 
-```{r age-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."}
+```{r age, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."}
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
@@ -378,7 +429,7 @@ p
 
 <br>
 
-```{r year-fig, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."}
+```{r year, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."}
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
@@ -398,7 +449,7 @@ p
 <br>
 
 
-```{r error-fig, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)."}
+```{r error, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)."}
 
 trellis_theme <- list(
   box.3d = list(col = "darkgrey"), 
@@ -490,7 +541,7 @@ load("analysis/cod_sim_exports/2018-09-07_test/test_output.RData")
 ```
 
 
-```{r appen-age-fig, cache = TRUE, fig.width = 8, fig.height = 6}
+```{r appen-age, cache = TRUE, fig.width = 8, fig.height = 6}
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
@@ -513,7 +564,7 @@ Figure A1 - Fanchart of stratified estimates of abundance at age from year seven
 
 <br>
 
-```{r appen-year-fig, cache = TRUE, fig.width = 8, fig.height = 6}
+```{r appen-year, cache = TRUE, fig.width = 8, fig.height = 6}
 
 which_set_dens <- c(0.0005, 0.002, 0.01)
 which_len_caps <- c(10, 100, 1000)
@@ -535,7 +586,7 @@ Figure A2 - Fanchart of stratified estimates of the trend in abundance at age fo
 <br>
 
 
-```{r appen-error-fig, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide"}
+```{r appen-error, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide"}
 
 d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
 # d <- d[d$set_den != 0.0005, ]
