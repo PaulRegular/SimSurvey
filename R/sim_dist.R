@@ -182,7 +182,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #' @description Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
 #' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
 #' applies correlated space, age and year error to simulate the distribution
-#' of the population.
+#' of the population. The ability to simulate distributions by length is yet to be implemented.
 #'
 #' @param sim         An abundance at age matrix like one produced by \code{\link{sim_abundance}}
 #' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}

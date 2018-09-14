@@ -13,7 +13,10 @@ pop <- sim_abundance(ages = 1:20,
                      Z = sim_Z(mean = 0.5,
                                log_sd = 0.2,
                                phi_age = 0.9,
-                               phi_year = 0.5)) %>%
+                               phi_year = 0.5),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1,
+                                       length_group = 3,
+                                       digits = 0)) %>%
   sim_distribution(grid = sim_grid(x_range = c(-140, 140),
                                    y_range = c(-140, 140),
                                    res = c(3.5, 3.5),
@@ -48,7 +51,6 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 6,
                     q = sim_logistic(k = 2, x0 = 3),
-                    growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
                     export = "analysis/cod_sim_exports")
 # sim <- resume_test(dir = "analysis/cod_sim_exports/2018-09-04_test")
 setMKLthreads() # turn hyperthreading on again

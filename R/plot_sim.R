@@ -9,6 +9,7 @@
 #'                       \code{\link{sim_distribution}}, etc.
 #' @param mat            Name of matrix in \code{sim} list to plot.
 #' @param ages           Subset data to one or more ages.
+#' @param lengths        Subset data to one or more length groups.
 #' @param years          Subset data to one or more years.
 #' @param scale          Plot response on "natural" or "log" scale?
 #' @param which_survey   Subset to specific survey
@@ -16,7 +17,7 @@
 #' @param which_sim      Subset to specific sim
 #' @param max_sims       Maximum number of sims to plot
 #' @param facet_by       Facet plot by "age" or "year"?
-#' @param select_by      Select plot by "age" or "year"?
+#' @param select_by      Select plot by "age", "length" or "year"?
 #' @param plot_by        Plot error surface by "rule" or "samples"?
 #' @param survey         Subset data to one or more surveys.
 #' @param quants         Quantile intervals to display on fan plot
@@ -603,6 +604,68 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
 
 #' @export
 #' @rdname plot_trend
+plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
+                                  lengths = 1:50, select_by = "year",
+                                  quants = seq(90, 10, by = -10),
+                                  ...) {
+
+  d <- sim$length_strat_error
+  sub_d <- d[survey %in% surveys & year %in% years & length %in% lengths, ]
+  true <- sub_d[sim == 1, list(year, length, survey, I)]
+
+  ## Calculate a series of quantiles
+  ints <- lapply(quants, function(q) {
+    sub_d[, list(prob = paste0(q, "%"),
+                 lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+                 upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+          by = c("length", "year", "survey")]
+  })
+  ints <- rbindlist(ints)
+  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+
+  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
+  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
+                    ints$lengths_cap, sep = "-")
+  ints <- merge(ints, true, by = c("length", "year", "survey"))
+
+  shared_ints <- crosstalk::SharedData$new(ints)
+
+  if (select_by == "year") {
+    f <- filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
+    x <- ~length
+    xlab <- "Length"
+  } else {
+    f <- filter_select(select_by, "Length", shared_ints, ~length, multiple = FALSE)
+    x <- ~year
+    xlab <- "Year"
+  }
+
+  crosstalk::bscols(
+    list(
+      htmltools::div(style = htmltools::css(height = "10px")), # small margin
+      f,
+      filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+      filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
+    ),
+
+    plot_ly(data = shared_ints, x = x, height = "100%") %>%
+      add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
+                  color = ~prob, colors = viridis::viridis(nlevels(ints$prob)),
+                  showlegend = FALSE) %>%
+      add_lines(y = ~I, color = I("black"), name = "True",
+                showlegend = FALSE) %>%
+      layout(yaxis = list(title = "Abundance index",
+                          range = c(min(ints$lower), max(ints$upper))),
+             xaxis = list(title = xlab)),
+    widths = c(3, NA)
+  )
+
+}
+
+
+
+#' @export
+#' @rdname plot_trend
 plot_total_strat_fan <- function(sim, surveys = 1:5,
                                  quants = seq(90, 10, by = -10),
                                  ...) {
@@ -622,8 +685,7 @@ plot_total_strat_fan <- function(sim, surveys = 1:5,
   ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
 
   ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
-  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
-                    ints$lengths_cap, ints$ages_cap, sep = "-")
+  ints$lab <- formatC(ints$set_den, format = "fg")
   ints <- merge(ints, true, by = c("year", "survey"))
 
   shared_ints <- crosstalk::SharedData$new(ints)

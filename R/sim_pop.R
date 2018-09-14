@@ -115,28 +115,146 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 
 
 
+#' Convert length to length group
+#'
+#' @description Helper function for converting lengths to length groups
+#' (Note: this isn't a general function; the output midpoints defining the
+#' groups alligns with DFO specific method/labeling)
+#'
+#' @param length       Interval from \code{\link{base::findInterval}}
+#' @param group        Length group used to cut the length data
+#'
+#' @export
+#'
+
+group_lengths <- function(length, group) {
+  breaks <- seq(0, max(length, na.rm = TRUE) * 2, group)
+  interval <- findInterval(length, breaks)
+  l <- breaks[interval]
+  if (group == 0.5 | group == 1) { m <- l }
+  if (group > 1) { m <- l + (0.5 * (group - 1)) }
+  m
+}
+
+
+#' Closure for simulating length given age using von Bertalanffy notation
+#'
+#' This function outputs a function which holds the parameter values supplied and
+#' the function either simulates lengths given ages or generates a length age key
+#' give a sequence of ages.
+#'
+#' @param Linf          Mean asymptotic length
+#' @param L0            Length at birth
+#' @param K             Growth rate parameter
+#' @param log_sd        Standard deviation of the relationship in log scale
+#' @param length_group  Length group for length age key (note that labels on the matrix produced are
+#'                      midpoints using the DFO conventions; see \code{\link{group_lengths}})
+#' @param digits        Integer indicating the number of decimal places to round the values to
+#' @param plot          Produce a simple plot of the simulated values?
+#'
+#' @export
+#'
+
+sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
+                     length_group = 3, digits = 0, plot = FALSE) {
+
+  function(age = NULL, length_age_key = FALSE) {
+
+    pred_length <- Linf - (Linf - L0) * exp(-K * age)
+
+    if (length_age_key) {
+      breaks <- seq(0, max(pred_length) * 10, length_group)
+      breaks[1] <- 0.0000001
+      lak <- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+                    dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+                                    age = age))
+      for (i in seq_along(breaks)[-1]) {
+        for (j in seq_along(pred_length)) {
+          lak[i - 1, j] <- pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+            pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
+        }
+      }
+      lak <- lak[rowSums(lak) > 0, ]
+      if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+                      xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+                      col = viridis::viridis(100))
+      return(lak)
+
+    } else {
+
+      log_length <- rnorm(length(age), log(pred_length), sd = log_sd)
+      length <- round(exp(log_length), digits)
+      if (plot) plot(age, length)
+      return(length)
+
+    }
+
+  }
+}
+
+
+#' Convert abundance-at-age matrix to abundance-at-length
+#'
+#' Function for converting abundance-at-age matrix to abundance-at-length given
+#' a length-age-key. Expects matrices to be named.
+#'
+#' @param   N    Abundance-at-age matrix
+#' @param   lak  Length-age-key (i.e. probability of being in a specific length group given age)
+#'
+#' @return  Returns abundance-at-length matrix
+#'
+#' @export
+#'
+convert_N <- function(N_at_age = NULL, lak = NULL) {
+  years <- colnames(N_at_age)
+  N_at_length <- matrix(NA, nrow = nrow(lak), ncol = length(years),
+                        dimnames = list(length = rownames(lak), year = years))
+  for (y in seq_along(years)) {
+    N_at_length[, y] <- colSums(N_at_age[, y] * t(lak))
+  }
+  if (!all.equal(colSums(N_at_age), colSums(N_at_length))) {
+    stop("Aggregated abundance-at-age does not equal aggregated abundance-at-length.
+         Check parameters of supplied growht model.")
+  }
+  N_at_length
+}
+
+
 #' Simulate basic population dynamics model
 #'
-#' @param ages Ages to include in the simulation.
-#' @param years Years to include in the simulation.
-#' @param Z Total mortality function, like \code{\link{sim_Z}}, for generating
-#' mortality matrix.
-#' @param R Recruitment (i.e. abundance at \code{min(ages)}) function, like
-#' \code{\link{sim_R}}, for generating recruitment vector.
-#' @param N0 Starting abundance (i.e. abundance at \code{min(years)}) function, like
-#' \code{\link{sim_N0}}, for generating starting abundance vector.
+#' @param ages     Ages to include in the simulation.
+#' @param years    Years to include in the simulation.
+#' @param Z        Total mortality function, like \code{\link{sim_Z}}, for generating
+#'                 mortality matrix.
+#' @param R        Recruitment (i.e. abundance at \code{min(ages)}) function, like
+#'                 \code{\link{sim_R}}, for generating recruitment vector.
+#' @param N0       Starting abundance (i.e. abundance at \code{min(years)}) function, like
+#'                 \code{\link{sim_N0}}, for generating starting abundance vector.
+#' @param growth   Closure, such as \code{\link{sim_vonB}}, for simulating length given age.
+#'                 The function is used here to generate a abundance-at-age matrix and
+#'                 it is carried foward for later use in \code{\link{sim_survey}} to simulate
+#'                 lengths from survey catch at age.
 #'
-#' @return A \code{list} of length 3:
+#' @return A \code{list} of length 9:
 #' \itemize{
+#'   \item{\code{ages}} - Vector of ages in the simulation
+#'   \item{\code{lengths}} - Vector of length groups (depends on growth function)
+#'   \item{\code{years}} - Vector of years in the simulation
 #'   \item{\code{R} - Vector of recruitment values}
 #'   \item{\code{N0} - Vector of starting abundance values}
 #'   \item{\code{Z} - Matrix of total mortality values}
 #'   \item{\code{N} - Matrix of abundance values}
+#'   \item{\code{N_at_length} - Abundance at length matrix}
+#'   \item{\code{sim_length} - Function for simulating lengths given ages}
 #' }
 #'
 #' @details
 #' Abundance from is calculated using a standard population dynamics model:
-#' \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
+#' \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}.
+#' An abundance-at-length matrix is generated using a growth function coded as a closure like
+#' \code{\link{sim_vonB}}. The function is retained for later use in \code{\link{sim_survey}}
+#' to simulate lengths given simulated catch at age in a simulated survey. The ability to simulate
+#' distributions by length is yet to be implemented.
 #'
 #' @examples
 #' sim_abundance()
@@ -145,7 +263,8 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #'
 
 sim_abundance <- function(ages = 1:20, years = 1:20,
-                          Z = sim_Z(), R = sim_R(), N0 = sim_N0()) {
+                          Z = sim_Z(), R = sim_R(), N0 = sim_N0(),
+                          growth = sim_vonB()) {
 
   ## Simple error check
   if (any(diff(ages) > 1) | any(diff(years) > 1)) {
@@ -166,7 +285,20 @@ sim_abundance <- function(ages = 1:20, years = 1:20,
     }
   }
 
-  list(ages = ages, years = years, R = R, N0 = N0, Z = Z, N = N)
+  ## Convert abundance-at-age matrix to abundance-at-length
+  N_at_length <- convert_N(N_at_age = N,
+                           lak = growth(age = ages, length_age_key = TRUE))
+  lengths <- as.numeric(rownames(N_at_length))
+
+  list(ages = ages,
+       lengths = lengths,
+       years = years,
+       R = R,
+       N0 = N0,
+       Z = Z,
+       N = N,
+       N_at_length = N_at_length,
+       sim_length = growth)
 
 }
 

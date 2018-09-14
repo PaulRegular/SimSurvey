@@ -4,10 +4,10 @@
 \alias{sim_survey}
 \title{Simulate stratified-random survey}
 \usage{
-sim_survey(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
-  trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = TRUE,
-  min_sets = 2, set_den = 3/1000, lengths_cap = 400, length_group = 1,
-  ages_cap = 10, light = TRUE)
+sim_survey(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
+  resample_cells = FALSE, binom_error = TRUE, min_sets = 2,
+  set_den = 3/1000, lengths_cap = 400, length_group = 1, ages_cap = 10,
+  light = TRUE)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
@@ -17,8 +17,6 @@ a large number of simulations may max out your RAM}
 
 \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
-
-\item{growth}{Closure, such as \code{\link{sim_vonB}}, for simulating length given age}
 
 \item{trawl_dim}{Trawl width and distance (same units as grid)}
 

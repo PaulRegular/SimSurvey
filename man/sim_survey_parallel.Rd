@@ -29,7 +29,6 @@ will be easier on RAM, but may be slower.}
 a large number of simulations may max out your RAM}
   \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
-  \item{growth}{Closure, such as \code{\link{sim_vonB}}, for simulating length given age}
   \item{trawl_dim}{Trawl width and distance (same units as grid)}
   \item{resample_cells}{Allow resampling of sampling units (grid cells)?}
   \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates

@@ -12,6 +12,7 @@
 \alias{plot_total_abundance}
 \alias{plot_set_catch}
 \alias{plot_age_strat_fan}
+\alias{plot_length_strat_fan}
 \alias{plot_total_strat_fan}
 \title{Simple plotting functions}
 \usage{
@@ -39,6 +40,9 @@ plot_total_abundance(sim, which_year = 1, main = "")
 plot_set_catch(sim, which_year = 1, which_sim = 1, main = "")
 
 plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
+  select_by = "year", quants = seq(90, 10, by = -10), ...)
+
+plot_length_strat_fan(sim, surveys = 1:5, years = 1:10, lengths = 1:50,
   select_by = "year", quants = seq(90, 10, by = -10), ...)
 
 plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
@@ -76,9 +80,11 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 
 \item{main}{Plot title}
 
-\item{select_by}{Select plot by "age" or "year"?}
+\item{select_by}{Select plot by "age", "length" or "year"?}
 
 \item{quants}{Quantile intervals to display on fan plot}
+
+\item{lengths}{Subset data to one or more length groups.}
 
 \item{survey}{Subset data to one or more surveys.}
 }

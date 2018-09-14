@@ -1,28 +1,4 @@
 
-
-#' Convert length to length group
-#'
-#' @description Helper function for converting lengths to length groups
-#' (Note: this isn't a general function; the output midpoints defining the
-#' groups alligns with DFO specific method/labeling)
-#'
-#' @param length       Interval from \code{\link{base::findInterval}}
-#' @param group        Length group used to cut the length data
-#'
-#' @export
-#'
-
-group_lengths <- function(length, group) {
-  breaks <- seq(0, max(length, na.rm = TRUE) * 2, group)
-  interval <- findInterval(length, breaks)
-  l <- breaks[interval]
-  if (group == 0.5 | group == 1) { m <- l }
-  if (group > 1) { m <- l + (0.5 * (group - 1)) }
-  m
-}
-
-
-
 #' Closure for simulating logistic curve
 #'
 #' @description This closure is useful for simulating q inside the
@@ -44,30 +20,6 @@ sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
 }
 
 
-#' Closure for simulating length given age using von Bertalanffy notation
-#'
-#' @param Linf     Mean asymptotic length
-#' @param L0       Length at birth
-#' @param K        Growth rate parameter
-#' @param log_sd   Standard deviation of the relationship in log scale
-#' @param digits   Integer indicating the number of decimal places to round the values to
-#' @param plot     Produce a simple plot of the simulated values?
-#'
-#' @export
-#'
-
-sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
-                     digits = 0, plot = FALSE) {
-  function(age = NULL) {
-    pred_length <- Linf - (Linf - L0) * exp(-K * age)
-    log_length <- rnorm(length(age), log(pred_length), sd = log_sd)
-    length <- round(exp(log_length), digits)
-    if (plot) plot(age, length)
-    length
-  }
-}
-
-
 #' Round simulated population
 #'
 #' @param sim Simulation from \code{\link{sim_distribution}}
@@ -80,6 +32,8 @@ round_sim <- function(sim) {
   N <- tapply(sim$sp_N$N, list(sim$sp_N$age, sim$sp_N$year), sum)
   N <- N[rownames(sim$N), colnames(sim$N)]
   dimnames(N) <- dimnames(sim$N)
+  sim$N_at_length <- convert_N(N_at_age = N,
+                               lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
   sim$N <- N
   sim$N0 <- N[, 1]
   sim$R <- N[1, ]
@@ -171,7 +125,6 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #'                            a large number of simulations may max out your RAM
 #' @param q                   Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 #'                            (returned values must be between 0 and 1)
-#' @param growth              Closure, such as \code{\link{sim_vonB}}, for simulating length given age
 #' @param trawl_dim           Trawl width and distance (same units as grid)
 #' @param resample_cells      Allow resampling of sampling units (grid cells)?
 #' @param binom_error         Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
@@ -191,8 +144,8 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @export
 #'
 
-sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
-                       trawl_dim = c(1.5, 0.02), resample_cells = FALSE, binom_error = TRUE,
+sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
+                       resample_cells = FALSE, binom_error = TRUE,
                        min_sets = 2, set_den = 3 / 1000, lengths_cap = 400,
                        length_group = 1, ages_cap = 10, light = TRUE) {
 
@@ -201,6 +154,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
   I <- sim$N * q(replicate(length(sim$years), sim$ages))
   sp_I <- sim_index(sim, n_sims = n_sims, q = q, binom_error = binom_error)
   setkeyv(sp_I, c("sim", "year", "cell"))
+  I_at_length <- convert_N(N_at_age = I,
+                           lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
 
   ## Simulate sets conducted across survey grid
   sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
@@ -222,7 +177,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
   ## Expand set catch to individuals and simulate length
   samp <- setdet[rep(seq(.N), n), list(set, age)]
   samp$id <- seq(nrow(samp))
-  samp$length <- growth(samp$age)
+  samp$length <- sim$sim_length(samp$age)
 
   ## Sample lengths
   measured <- samp[, list(id = id[sample(.N, ifelse(.N > lengths_cap, lengths_cap, .N),
@@ -261,6 +216,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), growth = sim_vonB(),
 
   ## Add new stuff to main object
   sim$I <- I
+  sim$I_at_length <- I_at_length
   if (!light) sim$sp_I <- sp_I
   if (!light) sim$full_setdet <- full_setdet
   sim$setdet <- setdet

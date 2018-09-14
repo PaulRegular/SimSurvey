@@ -21,7 +21,7 @@ or one produced by \code{\link{sim_grid}}}
 Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
 and a survey grid (like \code{\link{survey_grid}}) to populate, this function
 applies correlated space, age and year error to simulate the distribution
-of the population.
+of the population. The ability to simulate distributions by length is yet to be implemented.
 }
 \details{
 This function simulates the probability of simulated fish inhabiting

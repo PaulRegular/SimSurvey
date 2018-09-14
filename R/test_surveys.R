@@ -54,22 +54,28 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                             samp_totals$sim <- samp_totals$sim + (j * n_sims - n_sims)
                             total_strat_error <- res$total_strat_error
                             total_strat_error$sim <- total_strat_error$sim + (j * n_sims - n_sims)
+                            length_strat_error <- res$length_strat_error
+                            length_strat_error$sim <- length_strat_error$sim + (j * n_sims - n_sims)
                             age_strat_error <- res$age_strat_error
                             age_strat_error$sim <- age_strat_error$sim + (j * n_sims - n_sims)
                             list(samp_totals = samp_totals,
                                  total_strat_error = total_strat_error,
+                                 length_strat_error = length_strat_error,
                                  age_strat_error = age_strat_error)
                           }
     stopCluster(cl) # stop parallel process
 
     samp_totals <- data.table::rbindlist(lapply(loop_error, `[[`, "samp_totals"))
     total_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "total_strat_error"))
+    length_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "length_strat_error"))
     age_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "age_strat_error"))
     samp_totals$survey <- i
     total_strat_error$survey <- i
+    length_strat_error$survey <- i
     age_strat_error$survey <- i
     survey_error[[i]]$samp_totals <- samp_totals
     survey_error[[i]]$total_strat_error <- total_strat_error
+    survey_error[[i]]$length_strat_error <- length_strat_error
     survey_error[[i]]$age_strat_error <- age_strat_error
 
     if (!is.null(export)) {
@@ -90,11 +96,16 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
   sim$surveys <- data.table::data.table(surveys)
   sim$samp_totals <- do.call(rbind, lapply(survey_error, `[[`, "samp_totals"))
   sim$total_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "total_strat_error"))
+  sim$length_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "length_strat_error"))
   sim$age_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "age_strat_error"))
   sim$total_strat_error_stats <- sim$total_strat_error[, list(MAE = mean(abs(error)),
                                                               MSE = mean(error ^ 2),
                                                               RMSE = sqrt(mean(error ^ 2))),
                                                        by = "survey"]
+  sim$length_strat_error_stats <- sim$length_strat_error[, list(MAE = mean(abs(error)),
+                                                                MSE = mean(error ^ 2),
+                                                                RMSE = sqrt(mean(error ^ 2))),
+                                                         by = "survey"]
   sim$age_strat_error_stats <- sim$age_strat_error[, list(MAE = mean(abs(error)),
                                                           MSE = mean(error ^ 2),
                                                           RMSE = sqrt(mean(error ^ 2))),
@@ -109,6 +120,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                     ...) %>% run_strat()
   sim$I <- res$I
   sim$sp_I <- res$sp_I
+  sim$I_at_length <- res$length$I
   sim$full_setdet <- res$full_setdet
   sim$setdet <- res$setdet
   sim$samp <- res$samp

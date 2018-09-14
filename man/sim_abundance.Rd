@@ -5,7 +5,7 @@
 \title{Simulate basic population dynamics model}
 \usage{
 sim_abundance(ages = 1:20, years = 1:20, Z = sim_Z(), R = sim_R(),
-  N0 = sim_N0())
+  N0 = sim_N0(), growth = sim_vonB())
 }
 \arguments{
 \item{ages}{Ages to include in the simulation.}
@@ -20,14 +20,24 @@ mortality matrix.}
 
 \item{N0}{Starting abundance (i.e. abundance at \code{min(years)}) function, like
 \code{\link{sim_N0}}, for generating starting abundance vector.}
+
+\item{growth}{Closure, such as \code{\link{sim_vonB}}, for simulating length given age.
+The function is used here to generate a abundance-at-age matrix and
+it is carried foward for later use in \code{\link{sim_survey}} to simulate
+lengths from survey catch at age.}
 }
 \value{
-A \code{list} of length 3:
+A \code{list} of length 9:
 \itemize{
+  \item{\code{ages}} - Vector of ages in the simulation
+  \item{\code{lengths}} - Vector of length groups (depends on growth function)
+  \item{\code{years}} - Vector of years in the simulation
   \item{\code{R} - Vector of recruitment values}
   \item{\code{N0} - Vector of starting abundance values}
   \item{\code{Z} - Matrix of total mortality values}
   \item{\code{N} - Matrix of abundance values}
+  \item{\code{N_at_length} - Abundance at length matrix}
+  \item{\code{sim_length} - Function for simulating lengths given ages}
 }
 }
 \description{
@@ -35,7 +45,11 @@ Simulate basic population dynamics model
 }
 \details{
 Abundance from is calculated using a standard population dynamics model:
-\deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}
+\deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}.
+An abundance-at-length matrix is generated using a growth function coded as a closure like
+\code{\link{sim_vonB}}. The function is retained for later use in \code{\link{sim_survey}}
+to simulate lengths given simulated catch at age in a simulated survey. The ability to simulate
+distributions by length is yet to be implemented.
 }
 \examples{
 sim_abundance()
