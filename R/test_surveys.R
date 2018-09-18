@@ -25,92 +25,117 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 
 ## helper functions for test_surveys and resume_test
 .test_loop <- function(sim = NULL, surveys = NULL, n_sims = NULL,
-                       n_loops = NULL, cores = NULL, export = NULL,
-                       export_dir = NULL, survey_error = NULL, ...) {
+                       n_loops = NULL, cores = NULL, export_dir = NULL,
+                       complete = NULL, keep_details = NULL, ...) {
 
-  if (is.null(survey_error)) {
-    survey_error <- vector("list", nrow(surveys))
+  ## Containers
+  samp_totals <- total_strat_error <- length_strat_error <- age_strat_error <- vector("list", nrow(surveys))
+  if (is.null(complete) && !is.null(export_dir)) {
+    dir.create(file.path(export_dir, "samp_totals"), showWarnings = FALSE)
+    dir.create(file.path(export_dir, "total_strat_error"), showWarnings = FALSE)
+    dir.create(file.path(export_dir, "length_strat_error"), showWarnings = FALSE)
+    dir.create(file.path(export_dir, "age_strat_error"), showWarnings = FALSE)
   }
-  incomplete <- which(sapply(survey_error, is.null))
+  if (is.null(complete)) {
+    complete <- rep(FALSE, nrow(surveys))
+  }
 
-  pb <- progress::progress_bar$new(
-    format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
-    total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
-  invisible(pb$tick(min(incomplete) - 1))
+  if (any(!complete)) {
 
-  for (i in incomplete) {
+    incomplete <- which(!complete)
 
-    cl <- makeCluster(cores) # use parallel computation
-    registerDoParallel(cl)
-    loop_error <- foreach(j = seq(n_loops),
-                          .packages = "SimSurvey") %dopar% {
-                            res <- sim_survey(sim, n_sims = n_sims,
-                                              set_den = surveys$set_den[i],
-                                              lengths_cap = surveys$lengths_cap[i],
-                                              ages_cap = surveys$ages_cap[i],
-                                              ...) %>%
-                              run_strat() %>% strat_error()
-                            samp_totals <- res$samp_totals
-                            samp_totals$sim <- samp_totals$sim + (j * n_sims - n_sims)
-                            total_strat_error <- res$total_strat_error
-                            total_strat_error$sim <- total_strat_error$sim + (j * n_sims - n_sims)
-                            length_strat_error <- res$length_strat_error
-                            length_strat_error$sim <- length_strat_error$sim + (j * n_sims - n_sims)
-                            age_strat_error <- res$age_strat_error
-                            age_strat_error$sim <- age_strat_error$sim + (j * n_sims - n_sims)
-                            list(samp_totals = samp_totals,
-                                 total_strat_error = total_strat_error,
-                                 length_strat_error = length_strat_error,
-                                 age_strat_error = age_strat_error)
-                          }
-    stopCluster(cl) # stop parallel process
+    cat("\nRunning simulations...\n")
+    pb <- progress::progress_bar$new(
+      format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
+      total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
+    invisible(pb$tick(min(incomplete) - 1))
 
-    samp_totals <- data.table::rbindlist(lapply(loop_error, `[[`, "samp_totals"))
-    total_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "total_strat_error"))
-    length_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "length_strat_error"))
-    age_strat_error <- data.table::rbindlist(lapply(loop_error, `[[`, "age_strat_error"))
-    samp_totals$survey <- i
-    total_strat_error$survey <- i
-    length_strat_error$survey <- i
-    age_strat_error$survey <- i
-    survey_error[[i]]$samp_totals <- samp_totals
-    survey_error[[i]]$total_strat_error <- total_strat_error
-    survey_error[[i]]$length_strat_error <- length_strat_error
-    survey_error[[i]]$age_strat_error <- age_strat_error
+    for (i in incomplete) {
 
-    if (!is.null(export)) {
-      save(survey_error, file = file.path(export_dir, "survey_error.RData"))
+      cl <- makeCluster(cores) # use parallel computation
+      registerDoParallel(cl)
+      loop_error <- foreach(j = seq(n_loops),
+                            .packages = "SimSurvey") %dopar% {
+                              res <- sim_survey(sim, n_sims = n_sims,
+                                                set_den = surveys$set_den[i],
+                                                lengths_cap = surveys$lengths_cap[i],
+                                                ages_cap = surveys$ages_cap[i],
+                                                ...) %>%
+                                run_strat() %>% strat_error()
+                              samp_totals <- res$samp_totals
+                              samp_totals$sim <- samp_totals$sim + (j * n_sims - n_sims)
+                              total_strat_error <- res$total_strat_error
+                              total_strat_error$sim <- total_strat_error$sim + (j * n_sims - n_sims)
+                              length_strat_error <- res$length_strat_error
+                              length_strat_error$sim <- length_strat_error$sim + (j * n_sims - n_sims)
+                              age_strat_error <- res$age_strat_error
+                              age_strat_error$sim <- age_strat_error$sim + (j * n_sims - n_sims)
+                              list(samp_totals = samp_totals,
+                                   total_strat_error = total_strat_error,
+                                   length_strat_error = length_strat_error,
+                                   age_strat_error = age_strat_error)
+                            }
+      stopCluster(cl) # stop parallel process
+
+      samp_totals_i <- data.table::rbindlist(lapply(loop_error, `[[`, "samp_totals"))
+      total_strat_error_i <- data.table::rbindlist(lapply(loop_error, `[[`, "total_strat_error"))
+      length_strat_error_i <- data.table::rbindlist(lapply(loop_error, `[[`, "length_strat_error"))
+      age_strat_error_i <- data.table::rbindlist(lapply(loop_error, `[[`, "age_strat_error"))
+      samp_totals_i$survey <- i
+      total_strat_error_i$survey <- i
+      length_strat_error_i$survey <- i
+      age_strat_error_i$survey <- i
+
+      if (is.null(export_dir)) {
+        samp_totals[[i]] <- samp_totals_i
+        total_strat_error[[i]] <- total_strat_error_i
+        length_strat_error[[i]] <- length_strat_error_i
+        age_strat_error[[i]] <- age_strat_error_i
+      } else {
+        data.table::fwrite(samp_totals_i, file = file.path(export_dir, "samp_totals", paste0(i, ".csv")))
+        data.table::fwrite(total_strat_error_i, file = file.path(export_dir, "total_strat_error", paste0(i, ".csv")))
+        data.table::fwrite(length_strat_error_i, file = file.path(export_dir, "length_strat_error", paste0(i, ".csv")))
+        data.table::fwrite(age_strat_error_i, file = file.path(export_dir, "age_strat_error", paste0(i, ".csv")))
+        complete[i] <- TRUE
+        save(complete, file = file.path(export_dir, "complete.RData"))
+      }
+
+      pb$tick()
+
     }
 
-    pb$tick()
-
   }
 
-  survey_error
-
-}
-
-.test_fin <- function(sim = NULL,  n_sims = NULL, surveys = NULL, keep_details = NULL,
-                      survey_error = NULL, export = NULL, export_dir = NULL, ...) {
-
+  ## Compile results
+  cat("\nCompiling results...\n")
+  if (!is.null(export_dir)) {
+    pb <- progress::progress_bar$new(
+      format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
+      total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
+    for (i in seq(nrow(surveys))) {
+      samp_totals[[i]] <- data.table::fread(file.path(export_dir, "samp_totals", paste0(i, ".csv")),
+                                            verbose = FALSE, showProgress = FALSE)
+      total_strat_error[[i]] <- data.table::fread(file.path(export_dir, "total_strat_error", paste0(i, ".csv")),
+                                                  verbose = FALSE, showProgress = FALSE)
+      length_strat_error[[i]] <- data.table::fread(file.path(export_dir, "length_strat_error", paste0(i, ".csv")),
+                                                   verbose = FALSE, showProgress = FALSE)
+      age_strat_error[[i]] <- data.table::fread(file.path(export_dir, "age_strat_error", paste0(i, ".csv")),
+                                                verbose = FALSE, showProgress = FALSE)
+      pb$tick()
+    }
+  }
   sim$surveys <- data.table::data.table(surveys)
-  sim$samp_totals <- do.call(rbind, lapply(survey_error, `[[`, "samp_totals"))
-  sim$total_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "total_strat_error"))
-  sim$length_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "length_strat_error"))
-  sim$age_strat_error <- data.table::rbindlist(lapply(survey_error, `[[`, "age_strat_error"))
-  sim$total_strat_error_stats <- sim$total_strat_error[, list(MAE = mean(abs(error)),
-                                                              MSE = mean(error ^ 2),
-                                                              RMSE = sqrt(mean(error ^ 2))),
-                                                       by = "survey"]
-  sim$length_strat_error_stats <- sim$length_strat_error[, list(MAE = mean(abs(error)),
-                                                                MSE = mean(error ^ 2),
-                                                                RMSE = sqrt(mean(error ^ 2))),
-                                                         by = "survey"]
-  sim$age_strat_error_stats <- sim$age_strat_error[, list(MAE = mean(abs(error)),
-                                                          MSE = mean(error ^ 2),
-                                                          RMSE = sqrt(mean(error ^ 2))),
-                                                   by = "survey"]
+  sim$samp_totals <- data.table::rbindlist(samp_totals); rm(samp_totals)
+  sim$total_strat_error <- data.table::rbindlist(total_strat_error); rm(total_strat_error)
+  sim$length_strat_error <- data.table::rbindlist(length_strat_error); rm(length_strat_error)
+  sim$age_strat_error <- data.table::rbindlist(age_strat_error); rm(age_strat_error)
 
+  ## Calculate some stats (limit to RMSE to limit size)
+  sim$total_strat_error_stats <- sim$total_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
+  sim$length_strat_error_stats <- sim$length_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
+  sim$age_strat_error_stats <- sim$age_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
+
+  ## Keep details from one survey
   i <- which(surveys$survey == keep_details)
   res <- sim_survey(sim, n_sims = n_sims,
                     set_den = surveys$set_den[i],
@@ -128,14 +153,13 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
   sim$length_strat <- res$length_strat
   sim$age_strat <- res$age_strat
 
-  if (!is.null(export)) {
+  if (!is.null(export_dir)) {
     save(sim, file = file.path(export_dir, "test_output.RData"))
   }
 
   sim
 
 }
-
 
 
 #' Test sampling design of multiple surveys
@@ -156,7 +180,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'                          arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
 #'                          will be easier on RAM, but may be slower.
 #' @param cores             Number of cores to use in parallel. More cores should speed up the process.
-#' @param export            Directory for exporting results as they are generated. If NULL, nothing is
+#' @param export_dir        Directory for exporting results as they are generated. If NULL, nothing is
 #'                          exported.
 #' @param ...               Additional arguments to pass to \code{\link{sim_survey}}.
 #'
@@ -177,21 +201,16 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 
 test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
-                         n_sims = 1, n_loops = 100, cores = 2, export = NULL, ...) {
+                         n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...) {
 
-  if (!is.null(export)) {
-    export_dir <- file.path(export, paste0(Sys.Date(), "_test"))
-    dir.create(export_dir, showWarnings = FALSE)
+  if (!is.null(export_dir)) {
     save(list = ls(all.names = TRUE),
          file = file.path(export_dir, "test_inputs.RData"))
   }
 
-  survey_error <- .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
-             n_loops = n_loops, cores = cores, export = export,
-             export_dir = export_dir, survey_error = NULL, ...)
-  .test_fin(sim = sim, surveys = surveys, survey_error = survey_error,
-            n_sims = n_sims, keep_details = keep_details,
-            export = export, export_dir = export_dir, ...)
+  .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
+             n_loops = n_loops, cores = cores, export_dir = export_dir,
+             complete = NULL, keep_details = keep_details, ...)
 
 
 }
@@ -199,7 +218,7 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 
 #' Resume partial run of \code{\link{test_surveys}}
 #'
-#' @param dir  Export directory specified when \code{\link{test_surveys}} was run.
+#' @param export_dir  Export directory specified when \code{\link{test_surveys}} was run.
 #'
 #' @details Progress bar time estimates will be biased here by previous completions
 #'
@@ -208,13 +227,10 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 
 resume_test <- function(dir = NULL) {
   load(file.path(dir, "test_inputs.RData"))
-  load(file.path(dir, "survey_error.RData"))
-  survey_error <- .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
-                             n_loops = n_loops, cores = cores, export = export,
-                             export_dir = export_dir, survey_error = survey_error, ...)
-  .test_fin(sim = sim, surveys = surveys, survey_error = survey_error,
-            n_sims = n_sims, keep_details = keep_details,
-            export = export, export_dir = export_dir, ...)
+  load(file.path(dir, "complete.RData"))
+  .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
+             n_loops = n_loops, cores = cores, export_dir = export_dir,
+             complete = complete, keep_details = keep_details, ...)
 }
 
 

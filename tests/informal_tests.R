@@ -44,15 +44,17 @@ rm(error)
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
-surveys <- expand_surveys(set_den = c(10) / 1000,
+surveys <- expand_surveys(set_den = c(5, 10) / 1000,
                           lengths_cap = c(10, 1000),
                           ages_cap = c(10))
 sim <- test_surveys(pop,
                     surveys = surveys,
-                    n_sims = 5,
-                    n_loops = 100,
-                    cores = 7,
-                    q = sim_logistic(k = 2, x0 = 3))
+                    n_sims = 1,
+                    n_loops = 1,
+                    cores = 1,
+                    q = sim_logistic(k = 2, x0 = 3),
+                    export_dir = "tests/exports")
+# sim <- resume_test(dir = "tests/exports")
 setMKLthreads() # turn hyperthreading on again
 
 

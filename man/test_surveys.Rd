@@ -5,7 +5,7 @@
 \title{Test sampling design of multiple surveys}
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
-  n_sims = 1, n_loops = 100, cores = 2, export = NULL, ...)
+  n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
@@ -27,7 +27,7 @@ will be easier on RAM, but may be slower.}
 
 \item{cores}{Number of cores to use in parallel. More cores should speed up the process.}
 
-\item{export}{Directory for exporting results as they are generated. If NULL, nothing is
+\item{export_dir}{Directory for exporting results as they are generated. If NULL, nothing is
 exported.}
 
 \item{...}{Additional arguments to pass to \code{\link{sim_survey}}.}

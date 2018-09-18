@@ -29,7 +29,7 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
-load("analysis/cod_sim_exports/2018-09-04_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-09-14_test/test_output.RData")
 ```
 
 

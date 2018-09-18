@@ -7,7 +7,7 @@
 resume_test(dir = NULL)
 }
 \arguments{
-\item{dir}{Export directory specified when \code{\link{test_surveys}} was run.}
+\item{export_dir}{Export directory specified when \code{\link{test_surveys}} was run.}
 }
 \description{
 Resume partial run of \code{\link{test_surveys}}
