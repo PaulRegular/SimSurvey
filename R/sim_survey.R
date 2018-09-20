@@ -133,8 +133,11 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @param set_den             Set density (number of sets per [grid unit] squared)
 #' @param lengths_cap         Maximum number of lengths measured per set
 #' @param length_group        Length group for otolith collection
-#' @param ages_cap            Maximum number of otoliths to collect per length group
-#'                            per division per year
+#' @param ages_cap            If \code{age_sampling = "length stratified"}, this cap represents the
+#'                            maximum number of otoliths to collect per length group
+#'                            per division per year. If \code{age_sampling = "random"}, it is the
+#'                            maximum number of otoliths to collect from measured fish per set.
+#' @param age_sampling        Should age sampling be length "stratified" or "random"?
 #' @param light               Drop some objects from the output to keep object size low?
 #'
 #' @return A list including rounded population simulation, set locations and details
@@ -147,7 +150,16 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
                        resample_cells = FALSE, binom_error = TRUE,
                        min_sets = 2, set_den = 3 / 1000, lengths_cap = 400,
-                       length_group = 1, ages_cap = 10, light = TRUE) {
+                       length_group = 1, ages_cap = 10, age_sampling = "stratified",
+                       light = TRUE) {
+
+  ## Couple error traps
+  if (!age_sampling %in% c("stratified", "random")) {
+    stop('age_sampling must be either "stratified" or "random". Other options have yet to be implemented.')
+  }
+  if (age_sampling == "random" && ages_cap > lengths_cap) {
+    stop('When age_sampling = "random", ages_cap cannot exceed lengths_cap.')
+  }
 
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
@@ -189,9 +201,16 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   ## Sample ages
   length_samp$length_group <- group_lengths(length_samp$length, length_group)
   length_samp <- merge(sets[, list(set, sim, year, division)], length_samp, by = "set")
-  aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
-                                            replace = FALSE)]),
-                      by = c("sim", "year", "division", "length_group")]
+  if (age_sampling == "stratified") {
+    aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
+                                              replace = FALSE)]),
+                        by = c("sim", "year", "division", "length_group")]
+  }
+  if (age_sampling == "random") {
+    aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
+                                              replace = FALSE)]),
+                        by = c("set")]
+  }
   samp$aged <- samp$id %in% aged$id # tag ages sampled
   rm(aged)
   rm(length_samp)

@@ -36,7 +36,7 @@ pop <- sim_abundance(ages = 1:20,
                                             sigma = 70))
 
 error <- pop %>%
-  sim_survey(n_sims = 10) %>%
+  sim_survey(n_sims = 10, age_sampling = "random") %>%
   run_strat() %>%
   strat_error()
 rm(error)
@@ -44,19 +44,21 @@ rm(error)
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
-surveys <- expand_surveys(set_den = c(5, 10) / 1000,
-                          lengths_cap = c(10, 1000),
-                          ages_cap = c(10))
+surveys <- expand_surveys(set_den = c(2) / 1000,
+                          lengths_cap = c(100),
+                          ages_cap = c(3, 4))
 sim <- test_surveys(pop,
                     surveys = surveys,
-                    n_sims = 1,
-                    n_loops = 1,
-                    cores = 1,
+                    n_sims = 10,
+                    n_loops = 100,
+                    cores = 6,
                     q = sim_logistic(k = 2, x0 = 3),
-                    export_dir = "tests/exports")
+                    age_sampling = "random") # export_dir = "tests/exports")
 # sim <- resume_test(dir = "tests/exports")
 setMKLthreads() # turn hyperthreading on again
 
-
-
+plot_age_strat_fan(sim, surveys = 1:8, select_by = "age",
+                   ages = sim$ages, years = sim$years)
+sim$age_strat_error_stats
+## Appears to be poorer performance with random vs length-stratified age sampling strategies
 

@@ -37,8 +37,11 @@ at older ages because of more frequent rounding to zero.}
   \item{set_den}{Set density (number of sets per [grid unit] squared)}
   \item{lengths_cap}{Maximum number of lengths measured per set}
   \item{length_group}{Length group for otolith collection}
-  \item{ages_cap}{Maximum number of otoliths to collect per length group
-per division per year}
+  \item{ages_cap}{If \code{age_sampling = "length stratified"}, this cap represents the
+maximum number of otoliths to collect per length group
+per division per year. If \code{age_sampling = "random"}, it is the
+maximum number of otoliths to collect from measured fish per set.}
+  \item{age_sampling}{Should age sampling be length "stratified" or "random"?}
   \item{light}{Drop some objects from the output to keep object size low?}
 }}
 }

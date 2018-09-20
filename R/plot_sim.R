@@ -569,11 +569,11 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
   shared_ints <- crosstalk::SharedData$new(ints)
 
   if (select_by == "year") {
-    f <- filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
+    f <- crosstalk::filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
     x <- ~age
     xlab <- "Age"
   } else {
-    f <- filter_select(select_by, "Age", shared_ints, ~age, multiple = FALSE)
+    f <- crosstalk::filter_select(select_by, "Age", shared_ints, ~age, multiple = FALSE)
     x <- ~year
     xlab <- "Year"
   }
@@ -582,9 +582,9 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
     list(
       htmltools::div(style = htmltools::css(height = "10px")), # small margin
       f,
-      filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
-      filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
-      filter_select("ages_cap", "Ages cap", shared_ints, ~ages_cap, multiple = FALSE)
+      crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+      crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
+      crosstalk::filter_select("ages_cap", "Ages cap", shared_ints, ~ages_cap, multiple = FALSE)
     ),
 
     plot_ly(data = shared_ints, x = x, height = "100%") %>%
@@ -631,11 +631,11 @@ plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
   shared_ints <- crosstalk::SharedData$new(ints)
 
   if (select_by == "year") {
-    f <- filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
+    f <- crosstalk::filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
     x <- ~length
     xlab <- "Length"
   } else {
-    f <- filter_select(select_by, "Length", shared_ints, ~length, multiple = FALSE)
+    f <- crosstalk::filter_select(select_by, "Length", shared_ints, ~length, multiple = FALSE)
     x <- ~year
     xlab <- "Year"
   }
@@ -644,8 +644,8 @@ plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
     list(
       htmltools::div(style = htmltools::css(height = "10px")), # small margin
       f,
-      filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
-      filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
+      crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+      crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
     ),
 
     plot_ly(data = shared_ints, x = x, height = "100%") %>%
@@ -693,7 +693,7 @@ plot_total_strat_fan <- function(sim, surveys = 1:5,
   crosstalk::bscols(
     list(
       htmltools::div(style = htmltools::css(height = "10px")), # small margin
-      filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
+      crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
     ),
     plot_ly(data = shared_ints, x = ~year, height = "100%") %>%
       add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
