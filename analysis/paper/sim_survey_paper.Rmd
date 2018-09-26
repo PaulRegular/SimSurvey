@@ -220,14 +220,18 @@ real_icc <- "0.70" # calculated in the file "imatate_cod_data.R"
 
 A dynamic population that varies across ages, time and space was simulated with the parameter settings used here (Table \@ref(tab:par)). Figure \@ref(fig:sp) depicts the aggregate distribution of the population in one year of the simulation and the corresponding catches of one stratified random survey over this population. Layered within this, of course, is the distributions of each age, as well as age and length sampling details. Though age-specific details are not depicted for simplicity, the general pattern of spatial aggregation apparent in Figure \@ref(fig:sp) is similar across all ages. That is, all ages tend to aggregate in fairly dense clusters and low-density zones are fairly wide ranging. The survey, therefore, tends to be characterized by regions with large catches interspersed with regions of no catch (Figure \@ref(fig:sp)). The samples within each successful set are also dynamic and rarely include all age groups. This is because only moderate correlation was imposed on the distributions of ages 1-5+, allowing individuals of different ages to occupy different locations. This results in an intra-haul correlation of approximately `r sim_icc`, which, in this case, is of equal magnitude to the intra-haul correlation observed across more than 20 years of survey data of 3Ps cod.
 
-The stratified analyses run on these simulated data provided estimates of total abundance, abundance at length and abundance at age, and different stages of sampling affect these estimates. Specifically, set density affects all estimates, length sampling affects estimates of abundance at length and abundance at age, and age sampling affects abundance at age estimates. Figure \@ref(fig:tot) depicts the consequences of different set densities on the estimates of total abundance available to the survey through the simulated series. It is clear from this figure that the probability envelopes are tighter (i.e. estimates are more precise) and bias is negligible under the higher set density scenarios ($D_{sets}$ = 0.002, and $D_{sets}$ = 0.01). Trends in total abundance appear to be slightly underestimated under the low set density scenario ($D_{sets}$ = 0.0005; Figure \@ref(fig:tot)). Likewise, abundance at length and abundance at age estimates were generally biased downward in all low set density scenarios ($D_{sets}$ = 0.0005; Figures \@ref(fig:length), \@ref(fig:age), \@ref(fig:year)). At higher set densities, abundance at length estimates are more precise and bias is less apparent (Figure \@ref(fig:length)). With the exception of a length sampling protocol of 10 measurements per set ($M_{lengths}$ = 10), there appears to be little difference in the estimates of abundance at length when the number of measurements are capped at 100 ($M_{lengths}$ = 100) or 1000 ($M_{lengths}$ = 1000; Figure \@ref(fig:length)). Some downward bias is apparent in the abundance at length estimates, especially at larger lengths, under the medium set density scenario with low length sampling effort ($D_{sets}$ = 0.002 and $M_{lengths}$ = 10; Figure \@ref(fig:length)). Upward or downward bias in abundance at age estimates is apparent in all cases except the high set density and high length sampling scenario ($D_{sets}$ = 0.01 and $M_{lengths}$ = 1000; Figure \@ref(fig:age), \@ref(fig:year)). Under both low and medium set densities ($D_{sets}$ = 0.0005 and 0.02, respectively), increasing length sampling effort from 10 or 100 measurements per set to 1000 appears to increase bias or reduce precision slightly (Figure \@ref(fig:age), \@ref(fig:year)).
+The stratified analyses run on these simulated data provided estimates of total abundance, abundance at length and abundance at age, and different stages of sampling affect these estimates. Specifically, set density affects all estimates, length sampling affects estimates of abundance at length and abundance at age, and age sampling affects abundance at age estimates. Figure \@ref(fig:tot) depicts the consequences of different set densities on the estimates of total abundance available to the survey through the simulated series. It is clear from this figure that the probability envelopes are tighter (i.e. estimates are more precise) and bias is negligible. Likewise, abundance at length and abundance at age estimates are more precise as set density is increased (Figure \@ref(fig:length), \@ref(fig:age), \@ref(fig:year)). With the exception of a length sampling protocol of 10 measurements per set ($M_{lengths}$ = 10), there appears to be little difference in the estimates of abundance at length when the number of measurements are capped at 100 ($M_{lengths}$ = 100) or 1000 ($M_{lengths}$ = 1000; Figure \@ref(fig:length)). Some downward bias is apparent in the abundance at length estimates, especially at larger lengths, under the low to medium set density scenarios with low length sampling effort ($D_{sets}$ = 0.0005 or 0.002 and $M_{lengths}$ = 10; Figure \@ref(fig:length)). Upward or downward bias in abundance at age estimates is apparent in all cases except the high set density and high length sampling scenario ($D_{sets}$ = 0.01 and $M_{lengths}$ = 1000; Figure \@ref(fig:age), \@ref(fig:year)). Under both low and medium set densities ($D_{sets}$ = 0.0005 and 0.02, respectively), increasing length sampling effort from 10 or 100 measurements per set to 1000 appears to increase bias or reduce precision slightly (Figure \@ref(fig:age), \@ref(fig:year)).
 
 For a less visual approach to assessing precision and bias, RMSE results are presented in Figures \@ref(fig:error-lines) and \@ref(fig:error-wireframe) and Table \@ref(tab:comp). Figure \@ref(fig:error-lines) depicts the effects of set density and length sampling effort on abundance at length and abundance at age estimates. In all cases, increases in set density results in large declines in RMSE (Figure \@ref(fig:error-lines)). For abundance at length estimates, RMSE declines as the number of lengths measured increases, however, gains plateau beyond a cretin point. Likewise, RMSE of abundance at age estimates decline with increased length sampling effort, but RMSE does not plateau in all set density scenarios (Figure \@ref(fig:error-lines)). While RMSE continues to decline with increased length sampling effort under the high set density scenarios ($D_{sets}$ = 0.005 to 0.01 sets / km^2^), RMSE reaches a plateau and then increases with increased length sampling effort under the medium to low set density scenarios ($D_{sets}$ = 0.002 to 0.0005 sets / km^2^; Figure \@ref(fig:error-lines)). In many cases, RMSE for both metrics is lower for scenarios with higher set density but lower length sampling effort (Figure \@ref(fig:error-lines)). Similar patterns are apparent in Figure \@ref(fig:error-wireframe) and Table \@ref(tab:comp), which focus on the consequences of set density and length and age sampling protocol on the estimates of abundance at age. Again, RMSE clearly declines with increases to set density and sometimes declines with increased length sampling effort (Figure \@ref(fig:error-wireframe)). Under both low and medium set density scenarios ($D_{sets}$ = 0.005 to 0.01 sets / km^2^), measuring a maximum of 100 fish per set appears to be better than measuring a maximum of 1000 fish per set (Figure \@ref(fig:error-wireframe); Table \@ref(tab:comp)). Decreasing the age sampling protocol below 10 ages sampled per set per length group appears to result in relatively small increases to RMSE (Figure \@ref(fig:error-wireframe); Table \@ref(tab:comp)).
 
 
 # Discussion
 
-The simple simulation presented here revealed some expected and unexpected patterns. First, there were clear improvements to precision in all population estimates as the number of sets were increased. This result was expected as it aligns with a basic principle of survey design that the precision and representativeness of a survey is increased by increasing the number of sampling units [@sutherland2006].
+The simple simulation presented here revealed some expected and unexpected patterns. First, there were clear improvements to precision in all population estimates as the number of sets were increased. This result was expected as it aligns with a basic principle of survey design that the precision and representativeness of a survey increases as the number of sampling units are increased [@sutherland2006]. Second, stratified estimates of abundance at age were often biased and, in some cases, estimates were poorer when sub-sampling effort was increased. This result was unexpected because design-based estimators, such as the stratified analysis applied here, are expected to be unbiased [@smith1990] and increases to sub-sampling effort was expected to be relatively ineffective, not detrimental. Results from stratified estimates of abundance at length, in contrast, better align with these expectations. By deduction, these results indicate that the issue stems from the intervening age-length key and not the design-based estimator.
+
+Using an age-length key in conjunction with the length distribution to estimate the age distribution is standard procedure in the analysis of fisheries-independent survey data as only a small fraction of the catch is typically aged. This is because the aging procedure is costly and time-consuming whereas length measurements are relatively easy to obtain. Ages are generally determined from length-stratified sub-samples of the catch and raw proportions of age-at-length are used to assign ages to fish in specific length groups. Age-length keys are rarely stratified due to a small number of samples and, as such, they are usually constructed at larger spatial scales. Here we construct one age-length key for the division, as is done for the analysis of 3Ps cod. There is, however, a potential cost to the spatial scale of the key. Namely, it is unlikely that one age-length key is representative for the whole region because the probability of being a specific age given length varies in space [@Berg2012]. This would not be an issue if there was no age-specific clustering, but this seems unlikely given the common observation that fish caught together tend to be more similar than those in the general population [@Pennington1994; @Pennington2002; @Stewart2014]. Because different age groups sometimes occur in different places, the translation of lengths to ages may be biased by the samples used to generate the age-length key. This bias is perhaps compounded by the length-stratified sampling of ages such that the ages sampled may be skewed towards sets with the most catch, especially under scenarios where length sampling effort is high. If this is the case, then the representativeness of the age-length key to the whole population could be deminished by excessive length sampling.
+
+Requires further research. Solutions to the problem... (e.g. berge and kristensen).
 
 
 ### TODO
@@ -633,103 +637,7 @@ Where $MVN$ indicates the multivariate normal distribution, $\sigma_\xi^2$ contr
 $$\boldsymbol{R}_s = \frac{2^{1-\lambda}}{\Gamma(\lambda)} (\kappa \left |s_i - s_j \right|) K_{\lambda}(\kappa \left |s_i - s_j \right|)$$
 where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations, $\Gamma$ is the gamma function, $K_{\lambda}$ denotes the modified Bessel function of the second kind, and $\lambda$ and $\kappa$ control the smoothness and scale of the spatial process [@Blangiardo2015]. With this structure, simulated error is correlated across ages, years and space.
 
-
-# Appendix 2: results in the absence of intra-haul correlation
-
-In addition to the run presented in body of this paper, which simulates surveys over a population that forms age-specific clusters, we also simulated surveys over a population that assumes the same spatial clustering across all age groups. There is therefore no intra-haul correlation in this series of surveys. Aside from this change to the spatial distribution settings, all other settings were kept the same. Results are presented below in Figures A1, A2 and A3. Aside from systematic underestimation in the low set density scenarios, there are little signs of clear bias in the stratified estimates. The bias present under the low set density scenario is likely related to the disproportionate sampling of the narrow shallow and deep strata in the survey grid. The lack of bias from the other scenarios help verify the issues introduced by age-specific clustering to stratified estimates of abundance at age. These results also indicate that little precision is gained by increasing length or age sampling effort beyond 100 lengths per set and 10 ages per length group, respectively. Given this result, it is probably not unreasonable to speculate that such sampling effort helps define the shape of the age distribution, but extra effort does little to improve estimates of abundance at age; such gains are only obtained by increasing set density.
-
-```{r appen-data}
-## this export holds the same distribution test
-load("analysis/cod_sim_exports/2018-09-18_no_age_clust_test/test_output.RData")
-```
-
-
-```{r appen-age, cache = TRUE, fig.width = 8, fig.height = 6}
-
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_year <- 7
-
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$year == which_year & d$set_den %in% which_set_dens &
-         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
-d$age[d$age > 8] <- 8 # aggregate beyond 8
-d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
-       by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
-
-p <- fan_plot(d, x = "Age")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/appen_true_vs_est_by_age.pdf",
-                   base_height = 6, base_width = 8)
-p
-
-```
-Figure A1 - Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey.
-
 <br>
-
-```{r appen-year, cache = TRUE, fig.width = 8, fig.height = 6}
-
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_age <- 4
-
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$age == which_age & d$set_den %in% which_set_dens &
-       d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
-
-p <- fan_plot(d, x = "Year")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/appen_true_vs_est_by_year.pdf",
-                   base_height = 6, base_width = 8)
-p
-
-```
-Figure A2 - Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey.
-
-
-<br>
-
-
-```{r appen-error, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide"}
-
-d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-# d <- d[d$set_den != 0.0005, ]
-d <- d[d$set_den %in% c(0.0005, 0.002, 0.01)]
-set_den <- sort(unique(d$set_den))
-d$set_den <- factor(d$set_den)
-options(scipen = 999)
-labs <- sapply(seq_along(set_den), function(i) as.expression(bquote(D[sets] == .(set_den[i]))), 
-               USE.NAMES = FALSE)
-zlabs <- list(at = pretty(d$RMSE), labels = si(pretty(d$RMSE)))
-
-pdf("analysis/paper/figures/appen_error_wireframe.pdf", height = 3, width = 8.5)
-
-p <- wireframe(RMSE ~  lengths_cap * ages_cap | set_den, data = d,
-          as.table = TRUE, drape = TRUE, col = "white", lwd = 0.5,
-          strip = strip.custom(factor.levels = labs),
-          scales = list(arrows = FALSE, cex = 0.7, z = zlabs),
-          col.regions = viridis::viridis(100),
-          screen = list(z = 230, x = 300), 
-          xlab = list(expression(M[lengths]), rot = 25), 
-          ylab = list(expression(M[ages]), rot = -15), 
-          zlab = list("RMSE", rot = 95),
-          colorkey = list(labels = zlabs, height = 0.6,
-                          axis.line = list(col = "darkgrey")),
-          par.settings = trellis_theme)
-p <- update(p, layout = c(3, 1))
-p
-grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
-
-invisible(dev.off())
-
-p
-grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
-
-```
-Figure A3 - Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$).
-
-<br>
-
-
 
 # References
 
