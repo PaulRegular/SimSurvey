@@ -14,6 +14,7 @@
 #' @param n_div        Number of divisions to iniclude
 #' @param strat_breaks Define strata given these depth breaks
 #' @param strat_splits Number of times to split strat
+#' @param method       Use a "spline" to generate a smooth gradient or simply use "linear" interpolation?
 #' @param space_covar  Supply \code{\link{sim_sp_covar}} closure to add covariance to depth
 #'                     to make it look more realistic. Con: strata may end up being
 #'                     poorly definied...
@@ -33,7 +34,8 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
                      res = c(3.5, 3.5), shelf_depth = 200,
                      shelf_width = 100, depth_range = c(0, 1000),
                      n_div = 1, strat_breaks = seq(0, 1000, by = 20),
-                     strat_splits = 2, space_covar = NULL) {
+                     strat_splits = 2, method = "spline",
+                     space_covar = NULL) {
 
   ## set-up raster
   r <- raster::raster(xmn = x_range[1], xmx = x_range[2],
@@ -52,7 +54,11 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   sx <- c(x_range[1], -shelf_width, -shelf_width / 2,
           0, shelf_width / 2, shelf_width, x_range[2])
   sy <- c(depth_range[1], rep(shelf_depth, 5), depth_range[2])
-  s <- spline(sx, sy, n = nrow(xy))
+  if (method == "spline") {
+    s <- spline(sx, sy, n = nrow(xy))
+  } else {
+    s <- approx(sx, sy, n = nrow(xy))
+  }
   depth <- s$y[findInterval(xy$x, s$x)] + e
   depth[depth < depth_range[1]] <- depth_range[1] + 1 # impose depth range
   depth[depth > depth_range[2]] <- depth_range[2] - 1

@@ -380,7 +380,7 @@ plot_samp_dist <- function(sim, which_year = 1, which_sim = 1,
   yax <- c(scaleanchor = "x", xax)
 
   sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
+  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
@@ -464,7 +464,7 @@ plot_total_abundance <- function(sim, which_year = 1, main = "") {
   size <- unique(diff(pretty(xyz$N, 25)))
 
   sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
+  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
 
   abun_plot <- plot_ly() %>%
     add_trace(x = ~x, y = ~y, z = ~N, data = xyz, type = "contour",
@@ -505,7 +505,7 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
   yax <- c(scaleanchor = "x", xax)
 
   sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
+  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]

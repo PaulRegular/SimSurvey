@@ -7,7 +7,7 @@
 sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5,
   3.5), shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
   n_div = 1, strat_breaks = seq(0, 1000, by = 20), strat_splits = 2,
-  space_covar = NULL)
+  method = "spline", space_covar = NULL)
 }
 \arguments{
 \item{x_range}{Range (min x, max x) in x dimension in km}
@@ -27,6 +27,8 @@ sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5,
 \item{strat_breaks}{Define strata given these depth breaks}
 
 \item{strat_splits}{Number of times to split strat}
+
+\item{method}{Use a "spline" to generate a smooth gradient or simply use "linear" interpolation?}
 
 \item{space_covar}{Supply \code{\link{sim_sp_covar}} closure to add covariance to depth
 to make it look more realistic. Con: strata may end up being
