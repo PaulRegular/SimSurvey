@@ -90,34 +90,6 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 }
 
 
-
-#' Simulate population available to the survey
-#'
-#' @param sim               Simulation from \code{\link{sim_distribution}}, rounded by \code{\link{sim_distribution}}
-#' @param n_sims            Number of simulations to produce
-#' @param q                 Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
-#'                          (returned values must be between 0 and 1)
-#' @param binom_error       Impose binomial error?
-#'
-#' @export
-#'
-
-sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) {
-  sp_N <- data.table(sim$sp_N[, c("cell", "age", "year", "N")])
-  i <- rep(seq(nrow(sp_N)), times = n_sims)
-  s <- rep(seq(n_sims), each = nrow(sp_N))
-  sp_N <- sp_N[i, ]
-  sp_N$sim <- s
-  if (binom_error) {
-    sp_N$I <- rbinom(rep(1, nrow(sp_N)), sp_N$N, q(sp_N$age))
-  } else {
-    sp_N$I <- round(q(sp_N$age) * sp_N$N)
-  }
-  sp_N
-}
-
-
-
 #' Simulate stratified-random survey
 #'
 #' @param sim                 Simulation from \code{\link{sim_distribution}}
@@ -126,7 +98,8 @@ sim_index <- function(sim, n_sims = 1, q = sim_logistic(), binom_error = FALSE) 
 #' @param q                   Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 #'                            (returned values must be between 0 and 1)
 #' @param trawl_dim           Trawl width and distance (same units as grid)
-#' @param resample_cells      Allow resampling of sampling units (grid cells)?
+#' @param resample_cells      Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
+#'                            because depletion is imposed at the cell level.
 #' @param binom_error         Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 #'                            at older ages because of more frequent rounding to zero.
 #' @param min_sets            Minimum number of sets per strat
@@ -164,8 +137,6 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
   I <- sim$N * q(replicate(length(sim$years), sim$ages))
-  sp_I <- sim_index(sim, n_sims = n_sims, q = q, binom_error = binom_error)
-  setkeyv(sp_I, c("sim", "year", "cell"))
   I_at_length <- convert_N(N_at_age = I,
                            lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
 
@@ -174,17 +145,26 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                    trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets)
   setkeyv(sets, c("sim", "year", "cell"))
 
+  ## Expand sp_N object n_sim times
+  sp_I <- data.table(sim$sp_N[, c("cell", "age", "year", "N")])
+  i <- rep(seq(nrow(sp_I)), times = n_sims)
+  s <- rep(seq(n_sims), each = nrow(sp_I))
+  sp_I <- sp_I[i, ]
+  sp_I$sim <- s
+
   ## Subset population to surveyed cells and simulate portion caught by survey
+  ## Introduce sampling error using rbinom
   ## (If more than one set is conducted in a cell, split population available to survey (I) amongst the sets)
   setdet <- merge(sets, sp_I, by = c("sim", "year", "cell"))
   if (binom_error) {
-    setdet$n <- rbinom(rep(1, nrow(setdet)), size = round(setdet$I / setdet$cell_sets),
-                       prob = setdet$tow_area / setdet$cell_area)
+    setdet$n <- rbinom(rep(1, nrow(setdet)), size = round(setdet$N / setdet$cell_sets),
+                       prob = (setdet$tow_area / setdet$cell_area) * q(setdet$age))
   } else {
-    setdet$n <- round((setdet$I / setdet$cell_sets) * (setdet$tow_area / setdet$cell_area))
+    setdet$n <- round((setdet$N / setdet$cell_sets) * ((setdet$tow_area / setdet$cell_area) * q(setdet$age)))
   }
   setkeyv(setdet, "set")
   setkeyv(sets, "set")
+  rm(sp_I)
 
   ## Expand set catch to individuals and simulate length
   samp <- setdet[rep(seq(.N), n), list(set, age)]
@@ -221,7 +201,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 
   ## Summarise set catch and sampling
   if (!light) full_setdet <- setdet
-  setdet <- merge(sets, setdet[, list(N = sum(N), I = sum(I), n = sum(n)), by = "set"], by = "set")
+  setdet <- merge(sets, setdet[, list(N = sum(N), n = sum(n)), by = "set"], by = "set")
   setdet <- merge(setdet,
                   samp[, list(n_measured = sum(measured), n_aged = sum(aged)), by = "set"],
                   by = "set", all.x = TRUE)
@@ -236,7 +216,6 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   ## Add new stuff to main object
   sim$I <- I
   sim$I_at_length <- I_at_length
-  if (!light) sim$sp_I <- sp_I
   if (!light) sim$full_setdet <- full_setdet
   sim$setdet <- setdet
   sim$samp <- samp

@@ -143,8 +143,11 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                     ages_cap = surveys$ages_cap[i],
                     light = FALSE,
                     ...) %>% run_strat()
+  sim$N0 <- res$N[, 1] # attach rounded results
+  sim$R <- res$N[1, ]
+  sim$N <- res$N
+  sim$sp_N <- res$sp_N
   sim$I <- res$I
-  sim$sp_I <- res$sp_I
   sim$I_at_length <- res$length$I
   sim$full_setdet <- res$full_setdet
   sim$setdet <- res$setdet

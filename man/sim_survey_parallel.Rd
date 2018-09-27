@@ -30,7 +30,8 @@ a large number of simulations may max out your RAM}
   \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
   \item{trawl_dim}{Trawl width and distance (same units as grid)}
-  \item{resample_cells}{Allow resampling of sampling units (grid cells)?}
+  \item{resample_cells}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
+because depletion is imposed at the cell level.}
   \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.}
   \item{min_sets}{Minimum number of sets per strat}

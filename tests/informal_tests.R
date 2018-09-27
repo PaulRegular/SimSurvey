@@ -111,6 +111,7 @@ plot_samp_dist(error, which_year = 4)
 
 rm(error)
 
+
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
 setMKLthreads(1) # turn off MKL hyperthreading
@@ -120,7 +121,7 @@ surveys <- expand_surveys(set_den = c(0.0005),
 sim <- test_surveys(pop,
                     surveys = surveys,
                     n_sims = 10,
-                    n_loops = 500,
+                    n_loops = 100,
                     cores = 6,
                     q = sim_logistic(k = 2, x0 = 3)) # export_dir = "tests/exports")
 # sim <- resume_test(dir = "tests/exports")
@@ -129,3 +130,13 @@ setMKLthreads() # turn hyperthreading on again
 plot_total_strat_fan(sim)
 plot_distribution_slider(sim, ages = 1:20, years = 6)
 plot_samp_dist(sim, which_year = 6, which_sim = 5)
+mean(sim$total_strat_error$error)
+hist(sim$total_strat_error[year == 6]$error, breaks = 100, xlab = "error", main = "")
+abline(v = 0, col = "red")
+abline(v = mean(sim$total_strat_error$error), col = "blue")
+abline(v = median(sim$total_strat_error$error), col = "green")
+## Note that the percentiles in the fan plot make it look slightly biased...but the mean would look better
+## because it lands in a higher place on a skewed distribution
+
+
+
