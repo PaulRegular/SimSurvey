@@ -540,6 +540,35 @@ plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
 }
 
 
+
+
+## helper function for calculating multiple quantiles by group
+.ints <- function(d, quants = seq(90, 10, by = -10), by = c("year", "survey")) {
+  ints <- lapply(quants, function(q) {
+    d[, list(prob = paste0(q, "%"),
+             lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+             upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+      by = by]
+  })
+  ints <- data.table::rbindlist(ints)
+  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+  ints
+}
+
+## helper function for making fan plots
+.fan <- function(d, x = NULL, xlab = NULL, cols = NULL, ylim = NULL, ...) {
+  plot_ly(data = d, x = x) %>%
+    add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
+                color = ~prob, colors = cols,
+                showlegend = FALSE) %>%
+    add_lines(y = ~I, color = I("black"), name = "True",
+              showlegend = FALSE) %>%
+    layout(yaxis = list(title = "Abundance index",
+                        range = ylim),
+           xaxis = list(title = xlab), ...)
+}
+
+
 #' @export
 #' @rdname plot_trend
 plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
@@ -552,15 +581,7 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
   true <- sub_d[sim == 1, list(year, age, survey, I)]
 
   ## Calculate a series of quantiles
-  ints <- lapply(quants, function(q) {
-    sub_d[, list(prob = paste0(q, "%"),
-                 lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-                 upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
-          by = c("age", "year", "survey")]
-  })
-  ints <- rbindlist(ints)
-  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-
+  ints <- .ints(sub_d, quants = quants, by = c("age", "year", "survey"))
   ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
   ints$lab <- paste(formatC(ints$set_den, format = "fg"),
                     ints$lengths_cap, ints$ages_cap, sep = "-")
@@ -578,26 +599,33 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
     xlab <- "Year"
   }
 
-  crosstalk::bscols(
-    list(
-      htmltools::div(style = htmltools::css(height = "10px")), # small margin
-      f,
-      crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
-      crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
-      crosstalk::filter_select("ages_cap", "Ages cap", shared_ints, ~ages_cap, multiple = FALSE)
-    ),
+  if (sum(c(length(surveys), length(years), length(ages)) > 1) > 1) {
 
-    plot_ly(data = shared_ints, x = x, height = "100%") %>%
-      add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
-                  color = ~prob, colors = viridis::viridis(nlevels(ints$prob)),
-                  showlegend = FALSE) %>%
-      add_lines(y = ~I, color = I("black"), name = "True",
-                showlegend = FALSE) %>%
-      layout(yaxis = list(title = "Abundance index",
-                          range = c(min(ints$lower), max(ints$upper))),
-             xaxis = list(title = xlab), ...),
-    widths = c(3, NA)
-  )
+    p <- crosstalk::bscols(
+      list(
+        htmltools::div(style = htmltools::css(height = "10px")), # small margin
+        f,
+        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+        crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
+        crosstalk::filter_select("ages_cap", "Ages cap", shared_ints, ~ages_cap, multiple = FALSE)
+      ),
+      .fan(shared_ints, x = x, xlab = xlab,
+           cols = viridis::viridis(nlevels(ints$prob)),
+           ylim = c(min(ints$lower), max(ints$upper)),
+           ...),
+      widths = c(3, NA)
+    )
+
+  } else {
+
+    p <- .fan(ints, x = x, xlab = xlab,
+              cols = viridis::viridis(nlevels(ints$prob)),
+              ylim = c(min(ints$lower), max(ints$upper)),
+              ...)
+
+  }
+
+  p
 
 }
 
@@ -614,15 +642,7 @@ plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
   true <- sub_d[sim == 1, list(year, length, survey, I)]
 
   ## Calculate a series of quantiles
-  ints <- lapply(quants, function(q) {
-    sub_d[, list(prob = paste0(q, "%"),
-                 lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-                 upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
-          by = c("length", "year", "survey")]
-  })
-  ints <- rbindlist(ints)
-  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-
+  ints <- .ints(sub_d, quants = quants, by = c("length", "year", "survey"))
   ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
   ints$lab <- paste(formatC(ints$set_den, format = "fg"),
                     ints$lengths_cap, sep = "-")
@@ -640,27 +660,35 @@ plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
     xlab <- "Year"
   }
 
-  crosstalk::bscols(
-    list(
-      htmltools::div(style = htmltools::css(height = "10px")), # small margin
-      f,
-      crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
-      crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
-    ),
+  if (sum(c(length(surveys), length(years), length(lengths)) > 1) > 1) {
 
-    plot_ly(data = shared_ints, x = x, height = "100%") %>%
-      add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
-                  color = ~prob, colors = viridis::viridis(nlevels(ints$prob)),
-                  showlegend = FALSE) %>%
-      add_lines(y = ~I, color = I("black"), name = "True",
-                showlegend = FALSE) %>%
-      layout(yaxis = list(title = "Abundance index",
-                          range = c(min(ints$lower), max(ints$upper))),
-             xaxis = list(title = xlab)),
-    widths = c(3, NA)
-  )
+    p <- crosstalk::bscols(
+      list(
+        htmltools::div(style = htmltools::css(height = "10px")), # small margin
+        f,
+        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+        crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
+      ),
+      .fan(shared_ints, x = x, xlab = xlab,
+           cols = viridis::viridis(nlevels(ints$prob)),
+           ylim = c(min(ints$lower), max(ints$upper)),
+           ...),
+      widths = c(3, NA)
+    )
+
+  } else {
+
+    p <- .fan(ints, x = x, xlab = xlab,
+              cols = viridis::viridis(nlevels(ints$prob)),
+              ylim = c(min(ints$lower), max(ints$upper)),
+              ...)
+
+  }
+
+  p
 
 }
+
 
 
 
@@ -675,37 +703,37 @@ plot_total_strat_fan <- function(sim, surveys = 1:5,
   true <- sub_d[sim == 1, list(year, survey, I)]
 
   ## Calculate a series of quantiles
-  ints <- lapply(quants, function(q) {
-    sub_d[, list(prob = paste0(q, "%"),
-                 lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-                 upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
-          by = c("year", "survey")]
-  })
-  ints <- rbindlist(ints)
-  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-
+  ints <- .ints(sub_d, quants = quants, by = c("year", "survey"))
   ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
   ints$lab <- formatC(ints$set_den, format = "fg")
   ints <- merge(ints, true, by = c("year", "survey"))
 
-  shared_ints <- crosstalk::SharedData$new(ints)
+  if (length(surveys) > 1) {
 
-  crosstalk::bscols(
-    list(
-      htmltools::div(style = htmltools::css(height = "10px")), # small margin
-      crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
-    ),
-    plot_ly(data = shared_ints, x = ~year, height = "100%") %>%
-      add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
-                  color = ~prob, colors = viridis::viridis(nlevels(ints$prob)),
-                  showlegend = FALSE) %>%
-      add_lines(y = ~I, color = I("black"), name = "True",
-                showlegend = FALSE) %>%
-      layout(yaxis = list(title = "Abundance index",
-                          range = c(min(ints$lower), max(ints$upper))),
-             xaxis = list(title = "Year"), ...),
-    widths = c(3, NA)
-  )
+    shared_ints <- crosstalk::SharedData$new(ints)
+
+    p <- crosstalk::bscols(
+      list(
+        htmltools::div(style = htmltools::css(height = "10px")), # small margin
+        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
+      ),
+      .fan(shared_ints, x = ~year, xlab = "Year",
+           cols = viridis::viridis(nlevels(ints$prob)),
+           ylim = c(min(ints$lower), max(ints$upper)),
+           ...),
+      widths = c(3, NA)
+    )
+
+  } else {
+
+    p <- .fan(ints, x = ~year, xlab = "Year",
+              cols = viridis::viridis(nlevels(ints$prob)),
+              ylim = c(min(ints$lower), max(ints$upper)),
+              ...)
+
+  }
+
+  p
 
 }
 

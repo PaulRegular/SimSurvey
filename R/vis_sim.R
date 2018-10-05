@@ -11,7 +11,7 @@
 
 vis_sim <- function(sim, ...) {
 
-  pkg <- c("rmarkdown", "shiny", "flexdashboard", "plotly", "viridis")
+  pkg <- c("rmarkdown", "shiny", "flexdashboard", "crosstalk", "plotly", "viridis")
   for (p in pkg) {
     if (!requireNamespace(p, quietly = TRUE)) {
       stop(paste(p, "is needed for vis_fit to work. Please install it."), call. = FALSE)
