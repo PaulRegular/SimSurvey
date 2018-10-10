@@ -13,7 +13,7 @@
 #' @param depth_range  Range (min depth, max depth) in depth in m
 #' @param n_div        Number of divisions to iniclude
 #' @param strat_breaks Define strata given these depth breaks
-#' @param strat_splits Number of times to split strat
+#' @param strat_splits Number of times to horizontally split strat
 #' @param method       Use a "spline" to generate a smooth gradient or simply use "linear" interpolation?
 #' @param space_covar  Supply \code{\link{sim_sp_covar}} closure to add covariance to depth
 #'                     to make it look more realistic. Con: strata may end up being
@@ -24,8 +24,12 @@
 #' @export
 #'
 #' @examples
+#'
 #' r <- sim_grid()
 #' raster::plot(r)
+#'
+#' p <- raster::rasterToPolygons(r$strat, dissolve = TRUE)
+#' sp::plot(p)
 #'
 #' @rawNamespace import(raster, except = select)
 #'
@@ -78,17 +82,18 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   }
   r$strat <- raster::cut(r$depth, breaks = strat_breaks)
 
+  ## split strat
+  xy <- data.table::data.table(raster::rasterToPoints(r))
+  if (strat_splits > 1) {
+    xy[, split := as.numeric(cut(cell, breaks = strat_splits)), by = "strat"]
+    xy$strat <- (xy$split * 10000) + xy$strat
+    xy$strat <- as.numeric(as.factor(xy$strat))
+    xy$split <- NULL
+  }
+
   ## make strata unique by division
-  xy <- as.data.frame(raster::rasterToPoints(r))
   xy$strat <- (xy$division * 100000) + xy$strat
   xy$strat <- as.numeric(as.factor(xy$strat))
-
-  ## split strat
-  xy <- data.table::data.table(xy)
-  xy[, split := as.numeric(cut(cell, breaks = strat_splits)), by = "strat"]
-  xy$strat <- (xy$split * 10000) + xy$strat
-  xy$strat <- as.numeric(as.factor(xy$strat))
-  xy$split <- NULL
 
   ## convert to raster and return
   r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km")
