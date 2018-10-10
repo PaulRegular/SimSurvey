@@ -13,11 +13,8 @@
 #' @param depth_range  Range (min depth, max depth) in depth in m
 #' @param n_div        Number of divisions to iniclude
 #' @param strat_breaks Define strata given these depth breaks
-#' @param strat_splits Number of times to horizontally split strat
-#' @param method       Use a "spline" to generate a smooth gradient or simply use "linear" interpolation?
-#' @param space_covar  Supply \code{\link{sim_sp_covar}} closure to add covariance to depth
-#'                     to make it look more realistic. Con: strata may end up being
-#'                     poorly definied...
+#' @param strat_splits Number of times to horizontally split strat (i.e. easy way to increase the number of strata)
+#' @param method       Use a "spline" or "loess" to generate a smooth gradient or simply use "linear" interpolation?
 #'
 #' @return Returns RasterBrick of the same structure as \code{\link{survey_grid}}
 #'
@@ -38,7 +35,7 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
                      res = c(3.5, 3.5), shelf_depth = 200,
                      shelf_width = 100, depth_range = c(0, 1000),
                      n_div = 1, strat_breaks = seq(0, 1000, by = 20),
-                     strat_splits = 2, method = "spline",
+                     strat_splits = 2, method = "loess",
                      space_covar = NULL) {
 
   ## set-up raster
@@ -48,22 +45,24 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   xy <- as.data.frame(raster::rasterToPoints(r))
 
   ## simulate depth
-  if (!is.null(space_covar)) {
-    Sigma_space <- space_covar(xy)
-    w <- t(chol(Sigma_space))
-    e <- w %*% rnorm(nrow(xy))
-  } else {
-    e <- 0
-  }
   sx <- c(x_range[1], -shelf_width, -shelf_width / 2,
           0, shelf_width / 2, shelf_width, x_range[2])
   sy <- c(depth_range[1], rep(shelf_depth, 5), depth_range[2])
+
+  if (method == "loess") {
+    lo <- loess(sy ~ sx)
+    px <- seq(min(sx), max(sx), length.out = 100)
+    py <- predict(lo, data.frame(sx = px))
+    s <- list(x = px, y = py)
+  }
   if (method == "spline") {
     s <- spline(sx, sy, n = nrow(xy))
-  } else {
+  }
+  if (method == "linear") {
     s <- approx(sx, sy, n = nrow(xy))
   }
-  depth <- s$y[findInterval(xy$x, s$x)] + e
+
+  depth <- s$y[findInterval(xy$x, s$x)]
   depth[depth < depth_range[1]] <- depth_range[1] + 1 # impose depth range
   depth[depth > depth_range[2]] <- depth_range[2] - 1
   depth <- round(depth) # 1 m res ought to be good
@@ -82,6 +81,16 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   }
   r$strat <- raster::cut(r$depth, breaks = strat_breaks)
 
+  ## identify isolated clumps, and split into independent strata
+  rstrat <- r$strat
+  max_id <- 0
+  for (s in sort(unique(rstrat))) {
+    rc <- clump(rstrat == s)
+    new_ids <- rc[!is.na(rc[])] + max_id
+    r$strat[!is.na(rc)] <- new_ids
+    max_id <- max(new_ids)
+  }
+
   ## split strat
   xy <- data.table::data.table(raster::rasterToPoints(r))
   if (strat_splits > 1) {
@@ -95,7 +104,7 @@ sim_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   xy$strat <- (xy$division * 100000) + xy$strat
   xy$strat <- as.numeric(as.factor(xy$strat))
 
-  ## convert to raster and return
+  ## convert to raster
   r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km")
   r
 
