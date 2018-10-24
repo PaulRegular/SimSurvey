@@ -6,8 +6,8 @@
 \usage{
 sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5,
   3.5), shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
-  n_div = 1, strat_breaks = seq(0, 1000, by = 20), strat_splits = 2,
-  method = "loess", space_covar = NULL)
+  n_div = 1, strat_breaks = seq(0, 1000, by = 40), strat_splits = 2,
+  method = "spline")
 }
 \arguments{
 \item{x_range}{Range (min x, max x) in x dimension in km}

@@ -4,7 +4,6 @@
 \alias{plot_trend}
 \alias{plot_surface}
 \alias{plot_distribution}
-\alias{plot_distribution_slider}
 \alias{plot_error_surface}
 \alias{plot_error_cross_sections}
 \alias{plot_true_vs_est}
@@ -18,12 +17,11 @@
 \usage{
 plot_trend(sim, col = viridis::viridis(1), ...)
 
-plot_surface(sim, mat = "N", ...)
+plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat,
+  ...)
 
-plot_distribution(sim, ages = 1, years = 1, type = "contour",
-  axes = TRUE, scale = "natural", ...)
-
-plot_distribution_slider(sim, ages = 1, years = 1)
+plot_distribution(sim, ages = 1:10, years = 1:10, type = "contour",
+  scale = "natural", ...)
 
 plot_error_surface(sim, plot_by = "rule")
 
@@ -57,6 +55,8 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 \item{...}{Additional arguments to pass to \code{\link{plotly::plot_ly}}.}
 
 \item{mat}{Name of matrix in \code{sim} list to plot.}
+
+\item{xlab, ylab, zlab}{Axes labels.}
 
 \item{ages}{Subset data to one or more ages.}
 

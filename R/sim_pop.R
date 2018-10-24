@@ -304,6 +304,12 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' growth_fun(age = 1:15, length_age_key = TRUE)
 #' sim_abundance(growth = sim_vonB(plot = TRUE))
 #'
+#' sim <- sim_abundance()
+#' plot_trend(sim)
+#' plot_surface(sim, mat = "N")
+#' plot_surface(sim, mat = "Z")
+#' plot_surface(sim, mat = "N_at_length", xlab = "Length", zlab = "N")
+#'
 #' @export
 #'
 

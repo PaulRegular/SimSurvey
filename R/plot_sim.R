@@ -8,6 +8,7 @@
 #' @param sim            Object returned by \code{\link{sim_abundance}},
 #'                       \code{\link{sim_distribution}}, etc.
 #' @param mat            Name of matrix in \code{sim} list to plot.
+#' @param xlab,ylab,zlab Axes labels.
 #' @param ages           Subset data to one or more ages.
 #' @param lengths        Subset data to one or more length groups.
 #' @param years          Subset data to one or more years.
@@ -39,55 +40,22 @@ plot_trend <- function(sim, col = viridis::viridis(1), ...) {
 
 #' @export
 #' @rdname plot_trend
-plot_surface <- function(sim, mat = "N", ...) {
+plot_surface <- function(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat, ...) {
   plot_ly(x = sim$ages, y = sim$years, z = t(sim[[mat]]), type = "surface",
           ...) %>%
     layout(
       scene = list(
-        xaxis = list(title = "Age"),
-        yaxis = list(title = "Year"),
-        zaxis = list(title = mat)
+        xaxis = list(title = xlab),
+        yaxis = list(title = ylab),
+        zaxis = list(title = zlab)
       ))
 }
 
-#' @export
-#' @rdname plot_trend
-plot_distribution <- function(sim, ages = 1, years = 1,
-                              type = "contour", axes = TRUE,
-                              scale = "natural", ...) {
-
-  xax <- list(
-    title = "",
-    zeroline = FALSE,
-    showline = FALSE,
-    showticklabels = FALSE,
-    showgrid = FALSE,
-    tickcolor = "transparent"
-  )
-  yax <- c(scaleanchor = "x", xax)
-
-  xyz <- data.frame(merge(sim$grid_xy, sim$sp_N, by = "cell"))
-  if (scale == "log") xyz$N <- log(xyz$N)
-  p <- vector("list", length(ages) * length(years))
-  g <- expand.grid(age = ages, year = years)
-  for (i in seq(nrow(g))) {
-    sub_xyz <- xyz[xyz$age == g$age[i] & xyz$year == g$year[i], ]
-    p[[i]] <- plot_ly(x = ~x, y = ~y, z = ~N, data = sub_xyz, type = type,
-                      name = paste0("a", g$age[i], ", y", g$year[i]), ...)
-    if (!axes) {
-      p[[i]] <- p[[i]] %>% layout(xaxis = xax, yaxis = yax)
-    } else {
-      p[[i]] <- p[[i]] %>% layout(yaxis = list(scaleanchor = "x"))
-    }
-  }
-  subplot(p, nrows = length(ages), shareX = TRUE, shareY = TRUE)
-
-}
-
 
 #' @export
 #' @rdname plot_trend
-plot_distribution_slider <- function(sim, ages = 1, years = 1) {
+plot_distribution <- function(sim, ages = 1:10, years = 1:10,
+                              type = "contour", scale = "natural", ...) {
 
   xax <- list(
     title = "",
@@ -100,6 +68,7 @@ plot_distribution_slider <- function(sim, ages = 1, years = 1) {
   yax <- c(scaleanchor = "x", xax)
 
   d <- merge(sim$grid_xy, sim$sp_N[age %in% ages & year %in% years, ], by = "cell")
+  if (scale == "log") d$N <- log(d$N)
   d$ay <- paste(d$age, d$year, sep = "-")
   split_d <- split(d, d$ay)
   split_d <- lapply(split_d, function(.) {
@@ -108,7 +77,12 @@ plot_distribution_slider <- function(sim, ages = 1, years = 1) {
   x <- sort(unique(d$x))
   y <- sort(unique(d$y))
 
-  p <- plot_ly(x = ~x, y = ~y)
+  ## sort the splits
+  ay_combos <- expand.grid(age = sort(unique(d$age)), year = sort(unique(d$year)))
+  ay_combos$ay <- paste(ay_combos$age, ay_combos$year, sep = "-")
+  split_d <- split_d[ay_combos$ay]
+
+  p <- plot_ly(x = ~x, y = ~y, ...)
   visible <- rep(TRUE, length(split_d))
   showscale <- rep(FALSE, length(split_d))
   showscale[1] <- TRUE
@@ -116,7 +90,7 @@ plot_distribution_slider <- function(sim, ages = 1, years = 1) {
   for (i in seq_along(split_d)) {
     vis <- rep(FALSE, length(split_d))
     vis[i] <- TRUE
-    p <- p %>% add_trace(type = "contour",
+    p <- p %>% add_trace(type = type,
                          z = split_d[[i]],
                          visible = i == 1,
                          showscale = vis,
@@ -130,11 +104,15 @@ plot_distribution_slider <- function(sim, ages = 1, years = 1) {
                        label = names(split_d)[i])
   }
 
-  p %>%
-    layout(sliders = list(list(
-      currentvalue = list(prefix = "Age-Year: "),
-      steps = steps
-    )))
+  if (length(ages) > 1 | length(years) > 1) {
+    p <-   p %>%
+      layout(sliders = list(list(
+        currentvalue = list(prefix = "Age-Year: "),
+        steps = steps
+      )))
+  }
+
+  p
 
 }
 

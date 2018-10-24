@@ -19,13 +19,14 @@ range(values(survey_grid$depth), na.rm = TRUE)
 
 grid <- sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5, 3.5),
                  shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
-                 n_div = 1, strat_breaks = seq(0, 1000, by = 20), strat_splits = 2)
+                 n_div = 1, strat_breaks = seq(0, 1000, by = 40), strat_splits = 2,
+                 method = "spline")
 prod(res(grid)) * ncell(grid)
 # 78400
 length(unique(grid$strat))
-# 42
+# 44
 mean(table(values(grid$strat)) * res(grid))
-# 533.3333
+# 509.0909
 range(values(grid$depth), na.rm = TRUE)
 # 15 940
 plot(grid)
@@ -33,8 +34,7 @@ plot(grid$depth)
 plot(grid$strat)
 plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
-## default settings of sim_grid() are similar to 3Ps, except here we have 2 divisions
-## could use 3Ps survey_grid, but will use a sim_grid for simplicity
+## default settings of sim_grid() are similar to 3Ps
 
 
 ## Abundance and distribution --------------------------------------------------
@@ -107,7 +107,8 @@ pop <- sim_abundance(ages = 1:20,
                      Z = sim_Z(mean = 0.5,
                                log_sd = 0.2,
                                phi_age = 0.9,
-                               phi_year = 0.5)) %>%
+                               phi_year = 0.5),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
   sim_distribution(grid = sim_grid(x_range = c(-140, 140),
                                    y_range = c(-140, 140),
                                    res = c(3.5, 3.5),
@@ -115,8 +116,9 @@ pop <- sim_abundance(ages = 1:20,
                                    shelf_width = 100,
                                    depth_range = c(0, 1000),
                                    n_div = 1,
-                                   strat_breaks = seq(0, 1000, by = 20),
-                                   strat_splits = 2),
+                                   strat_breaks = seq(0, 1000, by = 40),
+                                   strat_splits = 2,
+                                   method = "spline"),
                    ays_covar = sim_ays_covar(sd = 2.8,
                                              range = 300,
                                              phi_age = 0.5,
@@ -143,8 +145,7 @@ survey <- sim_survey(pop,
                      set_den = 3 / 1000,
                      lengths_cap = 400,
                      ages_cap = 10,
-                     q = sim_logistic(k = 2, x0 = 3),
-                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0))
+                     q = sim_logistic(k = 2, x0 = 3))
 
 
 ## COMPS

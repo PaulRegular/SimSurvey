@@ -8,27 +8,47 @@ sim_distribution(sim, grid = sim_grid(), ays_covar = sim_ays_covar(),
   depth_par = sim_parabola())
 }
 \arguments{
-\item{sim}{An abundance at age matrix like one produced by \code{\link{sim_abundance}}}
+\item{sim}{A list with ages, years and an abundance at age matrix like
+produced by \code{\link{sim_abundance}}.}
 
 \item{grid}{A raster object defining the survey grid, like \code{\link{survey_grid}}
 or one produced by \code{\link{sim_grid}}}
 
-\item{ays_covar}{Closure for simulating age-year-space covariance}
+\item{ays_covar}{Closure for simulating age-year-space covariance,
+like \code{\link{sim_ays_covar}}}
 
-\item{depth_par}{Closure for defining relationship between abundance and depth}
+\item{depth_par}{Closure for defining relationship between abundance and depth,
+like \code{\link{sim_parabola}}}
+}
+\value{
+Appends three objects to the \code{sim} list:
+\itemize{
+  \item{\code{grid}} - RasterBrick with the grid details
+  \item{\code{grid_xy}} - Grid details as a data.table in xyz format
+  \item{\code{sp_N}} - A data.table with abundance split by age, year and cell
+}
 }
 \description{
-Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
-and a survey grid (like \code{\link{survey_grid}}) to populate, this function
+Provided an abundance at age matrix and a survey grid to populate, this function
 applies correlated space, age and year error to simulate the distribution
 of the population. The ability to simulate distributions by length is yet to be implemented.
 }
 \details{
 This function simulates the probability of simulated fish inhabiting
 a cell as a function of a parabolic relationship with depth and space, age,
-and year autocorrelated errors.
+and year autocorrelated errors. WARNING: it make take a long time to simulate
+abundance in a large grid across many ages and years - start small first.
 }
 \examples{
-sim_distribution()
+
+sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
+           sim_distribution(grid = sim_grid(res = c(10, 10)),
+                            ays_covar = sim_ays_covar(phi_age = 0.8,
+                                                      phi_year = 0.1),
+                            depth_par = sim_parabola(mu = 200,
+                                                     sigma = 50))
+plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+plot_distribution(sim, ages = 1, years = 1:10)
+plot_distribution(sim, ages = 1:10, years = 5)
 
 }

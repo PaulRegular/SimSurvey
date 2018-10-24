@@ -79,4 +79,10 @@ growth_fun(age = rep(1:15, each = 100))
 growth_fun(age = 1:15, length_age_key = TRUE)
 sim_abundance(growth = sim_vonB(plot = TRUE))
 
+sim <- sim_abundance()
+plot_trend(sim)
+plot_surface(sim, mat = "N")
+plot_surface(sim, mat = "Z")
+plot_surface(sim, mat = "N_at_length", xlab = "Length", zlab = "N")
+
 }

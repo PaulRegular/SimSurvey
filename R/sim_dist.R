@@ -49,11 +49,6 @@ sim_ays_covar <- function(sd = 0.5, range = 50, lambda = 1, model = "matern",
                           group_ages = NULL, group_years = NULL) {
   function(x = NULL, ages = NULL, years = NULL, cells = NULL) {
 
-    # Simple description of covariance:
-    # In 2D: X_ay = X_a,y-1 + X_a-1,y - X_a-1,y-1 + error
-    # at 1st age it is random walk in year,
-    # and first year it is random walk in age
-
     # There are probably better, more elegant and computationally efficient solutions
     # to this problem.
 
@@ -165,6 +160,11 @@ sim_ays_covar <- function(sd = 0.5, range = 50, lambda = 1, model = "matern",
 #' @param alpha,mu,sigma  Parameters that control the shape of the parabola
 #' @param plot            Produce a simple plot of the simulated values?
 #'
+#' @examples
+#'
+#' parabola_fun <- sim_parabola(alpha = 25, mu = 50, sigma = 5, plot = TRUE)
+#' parabola_fun(x = 0:100)
+#'
 #' @rdname sim_parabola
 #' @export
 
@@ -179,23 +179,43 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 
 #' Simulate spatial and temporal distribution
 #'
-#' @description Provided an abundance at age matrix (like one provided by \code{\link{sim_abundance}})
-#' and a survey grid (like \code{\link{survey_grid}}) to populate, this function
+#' @description Provided an abundance at age matrix and a survey grid to populate, this function
 #' applies correlated space, age and year error to simulate the distribution
 #' of the population. The ability to simulate distributions by length is yet to be implemented.
 #'
-#' @param sim         An abundance at age matrix like one produced by \code{\link{sim_abundance}}
+#' @param sim         A list with ages, years and an abundance at age matrix like
+#'                    produced by \code{\link{sim_abundance}}.
 #' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}
 #'                    or one produced by \code{\link{sim_grid}}
-#' @param ays_covar   Closure for simulating age-year-space covariance
-#' @param depth_par   Closure for defining relationship between abundance and depth
+#' @param ays_covar   Closure for simulating age-year-space covariance,
+#'                    like \code{\link{sim_ays_covar}}
+#' @param depth_par   Closure for defining relationship between abundance and depth,
+#'                    like \code{\link{sim_parabola}}
 #'
 #' @details This function simulates the probability of simulated fish inhabiting
 #' a cell as a function of a parabolic relationship with depth and space, age,
-#' and year autocorrelated errors.
+#' and year autocorrelated errors. WARNING: it make take a long time to simulate
+#' abundance in a large grid across many ages and years - start small first.
+#'
+#' @return
+#' Appends three objects to the \code{sim} list:
+#' \itemize{
+#'   \item{\code{grid}} - RasterBrick with the grid details
+#'   \item{\code{grid_xy}} - Grid details as a data.table in xyz format
+#'   \item{\code{sp_N}} - A data.table with abundance split by age, year and cell
+#' }
 #'
 #' @examples
-#' sim_distribution()
+#'
+#' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
+#'            sim_distribution(grid = sim_grid(res = c(10, 10)),
+#'                             ays_covar = sim_ays_covar(phi_age = 0.8,
+#'                                                       phi_year = 0.1),
+#'                             depth_par = sim_parabola(mu = 200,
+#'                                                      sigma = 50))
+#' plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+#' plot_distribution(sim, ages = 1, years = 1:10)
+#' plot_distribution(sim, ages = 1:10, years = 5)
 #'
 #' @export
 #'

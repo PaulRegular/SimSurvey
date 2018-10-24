@@ -14,3 +14,9 @@ sim_parabola(alpha = 0, mu = 250, sigma = 50, plot = FALSE)
 \description{
 Closure to be used in \code{\link{sim_distribution}}
 }
+\examples{
+
+parabola_fun <- sim_parabola(alpha = 25, mu = 50, sigma = 5, plot = TRUE)
+parabola_fun(x = 0:100)
+
+}
