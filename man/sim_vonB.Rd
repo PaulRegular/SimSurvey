@@ -28,3 +28,10 @@ This function outputs a function which holds the parameter values supplied and
 the function either simulates lengths given ages or generates a length age key
 give a sequence of ages.
 }
+\examples{
+growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
+growth_fun(age = rep(1:15, each = 100))
+growth_fun(age = 1:15, length_age_key = TRUE)
+sim_abundance(growth = sim_vonB(plot = TRUE))
+
+}

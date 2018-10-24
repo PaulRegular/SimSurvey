@@ -25,13 +25,27 @@
 #' Fisheries and Aquatic Sciences 73 (2): 296–308.
 #'
 #' @examples
-#' sim_abundance(R = sim_R(mean = 100000, log_sd = 4))
-#' sim_abundance(years = 1:20, R = sim_R(mean = c(rep(100000, 10), rep(10000, 10))))
-#' sim_abundance(Z = sim_Z(mean = 0.6, log_sd = 0))
+#'
+#' R_fun <- sim_R(mean = 100000, log_sd = 0.1, random_walk = TRUE, plot = TRUE)
+#' R_fun(years = 1:100)
+#' sim_abundance(R = sim_R(mean = 100000, log_sd = 0.5))
+#' sim_abundance(years = 1:20,
+#'               R = sim_R(mean = c(rep(100000, 10), rep(10000, 10)), plot = TRUE))
+#'
+#' Z_fun <- sim_Z(mean = 0.5, log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
+#' Z_fun(years = 1:100, ages = 1:20)
+#' sim_abundance(Z = sim_Z(mean = 0.5, log_sd = 0.1, plot = TRUE))
 #' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 #' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 #' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-#' sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(mean = Z_mat), R = sim_R(log_sd = 0.5))
+#' sim_abundance(ages = 1:10, years = 1:20,
+#'               Z = sim_Z(mean = Z_mat, plot = TRUE))
+#' sim_abundance(ages = 1:10, years = 1:20,
+#'               Z = sim_Z(mean = Z_mat, log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+#'
+#' N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
+#' N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
+#' sim_abundance(N0 = sim_N0(N0 = "exp", plot = TRUE))
 #'
 #' @export
 #' @rdname sim_R
@@ -152,6 +166,12 @@ group_lengths <- function(length, group) {
 #' @param digits        Integer indicating the number of decimal places to round the values to
 #' @param plot          Produce a simple plot of the simulated values?
 #'
+#' @examples
+#' growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
+#' growth_fun(age = rep(1:15, each = 100))
+#' growth_fun(age = 1:15, length_age_key = TRUE)
+#' sim_abundance(growth = sim_vonB(plot = TRUE))
+#'
 #' @export
 #'
 
@@ -257,7 +277,32 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' distributions by length is yet to be implemented.
 #'
 #' @examples
-#' sim_abundance()
+#'
+#' R_fun <- sim_R(mean = 100000, log_sd = 0.1, random_walk = TRUE, plot = TRUE)
+#' R_fun(years = 1:100)
+#' sim_abundance(R = sim_R(mean = 100000, log_sd = 0.5))
+#' sim_abundance(years = 1:20,
+#'               R = sim_R(mean = c(rep(100000, 10), rep(10000, 10)), plot = TRUE))
+#'
+#' Z_fun <- sim_Z(mean = 0.5, log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
+#' Z_fun(years = 1:100, ages = 1:20)
+#' sim_abundance(Z = sim_Z(mean = 0.5, log_sd = 0.1, plot = TRUE))
+#' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
+#' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
+#' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
+#' sim_abundance(ages = 1:10, years = 1:20,
+#'               Z = sim_Z(mean = Z_mat, plot = TRUE))
+#' sim_abundance(ages = 1:10, years = 1:20,
+#'               Z = sim_Z(mean = Z_mat, log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+#'
+#' N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
+#' N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
+#' sim_abundance(N0 = sim_N0(N0 = "exp", plot = TRUE))
+#'
+#' growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
+#' growth_fun(age = rep(1:15, each = 100))
+#' growth_fun(age = 1:15, length_age_key = TRUE)
+#' sim_abundance(growth = sim_vonB(plot = TRUE))
 #'
 #' @export
 #'
