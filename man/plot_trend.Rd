@@ -4,12 +4,10 @@
 \alias{plot_trend}
 \alias{plot_surface}
 \alias{plot_distribution}
+\alias{plot_survey}
 \alias{plot_error_surface}
 \alias{plot_error_cross_sections}
 \alias{plot_true_vs_est}
-\alias{plot_samp_dist}
-\alias{plot_total_abundance}
-\alias{plot_set_catch}
 \alias{plot_age_strat_fan}
 \alias{plot_length_strat_fan}
 \alias{plot_total_strat_fan}
@@ -23,19 +21,14 @@ plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat,
 plot_distribution(sim, ages = 1:10, years = 1:10, type = "contour",
   scale = "natural", ...)
 
+plot_survey(sim, which_year = 1, which_sim = 1, col = viridis::viridis(1))
+
 plot_error_surface(sim, plot_by = "rule")
 
 plot_error_cross_sections(sim, col = viridis::viridis(1))
 
 plot_true_vs_est(sim, which_survey = 1, max_sims = 50, facet_by = "age",
   cols = viridis::viridis(3))
-
-plot_samp_dist(sim, which_year = 1, which_sim = 1,
-  col = viridis::viridis(1))
-
-plot_total_abundance(sim, which_year = 1, main = "")
-
-plot_set_catch(sim, which_year = 1, which_sim = 1, main = "")
 
 plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
   select_by = "year", quants = seq(90, 10, by = -10), ...)
@@ -64,6 +57,10 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 
 \item{scale}{Plot response on "natural" or "log" scale?}
 
+\item{which_year}{Subset to specific year}
+
+\item{which_sim}{Subset to specific sim}
+
 \item{plot_by}{Plot error surface by "rule" or "samples"?}
 
 \item{which_survey}{Subset to specific survey}
@@ -74,12 +71,6 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 
 \item{cols}{Plot colors}
 
-\item{which_year}{Subset to specific year}
-
-\item{which_sim}{Subset to specific sim}
-
-\item{main}{Plot title}
-
 \item{select_by}{Select plot by "age", "length" or "year"?}
 
 \item{quants}{Quantile intervals to display on fan plot}
@@ -87,6 +78,8 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 \item{lengths}{Subset data to one or more length groups.}
 
 \item{survey}{Subset data to one or more surveys.}
+
+\item{main}{Plot title}
 }
 \description{
 These functions are simple plotting helpers to get some quick

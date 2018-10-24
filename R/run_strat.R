@@ -152,16 +152,26 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' Run stratified analysis on simulated data
 #'
 #' @param sim    Simulation from \code{\link{sim_survey}}
-#' @param length_group  Size of the length frequency bins
 #'
 #' @return Adds stratified analysis results for the total population (\code{"total_strat"})
 #'         and the population aggregated by length group and age (\code{"length_strat"} and
 #'         \code{"age_strat"}, respectively) to the \code{sim} list.
 #'
+#' @examples
+#'
+#' sim <- sim_abundance(ages = 1:10, years = 1:5, R = sim_R(mean = 1e+7),
+#'                      growth = sim_vonB(length_group = 1)) %>%
+#'            sim_distribution(grid = make_grid(res = c(10, 10)),
+#'                             ays_covar = sim_ays_covar(sd = 1)) %>%
+#'            sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3)) %>%
+#'            run_strat()
+#'
 #' @export
 #'
 
-run_strat <- function(sim, length_group = 3) {
+run_strat <- function(sim) {
+
+  length_group <- get("length_group", envir = environment(sim$sim_length))
 
   ## Prep data for strat_means function
   data <- strat_data(sim, length_group = length_group)
@@ -203,6 +213,16 @@ run_strat <- function(sim, length_group = 3) {
 #'         \code{"_strat_error_stats"}. Error statistics includes mean absolute
 #'         error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
 #'         root mean squared error (\code{"RMSE"})
+#'
+#' @examples
+#'
+#' sim <- sim_abundance(ages = 1:10, years = 1:5, R = sim_R(mean = 1e+7),
+#'                      growth = sim_vonB(length_group = 1)) %>%
+#'            sim_distribution(grid = make_grid(res = c(10, 10)),
+#'                             ays_covar = sim_ays_covar(sd = 1)) %>%
+#'            sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3)) %>%
+#'            run_strat() %>%
+#'            strat_error()
 #'
 #' @export
 #'

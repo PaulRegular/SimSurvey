@@ -2,7 +2,7 @@
 % Please edit documentation in R/test_surveys.R
 \name{test_surveys}
 \alias{test_surveys}
-\title{Test sampling design of multiple surveys}
+\title{Test sampling design of multiple surveys using a stratified analysis}
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
   n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...)
@@ -13,9 +13,9 @@ test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
 \item{surveys}{A data.frame or data.table with a sequence of surveys and their settings
 with a format like the data.table returned by \code{\link{expand_surveys}}.}
 
-\item{keep_details}{Keep details of a specific survey in the data.frame supplied to \code{surveys}.
-Survey and stratified analysis details are dropped for the other surveys to
-minimize object size.}
+\item{keep_details}{Survey and stratified analysis details are dropped here to minimize object
+size. This argument allows the user to keep the details of one
+survey by specifying the survey number in the data.frame supplied to \code{surveys}.}
 
 \item{n_sims}{Number of times to simulate a survey over the simulated population.
 Requesting a large number of simulations here may max out your RAM.}
@@ -27,10 +27,36 @@ will be easier on RAM, but may be slower.}
 
 \item{cores}{Number of cores to use in parallel. More cores should speed up the process.}
 
-\item{export_dir}{Directory for exporting results as they are generated. If NULL, nothing is
-exported.}
+\item{export_dir}{Directory for exporting results as they are generated. Main use of the export
+is to allow this process to pick up where it left off by calling
+\code{\link{resume_test}}. If NULL, nothing is exported.}
 
-\item{...}{Additional arguments to pass to \code{\link{sim_survey}}.}
+\item{...}{Arguments passed on to \code{sim_survey}
+\describe{
+  \item{sim}{Simulation from \code{\link{sim_distribution}}}
+  \item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
+a large number of simulations may max out your RAM}
+  \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
+(returned values must be between 0 and 1)}
+  \item{trawl_dim}{Trawl width and distance (same units as grid)}
+  \item{resample_cells}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
+because depletion is imposed at the cell level.}
+  \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
+at older ages because of more frequent rounding to zero.}
+  \item{min_sets}{Minimum number of sets per strat}
+  \item{set_den}{Set density (number of sets per [grid unit] squared). WARNING:
+may return an error if \code{set_den} is high and
+\code{resample_cells = FALSE} because the number of sets allocated may
+exceed the number of cells in a strata.}
+  \item{lengths_cap}{Maximum number of lengths measured per set}
+  \item{length_group}{Length group for otolith collection}
+  \item{ages_cap}{If \code{age_sampling = "length stratified"}, this cap represents the
+maximum number of otoliths to collect per length group
+per division per year. If \code{age_sampling = "random"}, it is the
+maximum number of otoliths to collect from measured fish per set.}
+  \item{age_sampling}{Should age sampling be length "stratified" or "random"?}
+  \item{light}{Drop some objects from the output to keep object size low?}
+}}
 }
 \value{
 Adds a table of survey designs tested. Also adds details and summary
@@ -43,5 +69,6 @@ Adds a table of survey designs tested. Also adds details and summary
 }
 \description{
 This function allows a series of sampling design settings to
-be set and tested on the simulated population.
+be set and tested on the simulated population. True population values are compared
+to stratified estimates of abundance.
 }

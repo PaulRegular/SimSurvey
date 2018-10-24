@@ -34,8 +34,8 @@
 plot_trend <- function(sim, col = viridis::viridis(1), ...) {
   tot <- data.frame(Year = sim$years, N = colSums(sim$N))
   tot$text <- paste0("Year: ", tot$Year, "\nN: ", round(tot$N))
-  plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
-          type = "scatter", mode = "lines", color = I(col), data = tot, ...)
+  p1 <- plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
+                type = "scatter", mode = "lines", color = I(col), data = tot, ...)
 }
 
 #' @export
@@ -115,6 +115,81 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
   p
 
 }
+
+
+#' @export
+#' @rdname plot_trend
+plot_survey <- function(sim, which_year = 1, which_sim = 1,
+                        col = viridis::viridis(1)) {
+
+  xax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    tickcolor = "transparent"
+  )
+  yax <- c(scaleanchor = "x", xax)
+
+  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
+  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
+
+  setdet <- sim$setdet
+  setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
+  samp <- merge(setdet[, c("year", "sim", "set", "x", "y")],
+                sim$samp, by = "set")
+
+  d <- crosstalk::SharedData$new(samp, ~set)
+
+  base <- plot_ly(data = d)
+
+  sp_p <- base %>%
+    group_by(set) %>%
+    summarise(x = unique(x), y = unique(y), n = n()) %>%
+    add_markers(x = ~x, y = ~y, size = ~n, text = ~n,
+                color = I(col), sizes = c(5, 500), name = "n",
+                showlegend = FALSE) %>%
+    add_markers(data = setdet[setdet$n == 0, ], color = I(col),
+                x = ~x, y = ~y, text = ~n, size = I(5), symbol = I(4),
+                name = "zero", alpha = 0.2,
+                showlegend = FALSE) %>%
+    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
+              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
+              alpha = 0.1) %>%
+    layout(xaxis = xax, yaxis = yax)
+
+  lf_p <- base %>%
+    group_by(set) %>%
+    filter(measured) %>%
+    add_histogram(x = ~length, showlegend = FALSE,
+                  name = "Length distribution",
+                  marker = list(color = toRGB(col),
+                                line = list(color = toRGB("white"),
+                                            width = 0.2))) %>%
+    layout(xaxis = list(title = "Length"),
+           yaxis = list(title = ""))
+
+  af_p <- base %>%
+    group_by(set) %>%
+    filter(aged) %>%
+    add_histogram(x = ~age, showlegend = FALSE,
+                  name = "Age distribution",
+                  marker = list(color = toRGB(col),
+                                line = list(color = toRGB("white"),
+                                            width = 0.2))) %>%
+    layout(xaxis = list(title = "Age"),
+           yaxis = list(title = ""))
+
+  subplot(sp_p,
+          subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
+                  margin = 0.1),
+          nrows = 1, margin = 0.02, widths = c(0.6, 0.4),
+          titleX = TRUE, titleY = TRUE)
+
+}
+
+
 
 
 #' @export
@@ -341,183 +416,6 @@ plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "
   ggplotly(p)
 
 }
-
-#' @export
-#' @rdname plot_trend
-plot_samp_dist <- function(sim, which_year = 1, which_sim = 1,
-                           col = viridis::viridis(1)) {
-
-  xax <- list(
-    title = "",
-    zeroline = FALSE,
-    showline = FALSE,
-    showticklabels = FALSE,
-    showgrid = FALSE,
-    tickcolor = "transparent"
-  )
-  yax <- c(scaleanchor = "x", xax)
-
-  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
-
-  setdet <- sim$setdet
-  setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
-  samp <- merge(setdet[, c("year", "sim", "set", "x", "y")],
-                sim$samp, by = "set")
-
-  d <- crosstalk::SharedData$new(samp, ~set)
-
-  base <- plot_ly(data = d)
-
-  sp_p <- base %>%
-    group_by(set) %>%
-    summarise(x = unique(x), y = unique(y), n = n()) %>%
-    add_markers(x = ~x, y = ~y, size = ~n, text = ~n,
-                color = I(col), sizes = c(5, 500), name = "n",
-                showlegend = FALSE) %>%
-    add_markers(data = setdet[setdet$n == 0, ], color = I(col),
-                x = ~x, y = ~y, text = ~n, size = I(5), symbol = I(4),
-                name = "zero", alpha = 0.2,
-                showlegend = FALSE) %>%
-    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
-              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
-              alpha = 0.1) %>%
-    layout(xaxis = xax, yaxis = yax)
-
-  lf_p <- base %>%
-    group_by(set) %>%
-    filter(measured) %>%
-    add_histogram(x = ~length, showlegend = FALSE,
-                  name = "Length distribution",
-                  marker = list(color = toRGB(col),
-                                line = list(color = toRGB("white"),
-                                            width = 0.2))) %>%
-    layout(xaxis = list(title = "Length"),
-           yaxis = list(title = ""))
-
-  af_p <- base %>%
-    group_by(set) %>%
-    filter(aged) %>%
-    add_histogram(x = ~age, showlegend = FALSE,
-                  name = "Age distribution",
-                  marker = list(color = toRGB(col),
-                                line = list(color = toRGB("white"),
-                                            width = 0.2))) %>%
-    layout(xaxis = list(title = "Age"),
-           yaxis = list(title = ""))
-
-  subplot(sp_p,
-          subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
-                  margin = 0.1),
-          nrows = 1, margin = 0.02, widths = c(0.6, 0.4),
-          titleX = TRUE, titleY = TRUE)
-
-}
-
-
-#' @export
-#' @rdname plot_trend
-plot_total_abundance <- function(sim, which_year = 1, main = "") {
-
-  m <- list(
-    l = 0,
-    r = 0,
-    b = 0,
-    t = 0,
-    pad = 0
-  )
-
-  xax <- list(
-    title = "",
-    zeroline = FALSE,
-    showline = FALSE,
-    showticklabels = FALSE,
-    showgrid = FALSE,
-    tickcolor = "transparent"
-  )
-  yax <- c(scaleanchor = "x", xax)
-
-  sp_N_tot <- sim$sp_N[year == which_year, list(N = sum(N)), by = c("year", "cell")]
-  xyz <- merge(sim$grid_xy, sp_N_tot, by = "cell")
-  size <- unique(diff(pretty(xyz$N, 25)))
-
-  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
-
-  abun_plot <- plot_ly() %>%
-    add_trace(x = ~x, y = ~y, z = ~N, data = xyz, type = "contour",
-              contours = list(coloring = "lines", start = 0, end = max(xyz$N),
-                              size = size)) %>%
-    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
-              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
-              alpha = 0.1) %>%
-    colorbar(ticklen = 0, ypad = 20, xpad = 0, outlinewidth = 0, thickness = 10) %>%
-    layout(xaxis = xax, yaxis = yax, margin = m, legend = list(x = 0.5, y = 0.5),
-           annotations = list(text = main, xref = "paper", yref = "paper",
-                              x = 0.08, y = 1, showarrow = FALSE))
-  abun_plot
-
-}
-
-
-#' @export
-#' @rdname plot_trend
-plot_set_catch <- function(sim, which_year = 1, which_sim = 1, main = "") {
-
-  m <- list(
-    l = 0,
-    r = 0,
-    b = 0,
-    t = 0,
-    pad = 0
-  )
-
-  xax <- list(
-    title = "",
-    zeroline = FALSE,
-    showline = FALSE,
-    showticklabels = FALSE,
-    showgrid = FALSE,
-    tickcolor = "transparent"
-  )
-  yax <- c(scaleanchor = "x", xax)
-
-  sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
-
-  setdet <- sim$setdet
-  setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
-
-  breaks <- pretty(setdet$n, 10)
-  breaks[breaks == 0] <- 1
-  labs <- c("0", breaks)
-  breaks[length(breaks)] <- max(setdet$n) + 1
-  breaks <- c(0, breaks)
-  setdet$n_int <- findInterval(setdet$n, breaks)
-  setdet$n_size <- breaks[setdet$n_int]
-  setdet$n_cat <- labs[setdet$n_int]
-  setdet$n_cat <- factor(setdet$n_cat, levels = labs)
-
-  set_plot <- plot_ly() %>%
-    add_markers(data = setdet,
-                x = ~x, y = ~y, size = ~n_size, color = ~n_cat, sizes = c(1, 30),
-                colors = viridis::viridis(100), alpha = 0.8, text = ~n) %>%
-    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
-              hoverinfo = "none", size = I(0.5), showlegend = FALSE,
-              alpha = 0.1) %>%
-    layout(xaxis = xax, yaxis = yax, legend = list(x = 1, y = 0.85),
-           annotations = list(
-             list(text = "n", xref = "paper", yref = "paper",
-                  x = 1.09, y = 0.9, showarrow = FALSE),
-             list(text = main, xref = "paper", yref = "paper",
-                  x = 0.08, y = 1, showarrow = FALSE)
-           ),
-           margin = m)
-  set_plot
-
-}
-
-
 
 
 ## helper function for calculating multiple quantiles by group

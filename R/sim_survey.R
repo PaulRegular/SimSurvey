@@ -8,6 +8,10 @@
 #' @param x0     The x-value of the sigmoid's midpoint
 #' @param plot   Plot relationship
 #'
+#' @examples
+#' logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)
+#' logistic_fun(x = 1:10)
+#'
 #' @export
 #'
 
@@ -103,7 +107,10 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' @param binom_error         Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 #'                            at older ages because of more frequent rounding to zero.
 #' @param min_sets            Minimum number of sets per strat
-#' @param set_den             Set density (number of sets per [grid unit] squared)
+#' @param set_den             Set density (number of sets per [grid unit] squared). WARNING:
+#'                            may return an error if \code{set_den} is high and
+#'                            \code{resample_cells = FALSE} because the number of sets allocated may
+#'                            exceed the number of cells in a strata.
 #' @param lengths_cap         Maximum number of lengths measured per set
 #' @param length_group        Length group for otolith collection
 #' @param ages_cap            If \code{age_sampling = "length stratified"}, this cap represents the
@@ -116,6 +123,14 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' @return A list including rounded population simulation, set locations and details
 #' and sampling details. Note that that N = "true" population, I = population available
 #' to the survey, n = number caught by survey.
+#'
+#' @examples
+#'
+#' sim <- sim_abundance(ages = 1:10, years = 1:5, R = sim_R(mean = 1e+7)) %>%
+#'            sim_distribution(grid = make_grid(res = c(10, 10)),
+#'                             ays_covar = sim_ays_covar(sd = 1)) %>%
+#'            sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3))
+#' plot_survey(sim, which_year = 2, which_sim = 1)
 #'
 #' @export
 #'

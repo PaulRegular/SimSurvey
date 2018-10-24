@@ -165,17 +165,18 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 }
 
 
-#' Test sampling design of multiple surveys
+#' Test sampling design of multiple surveys using a stratified analysis
 #'
 #' @description   This function allows a series of sampling design settings to
-#' be set and tested on the simulated population.
+#' be set and tested on the simulated population. True population values are compared
+#' to stratified estimates of abundance.
 #'
 #' @param sim               Simulation from \code{\link{sim_distribution}}.
 #' @param surveys           A data.frame or data.table with a sequence of surveys and their settings
 #'                          with a format like the data.table returned by \code{\link{expand_surveys}}.
-#' @param keep_details      Keep details of a specific survey in the data.frame supplied to \code{surveys}.
-#'                          Survey and stratified analysis details are dropped for the other surveys to
-#'                          minimize object size.
+#' @param keep_details      Survey and stratified analysis details are dropped here to minimize object
+#'                          size. This argument allows the user to keep the details of one
+#'                          survey by specifying the survey number in the data.frame supplied to \code{surveys}.
 #' @param n_sims            Number of times to simulate a survey over the simulated population.
 #'                          Requesting a large number of simulations here may max out your RAM.
 #' @param n_loops           Number of times to run the \code{\link{sim_survey}} function. Total
@@ -183,9 +184,10 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'                          arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
 #'                          will be easier on RAM, but may be slower.
 #' @param cores             Number of cores to use in parallel. More cores should speed up the process.
-#' @param export_dir        Directory for exporting results as they are generated. If NULL, nothing is
-#'                          exported.
-#' @param ...               Additional arguments to pass to \code{\link{sim_survey}}.
+#' @param export_dir        Directory for exporting results as they are generated. Main use of the export
+#'                          is to allow this process to pick up where it left off by calling
+#'                          \code{\link{resume_test}}. If NULL, nothing is exported.
+#' @inheritDotParams        sim_survey
 #'
 #' @return Adds a table of survey designs tested. Also adds details and summary
 #'         stats of stratified estimate error to the \code{sim} list, ending with
@@ -228,9 +230,9 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 #' @export
 #'
 
-resume_test <- function(dir = NULL) {
-  load(file.path(dir, "test_inputs.RData"))
-  load(file.path(dir, "complete.RData"))
+resume_test <- function(export_dir = NULL) {
+  load(file.path(export_dir, "test_inputs.RData"))
+  load(file.path(export_dir, "complete.RData"))
   .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
              complete = complete, keep_details = keep_details, ...)

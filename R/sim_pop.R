@@ -161,8 +161,10 @@ group_lengths <- function(length, group) {
 #' @param L0            Length at birth
 #' @param K             Growth rate parameter
 #' @param log_sd        Standard deviation of the relationship in log scale
-#' @param length_group  Length group for length age key (note that labels on the matrix produced are
-#'                      midpoints using the DFO conventions; see \code{\link{group_lengths}})
+#' @param length_group  Length group for length age key. Note that labels on the matrix produced are
+#'                      midpoints using the DFO conventions; see \code{\link{group_lengths}}. Also
+#'                      note that this length group will dictate the length group used in the
+#'                      stratified analysis run by \code{\link{run_strat}}.
 #' @param digits        Integer indicating the number of decimal places to round the values to
 #' @param plot          Produce a simple plot of the simulated values?
 #'

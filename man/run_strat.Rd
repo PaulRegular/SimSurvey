@@ -4,12 +4,10 @@
 \alias{run_strat}
 \title{Run stratified analysis on simulated data}
 \usage{
-run_strat(sim, length_group = 3)
+run_strat(sim)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}
-
-\item{length_group}{Size of the length frequency bins}
 }
 \value{
 Adds stratified analysis results for the total population (\code{"total_strat"})
@@ -18,4 +16,14 @@ Adds stratified analysis results for the total population (\code{"total_strat"})
 }
 \description{
 Run stratified analysis on simulated data
+}
+\examples{
+
+sim <- sim_abundance(ages = 1:10, years = 1:5, R = sim_R(mean = 1e+7),
+                     growth = sim_vonB(length_group = 1)) \%>\%
+           sim_distribution(grid = make_grid(res = c(10, 10)),
+                            ays_covar = sim_ays_covar(sd = 1)) \%>\%
+           sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3)) \%>\%
+           run_strat()
+
 }

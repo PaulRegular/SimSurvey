@@ -4,7 +4,7 @@
 \alias{resume_test}
 \title{Resume partial run of \code{\link{test_surveys}}}
 \usage{
-resume_test(dir = NULL)
+resume_test(export_dir = NULL)
 }
 \arguments{
 \item{export_dir}{Export directory specified when \code{\link{test_surveys}} was run.}

@@ -186,7 +186,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #' @param sim         A list with ages, years and an abundance at age matrix like
 #'                    produced by \code{\link{sim_abundance}}.
 #' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}
-#'                    or one produced by \code{\link{sim_grid}}
+#'                    or one produced by \code{\link{make_grid}}
 #' @param ays_covar   Closure for simulating age-year-space covariance,
 #'                    like \code{\link{sim_ays_covar}}
 #' @param depth_par   Closure for defining relationship between abundance and depth,
@@ -208,7 +208,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #' @examples
 #'
 #' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
-#'            sim_distribution(grid = sim_grid(res = c(10, 10)),
+#'            sim_distribution(grid = make_grid(res = c(10, 10)),
 #'                             ays_covar = sim_ays_covar(phi_age = 0.8,
 #'                                                       phi_year = 0.1),
 #'                             depth_par = sim_parabola(mu = 200,
@@ -223,7 +223,7 @@ sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
 #'
 
 sim_distribution <- function(sim,
-                             grid = sim_grid(),
+                             grid = make_grid(),
                              ays_covar = sim_ays_covar(),
                              depth_par = sim_parabola()) {
 
