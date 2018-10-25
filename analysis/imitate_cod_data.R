@@ -109,7 +109,7 @@ pop <- sim_abundance(ages = 1:20,
                                phi_age = 0.9,
                                phi_year = 0.5),
                      growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
-  sim_distribution(grid = sim_grid(x_range = c(-140, 140),
+  sim_distribution(grid = make_grid(x_range = c(-140, 140),
                                    y_range = c(-140, 140),
                                    res = c(3.5, 3.5),
                                    shelf_depth = 200,
@@ -188,7 +188,7 @@ plot(length ~ age, data = sim_I, main = "simulated data",
 ## (could use to improve the accuracy of depth in the real data, but the pattern is clear)
 data_I <- setdet
 sim_I <- survey$setdet
-plot(as.numeric(data_I$max.depth), data_I$number, xlab = "depth",
+plot(as.numeric(data_I$set.depth.min), data_I$number, xlab = "depth",
      ylab = "number", main = "real data", xlim = c(0, 1000))
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
