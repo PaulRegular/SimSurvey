@@ -9,6 +9,7 @@
 #'                       \code{\link{sim_distribution}}, etc.
 #' @param mat            Name of matrix in \code{sim} list to plot.
 #' @param xlab,ylab,zlab Axes labels.
+#' @param sum_ages       Sum across these ages
 #' @param ages           Subset data to one or more ages.
 #' @param lengths        Subset data to one or more length groups.
 #' @param years          Subset data to one or more years.
@@ -31,11 +32,16 @@
 #'
 #' @export
 #' @rdname plot_trend
-plot_trend <- function(sim, col = viridis::viridis(1), ...) {
-  tot <- data.frame(Year = sim$years, N = colSums(sim$N))
+plot_trend <- function(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...) {
+  if (length(sum_ages) == 1) {
+    n <- sim$N[sum_ages, ]
+  } else {
+    n <- colSums(sim$N[sum_ages, ])
+  }
+  tot <- data.frame(Year = sim$years, N = n)
   tot$text <- paste0("Year: ", tot$Year, "\nN: ", round(tot$N))
-  p1 <- plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
-                type = "scatter", mode = "lines", color = I(col), data = tot, ...)
+  plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
+          type = "scatter", mode = "lines", color = I(col), data = tot, ...)
 }
 
 #' @export

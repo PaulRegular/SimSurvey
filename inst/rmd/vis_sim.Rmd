@@ -18,7 +18,7 @@ sim <- tmp$sim
 Abundance
 ================================================================================
 
-Row
+Row {.tabset}
 --------------------------------------------------------------------------------
 
 ### Total abundance
@@ -27,8 +27,17 @@ Row
 plot_trend(sim)
 ```
 
-Row
---------------------------------------------------------------------------------
+### Recruitment
+
+```{r}
+plot_trend(sim, sum_ages = min(sim$ages))
+```
+
+### Total mortality
+
+```{r}
+plot_surface(sim, mat = "Z")
+```
 
 ### Abundance at age
 
@@ -36,12 +45,12 @@ Row
 plot_surface(sim, mat = "N")
 ```
 
-
-### Total mortality
+### Abundance at length
 
 ```{r}
-plot_surface(sim, mat = "Z")
+plot_surface(sim, mat = "N_at_length", xlab = "Length", zlab = "N")
 ```
+
 
 
 
@@ -70,14 +79,14 @@ Column
 ```{r, eval = "sp_N" %in% names(sim)}
 renderPlotly({
   plot_distribution(sim, ages = input$age, year = input$year, type = input$type,
-                    scale = input$scale, axes = FALSE)
+                    scale = input$scale)
 })
 
 ```
 
 
 
-Survey { `r if(!"sp_I" %in% names(sim)) ".hidden"`}
+Survey { `r if(!"setdet" %in% names(sim)) ".hidden"`}
 ================================================================================
 
 Column {.sidebar}
@@ -97,9 +106,9 @@ Column
 
 ### Survey sampling
 
-```{r, eval = "sp_I" %in% names(sim)}
+```{r, eval = "setdet" %in% names(sim)}
 renderPlotly({
-  plot_samp_dist(sim, which_year = input$samp_year, which_sim = input$samp_sim)
+  plot_survey(sim, which_year = input$samp_year, which_sim = input$samp_sim)
 })
 ```
 
@@ -107,35 +116,66 @@ renderPlotly({
 Estimates { `r if(!"age_strat_error" %in% names(sim)) ".hidden"`}
 ================================================================================
 
+
 Column {.sidebar}
 --------------------------------------------------------------------------------
 
 ```{r}
 selectInput("set_den", "Set density", 
             choices = sort(unique(sim$surveys$set_den)))
-selectInput("lengths_cap", "max(lengths)", 
+selectInput("lengths_cap", "Lengths cap", 
             choices = sort(unique(sim$surveys$lengths_cap)))
-selectInput("ages_cap", "max(ages)", 
+selectInput("ages_cap", "Ages cap", 
             choices = sort(unique(sim$surveys$ages_cap)))
-selectInput("facet_by", "Facet by", 
-            choices = c("age", "year"))
+selectInput("fan_length", "Length", 
+            choices = sim$lengths)
+selectInput("fan_age", "Age", 
+            choices = sim$ages)
 ```
 
-Column
+
+Column {.tabset}
 --------------------------------------------------------------------------------
 
-### True population size vs. stratified estimates
+### Total abundance
 
 ```{r, eval = "age_strat_error" %in% names(sim)}
 renderPlotly({
-  surveys <- sim$surveys
-  i <- surveys$survey[surveys$set_den == input$set_den & 
-                      surveys$lengths_cap == input$lengths_cap &
-                      surveys$ages_cap == input$ages_cap]
-  plot_true_vs_est(sim, which_survey = i, facet_by = input$facet_by,
-                   max_sims = 100)
+  s <- sim$surveys
+  i <- s$survey[s$set_den == input$set_den & 
+                        s$lengths_cap == max(s$lengths_cap) &
+                        s$ages_cap == max(s$ages_cap)]
+  plot_total_strat_fan(sim, surveys = i)
 })
 ```
+
+### Abundance at length
+
+```{r, eval = "age_strat_error" %in% names(sim)}
+renderPlotly({
+  s <- sim$surveys
+  i <- s$survey[s$set_den == input$set_den & 
+                        s$lengths_cap == input$lengths_cap &
+                        s$ages_cap == max(s$ages_cap)]
+  plot_length_strat_fan(sim, surveys = i, years = sim$years,
+                        lengths = input$fan_length, select_by = "length")
+})
+```
+
+### Abundance at age
+
+```{r, eval = "age_strat_error" %in% names(sim)}
+renderPlotly({
+  s <- sim$surveys
+  i <- s$survey[s$set_den == input$set_den & 
+                        s$lengths_cap == input$lengths_cap &
+                        s$ages_cap == input$ages_cap]
+  plot_age_strat_fan(sim, surveys = i, years = sim$years,
+                        ages = input$fan_age, select_by = "age")
+})
+```
+
+
 
 
 Error { `r if(!"surveys" %in% names(sim)) ".hidden"`}
@@ -144,14 +184,14 @@ Error { `r if(!"surveys" %in% names(sim)) ".hidden"`}
 Column  {.tabset}
 --------------------------------------------------------------------------------
 
-### Error surface
+### Error surface by rule
 
 ```{r, eval = "surveys" %in% names(sim)}
-plot_error_surface(sim)
+plot_error_surface(sim, plot_by = "rule")
 ```
 
-### Error cross-sections
+### Error surface by sample size
 
 ```{r, eval = "surveys" %in% names(sim)}
-plot_error_cross_sections(sim)
+plot_error_surface(sim, plot_by = "samples")
 ```

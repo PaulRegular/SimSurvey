@@ -100,6 +100,7 @@ tests$total_strat_error \%>\%
 plot_total_strat_fan(tests, surveys = 1:8)
 plot_length_strat_fan(tests, surveys = 1:8)
 plot_age_strat_fan(tests, surveys = 1:8)
+plot_age_strat_fan(tests, surveys = 1:8, select_by = "age")
 
 plot_error_surface(tests, plot_by = "rule")
 plot_error_surface(tests, plot_by = "samples")

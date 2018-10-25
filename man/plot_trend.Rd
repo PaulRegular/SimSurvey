@@ -11,7 +11,7 @@
 \alias{plot_error_surface}
 \title{Simple plotting functions}
 \usage{
-plot_trend(sim, col = viridis::viridis(1), ...)
+plot_trend(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...)
 
 plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat,
   ...)
@@ -35,6 +35,8 @@ plot_error_surface(sim, plot_by = "rule")
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
 \code{\link{sim_distribution}}, etc.}
+
+\item{sum_ages}{Sum across these ages}
 
 \item{col}{Plot color}
 

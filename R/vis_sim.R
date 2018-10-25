@@ -6,6 +6,27 @@
 #'                       \code{\link{sim_survey}} or \code{\link{test_surveys}}.
 #' @param ...            Additional arguments to send to \link[rmarkdown]{run}
 #'
+#' @examples
+#'
+#' pop <- sim_abundance(ages = 1:20, years = 1:20)
+#' vis_sim(pop)
+#'
+#' dist <- sim_distribution(pop, grid = make_grid(res = c(10, 10)))
+#' vis_sim(dist)
+#'
+#' ## Run one survey design
+#' survey <- sim_survey(dist, n_sims = 5)
+#' vis_sim(survey)
+#'
+#' ## Run several survey designs and assess stratified estimates
+#' surveys <- expand_surveys(set_den = c(1, 2) / 1000,
+#'                           lengths_cap = c(100, 500),
+#'                           ages_cap = c(5, 20))
+#' tests <- test_surveys(dist, surveys = surveys, keep_details = 1,
+#'                       n_sims = 10, n_loops = 50, cores = 2)
+#' vis_sim(tests)
+#'
+#'
 #' @export
 #'
 
