@@ -6,9 +6,9 @@
 \alias{sim_N0}
 \title{Simulate startinig abundance, random recruitment and total mortality}
 \usage{
-sim_R(mean = 1e+05, log_sd = 0.5, random_walk = TRUE, plot = FALSE)
+sim_R(mean = 3e+07, log_sd = 0.5, random_walk = TRUE, plot = FALSE)
 
-sim_Z(mean = 0.7, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5,
+sim_Z(mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5,
   plot = FALSE)
 
 sim_N0(N0 = "exp", plot = FALSE)

@@ -5,12 +5,10 @@
 \alias{plot_surface}
 \alias{plot_distribution}
 \alias{plot_survey}
-\alias{plot_error_surface}
-\alias{plot_error_cross_sections}
-\alias{plot_true_vs_est}
-\alias{plot_age_strat_fan}
-\alias{plot_length_strat_fan}
 \alias{plot_total_strat_fan}
+\alias{plot_length_strat_fan}
+\alias{plot_age_strat_fan}
+\alias{plot_error_surface}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, col = viridis::viridis(1), ...)
@@ -23,21 +21,16 @@ plot_distribution(sim, ages = 1:10, years = 1:10, type = "contour",
 
 plot_survey(sim, which_year = 1, which_sim = 1, col = viridis::viridis(1))
 
-plot_error_surface(sim, plot_by = "rule")
-
-plot_error_cross_sections(sim, col = viridis::viridis(1))
-
-plot_true_vs_est(sim, which_survey = 1, max_sims = 50, facet_by = "age",
-  cols = viridis::viridis(3))
-
-plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
-  select_by = "year", quants = seq(90, 10, by = -10), ...)
+plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
+  ...)
 
 plot_length_strat_fan(sim, surveys = 1:5, years = 1:10, lengths = 1:50,
   select_by = "year", quants = seq(90, 10, by = -10), ...)
 
-plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
-  ...)
+plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
+  select_by = "year", quants = seq(90, 10, by = -10), ...)
+
+plot_error_surface(sim, plot_by = "rule")
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -61,6 +54,12 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 
 \item{which_sim}{Subset to specific sim}
 
+\item{quants}{Quantile intervals to display on fan plot}
+
+\item{lengths}{Subset data to one or more length groups.}
+
+\item{select_by}{Select plot by "age", "length" or "year"?}
+
 \item{plot_by}{Plot error surface by "rule" or "samples"?}
 
 \item{which_survey}{Subset to specific survey}
@@ -69,15 +68,9 @@ plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
 
 \item{facet_by}{Facet plot by "age" or "year"?}
 
-\item{cols}{Plot colors}
-
-\item{select_by}{Select plot by "age", "length" or "year"?}
-
-\item{quants}{Quantile intervals to display on fan plot}
-
-\item{lengths}{Subset data to one or more length groups.}
-
 \item{survey}{Subset data to one or more surveys.}
+
+\item{cols}{Plot colors}
 
 \item{main}{Plot title}
 }

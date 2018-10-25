@@ -44,9 +44,9 @@
 #'
 #' @export
 
-sim_ays_covar <- function(sd = 0.5, range = 50, lambda = 1, model = "matern",
-                          phi_age = 0.5, phi_year = 0.5,
-                          group_ages = NULL, group_years = NULL) {
+sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
+                          phi_age = 0.5, phi_year = 0.9,
+                          group_ages = 5:20, group_years = NULL) {
   function(x = NULL, ages = NULL, years = NULL, cells = NULL) {
 
     # There are probably better, more elegant and computationally efficient solutions
@@ -168,7 +168,7 @@ sim_ays_covar <- function(sd = 0.5, range = 50, lambda = 1, model = "matern",
 #' @rdname sim_parabola
 #' @export
 
-sim_parabola <- function(alpha = 0, mu = 250, sigma = 50, plot = FALSE) {
+sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, plot = FALSE) {
   function(x = NULL) {
     y <- alpha - (((x - mu)^2) / (2 * sigma ^ 2))
     if (plot) { plot(x, y, main = "sim_parabola", type = "l") }

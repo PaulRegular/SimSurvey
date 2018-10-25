@@ -61,7 +61,7 @@ round_sim <- function(sim) {
 #'
 
 sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
-                     min_sets = 2, set_den = 3 / 1000, resample_cells = FALSE) {
+                     min_sets = 2, set_den = 2 / 1000, resample_cells = FALSE) {
 
   ## Strat area and sampling effort
   cells <- data.table(rasterToPoints(sim$grid))
@@ -98,7 +98,8 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 #' @param sim                 Simulation from \code{\link{sim_distribution}}
 #' @param n_sims              Number of surveys to simulate over the simulated population. Note: requesting
-#'                            a large number of simulations may max out your RAM
+#'                            a large number of simulations may max out your RAM. Use
+#'                            \code{\link{sim_survey_parallel}} if many simulations are required.
 #' @param q                   Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 #'                            (returned values must be between 0 and 1)
 #' @param trawl_dim           Trawl width and distance (same units as grid)
@@ -126,9 +127,8 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 #' @examples
 #'
-#' sim <- sim_abundance(ages = 1:10, years = 1:5, R = sim_R(mean = 1e+7)) %>%
-#'            sim_distribution(grid = make_grid(res = c(10, 10)),
-#'                             ays_covar = sim_ays_covar(sd = 1)) %>%
+#' sim <- sim_abundance(ages = 1:20, years = 1:5) %>%
+#'            sim_distribution(grid = make_grid(res = c(10, 10))) %>%
 #'            sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3))
 #' plot_survey(sim, which_year = 2, which_sim = 1)
 #'
@@ -137,7 +137,7 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 
 sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
                        resample_cells = FALSE, binom_error = TRUE,
-                       min_sets = 2, set_den = 3 / 1000, lengths_cap = 400,
+                       min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
                        length_group = 1, ages_cap = 10, age_sampling = "stratified",
                        light = TRUE) {
 
@@ -244,7 +244,9 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #'
 #' This function is a wrapper for \code{\link{sim_survey}} except it allows for
 #' many more total itterations to be run than \code{\link{sim_survey}} before running
-#' into RAM limitations.
+#' into RAM limitations. Unlike \code{\link{test_surveys}}, this function retains
+#' the full details of the survey and it may therefore be more useful for testing
+#' alternate approaches to a stratified analysis for obtaining survey indices.
 #'
 #' @param sim               Simulation from \code{\link{sim_distribution}}
 #' @param n_sims            Number of times to simulate a survey over the simulated population.
@@ -258,6 +260,17 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #' @inheritDotParams sim_survey
 #'
 #' @details \code{\link{sim_survey}} is hard-wired here to be "light" to minimize object size.
+#'
+#' @examples
+#'
+#' ## This call runs a total of 100 simulations of the same survey over
+#' ## the same population
+#' sim <- sim_abundance(ages = 1:20, years = 1:5) %>%
+#'            sim_distribution(grid = make_grid(res = c(10, 10))) %>%
+#'            sim_survey_parallel(n_sims = 10, n_loops = 10,
+#'                                q = sim_logistic(k = 2, x0 = 3),
+#'                                quiet = FALSE)
+#'
 #'
 #' @export
 #'
@@ -316,6 +329,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
 
   ## Add new stuff to main object
   sim$I <- one_res$I
+  sim$I_at_length <- one_res$I_at_length
   sim$setdet <- setdet
   sim$samp <- samp
   sim$samp_totals <- samp_totals

@@ -26,7 +26,8 @@ will be easier on RAM, but may be slower.}
 \describe{
   \item{sim}{Simulation from \code{\link{sim_distribution}}}
   \item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM}
+a large number of simulations may max out your RAM. Use
+\code{\link{sim_survey_parallel}} if many simulations are required.}
   \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
   \item{trawl_dim}{Trawl width and distance (same units as grid)}
@@ -52,8 +53,22 @@ maximum number of otoliths to collect from measured fish per set.}
 \description{
 This function is a wrapper for \code{\link{sim_survey}} except it allows for
 many more total itterations to be run than \code{\link{sim_survey}} before running
-into RAM limitations.
+into RAM limitations. Unlike \code{\link{test_surveys}}, this function retains
+the full details of the survey and it may therefore be more useful for testing
+alternate approaches to a stratified analysis for obtaining survey indices.
 }
 \details{
 \code{\link{sim_survey}} is hard-wired here to be "light" to minimize object size.
+}
+\examples{
+
+## This call runs a total of 100 simulations of the same survey over
+## the same population
+sim <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
+           sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
+           sim_survey_parallel(n_sims = 10, n_loops = 10,
+                               q = sim_logistic(k = 2, x0 = 3),
+                               quiet = FALSE)
+
+
 }

@@ -49,7 +49,7 @@
 #'
 #' @export
 #' @rdname sim_R
-sim_R <- function(mean = 100000, log_sd = 0.5, random_walk = TRUE, plot = FALSE) {
+sim_R <- function(mean = 30000000, log_sd = 0.5, random_walk = TRUE, plot = FALSE) {
   function(years = NULL) {
     if (length(mean) > 1 && length(mean) != length(years)) {
       stop("The number of means supplied for recruitment != number of years.")
@@ -65,7 +65,7 @@ sim_R <- function(mean = 100000, log_sd = 0.5, random_walk = TRUE, plot = FALSE)
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.7, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
+sim_Z <- function(mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
   function(ages = NULL, years = NULL) {
 
     na <- length(ages)

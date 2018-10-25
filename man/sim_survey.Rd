@@ -6,14 +6,15 @@
 \usage{
 sim_survey(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
   resample_cells = FALSE, binom_error = TRUE, min_sets = 2,
-  set_den = 3/1000, lengths_cap = 400, length_group = 1, ages_cap = 10,
+  set_den = 2/1000, lengths_cap = 500, length_group = 1, ages_cap = 10,
   age_sampling = "stratified", light = TRUE)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
 
 \item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM}
+a large number of simulations may max out your RAM. Use
+\code{\link{sim_survey_parallel}} if many simulations are required.}
 
 \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
@@ -56,9 +57,8 @@ Simulate stratified-random survey
 }
 \examples{
 
-sim <- sim_abundance(ages = 1:10, years = 1:5, R = sim_R(mean = 1e+7)) \%>\%
-           sim_distribution(grid = make_grid(res = c(10, 10)),
-                            ays_covar = sim_ays_covar(sd = 1)) \%>\%
+sim <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
+           sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
            sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3))
 plot_survey(sim, which_year = 2, which_sim = 1)
 

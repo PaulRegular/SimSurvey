@@ -4,7 +4,7 @@
 \alias{sim_parabola}
 \title{Define relationships with covariates}
 \usage{
-sim_parabola(alpha = 0, mu = 250, sigma = 50, plot = FALSE)
+sim_parabola(alpha = 0, mu = 200, sigma = 70, plot = FALSE)
 }
 \arguments{
 \item{alpha, mu, sigma}{Parameters that control the shape of the parabola}

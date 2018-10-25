@@ -192,6 +192,204 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1,
 
 
 
+## helper function for calculating multiple quantiles by group
+.ints <- function(d, quants = seq(90, 10, by = -10), by = c("year", "survey")) {
+  ints <- lapply(quants, function(q) {
+    d[, list(prob = paste0(q, "%"),
+             lower = quantile(I_hat, prob = (1 - q / 100) / 2),
+             upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+      by = by]
+  })
+  ints <- data.table::rbindlist(ints)
+  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
+  ints
+}
+
+## helper function for making fan plots
+.fan <- function(d, x = NULL, xlab = NULL, cols = NULL, ylim = NULL, ...) {
+  plot_ly(data = d, x = x) %>%
+    add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
+                color = ~prob, colors = cols,
+                showlegend = FALSE) %>%
+    add_lines(y = ~I, color = I("black"), name = "True",
+              showlegend = FALSE) %>%
+    layout(yaxis = list(title = "Abundance index",
+                        range = ylim),
+           xaxis = list(title = xlab), ...)
+}
+
+
+
+#' @export
+#' @rdname plot_trend
+plot_total_strat_fan <- function(sim, surveys = 1:5,
+                                 quants = seq(90, 10, by = -10),
+                                 ...) {
+
+  d <- sim$total_strat_error
+  sub_d <- d[survey %in% surveys, ]
+  sub_d <- merge(sim$surveys, sub_d, by = "survey", all.y = TRUE)
+  true <- unique(sub_d[sim == 1, list(year, set_den, I)])
+
+  ## Calculate a series of quantiles
+  ints <- .ints(sub_d, quants = quants, by = c("year", "set_den"))
+  ints$lab <- formatC(ints$set_den, format = "fg")
+  ints <- merge(ints, true, by = c("year", "set_den"))
+
+  if (length(surveys) > 1) {
+
+    shared_ints <- crosstalk::SharedData$new(ints)
+
+    p <- crosstalk::bscols(
+      list(
+        htmltools::div(style = htmltools::css(height = "10px")), # small margin
+        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
+      ),
+      .fan(shared_ints, x = ~year, xlab = "Year",
+           cols = viridis::viridis(nlevels(ints$prob)),
+           ylim = c(min(ints$lower), max(ints$upper)),
+           ...),
+      widths = c(3, NA)
+    )
+
+  } else {
+
+    p <- .fan(ints, x = ~year, xlab = "Year",
+              cols = viridis::viridis(nlevels(ints$prob)),
+              ylim = c(min(ints$lower), max(ints$upper)),
+              ...)
+
+  }
+
+  p
+
+}
+
+
+
+#' @export
+#' @rdname plot_trend
+plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
+                                  lengths = 1:50, select_by = "year",
+                                  quants = seq(90, 10, by = -10),
+                                  ...) {
+
+  d <- sim$length_strat_error
+  sub_d <- d[survey %in% surveys & year %in% years & length %in% lengths, ]
+  sub_d <- merge(sim$surveys, sub_d, by = "survey", all.y = TRUE)
+  true <- unique(sub_d[sim == 1, list(year, length, set_den, lengths_cap, I)])
+
+  ## Calculate a series of quantiles
+  ints <- .ints(sub_d, quants = quants, by = c("length", "year", "set_den", "lengths_cap"))
+  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
+                    ints$lengths_cap, sep = "-")
+  ints <- merge(ints, true, by = c("length", "year", "set_den", "lengths_cap"))
+
+  shared_ints <- crosstalk::SharedData$new(ints)
+
+  if (select_by == "year") {
+    f <- crosstalk::filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
+    x <- ~length
+    xlab <- "Length"
+  } else {
+    f <- crosstalk::filter_select(select_by, "Length", shared_ints, ~length, multiple = FALSE)
+    x <- ~year
+    xlab <- "Year"
+  }
+
+  if (sum(c(length(surveys), length(years), length(lengths)) > 1) > 1) {
+
+    p <- crosstalk::bscols(
+      list(
+        htmltools::div(style = htmltools::css(height = "10px")), # small margin
+        f,
+        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+        crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
+      ),
+      .fan(shared_ints, x = x, xlab = xlab,
+           cols = viridis::viridis(nlevels(ints$prob)),
+           ylim = c(min(ints$lower), max(ints$upper)),
+           ...),
+      widths = c(3, NA)
+    )
+
+  } else {
+
+    p <- .fan(ints, x = x, xlab = xlab,
+              cols = viridis::viridis(nlevels(ints$prob)),
+              ylim = c(min(ints$lower), max(ints$upper)),
+              ...)
+
+  }
+
+  p
+
+}
+
+
+
+#' @export
+#' @rdname plot_trend
+plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
+                               ages = 1:10, select_by = "year",
+                               quants = seq(90, 10, by = -10),
+                               ...) {
+
+  d <- sim$age_strat_error
+  sub_d <- d[survey %in% surveys & year %in% years & age %in% ages, ]
+  true <- sub_d[sim == 1, list(year, age, survey, I)]
+
+  ## Calculate a series of quantiles
+  ints <- .ints(sub_d, quants = quants, by = c("age", "year", "survey"))
+  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
+  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
+                    ints$lengths_cap, ints$ages_cap, sep = "-")
+  ints <- merge(ints, true, by = c("age", "year", "survey"))
+
+  shared_ints <- crosstalk::SharedData$new(ints)
+
+  if (select_by == "year") {
+    f <- crosstalk::filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
+    x <- ~age
+    xlab <- "Age"
+  } else {
+    f <- crosstalk::filter_select(select_by, "Age", shared_ints, ~age, multiple = FALSE)
+    x <- ~year
+    xlab <- "Year"
+  }
+
+  if (sum(c(length(surveys), length(years), length(ages)) > 1) > 1) {
+
+    p <- crosstalk::bscols(
+      list(
+        htmltools::div(style = htmltools::css(height = "10px")), # small margin
+        f,
+        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
+        crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
+        crosstalk::filter_select("ages_cap", "Ages cap", shared_ints, ~ages_cap, multiple = FALSE)
+      ),
+      .fan(shared_ints, x = x, xlab = xlab,
+           cols = viridis::viridis(nlevels(ints$prob)),
+           ylim = c(min(ints$lower), max(ints$upper)),
+           ...),
+      widths = c(3, NA)
+    )
+
+  } else {
+
+    p <- .fan(ints, x = x, xlab = xlab,
+              cols = viridis::viridis(nlevels(ints$prob)),
+              ylim = c(min(ints$lower), max(ints$upper)),
+              ...)
+
+  }
+
+  p
+
+}
+
+
+
 #' @export
 #' @rdname plot_trend
 plot_error_surface <- function(sim, plot_by = "rule") {
@@ -330,287 +528,4 @@ plot_error_surface <- function(sim, plot_by = "rule") {
       ))
 
 }
-
-
-
-#' @export
-#' @rdname plot_trend
-plot_error_cross_sections <- function(sim, col = viridis::viridis(1)) {
-
-  d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-
-  a <- list(
-    text = "",
-    font = list(size = 18, color = "black"),
-    xref = "paper",
-    yref = "paper",
-    yanchor = "bottom",
-    xanchor = "center",
-    align = "center",
-    x = 0.5,
-    y = 1,
-    showarrow = FALSE
-  )
-
-  a$text <- "Change set density"
-  set_p <- d %>%
-    mutate(combo = paste("max(lengths):", lengths_cap, "<br>max(ages):", ages_cap)) %>%
-    group_by(combo) %>%
-    plot_ly() %>% add_lines(x = ~set_den, y = ~RMSE, text = ~combo,
-                            name = "Change set density", showlegend = FALSE,
-                            color = I(col), alpha = 0.5, size = I(0.5)) %>%
-    layout(xaxis = list(title = "Set density"), annotations = a)
-
-  a$text <- "Change length sampling"
-  len_p <- d %>%
-    mutate(combo = paste("set density:", set_den, "<br>max(ages):", ages_cap)) %>%
-    group_by(combo) %>%
-    plot_ly() %>% add_lines(x = ~lengths_cap, y = ~RMSE, text = ~combo,
-                            name = "Change length sampling", showlegend = FALSE,
-                            color = I(col), alpha = 0.5, size = I(0.5)) %>%
-    layout(xaxis = list(title = "max(lengths)"), annotations = a)
-
-  a$text <- "Change age sampling"
-  age_p <- d %>%
-    mutate(combo = paste("set density:", set_den, "<br>max(lengths):", lengths_cap)) %>%
-    group_by(combo) %>%
-    plot_ly() %>% add_lines(x = ~ages_cap, y = ~RMSE, text = ~combo,
-                            name = "Change age sampling", showlegend = FALSE,
-                            color = I(col), alpha = 0.8, size = I(0.5)) %>%
-    layout(xaxis = list(title = "max(ages)"), annotations = a)
-
-  subplot(set_p, len_p, age_p, nrows = 1, shareY = TRUE, titleX = TRUE)
-
-}
-
-
-#' @export
-#' @rdname plot_trend
-plot_true_vs_est <- function(sim, which_survey = 1, max_sims = 50,  facet_by = "age",
-                             cols = viridis::viridis(3)) {
-
-  d <- sim$age_strat_error
-  sub_d <- d[d$survey == which_survey, ]
-  sub_sims <- sample(unique(d$sim), ifelse(max(d$sim) > max_sims, max_sims, max(d$sims)))
-  sub_d <- sub_d[sub_d$sim %in% sub_sims, ]
-
-  if (facet_by == "age") {
-    p <- ggplot(data = sub_d, aes(x = year, group = sim)) +
-      geom_line(aes(y = I_hat), color = I(cols[2]), alpha = 0.2, size = 0.1) +
-      geom_line(aes(y = I), color = I(cols[1]), size = 0.1) +
-      xlab("Year") + ylab("Index") +
-      facet_wrap(~ age, scales = "free_y")
-  } else {
-    p <- ggplot(data = sub_d, aes(x = age, group = sim)) +
-      geom_line(aes(y = I_hat), color = I(cols[2]), alpha = 0.2, size = 0.1) +
-      geom_line(aes(y = I), color = I(cols[1]), size = 0.1) +
-      xlab("Age") + ylab("Index") +
-      facet_wrap(~ year, scales = "free_y")
-
-  }
-
-  p <- p + theme_minimal() + theme(axis.text.y = element_blank(),
-                                   axis.ticks.y = element_blank(),
-                                   plot.margin = unit(c(0.1, 0.1, 0.5, 0.5), "cm"))
-
-  ggplotly(p)
-
-}
-
-
-## helper function for calculating multiple quantiles by group
-.ints <- function(d, quants = seq(90, 10, by = -10), by = c("year", "survey")) {
-  ints <- lapply(quants, function(q) {
-    d[, list(prob = paste0(q, "%"),
-             lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-             upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
-      by = by]
-  })
-  ints <- data.table::rbindlist(ints)
-  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-  ints
-}
-
-## helper function for making fan plots
-.fan <- function(d, x = NULL, xlab = NULL, cols = NULL, ylim = NULL, ...) {
-  plot_ly(data = d, x = x) %>%
-    add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
-                color = ~prob, colors = cols,
-                showlegend = FALSE) %>%
-    add_lines(y = ~I, color = I("black"), name = "True",
-              showlegend = FALSE) %>%
-    layout(yaxis = list(title = "Abundance index",
-                        range = ylim),
-           xaxis = list(title = xlab), ...)
-}
-
-
-#' @export
-#' @rdname plot_trend
-plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
-                               ages = 1:10, select_by = "year",
-                               quants = seq(90, 10, by = -10),
-                               ...) {
-
-  d <- sim$age_strat_error
-  sub_d <- d[survey %in% surveys & year %in% years & age %in% ages, ]
-  true <- sub_d[sim == 1, list(year, age, survey, I)]
-
-  ## Calculate a series of quantiles
-  ints <- .ints(sub_d, quants = quants, by = c("age", "year", "survey"))
-  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
-  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
-                    ints$lengths_cap, ints$ages_cap, sep = "-")
-  ints <- merge(ints, true, by = c("age", "year", "survey"))
-
-  shared_ints <- crosstalk::SharedData$new(ints)
-
-  if (select_by == "year") {
-    f <- crosstalk::filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
-    x <- ~age
-    xlab <- "Age"
-  } else {
-    f <- crosstalk::filter_select(select_by, "Age", shared_ints, ~age, multiple = FALSE)
-    x <- ~year
-    xlab <- "Year"
-  }
-
-  if (sum(c(length(surveys), length(years), length(ages)) > 1) > 1) {
-
-    p <- crosstalk::bscols(
-      list(
-        htmltools::div(style = htmltools::css(height = "10px")), # small margin
-        f,
-        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
-        crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE),
-        crosstalk::filter_select("ages_cap", "Ages cap", shared_ints, ~ages_cap, multiple = FALSE)
-      ),
-      .fan(shared_ints, x = x, xlab = xlab,
-           cols = viridis::viridis(nlevels(ints$prob)),
-           ylim = c(min(ints$lower), max(ints$upper)),
-           ...),
-      widths = c(3, NA)
-    )
-
-  } else {
-
-    p <- .fan(ints, x = x, xlab = xlab,
-              cols = viridis::viridis(nlevels(ints$prob)),
-              ylim = c(min(ints$lower), max(ints$upper)),
-              ...)
-
-  }
-
-  p
-
-}
-
-
-#' @export
-#' @rdname plot_trend
-plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
-                                  lengths = 1:50, select_by = "year",
-                                  quants = seq(90, 10, by = -10),
-                                  ...) {
-
-  d <- sim$length_strat_error
-  sub_d <- d[survey %in% surveys & year %in% years & length %in% lengths, ]
-  true <- sub_d[sim == 1, list(year, length, survey, I)]
-
-  ## Calculate a series of quantiles
-  ints <- .ints(sub_d, quants = quants, by = c("length", "year", "survey"))
-  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
-  ints$lab <- paste(formatC(ints$set_den, format = "fg"),
-                    ints$lengths_cap, sep = "-")
-  ints <- merge(ints, true, by = c("length", "year", "survey"))
-
-  shared_ints <- crosstalk::SharedData$new(ints)
-
-  if (select_by == "year") {
-    f <- crosstalk::filter_select(select_by, "Year", shared_ints, ~year, multiple = FALSE)
-    x <- ~length
-    xlab <- "Length"
-  } else {
-    f <- crosstalk::filter_select(select_by, "Length", shared_ints, ~length, multiple = FALSE)
-    x <- ~year
-    xlab <- "Year"
-  }
-
-  if (sum(c(length(surveys), length(years), length(lengths)) > 1) > 1) {
-
-    p <- crosstalk::bscols(
-      list(
-        htmltools::div(style = htmltools::css(height = "10px")), # small margin
-        f,
-        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE),
-        crosstalk::filter_select("lengths_cap", "Lengths cap", shared_ints, ~lengths_cap, multiple = FALSE)
-      ),
-      .fan(shared_ints, x = x, xlab = xlab,
-           cols = viridis::viridis(nlevels(ints$prob)),
-           ylim = c(min(ints$lower), max(ints$upper)),
-           ...),
-      widths = c(3, NA)
-    )
-
-  } else {
-
-    p <- .fan(ints, x = x, xlab = xlab,
-              cols = viridis::viridis(nlevels(ints$prob)),
-              ylim = c(min(ints$lower), max(ints$upper)),
-              ...)
-
-  }
-
-  p
-
-}
-
-
-
-
-#' @export
-#' @rdname plot_trend
-plot_total_strat_fan <- function(sim, surveys = 1:5,
-                                 quants = seq(90, 10, by = -10),
-                                 ...) {
-
-  d <- sim$total_strat_error
-  sub_d <- d[survey %in% surveys, ]
-  true <- sub_d[sim == 1, list(year, survey, I)]
-
-  ## Calculate a series of quantiles
-  ints <- .ints(sub_d, quants = quants, by = c("year", "survey"))
-  ints <- merge(sim$surveys, ints, by = "survey", all.y = TRUE)
-  ints$lab <- formatC(ints$set_den, format = "fg")
-  ints <- merge(ints, true, by = c("year", "survey"))
-
-  if (length(surveys) > 1) {
-
-    shared_ints <- crosstalk::SharedData$new(ints)
-
-    p <- crosstalk::bscols(
-      list(
-        htmltools::div(style = htmltools::css(height = "10px")), # small margin
-        crosstalk::filter_select("set_den", "Set density", shared_ints, ~set_den, multiple = FALSE)
-      ),
-      .fan(shared_ints, x = ~year, xlab = "Year",
-           cols = viridis::viridis(nlevels(ints$prob)),
-           ylim = c(min(ints$lower), max(ints$upper)),
-           ...),
-      widths = c(3, NA)
-    )
-
-  } else {
-
-    p <- .fan(ints, x = ~year, xlab = "Year",
-              cols = viridis::viridis(nlevels(ints$prob)),
-              ylim = c(min(ints$lower), max(ints$upper)),
-              ...)
-
-  }
-
-  p
-
-}
-
 

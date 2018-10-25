@@ -35,7 +35,8 @@ is to allow this process to pick up where it left off by calling
 \describe{
   \item{sim}{Simulation from \code{\link{sim_distribution}}}
   \item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM}
+a large number of simulations may max out your RAM. Use
+\code{\link{sim_survey_parallel}} if many simulations are required.}
   \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
   \item{trawl_dim}{Trawl width and distance (same units as grid)}
@@ -71,4 +72,37 @@ Adds a table of survey designs tested. Also adds details and summary
 This function allows a series of sampling design settings to
 be set and tested on the simulated population. True population values are compared
 to stratified estimates of abundance.
+}
+\examples{
+
+pop <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
+           sim_distribution(grid = make_grid(res = c(10, 10)))
+
+surveys <- expand_surveys(set_den = c(1, 2) / 1000,
+                          lengths_cap = c(100, 500),
+                          ages_cap = c(5, 20))
+
+## This call runs 200 simulations of 8 different surveys over the same
+## population, and then runs a stratified analysis and compares true vs
+## estimated values. It may take a while to run.
+tests <- test_surveys(pop, surveys = surveys, keep_details = 1,
+                      n_sims = 10, n_loops = 50, cores = 2)
+
+tests$total_strat_error \%>\%
+    filter(survey == 8, sim \%in\% 1:50) \%>\%
+    group_by(sim) \%>\%
+    plot_ly(x = ~year) \%>\%
+    add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") \%>\%
+    add_lines(y = ~I, color = I("black"), name = "true") \%>\%
+    layout(xaxis = list(title = "Year"),
+           yaxis = list(title = "Abundance index"))
+
+plot_total_strat_fan(tests, surveys = 1:8)
+plot_length_strat_fan(tests, surveys = 1:8)
+plot_age_strat_fan(tests, surveys = 1:8)
+
+plot_error_surface(tests, plot_by = "rule")
+plot_error_surface(tests, plot_by = "samples")
+
+
 }

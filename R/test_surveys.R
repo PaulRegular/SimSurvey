@@ -197,6 +197,39 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'         (\code{"samp_totals"}) to the list. Survey and stratified analysis
 #'         details are not kept to minimize object size.
 #'
+#' @examples
+#'
+#' pop <- sim_abundance(ages = 1:20, years = 1:5) %>%
+#'            sim_distribution(grid = make_grid(res = c(10, 10)))
+#'
+#' surveys <- expand_surveys(set_den = c(1, 2) / 1000,
+#'                           lengths_cap = c(100, 500),
+#'                           ages_cap = c(5, 20))
+#'
+#' ## This call runs 200 simulations of 8 different surveys over the same
+#' ## population, and then runs a stratified analysis and compares true vs
+#' ## estimated values. It may take a while to run.
+#' tests <- test_surveys(pop, surveys = surveys, keep_details = 1,
+#'                       n_sims = 10, n_loops = 50, cores = 2)
+#'
+#' tests$total_strat_error %>%
+#'     filter(survey == 8, sim %in% 1:50) %>%
+#'     group_by(sim) %>%
+#'     plot_ly(x = ~year) %>%
+#'     add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") %>%
+#'     add_lines(y = ~I, color = I("black"), name = "true") %>%
+#'     layout(xaxis = list(title = "Year"),
+#'            yaxis = list(title = "Abundance index"))
+#'
+#' plot_total_strat_fan(tests, surveys = 1:8)
+#' plot_length_strat_fan(tests, surveys = 1:8)
+#' plot_age_strat_fan(tests, surveys = 1:8)
+#' plot_age_strat_fan(tests, surveys = 1:8, select_by = "age")
+#'
+#' plot_error_surface(tests, plot_by = "rule")
+#' plot_error_surface(tests, plot_by = "samples")
+#'
+#'
 #' @export
 #'
 #' @import progress
