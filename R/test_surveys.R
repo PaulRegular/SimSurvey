@@ -44,8 +44,6 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @param export_dir        Directory for exporting results as they are generated. Main use of the export
 #'                          is to allow this process to pick up where \code{test_survey} left off by
 #'                          calling \code{resume_test}. If NULL, nothing is exported.
-#' @param complete          For internal use by \code{resume_test} - simply a log of the simulations
-#'                          that were completed by \code{test_surveys}.
 #' @inheritDotParams        sim_survey
 #'
 #' @details Depening on the settings, \code{test_surveys} may take a long time to run.
@@ -64,6 +62,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' @examples
 #'
+#' \dontrun{
 #' pop <- sim_abundance(ages = 1:20, years = 1:5) %>%
 #'            sim_distribution(grid = make_grid(res = c(10, 10)))
 #'
@@ -94,7 +93,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' plot_error_surface(tests, plot_by = "rule")
 #' plot_error_surface(tests, plot_by = "samples")
-#'
+#' }
 #'
 #' @export
 #'
@@ -111,7 +110,7 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
     save(list = ls(all.names = TRUE),
          file = file.path(export_dir, "test_inputs.RData"))
   }
-  test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
+  .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
              complete = NULL, keep_details = keep_details, ...)
 
@@ -123,15 +122,15 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 resume_test <- function(export_dir = NULL) {
   load(file.path(export_dir, "test_inputs.RData"))
   load(file.path(export_dir, "complete.RData"))
-  test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
+  .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
              complete = complete, keep_details = keep_details, ...)
 }
 
 
-#' @export
-#' @rdname test_surveys
-test_loop <- function(sim = NULL, surveys = NULL, n_sims = NULL,
+
+## Helper function for test_surveys and resume_test
+.test_loop <- function(sim = NULL, surveys = NULL, n_sims = NULL,
                        n_loops = NULL, cores = NULL, export_dir = NULL,
                        complete = NULL, keep_details = NULL, ...) {
 
