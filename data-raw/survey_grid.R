@@ -86,17 +86,17 @@ survey_grid$division <- rasterize(strat_polys_utm, survey_grid, "DIV")
 survey_grid$strat <- rasterize(strat_polys_utm, survey_grid, "STRAT")
 survey_grid$depth <- resample(bathy_utm, survey_grid, method = "bilinear")
 values(survey_grid$depth)[is.na(values(survey_grid$cell))] <- NA
-values(survey_grid$depth) <- - values(survey_grid$depth)
+values(survey_grid$depth) <- -values(survey_grid$depth)
 plot(survey_grid)
 
 ## Make sure the number of cells are equal across the stack
 lapply(names(survey_grid), function(nm) sum(!is.na(values(survey_grid[[nm]]))))
 
 ## Export survey_grid + land bathy object (optional, for plotting)
-save(survey_grid, file = "data/survey_grid.rda")
+save(survey_grid, file = "data/survey_grid.rda", compress = "xz")
 land <- nl_utm
-save(land, file = "data/land.rda")
+save(land, file = "data/land.rda", compress = "xz")
 bathy <- bathy_utm
-save(bathy, file = "data/bathy.rda")
+save(bathy, file = "data/bathy.rda", compress = "xz")
 
 

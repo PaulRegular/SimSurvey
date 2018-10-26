@@ -49,16 +49,16 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   sy <- c(depth_range[1], rep(shelf_depth, 5), depth_range[2])
 
   if (method == "loess") {
-    lo <- loess(sy ~ sx)
+    lo <- stats::loess(sy ~ sx)
     px <- seq(min(sx), max(sx), length.out = 100)
     py <- predict(lo, data.frame(sx = px))
     s <- list(x = px, y = py)
   }
   if (method == "spline") {
-    s <- spline(sx, sy, n = nrow(xy))
+    s <- stats::spline(sx, sy, n = nrow(xy))
   }
   if (method == "linear") {
-    s <- approx(sx, sy, n = nrow(xy))
+    s <- stats::approx(sx, sy, n = nrow(xy))
   }
 
   depth <- s$y[findInterval(xy$x, s$x)]

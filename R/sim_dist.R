@@ -4,7 +4,7 @@
   if (requireNamespace("fields", quietly = TRUE)) {
     d <- fields::rdist(x)
   } else {
-    d <- as.matrix(dist(x))
+    d <- as.matrix(stats::dist(x))
   }
 }
 
@@ -98,7 +98,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
             Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
             w1 <- t(chol(Sigma))
           }
-          E[i, j, ] <- m + w1 %*% rnorm(nc)
+          E[i, j, ] <- m + w1 %*% stats::rnorm(nc)
         }
         if ((i > 1) & (j == 1)) {
           if (age_map[i] == age_map[i - 1]) {
@@ -110,7 +110,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
               Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
               w2 <- t(chol(Sigma))
             }
-            E[i, j, ] <- m + w2 %*% rnorm(nc)
+            E[i, j, ] <- m + w2 %*% stats::rnorm(nc)
           }
         }
         if ((i == 1) & (j > 1)) {
@@ -123,7 +123,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
               Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
               w3 <- t(chol(Sigma))
             }
-            E[i, j, ] <- m + w3 %*% rnorm(nc)
+            E[i, j, ] <- m + w3 %*% stats::rnorm(nc)
           }
         }
         if ((i > 1) & (j > 1)) {
@@ -141,7 +141,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
               Sigma <- .sp_covar(x = x, range = range, lambda = lambda, sd = s, model = model)
               w4 <- t(chol(Sigma))
             }
-            E[i, j, ] <- m + w4 %*% rnorm(nc)
+            E[i, j, ] <- m + w4 %*% stats::rnorm(nc)
           }
 
         }

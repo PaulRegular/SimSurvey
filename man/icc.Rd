@@ -13,6 +13,6 @@ icc(x, group)
 }
 \description{
 This is a simple function for calculating intraclass correlation. It uses
-\code{\link{lme4::lmer}} to run the formula described here:
+\code{\link[lme4]{lmer}} to run the formula described here:
 https://en.wikipedia.org/wiki/Intraclass_correlation
 }

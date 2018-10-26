@@ -13,7 +13,7 @@ Description: This package simulates stratified-random samples from
     surveys.
 Depends:
     R (>= 3.3.2)
-License: GPL-3
+License: GPL-3 | file LICENSE
 LazyData: true
 ByteCompile: true
 URL: https://github.com/PaulRegular/SimSurvey
@@ -36,5 +36,6 @@ Suggests:
     shiny,
     crosstalk,
     viridis,
-    lme4
+    lme4,
+    igraph
 RoxygenNote: 6.0.1

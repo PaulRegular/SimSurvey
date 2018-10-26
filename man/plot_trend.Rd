@@ -40,7 +40,7 @@ plot_error_surface(sim, plot_by = "rule")
 
 \item{col}{Plot color}
 
-\item{...}{Additional arguments to pass to \code{\link{plotly::plot_ly}}.}
+\item{...}{Additional arguments to pass to \code{\link[plotly]{plot_ly}}.}
 
 \item{mat}{Name of matrix in \code{sim} list to plot.}
 
@@ -50,11 +50,15 @@ plot_error_surface(sim, plot_by = "rule")
 
 \item{years}{Subset data to one or more years.}
 
+\item{type}{Plot type: "contour" or "heatmap".}
+
 \item{scale}{Plot response on "natural" or "log" scale?}
 
 \item{which_year}{Subset to specific year}
 
 \item{which_sim}{Subset to specific sim}
+
+\item{surveys}{Subset data to one or more surveys.}
 
 \item{quants}{Quantile intervals to display on fan plot}
 
@@ -63,18 +67,6 @@ plot_error_surface(sim, plot_by = "rule")
 \item{select_by}{Select plot by "age", "length" or "year"?}
 
 \item{plot_by}{Plot error surface by "rule" or "samples"?}
-
-\item{which_survey}{Subset to specific survey}
-
-\item{max_sims}{Maximum number of sims to plot}
-
-\item{facet_by}{Facet plot by "age" or "year"?}
-
-\item{survey}{Subset data to one or more surveys.}
-
-\item{cols}{Plot colors}
-
-\item{main}{Plot title}
 }
 \description{
 These functions are simple plotting helpers to get some quick

@@ -16,6 +16,6 @@ expand_surveys(set_den = c(0.5, 1, 2, 5, 10)/1000, lengths_cap = c(5, 10,
 per division per year}
 }
 \description{
-Function is simply a wrapper for \code{\link{base::expand.grid}} that
+Function is simply a wrapper for \code{\link[base]{expand.grid}} that
 adds a survey number to the returned object
 }

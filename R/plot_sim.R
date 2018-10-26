@@ -13,20 +13,16 @@
 #' @param ages           Subset data to one or more ages.
 #' @param lengths        Subset data to one or more length groups.
 #' @param years          Subset data to one or more years.
+#' @param type           Plot type: "contour" or "heatmap".
 #' @param scale          Plot response on "natural" or "log" scale?
-#' @param which_survey   Subset to specific survey
 #' @param which_year     Subset to specific year
 #' @param which_sim      Subset to specific sim
-#' @param max_sims       Maximum number of sims to plot
-#' @param facet_by       Facet plot by "age" or "year"?
 #' @param select_by      Select plot by "age", "length" or "year"?
 #' @param plot_by        Plot error surface by "rule" or "samples"?
-#' @param survey         Subset data to one or more surveys.
+#' @param surveys        Subset data to one or more surveys.
 #' @param quants         Quantile intervals to display on fan plot
 #' @param col            Plot color
-#' @param cols           Plot colors
-#' @param main           Plot title
-#' @param ...            Additional arguments to pass to \code{\link{plotly::plot_ly}}.
+#' @param ...            Additional arguments to pass to \code{\link[plotly]{plot_ly}}.
 #'
 #' @import plotly
 #'
@@ -78,7 +74,7 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
   d$ay <- paste(d$age, d$year, sep = "-")
   split_d <- split(d, d$ay)
   split_d <- lapply(split_d, function(.) {
-    xtabs(N ~ x + y, data = ., subset = NULL)
+    stats::xtabs(N ~ x + y, data = ., subset = NULL)
   })
   x <- sort(unique(d$x))
   y <- sort(unique(d$y))
@@ -445,7 +441,7 @@ plot_error_surface <- function(sim, plot_by = "rule") {
     vis <- replicate(length(split_d), c(FALSE, FALSE, FALSE), simplify = FALSE)
     vis[[i]] <- c(FALSE, TRUE, TRUE)
     if (plot_by == "rule") {
-      z <- xtabs(RMSE ~ ages_cap + lengths_cap, data = split_d[[i]], subset = NULL)
+      z <- stats::xtabs(RMSE ~ ages_cap + lengths_cap, data = split_d[[i]], subset = NULL)
       p <- p %>% add_surface(z = t(z),
                              cmin = min(d$RMSE), cmax = max(d$RMSE),
                              showscale = i == 1,

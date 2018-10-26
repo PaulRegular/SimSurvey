@@ -2,7 +2,7 @@
 
 #' Set-up a series of surveys from all combinations of settings supplied
 #'
-#' @description Function is simply a wrapper for \code{\link{base::expand.grid}} that
+#' @description Function is simply a wrapper for \code{\link[base]{expand.grid}} that
 #' adds a survey number to the returned object
 #'
 #' @param set_den           Vector of set densities (number of sets per [grid unit] squared)

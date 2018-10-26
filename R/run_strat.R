@@ -4,7 +4,6 @@
 #' @param error Vector of errors
 #'
 #' @return Returns a named vector of error statistics including mean absolute
-#'         error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
 #'         root mean squared error (\code{"RMSE"})
 #'
 #' @export
@@ -118,7 +117,7 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 
   ## strat.tab includes strat-level means,  variances,  etc.
   strat_tab <- d[, list(sumYh = sum(metric), meanYh = mean(metric),
-                        varYh = var(metric), nh = .N), by = strat_groups]
+                        varYh = stats::var(metric), nh = .N), by = strat_groups]
   strat_tab[, Nh := strat_area / tow_area] # number of sample units in each strat
   strat_tab[, Wh := Nh / sum(Nh), by = survey_groups]
   strat_tab[, total := Nh * sumYh / nh]
@@ -129,11 +128,11 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
                                  varYst = (1 / ((sum(Nh)) ^ 2)) * sum(gh * varYh),
                                  df = ((sum(gh * varYh)) ^ 2) / (sum((gh ^ 2 * varYh ^ 2) / (nh - 1)))),
                           by = survey_groups]
-  survey_tab[, meanYst_lcl := (meanYst - (sqrt(varYst)) * abs(qt(lc,  df)))]
-  survey_tab[, meanYst_ucl := (meanYst + (sqrt(varYst)) * abs(qt(lc,  df)))]
+  survey_tab[, meanYst_lcl := (meanYst - (sqrt(varYst)) * abs(stats::qt(lc,  df)))]
+  survey_tab[, meanYst_ucl := (meanYst + (sqrt(varYst)) * abs(stats::qt(lc,  df)))]
   survey_tab[, sumYst := N * meanYst]
-  survey_tab[, sumYst_lcl := (sumYst - abs(qt(lc, df)) * N * sqrt(varYst))]
-  survey_tab[, sumYst_ucl := (sumYst + abs(qt(lc, df)) * N * sqrt(varYst))]
+  survey_tab[, sumYst_lcl := (sumYst - abs(stats::qt(lc, df)) * N * sqrt(varYst))]
+  survey_tab[, sumYst_ucl := (sumYst + abs(stats::qt(lc, df)) * N * sqrt(varYst))]
   survey_tab[sapply(survey_tab,  is.nan)] <- NA
 
   ## Rename cols

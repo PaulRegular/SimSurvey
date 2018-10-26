@@ -7,7 +7,7 @@
 group_lengths(length, group)
 }
 \arguments{
-\item{length}{Interval from \code{\link{base::findInterval}}}
+\item{length}{Interval from \code{\link[base]{findInterval}}}
 
 \item{group}{Length group used to cut the length data}
 }

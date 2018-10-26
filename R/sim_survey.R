@@ -2,7 +2,7 @@
 #' Closure for simulating logistic curve
 #'
 #' @description This closure is useful for simulating q inside the
-#'              \code{\link{sim_samp}} function
+#'              \code{\link{sim_survey}} function
 #'
 #' @param k      The steepness of the curve
 #' @param x0     The x-value of the sigmoid's midpoint
@@ -172,8 +172,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   ## (If more than one set is conducted in a cell, split population available to survey (I) amongst the sets)
   setdet <- merge(sets, sp_I, by = c("sim", "year", "cell"))
   if (binom_error) {
-    setdet$n <- rbinom(rep(1, nrow(setdet)), size = round(setdet$N / setdet$cell_sets),
-                       prob = (setdet$tow_area / setdet$cell_area) * q(setdet$age))
+    setdet$n <- stats::rbinom(rep(1, nrow(setdet)), size = round(setdet$N / setdet$cell_sets),
+                              prob = (setdet$tow_area / setdet$cell_area) * q(setdet$age))
   } else {
     setdet$n <- round((setdet$N / setdet$cell_sets) * ((setdet$tow_area / setdet$cell_area) * q(setdet$age)))
   }

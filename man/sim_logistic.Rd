@@ -15,7 +15,7 @@ sim_logistic(k = 2, x0 = 3, plot = FALSE)
 }
 \description{
 This closure is useful for simulating q inside the
-             \code{\link{sim_samp}} function
+             \code{\link{sim_survey}} function
 }
 \examples{
 logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)

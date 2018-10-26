@@ -135,7 +135,7 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #' (Note: this isn't a general function; the output midpoints defining the
 #' groups alligns with DFO specific method/labeling)
 #'
-#' @param length       Interval from \code{\link{base::findInterval}}
+#' @param length       Interval from \code{\link[base]{findInterval}}
 #' @param group        Length group used to cut the length data
 #'
 #' @export
@@ -220,8 +220,8 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
 #' Function for converting abundance-at-age matrix to abundance-at-length given
 #' a length-age-key. Expects matrices to be named.
 #'
-#' @param   N    Abundance-at-age matrix
-#' @param   lak  Length-age-key (i.e. probability of being in a specific length group given age)
+#' @param   N_at_age    Abundance-at-age matrix
+#' @param   lak         Length-age-key (i.e. probability of being in a specific length group given age)
 #'
 #' @return  Returns abundance-at-length matrix
 #'

@@ -7,9 +7,9 @@
 convert_N(N_at_age = NULL, lak = NULL)
 }
 \arguments{
-\item{lak}{Length-age-key (i.e. probability of being in a specific length group given age)}
+\item{N_at_age}{Abundance-at-age matrix}
 
-\item{N}{Abundance-at-age matrix}
+\item{lak}{Length-age-key (i.e. probability of being in a specific length group given age)}
 }
 \value{
 Returns abundance-at-length matrix
