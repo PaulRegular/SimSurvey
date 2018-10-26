@@ -12,6 +12,6 @@ object_size(x, units = "Mb")
 \item{units}{the units to be used in printing the size}
 }
 \description{
-A wrapper for \code{\link[base]{object.size}} that prints in Mb
+A wrapper for \code{\link[utils]{object.size}} that prints in Mb
 by default
 }

@@ -4,4 +4,5 @@
 ^\.Rprofile$
 ^analysis$
 ^tests$
+^data-raw$
 ^\.travis\.yml$

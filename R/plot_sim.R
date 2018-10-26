@@ -25,6 +25,9 @@
 #' @param ...            Additional arguments to pass to \code{\link[plotly]{plot_ly}}.
 #'
 #' @import plotly
+#' @importFrom crosstalk SharedData bscols filter_select
+#' @importFrom ggplot2 fortify
+#' @importFrom htmltools div css
 #'
 #' @export
 #' @rdname plot_trend

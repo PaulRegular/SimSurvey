@@ -38,7 +38,7 @@ fibonacci <- function(from, to) {
 
 #' Print object size
 #'
-#' @description A wrapper for \code{\link[base]{object.size}} that prints in Mb
+#' @description A wrapper for \code{\link[utils]{object.size}} that prints in Mb
 #' by default
 #'
 #' @param x      an \code{R} object

@@ -28,8 +28,7 @@ rows equaling the number of ages and colums equaling the number of years for \co
 \item{phi_year}{Autoregressive parameter for the year dimension.}
 
 \item{N0}{Either specify "exp" or numeric vector of starting abundance excluding the first age.
-If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
-\deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}}
+If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay.}
 }
 \description{
 These functions return a function to use inside \code{\link{sim_abundance}}.

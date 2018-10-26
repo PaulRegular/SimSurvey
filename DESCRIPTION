@@ -12,7 +12,7 @@ Description: This package simulates stratified-random samples from
     simulation testing of the design and analyses of fisheries-independent trawl
     surveys.
 Depends:
-    R (>= 3.3.2)
+    R (>= 3.3.0)
 License: GPL-3 | file LICENSE
 LazyData: true
 ByteCompile: true
@@ -35,7 +35,9 @@ Suggests:
     flexdashboard,
     shiny,
     crosstalk,
+    htmltools,
     viridis,
     lme4,
-    igraph
+    igraph,
+    ggplot2
 RoxygenNote: 6.0.1

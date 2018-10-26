@@ -2,10 +2,18 @@
 % Please edit documentation in R/test_surveys.R
 \name{test_surveys}
 \alias{test_surveys}
+\alias{resume_test}
+\alias{test_loop}
 \title{Test sampling design of multiple surveys using a stratified analysis}
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
   n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...)
+
+resume_test(export_dir = NULL)
+
+test_loop(sim = NULL, surveys = NULL, n_sims = NULL, n_loops = NULL,
+  cores = NULL, export_dir = NULL, complete = NULL, keep_details = NULL,
+  ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
@@ -28,8 +36,8 @@ will be easier on RAM, but may be slower.}
 \item{cores}{Number of cores to use in parallel. More cores should speed up the process.}
 
 \item{export_dir}{Directory for exporting results as they are generated. Main use of the export
-is to allow this process to pick up where it left off by calling
-\code{\link{resume_test}}. If NULL, nothing is exported.}
+is to allow this process to pick up where \code{test_survey} left off by
+calling \code{resume_test}. If NULL, nothing is exported.}
 
 \item{...}{Arguments passed on to \code{sim_survey}
 \describe{
@@ -58,6 +66,9 @@ maximum number of otoliths to collect from measured fish per set.}
   \item{age_sampling}{Should age sampling be length "stratified" or "random"?}
   \item{light}{Drop some objects from the output to keep object size low?}
 }}
+
+\item{complete}{For internal use by \code{resume_test} - simply a log of the simulations
+that were completed by \code{test_surveys}.}
 }
 \value{
 Adds a table of survey designs tested. Also adds details and summary
@@ -72,6 +83,13 @@ Adds a table of survey designs tested. Also adds details and summary
 This function allows a series of sampling design settings to
 be set and tested on the simulated population. True population values are compared
 to stratified estimates of abundance.
+}
+\details{
+Depening on the settings, \code{test_surveys} may take a long time to run.
+The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
+Note that progress bar time estimates will be biased here by previous completions.
+\code{test_loop} is a helper function used in both \code{test_surveys} and
+\code{resume_test}.
 }
 \examples{
 
@@ -88,6 +106,7 @@ surveys <- expand_surveys(set_den = c(1, 2) / 1000,
 tests <- test_surveys(pop, surveys = surveys, keep_details = 1,
                       n_sims = 10, n_loops = 50, cores = 2)
 
+library(plotly)
 tests$total_strat_error \%>\%
     filter(survey == 8, sim \%in\% 1:50) \%>\%
     group_by(sim) \%>\%

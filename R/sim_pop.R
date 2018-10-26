@@ -12,8 +12,7 @@
 #' @param phi_age Autoregressive parameter for the age dimension.
 #' @param phi_year Autoregressive parameter for the year dimension.
 #' @param N0 Either specify "exp" or numeric vector of starting abundance excluding the first age.
-#' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay:
-#' \deqn{N_{a, 1} = N_{a - 1, 1} * exp(-Z_{a - 1, 1})}{N_a,1 = N_a-1,1 * exp(-Z_a-1,1)}
+#' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay.
 #' @param plot produce a simple plot of the simulated values?
 #'
 #' @details sim_R generates uncorrelated recruitment values or random walk values from a log normal distribution.
@@ -54,7 +53,7 @@ sim_R <- function(mean = 30000000, log_sd = 0.5, random_walk = TRUE, plot = FALS
     if (length(mean) > 1 && length(mean) != length(years)) {
       stop("The number of means supplied for recruitment != number of years.")
     }
-    e <- rnorm(length(years), mean = 0, sd = log_sd)
+    e <- stats::rnorm(length(years), mean = 0, sd = log_sd)
     if (random_walk) e <- cumsum(e)
     r <- log(mean) + e
     names(r) <- years
@@ -83,22 +82,22 @@ sim_Z <- function(mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot 
         if ((i == 1) & (j == 1)) {
           m <- 0
           s <- log_sd / (pc_age * pc_year)
-          Z[i, j] <- rnorm(1, m, s)
+          Z[i, j] <- stats::rnorm(1, m, s)
         }
         if ((i > 1) & (j == 1)) {
           m <- phi_age * Z[i - 1, j]
           s <- log_sd / pc_year
-          Z[i, j] <- rnorm(1, m, s)
+          Z[i, j] <- stats::rnorm(1, m, s)
         }
         if ((i == 1) & (j > 1)) {
           m <- phi_year * Z[i, j - 1]
           s <- log_sd / pc_age
-          Z[i, j] <- rnorm(1, m, s)
+          Z[i, j] <- stats::rnorm(1, m, s)
         }
         if ((i > 1) & (j > 1)) {
           m <- phi_year * Z[i, j - 1] + phi_age * (Z[i - 1, j] - phi_year * Z[i - 1, j - 1])
           s <- log_sd
-          Z[i, j] <- rnorm(1, m, s)
+          Z[i, j] <- stats::rnorm(1, m, s)
         }
       }
     }
@@ -192,8 +191,8 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
                                     age = age))
       for (i in seq_along(breaks)[-1]) {
         for (j in seq_along(pred_length)) {
-          lak[i - 1, j] <- pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
-            pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
+          lak[i - 1, j] <- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+            stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
         }
       }
       lak <- lak[rowSums(lak) > 0, ]
@@ -204,7 +203,7 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
 
     } else {
 
-      log_length <- rnorm(length(age), log(pred_length), sd = log_sd)
+      log_length <- stats::rnorm(length(age), log(pred_length), sd = log_sd)
       length <- round(exp(log_length), digits)
       if (plot) plot(age, length)
       return(length)
@@ -271,8 +270,7 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' }
 #'
 #' @details
-#' Abundance from is calculated using a standard population dynamics model:
-#' \deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}.
+#' Abundance from is calculated using a standard population dynamics model.
 #' An abundance-at-length matrix is generated using a growth function coded as a closure like
 #' \code{\link{sim_vonB}}. The function is retained for later use in \code{\link{sim_survey}}
 #' to simulate lengths given simulated catch at age in a simulated survey. The ability to simulate

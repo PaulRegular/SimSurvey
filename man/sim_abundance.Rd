@@ -44,8 +44,7 @@ A \code{list} of length 9:
 Simulate basic population dynamics model
 }
 \details{
-Abundance from is calculated using a standard population dynamics model:
-\deqn{N_{a, y} = N_{a - 1, y - 1} * exp(-Z_{a - 1, y - 1})}{N_a,y = N_a-1,y-1 * exp(-Z_a-1,y-1)}.
+Abundance from is calculated using a standard population dynamics model.
 An abundance-at-length matrix is generated using a growth function coded as a closure like
 \code{\link{sim_vonB}}. The function is retained for later use in \code{\link{sim_survey}}
 to simulate lengths given simulated catch at age in a simulated survey. The ability to simulate

@@ -62,13 +62,15 @@ alternate approaches to a stratified analysis for obtaining survey indices.
 }
 \examples{
 
+\dontrun{
 ## This call runs a total of 100 simulations of the same survey over
 ## the same population
 sim <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
            sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
-           sim_survey_parallel(n_sims = 10, n_loops = 10,
+           sim_survey_parallel(n_sims = 10, n_loops = 10, cores = 2,
                                q = sim_logistic(k = 2, x0 = 3),
                                quiet = FALSE)
+}
 
 
 }
