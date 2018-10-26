@@ -5,6 +5,7 @@ Title: A tool for the simulation testing of the design and analysis of
 Version: 0.0.0.9000
 Author@R: person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca",
     role = c("aut", "cre"))
+Author: Paul Regular [aut, cre]
 Maintainer: Paul Regular <Paul.Regular@dfo-mpo.gc.ca>
 Description: This package simulates stratified-random samples from 
     a spatially-correlated age-structured population to provide a tool for the 
