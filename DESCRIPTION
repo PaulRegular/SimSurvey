@@ -1,11 +1,15 @@
 Package: SimSurvey
 Type: Package
-Title: A research compendium for the simulation testing of the design and analysis of
+Title: A tool for the simulation testing of the design and analysis of
     fisheries-independent trawl surveys
 Version: 0.0.0.9000
 Author@R: person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca",
     role = c("aut", "cre"))
-Description: In development
+Maintainer: Paul Regular <Paul.Regular@dfo-mpo.gc.ca>
+Description: This package simulates stratified-random samples from 
+    a spatially-correlated age-structured population to provide a tool for the 
+    simulation testing of the design and analyses of fisheries-independent trawl
+    surveys.
 Depends:
     R (>= 3.3.2)
 License: GPL-3

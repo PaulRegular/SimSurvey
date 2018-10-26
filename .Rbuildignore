@@ -2,3 +2,6 @@
 ^\.Rproj\.user$
 ^packrat/
 ^\.Rprofile$
+^analysis$
+^tests$
+^\.travis\.yml$
