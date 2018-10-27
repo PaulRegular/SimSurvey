@@ -66,5 +66,5 @@ sim_abundance(N0 = sim_N0(N0 = "exp", plot = TRUE))
 \references{
 Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
 Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
-Fisheries and Aquatic Sciences 73 (2): 296–308.
+Fisheries and Aquatic Sciences 73 (2): 296-308.
 }

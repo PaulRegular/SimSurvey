@@ -8,6 +8,8 @@
 #'
 #' @examples
 #'
+#' \dontrun{
+#'
 #' pop <- sim_abundance(ages = 1:20, years = 1:20)
 #' vis_sim(pop)
 #'
@@ -26,6 +28,7 @@
 #'                       n_sims = 10, n_loops = 50, cores = 2)
 #' vis_sim(tests)
 #'
+#' }
 #'
 #' @export
 #'

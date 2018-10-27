@@ -3,17 +3,12 @@
 \name{test_surveys}
 \alias{test_surveys}
 \alias{resume_test}
-\alias{test_loop}
 \title{Test sampling design of multiple surveys using a stratified analysis}
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
   n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...)
 
 resume_test(export_dir = NULL)
-
-test_loop(sim = NULL, surveys = NULL, n_sims = NULL, n_loops = NULL,
-  cores = NULL, export_dir = NULL, complete = NULL, keep_details = NULL,
-  ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
@@ -66,9 +61,6 @@ maximum number of otoliths to collect from measured fish per set.}
   \item{age_sampling}{Should age sampling be length "stratified" or "random"?}
   \item{light}{Drop some objects from the output to keep object size low?}
 }}
-
-\item{complete}{For internal use by \code{resume_test} - simply a log of the simulations
-that were completed by \code{test_surveys}.}
 }
 \value{
 Adds a table of survey designs tested. Also adds details and summary
@@ -93,6 +85,7 @@ Note that progress bar time estimates will be biased here by previous completion
 }
 \examples{
 
+\dontrun{
 pop <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
            sim_distribution(grid = make_grid(res = c(10, 10)))
 
@@ -123,6 +116,6 @@ plot_age_strat_fan(tests, surveys = 1:8, select_by = "age")
 
 plot_error_surface(tests, plot_by = "rule")
 plot_error_surface(tests, plot_by = "samples")
-
+}
 
 }
