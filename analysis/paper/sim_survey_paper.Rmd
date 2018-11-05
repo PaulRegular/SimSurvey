@@ -10,9 +10,7 @@ csl: ices-journal-of-marine-science.csl
 ---
 
 ```{r setup, include=FALSE}
-
 # devtools::install_github("rstudio/rmarkdown@v1.10")
-
 knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       warning = FALSE,
@@ -29,129 +27,9 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
-load("analysis/cod_sim_exports/2018-09-17_age_clust_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
+source("analysis/paper/helper_functions.R")
 ```
-
-
-```{r fun}
-
-## http://www.moeding.net/archives/32-Metric-prefixes-for-ggplot2-scales.html
-format_si <- function(...) {
-  # Format a vector of numeric values according
-  # to the International System of Units.
-  # http://en.wikipedia.org/wiki/SI_prefix
-  #
-  # Based on code by Ben Tupper
-  # https://stat.ethz.ch/pipermail/r-help/2012-January/299804.html
-  # Args:
-  #   ...: Args passed to format()
-  #
-  # Returns:
-  #   A function to format a vector of strings using
-  #   SI prefix notation
-  #
-  
-  function(x) {
-    limits <- c(1e-24, 1e-21, 1e-18, 1e-15, 1e-12,
-                1e-9,  1e-6,  1e-3,  1e0,   1e3,
-                1e6,   1e9,   1e12,  1e15,  1e18,
-                1e21,  1e24)
-    prefix <- c("y",   "z",   "a",   "f",   "p",
-                "n",   "µ",   "m",   " ",   "k",
-                "M",   "G",   "T",   "P",   "E",
-                "Z",   "Y")
-  
-    # Vector with array indices according to position in intervals
-    i <- findInterval(abs(x), limits)
-  
-    # Set prefix to " " for very small values < 1e-24
-    i <- ifelse(i == 0, which(limits == 1e0), i)
-
-    paste0(format(round(x/limits[i], 1),
-                 trim = TRUE, scientific = FALSE, ...),
-          prefix[i])
-  }
-}
-si <- format_si()
-
-## little helper function for the fan plot
-fan_plot <- function(d, x = "Age", which_strat = "Age") {
-  
-  if (which_strat == "Total") {
-    ints_by = c("year", "set_den")
-  }
-  if (which_strat == "Age") {
-    ints_by = c("year", "age", "set_den", "lengths_cap")
-  }
-  if (which_strat == "Length") {
-    ints_by = c("year", "length", "set_den", "lengths_cap")
-  }
-  
-  ## quantiles for fan plot
-  quants <- seq(90, 10, by = -10)
-  ints <- lapply(quants, function(q) {
-    d[, list(prob = paste0(q, "%"),
-             lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-             upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)), 
-      by = ints_by]
-  })
-  ints <- rbindlist(ints)
-  ints$prob <- factor(ints$prob, levels = paste0(quants, "%"))
-  
-  true <- d[d$sim %in% 1:3, ]
-  
-  if (x == "Age") {
-    p <- ggplot(data = ints, aes(x = age))
-    xlabs <- c("2", "4", "6", "8", "10+")
-    xbreaks <- seq(2, 10, 2)
-  }
-  if (x == "Length") {
-    p <- ggplot(data = ints, aes(x = length))
-    xbreaks <- xlabs <- seq(0, 100, 20)
-    xlabs[xlabs == 100] <- "100+"
-  }
-  if (x == "Year") {
-    p <- ggplot(data = ints, aes(x = year))
-    xlabs <- waiver()
-    xbreaks <- waiver()
-  }
-  
-  p <-  p + 
-    geom_ribbon(aes(ymin = lower, ymax = upper, fill = prob, alpha = prob)) +
-    geom_line(aes(y = I), data = true, color = "black", size = 0.6) +
-    scale_fill_viridis(name = "Pr", discrete = TRUE, begin = 0.1) +
-    scale_alpha_discrete(name = "Pr", range = c(0.5, 1)) + 
-    xlab(x) + ylab("Abundance index") +
-    scale_y_continuous(labels = format_si()) +
-    scale_x_continuous(expand = c(0.01, 0), 
-                       labels = xlabs, 
-                       breaks = xbreaks) +
-    guides(color = guide_legend(keywidth = 0.4, keyheight = 0.25, 
-                                default.unit = "cm", ncol = 1))
-  
-  if (which_strat == "Total") {
-    p <- p + facet_wrap(~ set_den, nrow = 1,
-                        labeller = label_bquote(cols = D[sets]==.(set_den)))
-  } else {
-    p <- p + facet_grid(lengths_cap ~ set_den, 
-                        labeller = label_bquote(cols = D[sets]==.(set_den),
-                                                rows = M[lengths]==.(lengths_cap)))
-  }
-  
-  p + theme_bw() +
-    theme(legend.justification = c(0, 1),
-          plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(),
-          strip.background = element_blank(),
-          panel.border = element_rect(fill = NA, color = "darkgrey", size = 0.4),
-          axis.ticks = element_line(color = "darkgrey", size = 0.4))
-  
-}
-
-
-```
-
 
 
 # Abstract
@@ -168,44 +46,117 @@ Two main approaches have been applied to try and answer this question: one invol
 
 The objective of this paper is to use a realistic simulation to evaluate the efficacy of various sampling protocol. First we simulated a spatially autocorrelated target population, and then we simulated surveys over this field. Set density was varied across surveys, as was length and age sampling efforts. Estimates of abundance at age were then obtained using a standard stratified approach [@Smith1981] and deviation from the truth was assessed. Given previous findings, we predict that the greatest gains in precision will come from increasing the number of hauls; increased sampling of correlated variables (length and age) on a set by set basis will be relatively ineffective. The bottom trawl survey of cod (*Gadus morhua*) in NAFO division 3Ps, Newfoundland, was used as a case study for this analysis. While our case study is specific, we also hope that the approach presented here will provide a framework for optimizing sampling protocol for an array of species with different life-histories and distributions. To facilitate future work and collaborations, we have developed an R package for conducting the tests presented in this paper (https://github.com/PaulRegular/SimSurvey).
 
+
 # Methods
+
+The SimSurvey package was written in the programming language R [@R] and, in short, the package allows for the simulation of stratified-random surveys of an age-structured population that varies in space and time. SimSurvey relies heavily on functions from the data.table [@dowle2017], raster [@hijmans2016] and plotly [@sievert2018] packages for their efficient data processing, geographic and plotting facilities, respectively. All the source R code behind SimSurvey is available on GitHub (https://github.com/PaulRegular/SimSurvey) and the 0.1.0 release of the package can be installed via GitHub:
+
+```{r, echo = TRUE, eval = FALSE}
+install.packages("devtools")
+devtools::install_github("PaulRegular/SimSurvey@v0.1.0") 
+```
+
+
+## Case study
+
+The construction of the SimSurvey package was motivated by a regional need for assessing the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO division 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Below we outline the equations and SimSurvey functions used to simulate survey data with similar features to data obtained by the survey of 3Ps cod. The settings were iteratively modified until it was difficult to distinguish the simulated data from the real survey data (see Table \@ref(tab:par) for parameter settings and descriptions). Here we evaluate the efficacy of alternate sampling protocol by assessing deviation between stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. While assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use.
 
 ## Simulate abundance
 
-The simulation presented here starts with a common cohort model where the abundance at age $a$ in year $y$ ($N_{a,y}$) equals the abundance of that cohort in the previous year multiplied by the survival rate, which is expressed in terms of total mortality ($Z_{a,y}$):
+The simulation starts with a common cohort model where the abundance at age $a$ in year $y$ ($N_{a,y}$) equals the abundance of that cohort in the previous year multiplied by the survival rate, which is expressed in terms of total mortality ($Z_{a,y}$):
 
 $$N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$$
 Here, numbers at age in the first year are filled via exponential decay, $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$, numbers at age 1 (i.e. recruits) vary around a baseline value, $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, and total mortality is set to a baseline level plus process error, $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$. The error around the recruitment process was set to follow a random walk, $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$, and the process error was simulated using the covariance structure described in Cadigan [-@Cadigan2016], $\delta_{a,y} \sim N(0, \Sigma_{a,y})$. The covariance across ages and years is controlled by a process error variance parameter ($\sigma_{\delta}^2$) along with age and year correlation parameters ($\varphi_{\delta, age}$ and $\varphi_{\delta, year}$, respectively). This structure allows for autocorrelation in process errors across ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and time). Abundance at age is then converted to abundance at length using the original von Bertalanffy growth curve [@Cailliet2006]:
 
 $$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
 
-Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Abundance in discrete length groups, $l_{group}^{N}$, was determined by using this formula to calculate the probability of being within a specific length group given age and then using the resultant length-age-key to convert abundance at age to abundance at length. Overall, this  formulation allows for the simulation of an array of population dynamics that one might expect to observe.
+Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Abundance in discrete length groups, $l_{group}^{N}$, was determined by using this formula to calculate the probability of being within a specific length group given age and then using the resultant length-age-key to convert abundance at age to abundance at length. Overall, this  formulation allows for the simulation of an array of population dynamics that one might expect to observe. 
+
+Abundance is simulated using the `sim_abundance` function and the below code was used to simulate the case study population:
+
+```{r, echo = TRUE, eval = FALSE}
+set.seed(438) # set seed for reproducible results
+n <- sim_abundance(ages = 1:20,
+                   years = 1:20,
+                   R = sim_R(mean = 30000000,
+                             log_sd = 0.5,
+                             random_walk = TRUE),
+                   Z = sim_Z(mean = 0.5,
+                             log_sd = 0.2,
+                             phi_age = 0.9,
+                             phi_year = 0.5),
+                   growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1,
+                                     log_sd = 0.1, length_group = 3,
+                                     digits = 0))
+```
+
+The resultant object, `n`, is a list with data such as the abundance at age matrix (named `N`). Note that the nested functions `sim_R`, `sim_Z` and `sim_vonB` are actually "closures" (i.e. functions that contain data and return functions). These closures avoid the repeated specifications of ages and years and also allows users to use their own closures with a similar structure but different underlying formula.
 
 ## Simulate spatial distribution
 
-The next step in the simulation is to distribute the abundance at age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ locations was generated with a resolution of $R$ and a depth gradient. The depth gradient was set-up to have a sigmoid shape with a depth range of $[d_{min}, d_{max}]$, shelf depth of $d_{shelf}$ and a shelf width of $w_{shelf}$. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space
+The next step in the simulation is to distribute the abundance at age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ locations was generated with a resolution of $R$ and a depth gradient. The depth gradient was set-up to have a sigmoid shape with a depth range of $[d_{min}, d_{max}]$, shelf depth of $d_{shelf}$ and a shelf width of $w_{shelf}$. The grid is divided into $N_{div}$ divisions and $N_{strat}$ depth-based strata. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space
 
 $$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
 
-Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean. This helps simulate depth preferences of particular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controlled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [here we approximate $\kappa$ from a range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years was controlled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controlled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. Also note that numbers were rounded such that a discrete number of fish are in each cell of the grid. A more detailed description of the space-age-year covariance is included in Appendix 1. Note that the the distributions of specific length groups were not simulated because of the greater computational cost of storing spatially dis-aggregated abundance across all length groups.
+Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean. This helps simulate depth preferences of particular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controlled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [here we approximate $\kappa$ from a range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years was controlled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controlled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. Also note that numbers were rounded such that a discrete number of fish are in each cell of the grid. A more detailed description of the space-age-year covariance is included in Appendix 1. Note that the the distributions of specific length groups were not simulated because of the greater computational cost of storing spatially dis-aggregated abundance across all length groups. 
+
+The `make_grid` function is used to generate the grid used in the case study, and the `sim_distribution` function distributes the population, `n`, simulated above using `sim_abundance` through the grid:
+
+```{r, echo = TRUE, eval = FALSE}
+g <- make_grid(x_range = c(-140, 140),
+               y_range = c(-140, 140),
+               res = c(3.5, 3.5),
+               shelf_depth = 200,
+               shelf_width = 100,
+               depth_range = c(0, 1000),
+               n_div = 1,
+               strat_breaks = seq(0, 1000, by = 40),
+               strat_splits = 2)
+
+d <- sim_distribution(n, grid = g,
+                      ays_covar = sim_ays_covar(sd = 2.8,
+                                                range = 300,
+                                                phi_age = 0.5,
+                                                phi_year = 0.9,
+                                                group_ages = 5:20),
+                      depth_par = sim_parabola(mu = 200,
+                                               sigma = 70))
+```
+
+This function retains all the data simulated by `sim_abundance` and adds a `data.table` with abundance split by age, year and cell (named `sp_N`). Again, note the use of the closures `sim_ays_covar` and `sim_parabola` to impose the age-year-space covariance and the relationship with depth, respectively.
 
 ## Simulate survey
 
-The final step in the simulation is to conduct a stratified random survey over the age-year-space array generated using formula described above. First, the grid is divided into $N_{div}$ divisions and $N_{strat}$ depth-based strata. The area of each strata is calculated and this is used to define the sets to allocate to each strata under a particular set density, $D_{sets}$. The allocated number of cells are randomly selected in each strata and the number of fish caught in each set is calculated by applying binomial sampling of the fish in each sampled cell by the proportion of the area covered by the trawl and the catchability of each age:
+The final step in the simulation is to conduct a stratified random survey over the age-year-space array generated using formula described above. The area of each strata is calculated and this is used to define the sets to allocate to each strata under a particular set density, $D_{sets}$. The allocated number of cells are randomly selected in each strata and the number of fish caught in each set is calculated by applying binomial sampling of the fish in each sampled cell by the proportion of the area covered by the trawl and the catchability of each age:
 
 $$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{trawl}}{A_{cell}} q_a )$$
-Where $n_{a,y,s}$ is the number of fish sampled by a set, $A_{trawl}$ indicates the area covered by the trawl, $A_{cell}$ is the area of a grid cell (i.e. $R^2$), and $q_a$ is the catchability coefficient of each age. Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the von Bertalanffy growth equation found above in the [Simulate abundance] section. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division.
+Where $n_{a,y,s}$ is the number of fish sampled by a set, $A_{trawl}$ indicates the area covered by the trawl, $A_{cell}$ is the area of a grid cell (i.e. $R^2$), and $q_a$ is the catchability coefficient of each age. Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the von Bertalanffy growth equation found above in the [Simulate abundance] section. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{lengths}$, and a maximum number of ages, $M_{ages}$, are sampled per length group, $l_{group}$, per division. 
+
+The function `sim_survey` can be used to simulate data from one survey over a population simulated using `sim_distribution`:
+
+```{r, echo = TRUE, eval = FALSE}
+s <- sim_survey(d, n_sims = 1,
+                q = sim_logistic(k = 2, x0 = 3),
+                trawl_dim = c(1.5, 0.02),
+                set_den = 2 / 1000,
+                lengths_cap = 500,
+                length_group = 1,
+                ages_cap = 10)
+```
+
+Again, this function retains all the objects listed in `d` and adds objects that detail the set locations (`setdet`) and sampling details (`samp`).
+
+## Stratified analysis
+
+A series of `r nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain annual estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
+
+$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
+Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates. Intra-haul correlation (i.e. intraclass correlation) of set catch was also calculated by fitting a mixed-model to the lengths data with set as a random effect [fit using the lme4 package; @Bates2015]; variance estimates from this model were then plugged into the ICC(1) formula presented in McGraw and Wong [-@Mcgraw1996]. All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` [@R2017] and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
 
 ## Assumptions
 
 Like any model, this simulation is a simplification of a much more complex reality. For instance, the population is assumed to aggregate by age-class and be uniformly distributed within a cell when, in the real-world, they may aggregate by length and form finer-scale clusters. The survey is also an instantaneous snapshot of the population, meaning that the population is assumed to be in the same location from the beginning to the end of the survey. Also, fish are aged at random within length bins and ages are estimated without error. Finally, area trawled is assumed to be perfectly standard. This is a short, non-inclusive, list of additional variability that likely occurs in the real-world but was not implemented here for simplicity.
 
-## Simulation settings and analysis
-
-Ideally the parameter settings used here would be based on model fits to real data, however, conditioning the operating model described above was outside the scope of this project. Moreover, many of the parameters described above may not be identifiable or it may be difficult to obtain un-biased estimates [e.g. bias introduced by length-stratified sampling complicate the fitting of growth models; @Morgan1997]. As such, parameters were informally selected to roughly correspond to observations typically obtained by the Fisheries and Oceans Canada survey of cod in NAFO division 3Ps, Newfoundland. Though this approach is far from exact, the goal was to approximate the life-history and distribution of an actual population to simulate an arena for testing the consequences of surveys with different sampling protocol. Parameter settings and descriptions used in this case study are presented in Table \@ref(tab:par). A series of `r nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain annual estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
-
-$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
-Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates. Intra-haul correlation (i.e. intraclass correlation) of set catch was also calculated by fitting a mixed-model to the lengths data with set as a random effect [fit using the lme4 package; @Bates2015]; variance estimates from this model were then plugged into the ICC(1) formula presented in McGraw and Wong [-@Mcgraw1996]. All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` [@R2017] and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
 
 # Results
 
@@ -244,106 +195,65 @@ While much work has yet to be done, results from the simple simulation echo the 
 
 # Tables
 
-Table: (\#tab:par) - Parameter descriptions, symbols and global settings used in the cod case study.
+Table: (\#tab:par) - Main function calls, with argument descriptions and associated parameter symbols, used to simulate the cod-like population used in the case study presented here. 
 
-|                                       **Parameter name** |                 **Symbol** |    **Setting** |
-|:-------------------------------------------------------- | :------------------------- | :------------- |
-|                                              *Abundance* |                            |                |  
-|                                                     Ages |                        $a$ |           1:20 |
-|                                                    Years |                        $y$ |           1:20 |
-|                                         Mean recruitment |                    $\mu_r$ |            30M |
-|                    Standard deviation of log-recruitment |                 $\sigma_r$ |            0.5 |
-|                                     Mean total mortality |                    $\mu_Z$ |            0.7 |
-|                    Standard deviation of total mortality |                 $\sigma_Z$ |            0.2 |
-|  Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |            0.9 |
-| Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |            0.5 |
-|                                   Mean asymptotic length |               $l_{\infty}$ |         120 cm |
-|                                          Length at birth |                      $l_0$ |           5 cm |
-|                                              Growth rate |                        $K$ |            0.1 |
-|                     Length group for abundance at length |            $l_{group}^{N}$ |           3 cm |
-|                                                          |                            |                |  
-|                                                   *Grid* |                            |                | 
-|                                               Grid cells |                        $s$ |         1:6400 |
-|                                               Resolution |                        $R$ |         3.5 km |
-|                                              Shelf depth |                $d_{shelf}$ |          200 m |
-|                                              Shelf width |                $w_{shelf}$ |         100 km |
-|                                              Depth range |       $[d_{min}, d_{max}]$ |  [0 m, 1000 m] |
-|                                      Number of divisions |                  $N_{div}$ |              1 |
-|                                         Number of strata |                $N_{strat}$ |             42 |
-|                                                          |                            |                |  
-|                                           *Distribution* |                            |                | 
-|        Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |            2.8 |
-|                        Smoothness of spatial correlation |                  $\lambda$ |              1 |
-|                             Range of spatial correlation |                        $r$ |          50 km |
-|          Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |           0.5* |
-|         Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |            0.9 |
-|            Depth at which abundance is typically highest |                    $\mu_d$ |          200 m |
-|                Dispersion around depth of peak abundance |                 $\sigma_d$ |           70 m |
-|                                                          |                            |                |  
-|                                                 *Survey* |                            |                |
-|                                  Area covered by a trawl |                $A_{trawl}$ |     0.03 km^2^ |
-|              Steepness of logistic curve of catchability |                        $k$ |              2 |
-|               Midpoint of logistic curve of catchability |                      $x_0$ |              3 |
-|                            Length group for age sampling |                $l_{group}$ |           1 cm |  
-\* Distribution set to be equal for ages 5+
+|                                       **Function call** |                                            **Description** |                 **Symbol** |
+|:------------------------------------------------------- |:---------------------------------------------------------- | :------------------------- |
+| `> set.seed(438)`                                       |      Set random number generator seed to replicate results |                            |
+| `>`                                                     |                                                            |                            |
+| `> n <- sim_abundance(`                                 |                                       *Simulate abundance* |                            |         
+| `+   ages = 1:20,`                                      |                                                       Ages |                        $a$ |
+| `+   years = 1:20,`                                     |                                                      Years |                        $y$ |
+| `+   R = sim_R(mean = 30000000,`                        |                                           Mean recruitment |                    $\mu_r$ |
+| `+             log_sd = 0.5),`                          |                      Standard deviation of log-recruitment |                 $\sigma_r$ |
+| `+   Z = sim_Z(mean = 0.5,`                             |                                       Mean total mortality |                    $\mu_Z$ |
+| `+             log_sd = 0.2,`                           |                      Standard deviation of total mortality |                 $\sigma_Z$ |
+| `+             phi_age = 0.9,`                          |    Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |
+| `+             phi_year = 0.5),`                        |   Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |
+| `+   growth = sim_vonB(Linf = 120,`                     |                                Mean asymptotic length (cm) |               $l_{\infty}$ |
+| `+                     L0 = 5,`                         |                                       Length at birth (cm) |                      $l_0$ |
+| `+                     K = 0.1,`                        |                                                Growth rate |                        $K$ |
+| `+                     log_sd = 0.1,`                   |      Standard devation of the von Bertalanffy growth curve |                 $\sigma_l$ |
+| `+                     length_group = 3))`              |                  Length group for abundance at length (cm) |            $l_{group}^{N}$ |      
+| `>`                                                     |                                                            |                            |
+| `> g <- make_grid(`                                     |                                              *Make a grid* |                            |
+| `+   x_range = c(-140, 140),`                           |                           Range of grid in the x dimension |                            |                   
+| `+   y_range = c(-140, 140),`                           |                           Range of grid in the y dimension |                            | 
+| `+   res = c(3.5, 3.5),`                                |                                       Grid resolution (km) |                        $R$ |
+| `+   shelf_depth = 200,`                                |                                           Shelf depth (km) |                $d_{shelf}$ |
+| `+   shelf_width = 100,`                                |                                           Shelf width (km) |                $w_{shelf}$ |
+| `+   depth_range = c(0, 1000),`                         |                                            Depth range (m) |       $[d_{min}, d_{max}]$ |
+| `+   n_div = 1,`                                        |                                        Number of divisions |                  $N_{div}$ |
+| `+   strat_breaks = seq(0, 1000, by = 40))`             |                 Series of depth breaks for defining strata |                            |
+| `>`                                                     |                                                            |                            |
+| `> d <- sim_distribution(`                              |                                    *Simulate distribution* |                            |     
+| `+   sim = n,`                                          |                Object produced by `sim_abundance` function |                            |     
+| `+   grid = g,`                                         |                    Object produced by `make_grid` function |                            |
+| `+   ays_covar = sim_ays_covar(sd = 2.8,`               |          Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |
+| `+                             range = 300,`            |                          Range of spatial correlation (km) |                        $r$ |
+| `+                             phi_age = 0.5,`          |            Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |
+| `+                             phi_year = 0.9,`         |           Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |
+| `+                             group_ages = 5:20),`     |       Make space-age-year variance equal across these ages |                            |
+| `+   depth_par = sim_parabola(mu = 200,`                |          Depth at which abundance is typically highest (m) |                    $\mu_d$ |
+| `+                            sigma = 70))`             |              Dispersion around depth of peak abundance (m) |                 $\sigma_d$ |
+| `>`                                                     |                                                            |                            |
+| `> e <- expand_surveys(`                                |                       *Define a series of surveys to test* |                            |
+| `+   set_den = c(0.0005, 0.001, 0.002, 0.005, 0.01),`   |                                       Set density (km^-2^) |                 $D_{sets}$ |
+| `+   lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),`   |                 Maximum number of lengths to collect / set |              $M_{lengths}$ |
+| `+   ages_cap = c(2, 5, 10, 20, 50))`                   | Maximum number of ages to sample / length group / division |                 $M_{ages}$ |
+| `>`                                                     |                                                            |                            |
+| `> s <- test_surveys(`                                  |                             *Simulate and analyze surveys* |                            |
+| `+   sim = d,`                                          |             Object produced by `sim_distribution` function |                            |
+| `+   surveys = e,`                                      |               Object produced by `expand_surveys` function |                            |
+| `+   n_loops = 1000,`                                   |                    Number of times to simulate each survey |                            | 
+| `+   q = sim_logistic(k = 2,`                           |                Steepness of logistic curve of catchability |                        $k$ |
+| `+                   x0 = 3),`                          |                 Midpoint of logistic curve of catchability |                      $x_0$ |
+| `+   trawl_dim = c(1.5, 0.02),`                         |       Trawl dimensions (km) - i.e. area covered by a trawl |                $A_{trawl}$ |
+| `+   length_group = 1)`                                 |                         Length group for age sampling (cm) |                $l_{group}$ |
 
+*Caution:* as written, the `test_surveys` function call may take days or weeks to run. Run duration can be decreased by running multiple simulations per loop (`n_sims` argument) and by running the loops in parallel (`cores` argument). See help file for more details (`?test_surveys`).
 
 <br>
-
-
-Table: (\#tab:tests) - Descriptions and settings of different survey sampling protocol tested in the cod case study. All possible combinations of the options below were tested.
-
-|      **Parameter name** |      **Symbol** |                                       **Setting** |
-|:----------------------- | :-------------- | :------------------------------------------------ |
-|             Set density |      $D_{sets}$ |    0.0005, 0.001, 0.002, 0.005, 0.01 sets / km^2^ |
-|    Length sampling rule |   $M_{lengths}$ |       5, 10, 20, 50, 100, 500, 1000 lengths / set |
-|       Age sampling rule |      $M_{ages}$ |   2, 5, 10, 20, 50 ages / length group / division |
-
-
-<br>
-
-
-Table: (\#tab:comp) - Root-mean-squared errors (RMSE) and number of samples [sets ($N_{sets}$), lengths ($N_{lengths}$) and ages ($N_{ages}$)] obtained from an array of surveys with different sampling protocol [set densities ($D_{sets}$), maximum sampling effort of lengths per set ($M_{lengths}$), and maximum number of ages to collect per length group ($M_{ages}$)]. Differences from the minimum RMSE value ($\Delta ~ RMSE$) within each set density option are presented to aid comparisons.
-
-```{r comp, results = "asis"}
-
-totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
-                                 n_measured = mean(n_measured), n_aged = mean(n_aged)),
-                          by = "survey"]
-errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-d <- merge(errors, totals, by = "survey")
-
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_age_caps <- c(5, 10, 50)
-
-tab <- d[d$set_den %in% which_set_dens & d$lengths_cap %in% which_len_caps & 
-           d$ages_cap %in% which_age_caps, 
-         list(lengths_cap, ages_cap,
-              n_sets = round(n_sets), n_measured = round(n_measured), n_aged = round(n_aged),
-              RMSE = RMSE, delta_RMSE = RMSE - min(RMSE)), 
-         by = "set_den"]
-tab <- tab[order(set_den, delta_RMSE), ]
-tab$set_den <- formatC(tab$set_den)
-tab$set_den[tab$delta_RMSE != 0] <- NA
-tab$RMSE <- si(tab$RMSE)
-tab$delta_RMSE <- si(tab$delta_RMSE)
-
-split_tab <- split(tab, tab$n_sets)
-for (i in seq_along(split_tab)[-length(split_tab)]) {
-  split_tab[[i]] <- rbind(split_tab[[i]], data.table(RMSE = NA), fill = TRUE)
-}
-tab <- rbindlist(split_tab)
-
-names(tab) <- c("$D_{sets}$", "$M_{lengths}$", "$M_{ages}$", 
-                "$N_{sets}$", "$N_{lengths}$", "$N_{ages}$",
-                "$RMSE$", "$\\Delta ~ RMSE$")
-
-options(knitr.kable.NA = "")
-knitr::kable(tab, align = "r", format = "markdown")
-
-```
-
 
 
 # Figures

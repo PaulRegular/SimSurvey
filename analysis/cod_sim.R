@@ -152,13 +152,13 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 2, x0 = 3),
-                    export = "analysis/cod_sim_exports/2018-10-27_no_age_clust_test")
-# sim <- resume_test(dir = "analysis/cod_sim_exports/2018-10-27_no_age_clust_test")
+                    export = "analysis/cod_sim_exports/2018-10-28_no_age_clust_test")
+# sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-28_no_age_clust_test")
 setMKLthreads() # turn hyperthreading on again
 
 
 # ## visualize results
-# load("analysis/cod_sim_exports/2018-10-27_no_age_clust_test/test_output.RData")
+# load("analysis/cod_sim_exports/2018-10-28_no_age_clust_test/test_output.RData")
 # vis_sim(sim)
 
 
