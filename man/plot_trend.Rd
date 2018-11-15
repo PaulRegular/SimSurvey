@@ -3,6 +3,7 @@
 \name{plot_trend}
 \alias{plot_trend}
 \alias{plot_surface}
+\alias{plot_grid}
 \alias{plot_distribution}
 \alias{plot_survey}
 \alias{plot_total_strat_fan}
@@ -15,6 +16,8 @@ plot_trend(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...)
 
 plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat,
   ...)
+
+plot_grid(grid, ...)
 
 plot_distribution(sim, ages = 1:10, years = 1:10, type = "contour",
   scale = "natural", ...)
@@ -45,6 +48,8 @@ plot_error_surface(sim, plot_by = "rule")
 \item{mat}{Name of matrix in \code{sim} list to plot.}
 
 \item{xlab, ylab, zlab}{Axes labels.}
+
+\item{grid}{Grid produced by \code{\link{make_grid}}.}
 
 \item{ages}{Subset data to one or more ages.}
 

@@ -133,7 +133,38 @@ $$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &
 
 Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean. This helps simulate depth preferences of particular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controlled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [here we approximate $\kappa$ from a range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years was controlled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controlled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. Also note that numbers were rounded such that a discrete number of fish are in each cell of the grid. A more detailed description of the space-age-year covariance is included in Appendix 1. Note that the the distributions of specific length groups were not simulated because of the greater computational cost of storing spatially dis-aggregated abundance across all length groups. 
 
-The `make_grid` function is used to generate the grid used in the case study, and the `sim_distribution` function distributes the population, `n`, simulated above using `sim_abundance` through the grid:
+The `make_grid` function is used to generate a survey grid for use in the `sim_distribution` function. The output from `make_grid` is a raster object [@hijmans2016] with four layers: `depth`, `cell`, `division` and `strat`. If a more detailed and realistic grid is required, users can manually generate their own survey grid using real data and this grid can be supplied to `sim_distribution` if the same structure is used. The settings used to make the grid used in our case study are shown in Table \@ref(tab:par) and these settings are also the defaults. Below we generate and plot (combined in Figure \@ref(fig:grid)) a default grid and another grid with a more linear gradient in depth.
+
+```{r, echo = TRUE, eval = FALSE}
+a <- make_grid()
+b <- make_grid(shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000))
+plot_grid(a)
+plot_grid(b)
+```
+
+
+```{r grid, fig.cap = "- Plots produced by `plot_grid` when supplied an raster object produced by a) `make_grid()` and b) `make_grid(shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000))`."}
+
+a <- make_grid() %>% 
+  plot_grid(showscale = FALSE) %>% 
+  add_annotations(x = 0, y = 1, xref = "paper", yref = "paper", showarrow = FALSE,
+                  text = "a)")
+b <- make_grid(shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000)) %>% 
+  plot_grid(showscale = FALSE) %>% 
+  add_annotations(x = 0.01, y = 1, xref = "paper", yref = "paper", showarrow = FALSE,
+                  text = "b)")
+p <- subplot(a, b)
+
+export_plot(p, file = "analysis/paper/figures/plot_grid.png", width = 800, height = 460)
+knitr::include_graphics("figures/plot_grid.png")
+
+```
+
+
+With a population simulated
+
+, and the `sim_distribution` function distributes the population simulated above using `sim_abundance` through the grid:
+
 
 ```{r, echo = TRUE, eval = FALSE}
 g <- make_grid(x_range = c(-140, 140),

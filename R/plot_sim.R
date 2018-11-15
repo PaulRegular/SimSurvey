@@ -8,6 +8,7 @@
 #' @param sim            Object returned by \code{\link{sim_abundance}},
 #'                       \code{\link{sim_distribution}}, etc.
 #' @param mat            Name of matrix in \code{sim} list to plot.
+#' @param grid           Grid produced by \code{\link{make_grid}}.
 #' @param xlab,ylab,zlab Axes labels.
 #' @param sum_ages       Sum across these ages
 #' @param ages           Subset data to one or more ages.
@@ -53,6 +54,39 @@ plot_surface <- function(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat
       ))
 }
 
+
+#' @export
+#' @rdname plot_trend
+plot_grid <- function(grid, ...) {
+
+  xax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    tickcolor = "transparent"
+  )
+  yax <- c(scaleanchor = "x", xax)
+
+  sp_div <- raster::rasterToPolygons(grid$division, dissolve = TRUE)
+  df_div <- suppressMessages(ggplot2::fortify(sp_div) %>% group_by(group))
+  sp_strat <- raster::rasterToPolygons(grid$strat, dissolve = TRUE)
+  df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(group))
+  xyz <- data.frame(rasterToPoints(grid))
+
+  plot_ly(...) %>%
+    add_trace(data = xyz, x = ~x, y = ~y, z = ~depth,
+              text = ~paste("x:", x, "<br>y:", y, "<br>depth:", depth, "<br>cell:", cell,
+                            "<br>division:", division, "<br>strat:", strat),
+              hoverinfo = "text", type = "heatmap") %>%
+    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("white"),
+              hoverinfo = "none", size = I(0.5), showlegend = FALSE) %>%
+    add_paths(data = df_div, x = ~long, y = ~lat, color = I("darkgrey"),
+              hoverinfo = "none", size = I(2), showlegend = FALSE) %>%
+    layout(xaxis = xax, yaxis = yax)
+
+}
 
 #' @export
 #' @rdname plot_trend
@@ -135,7 +169,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1,
   yax <- c(scaleanchor = "x", xax)
 
   sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressWarnings(ggplot2::fortify(sp_strat) %>% group_by(group))
+  df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(group))
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
