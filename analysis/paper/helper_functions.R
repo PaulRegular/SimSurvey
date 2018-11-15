@@ -114,3 +114,9 @@ fan_plot <- function(d, x = "Age", which_strat = "Age") {
 }
 
 
+## wrapper for orca that puts file somewhere other than the working dir
+export_plot <- function(p, file = NULL, width = 700, height = 500, scale = 4, ...) {
+  ext <- tools::file_ext(file)
+  orca(p, paste0("tmp.", ext), width = width, height = height, scale = scale, ...)
+  invisible(file.rename(paste0("tmp.", ext), file))
+}

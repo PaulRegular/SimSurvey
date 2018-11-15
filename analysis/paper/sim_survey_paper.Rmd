@@ -27,7 +27,8 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
-load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
+Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoicGF1bHJlZ3VsYXIiLCJhIjoiY2pueGIxejMxMGM0MjNqbjR1aXdwYm92bSJ9.R-t1SCa0VHKf4N-PQmYI5Q")
+# load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
 source("analysis/paper/helper_functions.R")
 ```
 
@@ -59,7 +60,7 @@ devtools::install_github("PaulRegular/SimSurvey@v0.1.0")
 
 ## Case study
 
-The construction of the SimSurvey package was motivated by a regional need for assessing the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO division 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Below we outline the equations and SimSurvey functions used to simulate survey data with similar features to data obtained by the survey of 3Ps cod. The settings were iteratively modified until it was difficult to distinguish the simulated data from the real survey data (see Table \@ref(tab:par) for parameter settings and descriptions). Here we evaluate the efficacy of alternate sampling protocol by assessing deviation between stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. While assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use.
+The construction of the SimSurvey package was motivated by a regional need for assessing the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO division 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Below we outline the equations behind a series of SimSurvey functions that were used to simulate survey data with similar features to data obtained by the survey of 3Ps cod. The settings were iteratively modified until it was difficult to distinguish the simulated data from real survey data. Here we evaluate the efficacy of alternate sampling protocol by assessing deviation between stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. While assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use. See Table \@ref(tab:par) for a description of the code used to generate the case study results.
 
 ## Simulate abundance
 
@@ -72,25 +73,57 @@ $$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
 
 Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Abundance in discrete length groups, $l_{group}^{N}$, was determined by using this formula to calculate the probability of being within a specific length group given age and then using the resultant length-age-key to convert abundance at age to abundance at length. Overall, this  formulation allows for the simulation of an array of population dynamics that one might expect to observe. 
 
-Abundance is simulated using the `sim_abundance` function and the below code was used to simulate the case study population:
+Abundance is simulated using the `sim_abundance` function and the settings used for our case study are shown in Table \@ref(tab:par). These settings are also the defaults of the function. This function has a simple structure and requires the specification of a series of `ages` and `years` along with functions for simulating recruitment (`R`), total mortality (`Z`) and growth (`growth`). The package includes the functions `sim_R`, `sim_Z` and `sim_vonB` for simulating recruitment, total mortality and growth, respectively. These functions are "closures" [i.e. functions that contain data and return functions; @wickham2014] and this structure was chosen to avoid the repeated specifications of ages and years. The use of closures also allows users to use their own closures with a similar structure but different underlying formula. Overall, the function provides a simple tool for simulating a range dynamic age-structured populations. For instance, below we simulate a relatively long and short lived species:
 
-```{r, echo = TRUE, eval = FALSE}
-set.seed(438) # set seed for reproducible results
-n <- sim_abundance(ages = 1:20,
-                   years = 1:20,
-                   R = sim_R(mean = 30000000,
-                             log_sd = 0.5,
-                             random_walk = TRUE),
-                   Z = sim_Z(mean = 0.5,
-                             log_sd = 0.2,
-                             phi_age = 0.9,
-                             phi_year = 0.5),
-                   growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1,
-                                     log_sd = 0.1, length_group = 3,
-                                     digits = 0))
+```{r, echo = TRUE, eval = TRUE}
+set.seed(438)
+a <- sim_abundance(ages = 1:20,
+                   R = sim_R(mean = 3e+07),
+                   Z = sim_Z(mean = 0.5))
+b <- sim_abundance(ages = 1:6,
+                   R = sim_R(mean = 1e+10),
+                   Z = sim_Z(mean = 0.8))
 ```
 
-The resultant object, `n`, is a list with data such as the abundance at age matrix (named `N`). Note that the nested functions `sim_R`, `sim_Z` and `sim_vonB` are actually "closures" (i.e. functions that contain data and return functions). These closures avoid the repeated specifications of ages and years and also allows users to use their own closures with a similar structure but different underlying formula.
+The `sim_abundance` function returns a list with the sequence of ages (`ages`), sequence of years (`years`), sequence of lengths (`lengths`), numbers of recruits across all years (`R`), numbers at age in the first year (`N0`), total mortality matrix (`Z`), abundance at age matrix (`N`), abundance at length matrix (`N_at_length`) and the function supplied to the `growth` argument (`sim_length`). The growth function is retained for later use in `sim_survey` to simulate lengths given simulated catch at age in a simulated survey.
+
+The package also includes several ploting function for making quick plotly-based [@sievert2018] interactive visuals of the simulated population. The plots output from the below code are combined into Figure \@ref(fig:surface).
+
+```{r, echo = TRUE, eval = FALSE}
+plot_surface(a, mat = "N")
+plot_surface(b, mat = "N")
+```
+
+
+```{r surface, fig.cap = "- Plots produced by `plot_surface` when supplied an list produced by a) `sim_abundance(ages = 1:20, R = sim_R(mean = 3e+07), Z = sim_Z(mean = 0.5))` and b) `sim_abundance(ages = 1:6, R = sim_R(mean = 1e+10), Z = sim_Z(mean = 0.8))`. The abundance at age matrix (`N`) is displayed by default; the `mat` argument can be used to specify another matrix contained within the supplied list, such as `Z`."}
+
+set.seed(438)
+a <- sim_abundance(ages = 1:20,
+                   R = sim_R(mean = 3e+07),
+                   Z = sim_Z(mean = 0.5))
+b <- sim_abundance(ages = 1:6,
+                   R = sim_R(mean = 1e+10),
+                   Z = sim_Z(mean = 0.8))
+
+pa <- plot_surface(a, mat = "N", scene = "scene1", showscale = FALSE) %>% 
+  add_annotations(x = 0.05, y = 0.9, xref = "paper", yref = "paper", showarrow = FALSE,
+                  text = "a)")
+pb <- plot_surface(b, mat = "N", scene = "scene2", showscale = FALSE) %>% 
+  add_annotations(x = 0.05, y = 0.9, xref = "paper", yref = "paper", showarrow = FALSE,
+                  text = "b)")
+
+p <- subplot(pa, pb) %>%
+  layout(scene = list(domain = list(x = c(0, 0.5), y = c(0, 1))),
+         scene2 = list(domain = list(x = c(0.5, 1), y = c(0, 1)),
+                       xaxis = list(title = "Age"),
+                       yaxis = list(title = "Year"),
+                       zaxis = list(title = "N")))
+
+export_plot(p, file = "analysis/paper/figures/plot_surface.png", width = 800, height = 370)
+knitr::include_graphics("figures/plot_surface.png")
+```
+
+
 
 ## Simulate spatial distribution
 
@@ -148,7 +181,7 @@ Again, this function retains all the objects listed in `d` and adds objects that
 
 ## Stratified analysis
 
-A series of `r nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain annual estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
+A series of `r # nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r # max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain annual estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
 
 $$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
 Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates. Intra-haul correlation (i.e. intraclass correlation) of set catch was also calculated by fitting a mixed-model to the lengths data with set as a random effect [fit using the lme4 package; @Bates2015]; variance estimates from this model were then plugged into the ICC(1) formula presented in McGraw and Wong [-@Mcgraw1996]. All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` [@R2017] and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
@@ -256,279 +289,279 @@ Table: (\#tab:par) - Main function calls, with argument descriptions and associa
 <br>
 
 
-# Figures
+<!-- # Figures -->
 
-```{r sp, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^. Grey lines indicate depth-based survey strata."}
+<!-- ```{r sp, cache = TRUE, fig.height = 3.8, fig.width = 8.5, fig.cap = "- An example from year seven of the simulation of a) the distribution of total abundance available to the survey, and b) locations of the sets conducted and total numbers caught in a stratified random survey with a set density of 0.002 sets / km^2^. Grey lines indicate depth-based survey strata."} -->
 
-which_year <- 7
-which_sim <- 1
+<!-- which_year <- 7 -->
+<!-- which_sim <- 1 -->
 
-sp_N_tot <- sim$sp_I[year == which_year & sim == which_sim, list(N = sum(I)), by = c("year", "cell")]
-xyz <- merge(sim$grid_xy, sp_N_tot, by = "cell")
-size <- unique(diff(pretty(xyz$N, 25)))
+<!-- sp_N_tot <- sim$sp_I[year == which_year & sim == which_sim, list(N = sum(I)), by = c("year", "cell")] -->
+<!-- xyz <- merge(sim$grid_xy, sp_N_tot, by = "cell") -->
+<!-- size <- unique(diff(pretty(xyz$N, 25))) -->
 
-sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group))
+<!-- sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE) -->
+<!-- df_strat <- suppressWarnings(fortify(sp_strat) %>% group_by(group)) -->
 
-r <- raster::rasterFromXYZ(xyz[, c("x", "y", "N")])
-l <- rasterToContour(r, levels = pretty(xyz$N, 20))
-df_lines <- suppressWarnings(fortify(l))
-levels <- as.numeric(as.character(l$level))
-levels <- si(levels)
-labs <- levels
-labs[seq_along(labs) %% 2 == 0] <- ""
-levels <- factor(levels, levels = levels)
-names(levels) <- rownames(as.data.frame(l))
-df_lines$level <- levels[df_lines$id]
+<!-- r <- raster::rasterFromXYZ(xyz[, c("x", "y", "N")]) -->
+<!-- l <- rasterToContour(r, levels = pretty(xyz$N, 20)) -->
+<!-- df_lines <- suppressWarnings(fortify(l)) -->
+<!-- levels <- as.numeric(as.character(l$level)) -->
+<!-- levels <- si(levels) -->
+<!-- labs <- levels -->
+<!-- labs[seq_along(labs) %% 2 == 0] <- "" -->
+<!-- levels <- factor(levels, levels = levels) -->
+<!-- names(levels) <- rownames(as.data.frame(l)) -->
+<!-- df_lines$level <- levels[df_lines$id] -->
 
-abun_plot <- ggplot() +
-  geom_path(data = df_strat, aes(x = long, y = lat, group = group), 
-            color = "grey", size = 0.05) +
-  geom_path(data = df_lines, aes(x = long, y = lat, group = group, color = level),
-            size = 0.3) +
-  scale_color_viridis(labels = labs, discrete = TRUE, name = "N") + 
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
-  coord_equal() +
-  theme_void() + guides(color = guide_legend(keywidth = 0.4, keyheight = 0, 
-                                             default.unit = "cm", ncol = 1)) +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
+<!-- abun_plot <- ggplot() + -->
+<!--   geom_path(data = df_strat, aes(x = long, y = lat, group = group),  -->
+<!--             color = "grey", size = 0.05) + -->
+<!--   geom_path(data = df_lines, aes(x = long, y = lat, group = group, color = level), -->
+<!--             size = 0.3) + -->
+<!--   scale_color_viridis(labels = labs, discrete = TRUE, name = "N") +  -->
+<!--   scale_x_continuous(expand = c(0,0)) + -->
+<!--   scale_y_continuous(expand = c(0,0)) + -->
+<!--   coord_equal() + -->
+<!--   theme_void() + guides(color = guide_legend(keywidth = 0.4, keyheight = 0,  -->
+<!--                                              default.unit = "cm", ncol = 1)) + -->
+<!--   theme(legend.justification = c(0, 1), -->
+<!--         plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")) -->
 
-setdet <- sim$setdet
-setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
-breaks <- pretty(setdet$n, 7)
+<!-- setdet <- sim$setdet -->
+<!-- setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ] -->
+<!-- breaks <- pretty(setdet$n, 7) -->
 
-set_plot <- ggplot() +
-  geom_path(data = df_strat, aes(x = long, y = lat, group = group), 
-            color = "grey", size = 0.05) +
-  geom_point(data = setdet, aes(x = x, y = y, size = n, color = n), alpha = 0.8) +
-  scale_size_area(name = "   n", max_size = 10, limits = range(breaks), breaks = breaks) +
-  scale_color_viridis(name = "   n", limits = range(breaks), breaks = breaks) + 
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
-  coord_equal() +
-  theme_void() + guides(color = guide_legend(keywidth = 0.4, keyheight = 0.2, default.unit = "cm")) +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm"))
+<!-- set_plot <- ggplot() + -->
+<!--   geom_path(data = df_strat, aes(x = long, y = lat, group = group),  -->
+<!--             color = "grey", size = 0.05) + -->
+<!--   geom_point(data = setdet, aes(x = x, y = y, size = n, color = n), alpha = 0.8) + -->
+<!--   scale_size_area(name = "   n", max_size = 10, limits = range(breaks), breaks = breaks) + -->
+<!--   scale_color_viridis(name = "   n", limits = range(breaks), breaks = breaks) +  -->
+<!--   scale_x_continuous(expand = c(0,0)) + -->
+<!--   scale_y_continuous(expand = c(0,0)) + -->
+<!--   coord_equal() + -->
+<!--   theme_void() + guides(color = guide_legend(keywidth = 0.4, keyheight = 0.2, default.unit = "cm")) + -->
+<!--   theme(legend.justification = c(0, 1), -->
+<!--         plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "cm")) -->
 
-p <- cowplot::plot_grid(abun_plot, set_plot, labels = c("a)", "b)"), align = "hv",
-                   label_fontface = "plain")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/abun_and_sets_example.pdf",
-                   base_height = 3.8, base_width = 8.5)
-p
+<!-- p <- cowplot::plot_grid(abun_plot, set_plot, labels = c("a)", "b)"), align = "hv", -->
+<!--                    label_fontface = "plain") -->
+<!-- cowplot::save_plot(plot = p, filename = "analysis/paper/figures/abun_and_sets_example.pdf", -->
+<!--                    base_height = 3.8, base_width = 8.5) -->
+<!-- p -->
 
-```
+<!-- ``` -->
 
-<br>
+<!-- <br> -->
 
-```{r tot, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."}
+<!-- ```{r tot, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."} -->
 
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
+<!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
+<!-- which_len_caps <- c(10, 100, 1000) -->
 
-d <- merge(sim$surveys, sim$total_strat_error, by = "survey")
-d <- d[d$set_den %in% which_set_dens & 
-         d$lengths_cap == 100 & d$ages_cap == 10, ] ## length and age sampling not a factor here
+<!-- d <- merge(sim$surveys, sim$total_strat_error, by = "survey") -->
+<!-- d <- d[d$set_den %in% which_set_dens &  -->
+<!--          d$lengths_cap == 100 & d$ages_cap == 10, ] ## length and age sampling not a factor here -->
 
-p <- fan_plot(d, x = "Year", which_strat = "Total")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/total_strat_true_vs_est.pdf",
-                   base_height = 3, base_width = 8)
-p
+<!-- p <- fan_plot(d, x = "Year", which_strat = "Total") -->
+<!-- cowplot::save_plot(plot = p, filename = "analysis/paper/figures/total_strat_true_vs_est.pdf", -->
+<!--                    base_height = 3, base_width = 8) -->
+<!-- p -->
 
-```
+<!-- ``` -->
 
-<br>
+<!-- <br> -->
 
-```{r length, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true population available to the survey."}
+<!-- ```{r length, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true population available to the survey."} -->
 
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_year <- 7
+<!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
+<!-- which_len_caps <- c(10, 100, 1000) -->
+<!-- which_year <- 7 -->
 
-sub_surveys <- sim$surveys[sim$survey$set_den %in% which_set_dens &
-                             sim$survey$lengths_cap %in% which_len_caps & 
-                             sim$survey$ages_cap == 10, ]
-sub_strat <- sim$length_strat_error[eval(sim$length_strat_error$survey %in% sub_surveys$survey &
-                                           sim$length_strat_error$year == which_year), ]
-d <- merge(sub_surveys, sub_strat, by = "survey")
-d$length[d$length > 100] <- 100 # aggregate beyond 100 cm
-d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
-        by = c("year", "length", "sim", "survey", "set_den", "lengths_cap")]
+<!-- sub_surveys <- sim$surveys[sim$survey$set_den %in% which_set_dens & -->
+<!--                              sim$survey$lengths_cap %in% which_len_caps &  -->
+<!--                              sim$survey$ages_cap == 10, ] -->
+<!-- sub_strat <- sim$length_strat_error[eval(sim$length_strat_error$survey %in% sub_surveys$survey & -->
+<!--                                            sim$length_strat_error$year == which_year), ] -->
+<!-- d <- merge(sub_surveys, sub_strat, by = "survey") -->
+<!-- d$length[d$length > 100] <- 100 # aggregate beyond 100 cm -->
+<!-- d <- d[, list(I_hat = sum(I_hat), I = sum(I)),  -->
+<!--         by = c("year", "length", "sim", "survey", "set_den", "lengths_cap")] -->
 
-p <- fan_plot(d, x = "Length", which_strat = "Length")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_length.pdf",
-                   base_height = 6, base_width = 8)
-p
+<!-- p <- fan_plot(d, x = "Length", which_strat = "Length") -->
+<!-- cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_length.pdf", -->
+<!--                    base_height = 6, base_width = 8) -->
+<!-- p -->
 
-```
+<!-- ``` -->
 
 
-```{r age, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."}
+<!-- ```{r age, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."} -->
 
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_year <- 7
+<!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
+<!-- which_len_caps <- c(10, 100, 1000) -->
+<!-- which_year <- 7 -->
 
-sub_surveys <- sim$surveys[sim$survey$set_den %in% which_set_dens &
-                             sim$survey$lengths_cap %in% which_len_caps & 
-                             sim$survey$ages_cap == 10, ]
-sub_strat <- sim$age_strat_error[eval(sim$age_strat_error$survey %in% sub_surveys$survey &
-                                        sim$age_strat_error$year == which_year), ]
-d <- merge(sub_surveys, sub_strat, by = "survey")
-d <- d[d$year == which_year & d$set_den %in% which_set_dens &
-         d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
-d$age[d$age > 10] <- 10 # aggregate beyond 10
-d <- d[, list(I_hat = sum(I_hat), I = sum(I)), 
-       by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")]
+<!-- sub_surveys <- sim$surveys[sim$survey$set_den %in% which_set_dens & -->
+<!--                              sim$survey$lengths_cap %in% which_len_caps &  -->
+<!--                              sim$survey$ages_cap == 10, ] -->
+<!-- sub_strat <- sim$age_strat_error[eval(sim$age_strat_error$survey %in% sub_surveys$survey & -->
+<!--                                         sim$age_strat_error$year == which_year), ] -->
+<!-- d <- merge(sub_surveys, sub_strat, by = "survey") -->
+<!-- d <- d[d$year == which_year & d$set_den %in% which_set_dens & -->
+<!--          d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ] -->
+<!-- d$age[d$age > 10] <- 10 # aggregate beyond 10 -->
+<!-- d <- d[, list(I_hat = sum(I_hat), I = sum(I)),  -->
+<!--        by = c("year", "age", "sim", "survey", "set_den", "lengths_cap")] -->
 
-p <- fan_plot(d, x = "Age")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_age.pdf",
-                   base_height = 6, base_width = 8)
-p
+<!-- p <- fan_plot(d, x = "Age") -->
+<!-- cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_age.pdf", -->
+<!--                    base_height = 6, base_width = 8) -->
+<!-- p -->
 
-```
+<!-- ``` -->
 
-<br>
+<!-- <br> -->
 
-```{r year, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."}
+<!-- ```{r year, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."} -->
 
-which_set_dens <- c(0.0005, 0.002, 0.01)
-which_len_caps <- c(10, 100, 1000)
-which_age <- 4
+<!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
+<!-- which_len_caps <- c(10, 100, 1000) -->
+<!-- which_age <- 4 -->
 
-d <- merge(sim$surveys, sim$age_strat_error, by = "survey")
-d <- d[d$age == which_age & d$set_den %in% which_set_dens &
-       d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ]
+<!-- d <- merge(sim$surveys, sim$age_strat_error, by = "survey") -->
+<!-- d <- d[d$age == which_age & d$set_den %in% which_set_dens & -->
+<!--        d$lengths_cap %in% which_len_caps & d$ages_cap == 10, ] -->
 
-p <- fan_plot(d, x = "Year")
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_year.pdf",
-                   base_height = 6, base_width = 8)
-p
+<!-- p <- fan_plot(d, x = "Year") -->
+<!-- cowplot::save_plot(plot = p, filename = "analysis/paper/figures/true_vs_est_by_year.pdf", -->
+<!--                    base_height = 6, base_width = 8) -->
+<!-- p -->
 
-```
+<!-- ``` -->
 
-<br>
+<!-- <br> -->
 
-```{r error-lines, cache = TRUE, fig.height = 3.8, fig.width = 8.5, results = "hide", fig.cap = "- Root-mean-squared error (RMSE) of abundance at length and abundance at age estimates as a function of the number of fish measured ($N_{lengths}$) from an array of surveys with different sampling protocol. The labels represent surveys with different set densities ($D_{sets}$), where number of sets are shown in brackets, and the lines are color coded by length sampling protocol ($M_{lengths}$). Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios."}
+<!-- ```{r error-lines, cache = TRUE, fig.height = 3.8, fig.width = 8.5, results = "hide", fig.cap = "- Root-mean-squared error (RMSE) of abundance at length and abundance at age estimates as a function of the number of fish measured ($N_{lengths}$) from an array of surveys with different sampling protocol. The labels represent surveys with different set densities ($D_{sets}$), where number of sets are shown in brackets, and the lines are color coded by length sampling protocol ($M_{lengths}$). Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios."} -->
 
-totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
-                                 n_measured = mean(n_measured), n_aged = mean(n_aged)),
-                          by = "survey"]
+<!-- totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught), -->
+<!--                                  n_measured = mean(n_measured), n_aged = mean(n_aged)), -->
+<!--                           by = "survey"] -->
 
-errors <- merge(sim$surveys, sim$length_strat_error_stats, by = "survey")
-length_d <- merge(errors, totals, by = "survey")
-length_d <- length_d[length_d$ages_cap == 10, ]
-length_d$strat <- "Abundance at length"
+<!-- errors <- merge(sim$surveys, sim$length_strat_error_stats, by = "survey") -->
+<!-- length_d <- merge(errors, totals, by = "survey") -->
+<!-- length_d <- length_d[length_d$ages_cap == 10, ] -->
+<!-- length_d$strat <- "Abundance at length" -->
 
-errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-age_d <- merge(errors, totals, by = "survey")
-age_d <- age_d[age_d$ages_cap == 10, ]
-age_d$strat <- "Abundance at age"
+<!-- errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey") -->
+<!-- age_d <- merge(errors, totals, by = "survey") -->
+<!-- age_d <- age_d[age_d$ages_cap == 10, ] -->
+<!-- age_d$strat <- "Abundance at age" -->
 
-d <- rbind(length_d, age_d)
-d$cap <- factor(d$lengths_cap)
-d$strat <- factor(d$strat, levels = c("Abundance at length", "Abundance at age"))
+<!-- d <- rbind(length_d, age_d) -->
+<!-- d$cap <- factor(d$lengths_cap) -->
+<!-- d$strat <- factor(d$strat, levels = c("Abundance at length", "Abundance at age")) -->
 
-lab_d <- d[lengths_cap == max(lengths_cap),
-           list(lengths_cap, n_measured, n_sets, cap, RMSE),
-           by = c("set_den", "strat")]
-lab_d$lab <- paste0(formatC(lab_d$set_den), " (", lab_d$n_sets, ")")
+<!-- lab_d <- d[lengths_cap == max(lengths_cap), -->
+<!--            list(lengths_cap, n_measured, n_sets, cap, RMSE), -->
+<!--            by = c("set_den", "strat")] -->
+<!-- lab_d$lab <- paste0(formatC(lab_d$set_den), " (", lab_d$n_sets, ")") -->
 
-p <- ggplot(data = d, aes(x = n_measured, y = RMSE, group = set_den)) +
-  geom_line(aes(color = cap), size = 2, lineend = "round") +
-  geom_text(data = lab_d, aes(label = lab), nudge_x = 500, hjust = 0) +
-  geom_point(data = lab_d, aes(color = cap)) +
-  xlab(bquote(N[lengths])) +
-  scale_y_continuous(labels = format_si()) +
-  scale_x_continuous(labels = format_si(), limits = c(0, max(d$n_measured) * 1.3),
-                     breaks = pretty(d$n_measured, 6)) +
-  scale_color_viridis(name = bquote(M[lengths]), discrete = TRUE) +
-  facet_wrap(~ strat, scales = "free", dir = "h") +
-  theme_bw() +
-  theme(legend.justification = c(0, 1),
-        plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        strip.background = element_blank(),
-        panel.border = element_rect(fill = NA, color = "darkgrey", size = 0.4),
-        axis.ticks = element_line(color = "darkgrey", size = 0.4))
+<!-- p <- ggplot(data = d, aes(x = n_measured, y = RMSE, group = set_den)) + -->
+<!--   geom_line(aes(color = cap), size = 2, lineend = "round") + -->
+<!--   geom_text(data = lab_d, aes(label = lab), nudge_x = 500, hjust = 0) + -->
+<!--   geom_point(data = lab_d, aes(color = cap)) + -->
+<!--   xlab(bquote(N[lengths])) + -->
+<!--   scale_y_continuous(labels = format_si()) + -->
+<!--   scale_x_continuous(labels = format_si(), limits = c(0, max(d$n_measured) * 1.3), -->
+<!--                      breaks = pretty(d$n_measured, 6)) + -->
+<!--   scale_color_viridis(name = bquote(M[lengths]), discrete = TRUE) + -->
+<!--   facet_wrap(~ strat, scales = "free", dir = "h") + -->
+<!--   theme_bw() + -->
+<!--   theme(legend.justification = c(0, 1), -->
+<!--         plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"), -->
+<!--         panel.grid.major = element_blank(), -->
+<!--         panel.grid.minor = element_blank(), -->
+<!--         strip.background = element_blank(), -->
+<!--         panel.border = element_rect(fill = NA, color = "darkgrey", size = 0.4), -->
+<!--         axis.ticks = element_line(color = "darkgrey", size = 0.4)) -->
 
-cowplot::save_plot(plot = p, filename = "analysis/paper/figures/error_lines.pdf",
-                   base_height = 3.8, base_width = 8.5)
-p
+<!-- cowplot::save_plot(plot = p, filename = "analysis/paper/figures/error_lines.pdf", -->
+<!--                    base_height = 3.8, base_width = 8.5) -->
+<!-- p -->
 
-```
+<!-- ``` -->
 
-<br>
+<!-- <br> -->
 
-```{r error-wireframe, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)."}
+<!-- ```{r error-wireframe, cache = TRUE, fig.height = 3, fig.width = 8.5, results = "hide", fig.cap = "- Wireframe plot of root-mean-squared error (RMSE) from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$)."} -->
 
-trellis_theme <- list(
-  box.3d = list(col = "darkgrey"), 
-  axis.line = list(col = "transparent"),
-  strip.background = list(col = "transparent"), 
-  strip.border = list(col = "transparent"),
-   layout.heights = list(
-        top.padding = 0,
-        main.key.padding = 0,
-        key.axis.padding = 0,
-        axis.xlab.padding = 0,
-        xlab.key.padding = 0,
-        key.sub.padding = 0,
-        bottom.padding = -5
-    ),
-    layout.widths = list(
-        left.padding = 0,
-        key.ylab.padding = 0,
-        ylab.axis.padding = 0,
-        axis.key.padding = 0,
-        right.padding = 1
-    )
-)
+<!-- trellis_theme <- list( -->
+<!--   box.3d = list(col = "darkgrey"),  -->
+<!--   axis.line = list(col = "transparent"), -->
+<!--   strip.background = list(col = "transparent"),  -->
+<!--   strip.border = list(col = "transparent"), -->
+<!--    layout.heights = list( -->
+<!--         top.padding = 0, -->
+<!--         main.key.padding = 0, -->
+<!--         key.axis.padding = 0, -->
+<!--         axis.xlab.padding = 0, -->
+<!--         xlab.key.padding = 0, -->
+<!--         key.sub.padding = 0, -->
+<!--         bottom.padding = -5 -->
+<!--     ), -->
+<!--     layout.widths = list( -->
+<!--         left.padding = 0, -->
+<!--         key.ylab.padding = 0, -->
+<!--         ylab.axis.padding = 0, -->
+<!--         axis.key.padding = 0, -->
+<!--         right.padding = 1 -->
+<!--     ) -->
+<!-- ) -->
 
-zscale_format <- function(lim, logsc = FALSE, ...) {
-    ans <- zscale.components.default(lim, logsc = logsc, ...)
-    ans$left$labels$labels <- si(ans$left$labels$at)
-    ans
-}
+<!-- zscale_format <- function(lim, logsc = FALSE, ...) { -->
+<!--     ans <- zscale.components.default(lim, logsc = logsc, ...) -->
+<!--     ans$left$labels$labels <- si(ans$left$labels$at) -->
+<!--     ans -->
+<!-- } -->
 
-d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
-# d <- d[d$set_den != 0.0005, ]
-d <- d[d$set_den %in% c(0.0005, 0.002, 0.01)]
-set_den <- sort(unique(d$set_den))
-d$set_den <- factor(d$set_den)
-options(scipen = 999)
-labs <- sapply(seq_along(set_den), function(i) as.expression(bquote(D[sets] == .(set_den[i]))), 
-               USE.NAMES = FALSE)
-zlabs <- list(at = pretty(d$RMSE), labels = si(pretty(d$RMSE)))
+<!-- d <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey") -->
+<!-- # d <- d[d$set_den != 0.0005, ] -->
+<!-- d <- d[d$set_den %in% c(0.0005, 0.002, 0.01)] -->
+<!-- set_den <- sort(unique(d$set_den)) -->
+<!-- d$set_den <- factor(d$set_den) -->
+<!-- options(scipen = 999) -->
+<!-- labs <- sapply(seq_along(set_den), function(i) as.expression(bquote(D[sets] == .(set_den[i]))),  -->
+<!--                USE.NAMES = FALSE) -->
+<!-- zlabs <- list(at = pretty(d$RMSE), labels = si(pretty(d$RMSE))) -->
 
-pdf("analysis/paper/figures/error_wireframe.pdf", height = 3, width = 8.5)
+<!-- pdf("analysis/paper/figures/error_wireframe.pdf", height = 3, width = 8.5) -->
 
-p <- wireframe(RMSE ~  lengths_cap * ages_cap | set_den, data = d,
-          as.table = TRUE, drape = TRUE, col = "white", lwd = 0.5,
-          strip = strip.custom(factor.levels = labs),
-          scales = list(arrows = FALSE, cex = 0.7, z = zlabs),
-          col.regions = viridis::viridis(100),
-          screen = list(z = 230, x = 300), 
-          xlab = list(expression(M[lengths]), rot = 25), 
-          ylab = list(expression(M[ages]), rot = -15), 
-          zlab = list("RMSE", rot = 95),
-          colorkey = list(labels = zlabs, height = 0.6,
-                          axis.line = list(col = "darkgrey")),
-          par.settings = trellis_theme)
-p <- update(p, layout = c(3, 1))
-p
-grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
+<!-- p <- wireframe(RMSE ~  lengths_cap * ages_cap | set_den, data = d, -->
+<!--           as.table = TRUE, drape = TRUE, col = "white", lwd = 0.5, -->
+<!--           strip = strip.custom(factor.levels = labs), -->
+<!--           scales = list(arrows = FALSE, cex = 0.7, z = zlabs), -->
+<!--           col.regions = viridis::viridis(100), -->
+<!--           screen = list(z = 230, x = 300),  -->
+<!--           xlab = list(expression(M[lengths]), rot = 25),  -->
+<!--           ylab = list(expression(M[ages]), rot = -15),  -->
+<!--           zlab = list("RMSE", rot = 95), -->
+<!--           colorkey = list(labels = zlabs, height = 0.6, -->
+<!--                           axis.line = list(col = "darkgrey")), -->
+<!--           par.settings = trellis_theme) -->
+<!-- p <- update(p, layout = c(3, 1)) -->
+<!-- p -->
+<!-- grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc")) -->
 
-invisible(dev.off())
+<!-- invisible(dev.off()) -->
 
-p
-grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc"))
+<!-- p -->
+<!-- grid::grid.text("RMSE", x = unit(0.952, "npc"), y = unit(0.77, "npc")) -->
 
-```
+<!-- ``` -->
 
-<br>
+<!-- <br> -->
 
 
 
