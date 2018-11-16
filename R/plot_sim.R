@@ -65,7 +65,7 @@ plot_grid <- function(grid, ...) {
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = "transparent"
+    ticks = ""
   )
   yax <- c(scaleanchor = "x", xax)
 
@@ -99,7 +99,7 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = "transparent"
+    ticks = ""
   )
   yax <- c(scaleanchor = "x", xax)
 
@@ -108,7 +108,7 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
   d$ay <- paste(d$age, d$year, sep = "-")
   split_d <- split(d, d$ay)
   split_d <- lapply(split_d, function(.) {
-    stats::xtabs(N ~ x + y, data = ., subset = NULL)
+    stats::xtabs(N ~ y + x, data = ., subset = NULL)
   })
   x <- sort(unique(d$x))
   y <- sort(unique(d$y))
@@ -164,7 +164,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1,
     showline = FALSE,
     showticklabels = FALSE,
     showgrid = FALSE,
-    tickcolor = "transparent"
+    ticks = ""
   )
   yax <- c(scaleanchor = "x", xax)
 

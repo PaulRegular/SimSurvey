@@ -87,7 +87,7 @@ b <- sim_abundance(ages = 1:6,
 
 The `sim_abundance` function returns a list with the sequence of ages (`ages`), sequence of years (`years`), sequence of lengths (`lengths`), numbers of recruits across all years (`R`), numbers at age in the first year (`N0`), total mortality matrix (`Z`), abundance at age matrix (`N`), abundance at length matrix (`N_at_length`) and the function supplied to the `growth` argument (`sim_length`). The growth function is retained for later use in `sim_survey` to simulate lengths given simulated catch at age in a simulated survey.
 
-The package also includes several ploting function for making quick plotly-based [@sievert2018] interactive visuals of the simulated population. The plots output from the below code are combined into Figure \@ref(fig:surface).
+The package also includes several plotting function for making quick plotly-based [@sievert2018] interactive visuals of the simulated population. The plots output from the below code are combined into Figure \@ref(fig:surface).
 
 ```{r, echo = TRUE, eval = FALSE}
 plot_surface(a, mat = "N")
@@ -95,7 +95,7 @@ plot_surface(b, mat = "N")
 ```
 
 
-```{r surface, fig.cap = "- Plots produced by `plot_surface` when supplied an list produced by a) `sim_abundance(ages = 1:20, R = sim_R(mean = 3e+07), Z = sim_Z(mean = 0.5))` and b) `sim_abundance(ages = 1:6, R = sim_R(mean = 1e+10), Z = sim_Z(mean = 0.8))`. The abundance at age matrix (`N`) is displayed by default; the `mat` argument can be used to specify another matrix contained within the supplied list, such as `Z`."}
+```{r surface, fig.cap = "- Plots produced by `plot_surface` when supplied an list produced by `sim_abundance` with settings that simulate a relatively a) long and b) short lived species. The abundance at age matrix (`N`) is displayed by default; the `mat` argument can be used to specify another matrix contained within the supplied list, such as `Z`."}
 
 set.seed(438)
 a <- sim_abundance(ages = 1:20,
@@ -133,61 +133,92 @@ $$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &
 
 Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean. This helps simulate depth preferences of particular fish. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations was controlled by a smoothing ($\lambda$) and scaling parameter ($\kappa$) [here we approximate $\kappa$ from a range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years was controlled by $\varphi_{\xi, age}$ and $\varphi_{\xi, year}$, respectively. The overall variance of the process was controlled by $\sigma_{\xi}^2$. In short, this formulation allows control of depth preferences, the level of spatial aggregation and the amount of age and year specific clustering. Note that $\eta_{a,y,s}$ is forced to sum to one in each year to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model. Also note that numbers were rounded such that a discrete number of fish are in each cell of the grid. A more detailed description of the space-age-year covariance is included in Appendix 1. Note that the the distributions of specific length groups were not simulated because of the greater computational cost of storing spatially dis-aggregated abundance across all length groups. 
 
-The `make_grid` function is used to generate a survey grid for use in the `sim_distribution` function. The output from `make_grid` is a raster object [@hijmans2016] with four layers: `depth`, `cell`, `division` and `strat`. If a more detailed and realistic grid is required, users can manually generate their own survey grid using real data and this grid can be supplied to `sim_distribution` if the same structure is used. The settings used to make the grid used in our case study are shown in Table \@ref(tab:par) and these settings are also the defaults. Below we generate and plot (combined in Figure \@ref(fig:grid)) a default grid and another grid with a more linear gradient in depth.
+The `make_grid` function is used to generate a survey grid for use in the `sim_distribution` function. The output from `make_grid` is a raster object [@hijmans2016] with four layers: `depth`, `cell`, `division` and `strat`. If a more detailed and realistic grid is required, users can manually generate their own survey grid using real data and this grid can be supplied to `sim_distribution` if the same structure is used. The settings used to make the grid used in our case study are shown in Table \@ref(tab:par) and these settings are also the defaults. Below we generate and plot (combined in Figure \@ref(fig:grid)) a default grid and another grid with four divisions and a more linear gradient in depth.
 
 ```{r, echo = TRUE, eval = FALSE}
-a <- make_grid()
-b <- make_grid(shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000))
+a <- make_grid(n_div = 1, shelf_depth = 200,
+               shelf_width = 100, depth_range = c(0, 1000))
+b <- make_grid(n_div = 4, shelf_depth = 500, 
+               shelf_width = 0, depth_range = c(0, 1000))
 plot_grid(a)
 plot_grid(b)
 ```
 
 
-```{r grid, fig.cap = "- Plots produced by `plot_grid` when supplied an raster object produced by a) `make_grid()` and b) `make_grid(shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000))`."}
+```{r grid, fig.cap = "- Plots produced by `plot_grid` when supplied an raster object produced by `make_grid` a) using default settings and b) settings that generate a more linear depth gradient. In these plots, the color gradient represents depth, the grey lines deliniate divisions and white lines deliniate strata."}
 
 a <- make_grid() %>% 
-  plot_grid(showscale = FALSE) %>% 
+  plot_grid(showscale = TRUE) %>% 
   add_annotations(x = 0, y = 1, xref = "paper", yref = "paper", showarrow = FALSE,
                   text = "a)")
-b <- make_grid(shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000)) %>% 
+b <- make_grid(n_div = 4, shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000)) %>% 
   plot_grid(showscale = FALSE) %>% 
   add_annotations(x = 0.01, y = 1, xref = "paper", yref = "paper", showarrow = FALSE,
                   text = "b)")
 p <- subplot(a, b)
 
-export_plot(p, file = "analysis/paper/figures/plot_grid.png", width = 800, height = 460)
+export_plot(p, file = "analysis/paper/figures/plot_grid.png", width = 800, height = 430)
 knitr::include_graphics("figures/plot_grid.png")
 
 ```
 
+The `sim_distribution` function distributes the population simulated using `sim_abundance` throughout the grid generated using `make_grid`. Table \@ref(tab:par) outlines the default settings used for the function and the case study. In addition to supplying objects produced by `sim_abundance` and `make_grid`, this function requires two closures that describe the age-year-space covariance and the relationship with depth. Here we use `sim_ays_covar` and `sim_parabola` to control these relationships and a wide range of age and year specific distributions can be obtained by tweaking a few parameters in these closures. Below we run a default `sim_distribution` call, which generates a population that forms tight clusters that are more strongly correlated across years than ages, and another call that generates a population that is more diffuse (i.e. wider range) and exhibits stronger correlation across ages than years. Distributions can also be forced to be the same across ages and years by using the `group_ages` and `group_years`, respectively, arguments in the `sim_ays_covar` closure. In other words, these parameters can be modified to control the degree of age-specific clustering and inter-annual site-fedelity exhibited by the simulated population. Note that the resolution of the default grid is high and, as such, the simulations below may take minutes to complete. Also note that the key functions in the SimSurvey package have been set-up to be pipe [`%>%`; @bache2014] friendly.
 
-With a population simulated
+```{r, echo = TRUE, eval = TRUE, cache = TRUE}
 
-, and the `sim_distribution` function distributes the population simulated above using `sim_abundance` through the grid:
+set.seed(438)
+a <- sim_abundance() %>% 
+  sim_distribution(ays_covar = sim_ays_covar(range = 300,
+                                             phi_year = 0.9,
+                                             phi_age = 0.5))
+b <- sim_abundance() %>% 
+  sim_distribution(ays_covar = sim_ays_covar(range = 2000,
+                                             phi_year = 0.2,
+                                             phi_age = 0.9))
 
-
-```{r, echo = TRUE, eval = FALSE}
-g <- make_grid(x_range = c(-140, 140),
-               y_range = c(-140, 140),
-               res = c(3.5, 3.5),
-               shelf_depth = 200,
-               shelf_width = 100,
-               depth_range = c(0, 1000),
-               n_div = 1,
-               strat_breaks = seq(0, 1000, by = 40),
-               strat_splits = 2)
-
-d <- sim_distribution(n, grid = g,
-                      ays_covar = sim_ays_covar(sd = 2.8,
-                                                range = 300,
-                                                phi_age = 0.5,
-                                                phi_year = 0.9,
-                                                group_ages = 5:20),
-                      depth_par = sim_parabola(mu = 200,
-                                               sigma = 70))
 ```
 
-This function retains all the data simulated by `sim_abundance` and adds a `data.table` with abundance split by age, year and cell (named `sp_N`). Again, note the use of the closures `sim_ays_covar` and `sim_parabola` to impose the age-year-space covariance and the relationship with depth, respectively.
+This function retains all the data simulated by `sim_abundance` and adds a data.table [@dowle2017], named `sp_N`, with abundance (`N`) split by `age`, `year` and `cell`. The function also retains the grid object and converts these data into a data.table, named `grid_xy`, with headers `x`, `y`, `depth`, `cell`, `division` and `strat`. The `sp_N` object can be merge with the `grid_xy` data by `cell` to associate abundance with specific locations, depth, divisions or strata. The `plot_distribution` function can be used to provide a quick visual of the distribution across ages and years. The code below will generate interactive plots with an Age-Year slider, however, for this paper we present a facet plot of the simulated data in Figure \@ref(fig:distribution).
+
+```{r, echo = TRUE, eval = FALSE}
+plot_distribution(a, ages = 1:3, years = 1:3, type = "heatmap")
+plot_distribution(b, ages = 1:3, years = 1:3, type = "heatmap")
+```
+
+
+```{r distribution, fig.cap = "- Distribution plots of a population simulated using `sim_distribution` that forms a) tight clusters with stronger correlation through years than ages, and b) relatively diffuse clusters with stronger correlation through ages than years."}
+
+facet_distribution <- function(data) {
+  ay <- expand.grid(age = 1:3, year = 1:3)
+  plot_list <- vector("list", nrow(ay))
+  for (i in 1:3) {
+    for (j in 1:3) {
+      p <- plot_distribution(data, ages = i, years = j, type = "heatmap") %>% 
+        hide_colorbar() %>% 
+        layout(autosize = FALSE, width = 100, height = 100,
+               margin = list(l = 0, r = 0, b = 0, t = 0, pad = 0))
+      plot_list[[which(ay$age == i & ay$year == j)]] <- p
+    }
+  }
+  subplot(plot_list, nrows = 3, shareX = TRUE, shareY = TRUE, margin = 0.01) %>% 
+    layout(autosize = FALSE, width = 300, height = 300,
+           margin = list(t = 20, l = 20, b = 10, r = 10))
+} 
+
+a_plots <- facet_distribution(a)
+b_plots <- facet_distribution(b)
+
+p <- subplot(a_plots, b_plots) %>% 
+  add_labels(text = rep(c("Age 1", "Age 2", "Age 3"), 2), x = c(0.04, 0.20, 0.4, 0.6, 0.8, 0.95), y = rep(0.995, 6), yshift = 20) %>% 
+  add_labels(text = rep(c("Year 1", "Year 2", "Year 3"), 2), x = c(rep(0.005, 3), rep(0.54, 3)), y = c(0.08, 0.5, 0.92), xshift = -20, textangle = -90) %>% 
+  add_labels(text = "a)", x = 0, y = 1, yshift = 20, xshift = -20) %>% 
+  add_labels(text = "b)", x = 0.54, y = 1, yshift = 20, xshift = -20)
+
+export_plot(p, file = "analysis/paper/figures/plot_distribution.png", width = 600, height = 300)
+knitr::include_graphics("figures/plot_distribution.png")
+
+```
+
 
 ## Simulate survey
 
@@ -277,7 +308,7 @@ Table: (\#tab:par) - Main function calls, with argument descriptions and associa
 | `+   growth = sim_vonB(Linf = 120,`                     |                                Mean asymptotic length (cm) |               $l_{\infty}$ |
 | `+                     L0 = 5,`                         |                                       Length at birth (cm) |                      $l_0$ |
 | `+                     K = 0.1,`                        |                                                Growth rate |                        $K$ |
-| `+                     log_sd = 0.1,`                   |      Standard devation of the von Bertalanffy growth curve |                 $\sigma_l$ |
+| `+                     log_sd = 0.1,`                   |      Standard deviation of the von Bertalanffy growth curve |                 $\sigma_l$ |
 | `+                     length_group = 3))`              |                  Length group for abundance at length (cm) |            $l_{group}^{N}$ |      
 | `>`                                                     |                                                            |                            |
 | `> g <- make_grid(`                                     |                                              *Make a grid* |                            |
