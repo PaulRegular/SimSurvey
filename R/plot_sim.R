@@ -155,8 +155,7 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
 
 #' @export
 #' @rdname plot_trend
-plot_survey <- function(sim, which_year = 1, which_sim = 1,
-                        col = viridis::viridis(1)) {
+plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 
   xax <- list(
     title = "",
@@ -173,8 +172,21 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1,
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
+  samp <- sim$samp
+  samp <- samp[samp$set %in% setdet$set, ]
   samp <- merge(setdet[, c("year", "sim", "set", "x", "y")],
-                sim$samp, by = "set")
+                samp, by = "set", all = TRUE)
+
+  l <- sim$I_at_length[, as.character(which_year)]
+  l <- (l / sum(l)) * 100
+  true_length <- data.frame(length = as.numeric(names(l)), percent = l)
+  a <- sim$I[, as.character(which_year)]
+  a <- (a / sum(a)) * 100
+  true_age <- data.frame(age = as.numeric(names(a)), percent = a)
+
+  ## impose the same length grouping on the data as chosen for the abundance
+  ## at length grouping
+  length_group <- get("length_group", envir = environment(sim$sim_length))
 
   d <- crosstalk::SharedData$new(samp, ~set)
 
@@ -182,46 +194,54 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1,
 
   sp_p <- base %>%
     group_by(set) %>%
-    summarise(x = unique(x), y = unique(y), n = n()) %>%
+    summarise(x = unique(x), y = unique(y), n = sum(!is.na(measured))) %>%
     add_markers(x = ~x, y = ~y, size = ~n, text = ~n,
-                color = I(col), sizes = c(5, 500), name = "n",
-                showlegend = FALSE) %>%
-    add_markers(data = setdet[setdet$n == 0, ], color = I(col),
-                x = ~x, y = ~y, text = ~n, size = I(5), symbol = I(4),
-                name = "zero", alpha = 0.2,
+                color = ~n, sizes = c(2, 600), name = "n",
                 showlegend = FALSE) %>%
     add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
               hoverinfo = "none", size = I(0.5), showlegend = FALSE,
               alpha = 0.1) %>%
-    layout(xaxis = xax, yaxis = yax)
+    layout(xaxis = xax, yaxis = yax,
+           margin = list(t = 0, r = 0, l = 0, b = 0, pad = 0))
 
-  lf_p <- base %>%
+  hist_base <- base %>%
+    mutate(length = group_lengths(length, length_group)) %>%
     group_by(set) %>%
-    filter(measured) %>%
-    add_histogram(x = ~length, showlegend = FALSE,
-                  name = "Length distribution",
-                  marker = list(color = toRGB(col),
-                                line = list(color = toRGB("white"),
-                                            width = 0.2))) %>%
-    layout(xaxis = list(title = "Length"),
-           yaxis = list(title = ""))
+    filter(!is.na(measured)) %>%
+    slice(rep(1:n(), each = 2)) %>%
+    mutate(lab = rep(c("caught", "sampled"), times = n() / 2))
 
-  af_p <- base %>%
-    group_by(set) %>%
-    filter(aged) %>%
-    add_histogram(x = ~age, showlegend = FALSE,
-                  name = "Age distribution",
-                  marker = list(color = toRGB(col),
-                                line = list(color = toRGB("white"),
-                                            width = 0.2))) %>%
-    layout(xaxis = list(title = "Age"),
-           yaxis = list(title = ""))
+  lf_p <- hist_base %>%
+    filter(measured & lab == "sampled" | lab == "caught") %>%
+    add_histogram(x = ~length, color = ~lab, histnorm = "percent",
+                  colors = c("#FDE725FF", "#21908CFF"),
+                  legendgroup = ~lab) %>%
+    add_lines(data = true_length, x = ~length, y = ~percent, color = I("#440154FF"),
+              fill = "tozeroy", name = "true", fillcolor = "#44015433",
+              legendgroup = "true") %>%
+    layout(xaxis = list(title = "Length",
+                        range = extendrange(range(samp$length, na.rm = TRUE))),
+           yaxis = list(title = "Percent", ticksuffix = "%"))
+
+  af_p <- hist_base %>%
+    filter(aged & lab == "sampled" | lab == "caught") %>%
+    add_histogram(x = ~age, color = ~lab, histnorm = "percent",
+                  colors = c("#FDE725FF", "#21908CFF"),
+                  legendgroup = ~lab, showlegend = FALSE) %>%
+    add_lines(data = true_age, x = ~age, y = ~percent, color = I("#440154FF"),
+              fill = "tozeroy", name = "true", fillcolor = "#44015433",
+              legendgroup = "true", showlegend = FALSE) %>%
+    layout(xaxis = list(title = "Age",
+                        range = extendrange(range(samp$age, na.rm = TRUE))),
+           yaxis = list(title = "Percent", ticksuffix = "%"))
 
   subplot(sp_p,
           subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
                   margin = 0.1),
-          nrows = 1, margin = 0.02, widths = c(0.6, 0.4),
-          titleX = TRUE, titleY = TRUE)
+          nrows = 1, margin = c(0, 0.2, 0, 0), widths = c(0.75, 0.25),
+          titleX = TRUE, titleY = TRUE) %>%
+    colorbar(x = 0.52, y = 1) %>%
+    layout(legend = list(x = 1, y = 0.95))
 
 }
 

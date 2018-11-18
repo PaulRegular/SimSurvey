@@ -22,7 +22,7 @@ plot_grid(grid, ...)
 plot_distribution(sim, ages = 1:10, years = 1:10, type = "contour",
   scale = "natural", ...)
 
-plot_survey(sim, which_year = 1, which_sim = 1, col = viridis::viridis(1))
+plot_survey(sim, which_year = 1, which_sim = 1)
 
 plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
   ...)
