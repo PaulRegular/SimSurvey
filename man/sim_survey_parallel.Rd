@@ -4,7 +4,7 @@
 \alias{sim_survey_parallel}
 \title{Simulate stratified random surveys using parallel computation}
 \usage{
-sim_survey_parallel(sim, n_sims = 1, n_loops = 100, cores = 6,
+sim_survey_parallel(sim, n_sims = 1, n_loops = 100, cores = 1,
   quiet = FALSE, ...)
 }
 \arguments{

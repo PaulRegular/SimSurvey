@@ -278,7 +278,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #'
 
 sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
-                                cores = 6, quiet = FALSE, ...) {
+                                cores = 1, quiet = FALSE, ...) {
 
   start <- Sys.time()
   one_res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)

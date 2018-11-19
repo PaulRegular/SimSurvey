@@ -273,7 +273,7 @@ b_plots <- facet_distribution(b)
 
 p <- subplot(a_plots, b_plots) %>% 
   add_labels(text = rep(c("Age 1", "Age 2", "Age 3"), 2), x = c(0.04, 0.20, 0.4, 0.6, 0.8, 0.95), y = rep(0.995, 6), yshift = 20) %>% 
-  add_labels(text = rep(c("Year 1", "Year 2", "Year 3"), 2), x = c(rep(0.005, 3), rep(0.54, 3)), y = c(0.08, 0.5, 0.92), xshift = -20, textangle = -90) %>% 
+  add_labels(text = rep(c("Year 3", "Year 2", "Year 1"), 2), x = c(rep(0.005, 3), rep(0.54, 3)), y = c(0.08, 0.5, 0.92), xshift = -20, textangle = -90) %>% 
   add_labels(text = "a)", x = 0, y = 1, yshift = 20, xshift = -20) %>% 
   add_labels(text = "b)", x = 0.54, y = 1, yshift = 20, xshift = -20)
 
@@ -320,26 +320,35 @@ plot_survey(b, which_sim = 1, which_year = 20)
 ```
 
 
-```{r survey, fig.cap = "- Bubble plots and histograms of set catches produced by `plot_survey` when supplied survey data simulated using `sim_survey` under relatively a) high and b) low sampling effort. Note that the first simulation of the survey in the first year is depicted here."}
+```{r survey, fig.cap = "- Bubble plots and histograms of set catches produced by `plot_survey` when supplied survey data simulated using `sim_survey` under relatively a) high and b) low sampling effort. Histograms of length and age composition include the distribution caught and sampled overlaid with a line of the true distribution of length and ages available to the survey. Note that the first simulation of the survey in year 20 is depicted here."}
 
-plot_a <- plot_survey(a, which_sim = 1, which_year = 1)
-plot_b <- plot_survey(b, which_sim = 1, which_year = 1)
+plot_a <- plot_survey(a, which_sim = 1, which_year = 20) %>% 
+  add_labels(text = "a)", x = 0, y = 1, yshift = 5, xshift = -5) %>% 
+  layout(margin = list(l = 10, r = 10, t = 10, b = 10))
+plot_b <- plot_survey(b, which_sim = 1, which_year = 20) %>% 
+  add_labels(text = "b)", x = 0, y = 1, yshift = 5, xshift = -5) %>% 
+  layout(margin = list(l = 10, r = 10, t = 10, b = 10))
 
-p <- subplot(plot_a, plot_b, nrows = 2) %>% 
-  add_labels(text = "a)", x = 0, y = 1, yshift = 20, xshift = -20) %>% 
-  add_labels(text = "b)", x = 0, y = 0.5, yshift = 20, xshift = -20)
+## plotly::subplot was not amenable to combining these two plots, I therefore used ImageMagick to combine a and b
 
-export_plot(p, file = "analysis/paper/figures/plot_survey.png", width = 500, height = 600)
+paths <- c(a = "analysis/paper/figures/plot_survey_a.png", b = "analysis/paper/figures/plot_survey_b.png")
+export_plot(plot_a, file = paths["a"], width = 800, height = 400)
+export_plot(plot_b, file = paths["b"], width = 800, height = 400)
+
+image_a <- magick::image_read(paths["a"])
+image_b <- magick::image_read(paths["b"])
+p <- magick::image_append(c(image_a, image_b), stack = TRUE)
+magick::image_write(p, path = "analysis/paper/figures/plot_survey.png")
+
 knitr::include_graphics("figures/plot_survey.png")
 
 ```
 
-
-- You need to fix up the aspect ratios and margins in the plot_survey subplot
-- Mention the `n_sims` argument, mention RAM limitations, and then move to `sim_survey_parallel`
-
+As noted above, the amount of RAM a user's computer has may limit the utility of the `sim_survey` function for running thousands of simulations of the same survey. The `sim_survey_parallel` function was therefore constructed to facilitate the running of thousands of simulations without running into RAM limitations. This function is set-up to run multiple `sim_survey` calls in parallel using the doParallel package [@weston2015] and, as such, multiple loops can be run using the `n_loops` argument and within each loop multiple simulations can be run (controled using the `n_sims` argument). Total simulations will be the product of `n_loops` and `n_sims` arguments. If more than one core (`cores`) is specified, then the simulations will be run in parallel to speed up the process. Low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower. The optimum ratio of `n_sims` to `n_loops` will depend on the amount of RAM and number of cores the user's computer has. In any case, this function simplifies the process of running thousands of simulations of the same survey and the simulated data can then be supplied to survey-based or model-based analyses that require simulation testing. Because the SimSurvey package was constructed in a context where survey-based analyses are commonplace, specifically stratified analyses, the package facilities include functions for calculating and assessing bias and precision of stratified estimates of abundance.
 
 ## Stratified analysis
+
+
 
 A series of `r # nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r # max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain annual estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
 
