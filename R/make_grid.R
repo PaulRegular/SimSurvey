@@ -84,7 +84,7 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   rstrat <- r$strat
   max_id <- 0
   for (s in sort(unique(rstrat))) {
-    rc <- clump(rstrat == s)
+    rc <- suppressMessages(raster::clump(rstrat == s))
     new_ids <- rc[!is.na(rc[])] + max_id
     r$strat[!is.na(rc)] <- new_ids
     max_id <- max(new_ids)

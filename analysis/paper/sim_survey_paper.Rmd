@@ -344,16 +344,35 @@ knitr::include_graphics("figures/plot_survey.png")
 
 ```
 
-As noted above, the amount of RAM a user's computer has may limit the utility of the `sim_survey` function for running thousands of simulations of the same survey. The `sim_survey_parallel` function was therefore constructed to facilitate the running of thousands of simulations without running into RAM limitations. This function is set-up to run multiple `sim_survey` calls in parallel using the doParallel package [@weston2015] and, as such, multiple loops can be run using the `n_loops` argument and within each loop multiple simulations can be run (controled using the `n_sims` argument). Total simulations will be the product of `n_loops` and `n_sims` arguments. If more than one core (`cores`) is specified, then the simulations will be run in parallel to speed up the process. Low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower. The optimum ratio of `n_sims` to `n_loops` will depend on the amount of RAM and number of cores the user's computer has. In any case, this function simplifies the process of running thousands of simulations of the same survey and the simulated data can then be supplied to survey-based or model-based analyses that require simulation testing. Because the SimSurvey package was constructed in a context where survey-based analyses are commonplace, specifically stratified analyses, the package facilities include functions for calculating and assessing bias and precision of stratified estimates of abundance.
+As noted above, the amount of RAM a user's computer has may limit the utility of the `sim_survey` function for running thousands of simulations of the same survey. The `sim_survey_parallel` function was therefore constructed to facilitate the running of thousands of simulations without running into RAM limitations. This function is set-up to run multiple `sim_survey` calls in parallel using the doParallel package [@weston2015] and, as such, multiple loops can be run using the `n_loops` argument and within each loop multiple simulations can be run (controled using the `n_sims` argument). Total simulations will be the product of `n_loops` and `n_sims` arguments. If more than one core (`cores`) is specified, then the simulations will be run in parallel to speed up the process. Low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower. The optimum ratio of `n_sims` to `n_loops` will depend on the amount of RAM and number of cores the user's computer has. In any case, this function simplifies the process of running thousands of simulations of the same survey and the simulated data can then be supplied to survey-based or model-based analyses that require simulation testing. 
 
 ## Stratified analysis
 
-
-
-A series of `r # nrow(sim$surveys)` surveys were tested using an array of different sampling protocol outlined in Table \@ref(tab:tests). Each survey was simulated `r # max(sim$age_strat_error$sim)` times over the same population and samples were run through a stratified analysis [@Smith1981] to obtain annual estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
+Once the survey data are simulated, they then need to be analyzed to obtain an index of abundance. While there are many model-based options for obtaining an index (**TODO: add references**), survey-based approaches, such as stratified analyses, are often used. Here we apply formula presented in Smith and Somerton [-@Smith1981] to calculate stratified estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). Note that estimates of total abundance are based on aggregate catch while abundance at length requires length frequencies to be bumped up using set-specific ratios of measured to caught fish, and these length frequencies are converted to age by applying a division-level age-length-key. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
 
 $$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
-Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates. Intra-haul correlation (i.e. intraclass correlation) of set catch was also calculated by fitting a mixed-model to the lengths data with set as a random effect [fit using the lme4 package; @Bates2015]; variance estimates from this model were then plugged into the ICC(1) formula presented in McGraw and Wong [-@Mcgraw1996]. All simulations and analyses were conducted using `r substr(version$version.string, 1, 15)` [@R2017] and the code has been developed into a package called `SimSurvey` to facilitate future work and collaboration (https://github.com/PaulRegular/SimSurvey).
+
+Where $N_a$, $N_y$, and $N_k$ are the number of years, ages and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates, where the above formula is indexed by length groups $l$, and total abundance, which lacks a group index of $a$ or $l$.
+
+Stratified estimates of abundance obtained are by supplying the output from `sim_survey` to the `run_strat` function. RMSE of the stratified estimates can then be calculated using the `strat_error` function. Results and error of a stratified analysis of one default survey over a default population are obtained using the following code:
+
+```{r, echo = TRUE, eval = FALSE}
+
+set.seed(438)
+sim <- sim_abundance() %>% 
+  sim_distribution() %>% 
+  sim_survey() %>% 
+  run_strat() %>% 
+  strat_error()
+
+```
+
+The returned object will include all the objects accumulated through the `sim_abundance` to `strat_error`. The `run_strat` function adds three data.tables called `total_strat`, `length_strat` and `age_strat` that include stratified estimates of total abundance, abundance at length, and abundance at age, respectively. To this, `strat_error` adds data.tables ending with `_strat_error` or `_strat_error_stats`. The `_strat_error` objects simply contain stratified estimates of abundance (column named `I_hat`) with corresponding true values of abundance available to the survey (column named `I`) and the `strat_error_stats` data.frame includes metrics of mean absolute error (`MAE`), mean-squared error (`MSE`) and root-mean-squared error (`RMSE`).
+
+## Testing protocol
+
+...
+
 
 ## Assumptions
 
