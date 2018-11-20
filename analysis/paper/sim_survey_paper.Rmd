@@ -20,7 +20,7 @@ knitr::opts_knit$set(root.dir = "../..")
 ```
 
 
-```{r data, include = FALSE}
+```{r packages, include = FALSE}
 library(SimSurvey)
 library(plotly)
 library(raster)
@@ -28,7 +28,6 @@ library(lattice)
 library(viridis)
 library(data.table)
 Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoicGF1bHJlZ3VsYXIiLCJhIjoiY2pueGIxejMxMGM0MjNqbjR1aXdwYm92bSJ9.R-t1SCa0VHKf4N-PQmYI5Q")
-# load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
 source("analysis/paper/helper_functions.R")
 ```
 
@@ -69,7 +68,7 @@ Table: (\#tab:par) - Main function calls, with argument descriptions and associa
 |:------------------------------------------------------- |:---------------------------------------------------------- | :------------------------- |
 | `> set.seed(438)`                                       |      Set random number generator seed to replicate results |                            |
 | `>`                                                     |                                                            |                            |
-| `> n <- sim_abundance(`                                 |                                       *Simulate abundance* |                            |         
+| `> abundance <- sim_abundance(`                         |                                       *Simulate abundance* |                            |         
 | `+   ages = 1:20,`                                      |                                                       Ages |                        $a$ |
 | `+   years = 1:20,`                                     |                                                      Years |                        $y$ |
 | `+   R = sim_R(mean = 30000000,`                        |                                           Mean recruitment |                    $\mu_r$ |
@@ -84,7 +83,7 @@ Table: (\#tab:par) - Main function calls, with argument descriptions and associa
 | `+                     log_sd = 0.1,`                   |     Standard deviation of the von Bertalanffy growth curve |                 $\sigma_l$ |
 | `+                     length_group = 3))`              |                  Length group for abundance at length (cm) |            $l_{group}^{N}$ |      
 | `>`                                                     |                                                            |                            |
-| `> g <- make_grid(`                                     |                                              *Make a grid* |                            |
+| `> grid <- make_grid(`                                  |                                              *Make a grid* |                            |
 | `+   x_range = c(-140, 140),`                           |                           Range of grid in the x dimension |                            |                   
 | `+   y_range = c(-140, 140),`                           |                           Range of grid in the y dimension |                            | 
 | `+   res = c(3.5, 3.5),`                                |                                       Grid resolution (km) |                        $R$ |
@@ -94,9 +93,9 @@ Table: (\#tab:par) - Main function calls, with argument descriptions and associa
 | `+   n_div = 1,`                                        |                                        Number of divisions |                  $N_{div}$ |
 | `+   strat_breaks = seq(0, 1000, by = 40))`             |                 Series of depth breaks for defining strata |                            |
 | `>`                                                     |                                                            |                            |
-| `> d <- sim_distribution(`                              |                                    *Simulate distribution* |                            |     
-| `+   sim = n,`                                          |                Object produced by `sim_abundance` function |                            |     
-| `+   grid = g,`                                         |                    Object produced by `make_grid` function |                            |
+| `> distribution <- sim_distribution(`                   |                                    *Simulate distribution* |                            |     
+| `+   sim = abundance,`                                  |                Object produced by `sim_abundance` function |                            |     
+| `+   grid = grid,`                                      |                    Object produced by `make_grid` function |                            |
 | `+   ays_covar = sim_ays_covar(sd = 2.8,`               |          Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |
 | `+                             range = 300,`            |                          Range of spatial correlation (km) |                        $r$ |
 | `+                             phi_age = 0.5,`          |            Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |
@@ -105,14 +104,14 @@ Table: (\#tab:par) - Main function calls, with argument descriptions and associa
 | `+   depth_par = sim_parabola(mu = 200,`                |          Depth at which abundance is typically highest (m) |                    $\mu_d$ |
 | `+                            sigma = 70))`             |              Dispersion around depth of peak abundance (m) |                 $\sigma_d$ |
 | `>`                                                     |                                                            |                            |
-| `> e <- expand_surveys(`                                |                       *Define a series of surveys to test* |                            |
+| `> surveys <- expand_surveys(`                          |                       *Define a series of surveys to test* |                            |
 | `+   set_den = c(0.0005, 0.001, 0.002, 0.005, 0.01),`   |                                       Set density (km^-2^) |                 $D_{sets}$ |
 | `+   lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),`   |                 Maximum number of lengths to collect / set |              $M_{lengths}$ |
 | `+   ages_cap = c(2, 5, 10, 20, 50))`                   | Maximum number of ages to sample / length group / division |                 $M_{ages}$ |
 | `>`                                                     |                                                            |                            |
-| `> s <- test_surveys(`                                  |                             *Simulate and analyze surveys* |                            |
-| `+   sim = d,`                                          |             Object produced by `sim_distribution` function |                            |
-| `+   surveys = e,`                                      |               Object produced by `expand_surveys` function |                            |
+| `> tests <- test_surveys(`                              |                             *Simulate and analyze surveys* |                            |
+| `+   sim = distribution,`                               |             Object produced by `sim_distribution` function |                            |
+| `+   surveys = surveys,`                                |               Object produced by `expand_surveys` function |                            |
 | `+   n_loops = 1000,`                                   |                    Number of times to simulate each survey |                            | 
 | `+   q = sim_logistic(k = 2,`                           |                Steepness of logistic curve of catchability |                        $k$ |
 | `+                   x0 = 3),`                          |                 Midpoint of logistic curve of catchability |                      $x_0$ |
@@ -344,7 +343,7 @@ knitr::include_graphics("figures/plot_survey.png")
 
 ```
 
-As noted above, the amount of RAM a user's computer has may limit the utility of the `sim_survey` function for running thousands of simulations of the same survey. The `sim_survey_parallel` function was therefore constructed to facilitate the running of thousands of simulations without running into RAM limitations. This function is set-up to run multiple `sim_survey` calls in parallel using the doParallel package [@weston2015] and, as such, multiple loops can be run using the `n_loops` argument and within each loop multiple simulations can be run (controled using the `n_sims` argument). Total simulations will be the product of `n_loops` and `n_sims` arguments. If more than one core (`cores`) is specified, then the simulations will be run in parallel to speed up the process. Low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower. The optimum ratio of `n_sims` to `n_loops` will depend on the amount of RAM and number of cores the user's computer has. In any case, this function simplifies the process of running thousands of simulations of the same survey and the simulated data can then be supplied to survey-based or model-based analyses that require simulation testing. 
+As noted above, the amount of RAM a user's computer has may limit the utility of the `sim_survey` function for running thousands of simulations of the same survey. The `sim_survey_parallel` function was therefore constructed to facilitate the running of thousands of simulations without running into RAM limitations. This function is set-up to run multiple `sim_survey` calls in parallel using the doParallel package [@weston2015] and, as such, multiple loops can be run using the `n_loops` argument and within each loop multiple simulations can be run (controlled using the `n_sims` argument). Total simulations will be the product of `n_loops` and `n_sims` arguments. If more than one core (`cores`) is specified, then the simulations will be run in parallel to speed up the process. Low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower. The optimum ratio of `n_sims` to `n_loops` will depend on the amount of RAM and number of cores the user's computer has. In any case, this function simplifies the process of running thousands of simulations of the same survey and the simulated data can then be supplied to survey-based or model-based analyses that require simulation testing. 
 
 ## Stratified analysis
 
@@ -369,24 +368,37 @@ sim <- sim_abundance() %>%
 
 The returned object will include all the objects accumulated through the `sim_abundance` to `strat_error`. The `run_strat` function adds three data.tables called `total_strat`, `length_strat` and `age_strat` that include stratified estimates of total abundance, abundance at length, and abundance at age, respectively. To this, `strat_error` adds data.tables ending with `_strat_error` or `_strat_error_stats`. The `_strat_error` objects simply contain stratified estimates of abundance (column named `I_hat`) with corresponding true values of abundance available to the survey (column named `I`) and the `strat_error_stats` data.frame includes metrics of mean absolute error (`MAE`), mean-squared error (`MSE`) and root-mean-squared error (`RMSE`).
 
-## Testing protocol
+## Testing survey protocol
 
-...
+Assuming a stratified analysis as the default method for obtaining an index of abundance, a series of survey protocol can be tested using the `test_surveys` function. Provided a simulated population from `sim_distribution` and a series of survey protocol from `expand_surveys`, this function will simulate and analyze data from each survey using the `sim_survey`, `run_strat` and `strat_error` functions. Like `sim_survey_parallel`, this function operates in parallel and allows the specification of `n_sims` and `n_loops`, and the product of these two arguments equals the number of times each survey is simulated. Keep in mind that low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower, especially if the work is spread across few `cores`. The below code will run a small subset of the simulation tests run for the case study presented in this paper (see Table \@ref(tab:par) for code to replicate the case study results). Specifically, `expand_surveys` sets up a series of eight surveys to test (i.e. all possible combinations of `set_den`, `lengths_cap` and `ages_cap` protocol) and the `test_surveys` function will run 250 simulations of each survey and compare stratified estimates of abundance to the true abundance available to the survey. Though a limited test, this may take a while to run.
 
+```{r, echo = TRUE, eval = FALSE}
+
+set.seed(438)
+pop <- sim_abundance() %>%
+  sim_distribution()
+
+surveys <- expand_surveys(set_den = c(1, 2) / 1000,
+                          lengths_cap = c(100, 500),
+                          ages_cap = c(5, 20))
+
+tests <- test_surveys(pop, surveys = surveys,
+                      n_sims = 5, n_loops = 50, cores = 2)
+
+```
+
+Processing time will system (i.e. amount of RAM and number of cores) and setting (i.e. `n_loops` and `n_sims` ratio) dependent. The `test_survey` function will print a progress bar, generated using the progress package [@csardi2016], which details percent completion and will also include an eta after the first step of the loop completes. Thousands of simulations of hundreds of survey designs, like run here for our case study, may take days to run. The `test_surveys` function therefore includes an option for exporting intermediate results to a local directory, via the `export_dir` argument, and the `resume_test` function can be used resume a `test_surveys` run that had to be stopped part way through the process. The final object produced will be a list that includes all objects from `sim_abundance` and `sim_distribution` with the table of survey designs tested (named `surveys`) and tables produced by `strat_error` that end with the names `_strat_error` and `_strat_error_stats`. These tables include a `survey` column to allow merging of the survey protocol table with the error tables. Objects produced by `sim_survey` (set and sampling details) and `run_strat` (full stratified analysis results) are not retained to minimize object size. Like other core functions, some convenience functions are included in SimSurvey for creating interactive plots of the results from `test_surveys`. These will be demonstrated in the [Results] section using the results from the case study.
 
 ## Assumptions
 
-Like any model, this simulation is a simplification of a much more complex reality. For instance, the population is assumed to aggregate by age-class and be uniformly distributed within a cell when, in the real-world, they may aggregate by length and form finer-scale clusters. The survey is also an instantaneous snapshot of the population, meaning that the population is assumed to be in the same location from the beginning to the end of the survey. Also, fish are aged at random within length bins and ages are estimated without error. Finally, area trawled is assumed to be perfectly standard. This is a short, non-inclusive, list of additional variability that likely occurs in the real-world but was not implemented here for simplicity.
+Like any model, this simulation is a simplification of a much more complex reality. For instance, the population is assumed to aggregate by age-class and be uniformly distributed within a cell when, in the real-world, they may aggregate by length and form finer-scale clusters. The survey is also an instantaneous snapshot of the population, meaning that the population is assumed to be in the same location from the beginning to the end of the survey. Also, fish are aged at random within length bins and ages are estimated without error. Finally, area trawled is assumed to be perfectly standard. This is a short, non-inclusive, list of additional variability that likely occurs in the real-world but was not implemented here for simplicity. Nevertheless, the SimSurvey package provides the most realistic operating model that we are aware of for simulating stratified-random survey data from a population that varies across age, year and space dimensions.
 
 
 # Results
 
-```{r icc, cache = TRUE}
-len_samp <- merge(sim$setdet, sim$samp, by = "set")
-len_samp <- len_samp[len_samp$sim == 1 & len_samp$measured, ]
-sim_icc <- round(icc(len_samp$length, len_samp$set), 1)
-sim_icc <- sprintf("%.2f", sim_icc)
-real_icc <- "0.70" # calculated in the file "imatate_cod_data.R"
+```{r data, cache = TRUE}
+load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
+tests <- sim
 ```
 
 
