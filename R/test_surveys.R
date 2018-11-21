@@ -70,7 +70,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'                           lengths_cap = c(100, 500),
 #'                           ages_cap = c(5, 20))
 #'
-#' ## This call runs 200 simulations of 8 different surveys over the same
+#' ## This call runs 500 simulations of 8 different surveys over the same
 #' ## population, and then runs a stratified analysis and compares true vs
 #' ## estimated values. It may take a while to run.
 #' tests <- test_surveys(pop, surveys = surveys, keep_details = 1,
