@@ -228,3 +228,35 @@ comp_fun(x_y_year = c(110.25, 68.25, 7),
                   0   56 1000    0    0    0    0    0    0    0    0    0")
 
 
+
+## 2018-12-17 - real 3Ps data --------------------------------------------------
+
+library(Rstrap)
+
+## Load survey data compiled for Rstrap
+load("analysis/rv_data/converted_set_details_2018-02-26.Rdata")
+load("analysis/rv_data/converted_length-frequency_data_2018-02-26.Rdata")
+load("analysis/rv_data/age-growth_data_2018-02-26.Rdata")
+
+## Subset data to cod
+con.setdet <- con.setdet[(con.setdet$rec == 5 |
+                            (con.setdet$rec == 6 & con.setdet$spec == 438)) &
+                           con.setdet$NAFOdiv == "3P", ]
+con.lf <- con.lf[con.lf$spec == 438 & con.lf$NAFOdiv == "3P", ]
+ag <- ag[ag$spec == 438 & ag$NAFOdiv == "3P", ]
+rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
+
+## Save Rstrap output
+index.strata <- c(293:300, 306:326, 705:708, 711:716, 779:783)
+out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
+                 data.series = "Campelen", program = "strat2 & strat1",
+                 species = 438, survey.year = 1995:2017, season = "spring",
+                 NAFOdiv = "3P", strat = c(293:300, 306:326, 705:708, 711:716, 779:783),
+                 sex = c("male","female","unsexed"), length.group = 3,
+                 group.by = "length & age",
+                 export = NULL, plot.results = FALSE)
+
+fwrite(out$raw.data$set.details, file = "analysis/cod_sim_exports/2018-09-12_for_Geoff/cod_3Ps_setdet.csv")
+fwrite(out$raw.data$age.growth, file = "analysis/cod_sim_exports/2018-09-12_for_Geoff/cod_3Ps_samp.csv")
+
+
