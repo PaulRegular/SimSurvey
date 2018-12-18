@@ -8,8 +8,8 @@
   }
 }
 
-## Helper function for spatial covariance
-.sp_covar <- function(x = NULL, range = 50, lambda = 1,model = "matern") {
+## Helper function for spatial correlation
+.sp_cor <- function(x = NULL, range = 50, lambda = 1, model = "matern") {
   d <- .dist(x)
   cormat <- switch(model,
                    exponential = {
@@ -89,14 +89,14 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
     pc_age <- sqrt(1 - phi_age ^ 2)
     pc_year <- sqrt(1 - phi_year ^ 2)
     ##chol is costly, so calculate only once!
-    chol_cor <- chol(.sp_covar(x=x,range=range,lambda=lambda,model=model))
+    chol_cor <- chol(.sp_cor(x = x, range = range, lambda = lambda, model = model))
     for (j in seq_along(years)) {
       for (i in seq_along(ages)) {
         if ((i == 1) & (j == 1)) {
           m <- 0
           s <- sd[i] / (pc_age[i] * pc_year[j])
           if (!exists("w1")) { # Might save some time...
-            Sigma <- s*chol_cor
+            Sigma <- s * chol_cor
             w1 <- t(Sigma)
           }
           E[i, j, ] <- m + w1 %*% stats::rnorm(nc)
@@ -108,7 +108,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
             m <- phi_age[i] * E[i - 1, j, ]
             s <- sd[i] / pc_year[j]
             if (!exists("w2")) {
-              Sigma <- s*chol_cor
+              Sigma <- s * chol_cor
               w2 <- t(Sigma)
             }
             E[i, j, ] <- m + w2 %*% stats::rnorm(nc)
@@ -121,7 +121,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
             m <- phi_year[j] * E[i, j - 1, ]
             s <- sd[i] / pc_age[i]
             if (!exists("w3")) {
-              Sigma <- s*chol_cor
+              Sigma <- s * chol_cor
               w3 <- t(Sigma)
             }
             E[i, j, ] <- m + w3 %*% stats::rnorm(nc)
@@ -139,7 +139,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
             m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
             s <- sd[i]
             if (!exists("w4")) { # chol is costly, therefore only calculate once
-              Sigma <- s*chol_cor
+              Sigma <- s * chol_cor
               w4 <- t(Sigma)
             }
             E[i, j, ] <- m + w4 %*% stats::rnorm(nc)
