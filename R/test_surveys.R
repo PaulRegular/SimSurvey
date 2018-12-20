@@ -93,6 +93,10 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' plot_error_surface(tests, plot_by = "rule")
 #' plot_error_surface(tests, plot_by = "samples")
+#'
+#' plot_survey_rank(tests, which_strat = "length")
+#' plot_survey_rank(tests, which_strat = "age")
+#'
 #' }
 #'
 #' @export

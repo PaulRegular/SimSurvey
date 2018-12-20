@@ -23,6 +23,7 @@
 #' @param surveys        Subset data to one or more surveys.
 #' @param quants         Quantile intervals to display on fan plot
 #' @param col            Plot color
+#' @param which_strat    Which strat values to focus on? (total, length, or age)
 #' @param ...            Additional arguments to pass to \code{\link[plotly]{plot_ly}}.
 #'
 #' @import plotly
@@ -584,4 +585,106 @@ plot_error_surface <- function(sim, plot_by = "rule") {
       ))
 
 }
+
+
+.label_plot <- function(d, text = NULL, name = NULL, ...) {
+  plot_ly(data = d) %>%
+    add_text(x = 1, y = ~rank, text = text, hoverinfo = "none",
+             name = name, ...) %>%
+    hide_guides() %>%
+    layout(yaxis = list(showticklabels = FALSE,
+                        tickvals = d$rank,
+                        title = "",
+                        range = c(min(c(max(d$rank) + 1, 25)), 0),
+                        zeroline = FALSE),
+           xaxis = list(title = name,
+                        side = "top",
+                        zeroline = FALSE,
+                        showline = FALSE,
+                        showticklabels = FALSE,
+                        showgrid = FALSE))
+}
+
+
+.rank_plot <- function(d, x = NULL, name = NULL, ...) {
+  plot_ly(data = d) %>%
+    add_markers(x = x, y = ~rank, color = x, colors = rev(viridis::viridis(100)),
+                name = name, ...) %>%
+    hide_guides() %>%
+    layout(yaxis = list(showticklabels = FALSE,
+                        tickvals = d$rank,
+                        title = "",
+                        range = c(min(c(max(d$rank) + 1, 25)), 0)),
+           xaxis = list(title = name,
+                        side = "top",
+                        ticks = "outside",
+                        showline = TRUE,
+                        zeroline = FALSE,
+                        showgrid = FALSE))
+}
+
+
+#' @export
+#' @rdname plot_trend
+plot_survey_rank <- function(sim, which_strat = "age") {
+
+  surveys <- switch(which_strat,
+                    total = sim$surveys[, list(survey = min(survey)), by = c("set_den")],
+                    length = sim$surveys[, list(survey = min(survey)), by = c("set_den", "lengths_cap")],
+                    age = sim$surveys,
+                    stop("which_strat must be total, length, or age"))
+  totals <- switch(which_strat,
+                   total = sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught)),
+                                           by = "survey"],
+                   length = sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
+                                                   n_measured = mean(n_measured)),
+                                            by = "survey"],
+                   age = sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
+                                                n_measured = mean(n_measured), n_aged = mean(n_aged)),
+                                         by = "survey"],
+                   stop("which_strat must be total, length, or age"))
+  errors <- switch(which_strat,
+                   total = merge(surveys, sim$total_strat_error_stats, by = "survey"),
+                   length = merge(surveys, sim$length_strat_error_stats, by = "survey"),
+                   age = merge(surveys, sim$age_strat_error_stats, by = "survey"),
+                   stop("which_strat must be total, length, or age"))
+  d <- merge(errors, totals, by = "survey")
+
+  d <- d[order(RMSE), ]
+  d$rank <- seq(nrow(d))
+
+  sub_d <- d
+
+  a_list <- list()
+  a_list$p_sets_lab <- .label_plot(sub_d, text = ~set_den, name = "D<sub>sets</sub>")
+  if (which_strat == "length" | which_strat == "age") {
+    a_list$p_lens_lab <- .label_plot(sub_d, text = ~lengths_cap, name = "M<sub>lengths</sub>")
+  }
+  if (which_strat == "age") {
+    a_list$p_ages_lab <- .label_plot(sub_d, text = ~ages_cap, name = "M<sub>ages</sub>")
+  }
+
+  a <- subplot(a_list, margin = 0.01,
+               nrows = 1, titleX = TRUE, shareY = TRUE)
+
+  b_list <- list()
+  b_list$p_rmse <- .rank_plot(sub_d, x = ~RMSE, name = "RMSE")
+  b_list$p_sets <- .rank_plot(sub_d, x = ~n_sets, name = "N<sub>sets</sub>")
+  if (which_strat == "length" | which_strat == "age") {
+    b_list$p_measured <- .rank_plot(sub_d, x = ~n_measured, name = "N<sub>measured</sub>")
+  }
+  if (which_strat == "age") {
+    b_list$p_aged <- .rank_plot(sub_d, x = ~n_aged, name = "N<sub>aged</sub>")
+  }
+
+  b <- subplot(b_list, nrows = 1, titleX = TRUE, shareY = TRUE)
+
+  suppressWarnings({
+    subplot(a, b, titleX = TRUE, shareY = TRUE, nrows = 1, widths = c(0.3, 0.7),
+            margin = 0.01)
+  })
+
+}
+
+
 

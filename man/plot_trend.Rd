@@ -10,6 +10,7 @@
 \alias{plot_length_strat_fan}
 \alias{plot_age_strat_fan}
 \alias{plot_error_surface}
+\alias{plot_survey_rank}
 \title{Simple plotting functions}
 \usage{
 plot_trend(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...)
@@ -34,6 +35,8 @@ plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
   select_by = "year", quants = seq(90, 10, by = -10), ...)
 
 plot_error_surface(sim, plot_by = "rule")
+
+plot_survey_rank(sim, which_strat = "age")
 }
 \arguments{
 \item{sim}{Object returned by \code{\link{sim_abundance}},
@@ -72,6 +75,8 @@ plot_error_surface(sim, plot_by = "rule")
 \item{select_by}{Select plot by "age", "length" or "year"?}
 
 \item{plot_by}{Plot error surface by "rule" or "samples"?}
+
+\item{which_strat}{Which strat values to focus on? (total, length, or age)}
 }
 \description{
 These functions are simple plotting helpers to get some quick

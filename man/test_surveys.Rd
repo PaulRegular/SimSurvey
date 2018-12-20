@@ -116,6 +116,10 @@ plot_age_strat_fan(tests, surveys = 1:8, select_by = "age")
 
 plot_error_surface(tests, plot_by = "rule")
 plot_error_surface(tests, plot_by = "samples")
+
+plot_survey_rank(tests, which_strat = "length")
+plot_survey_rank(tests, which_strat = "age")
+
 }
 
 }
