@@ -28,9 +28,10 @@
                      INLA::inla.spde2.precision(i,theta=c(log(range),log(sigma_u)))
                  },
                  barrier = {
-                     fem <- INLA:::inla.barrier.fem(mesh,barrier.triangles)
-                     INLA:::inla.barrier.q(fem,ranges=c(1,range_fraction)
-                                           *range,sigma=sigma_u)
+                     ##Switch out from using inla.barrier.fem and :::, not really needed here anyways
+                     barrier.model <- INLA::inla.barrier.pcmatern(mesh,barrier.triangles=barrier.triangles)
+                     ##Yes, theta really is supposed to be the reverse of the one above...
+                     INLA::inla.rgeneric.q(barrier.model,"Q",theta=c(log(sigma_u),log(range)))
                  },
                  stop("wrong or no specification of covariance model"))
     Q
@@ -76,8 +77,8 @@
 #'                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
 #'                                                          phi_year = 0.1,
 #'                                                          model = "barrier",
-#'                                                          mesh = survey_mesh_lite,
-#'                                                          barrier.triangles = survey_lite_tri),
+#'                                                          mesh = survey_lite_mesh$mesh,
+#'                                                          barrier.triangles = survey_lite_mesh$barrier_tri),
 #'                           depth_par = sim_parabola())
 #' plot_distribution(sim,ages = 1:5, years = 1:5,type="heatmap")
 #'

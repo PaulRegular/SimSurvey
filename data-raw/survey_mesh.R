@@ -92,9 +92,11 @@ water.tri <- inla.over_sp_mesh(as_Spatial(diff),y=survey_mesh_lite,
 num.tri = length(survey_mesh_lite$graph$tv[,1])
 survey_lite_tri = setdiff(1:num.tri,water.tri)
 survey_lite_poly = inla.barrier.polygon(survey_mesh,
-                                           barrier.triangles = survey_barrier_tri)
+                                           barrier.triangles = survey_lite_tri)
 
+survey_lite_mesh <- list(mesh=survey_mesh_lite,barrier_tri=survey_lite_tri,barrier_poly=survey_lite_poly)
+survey_mesh <- list(mesh=survey_mesh,barrier_tri=survey_barrier_tri,barrier_poly=survey_barrier_poly)
 
 ##Save the necessary stuff for actually using this mesh and what not
-save(survey_mesh,survey_barrier_tri,survey_barrier_poly,survey_mesh_lite,survey_lite_tri,survey_lite_poly,
+save(survey_mesh,survey_lite_mesh,
      file = "../data/survey_mesh.rda",compress = "xz")

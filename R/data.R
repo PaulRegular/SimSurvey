@@ -39,16 +39,20 @@
 
 #' Sample survey meshes and related items
 #'
-#'  @format
+#'  @format A list containing the R-INLA survey mesh, the set of triangles in the barrier and the barrier polygons for plotting
 #'
 #' An example of a mesh containing barrier information for use with
 #' sim_ays_covar_spde. Also derived from global adminstrative boundaries
 #' data (http://gadm.org). Details on creation provided in the data-raw
 #' folder of this package in the survey_mesh.R file. Includes the set
 #' of barrier triangles needed to use the barrier approach, barrier
-#' polygons for plotting and the set of triangles in the barrier. In
-#' addition contains a "lite" version with fewer nodes in the mesh for
-#' faster computational time.
+#' polygons for plotting and the set of triangles in the barrier.
 "survey_mesh"
+
+#'Lite sample survey meshs and related items
+#'
+#' @format A list containing the same items as survey_mesh, but with fewer nodes to save on computational time
+#'
+"survey_lite_mesh"
 
 
