@@ -28,7 +28,6 @@ Imports:
     magrittr,
     progress,
     doParallel,
-    remotes,
     parallel,
     foreach,
     plotly
@@ -43,7 +42,5 @@ Suggests:
     lme4,
     igraph,
     ggplot2,
-    INLA
-Remotes:
-    url::https://inla.r-inla-download.org/R/stable
+	INLA
 RoxygenNote: 6.1.0
