@@ -41,5 +41,6 @@ Suggests:
     viridis,
     lme4,
     igraph,
-    ggplot2
-RoxygenNote: 6.0.1
+    ggplot2,
+	INLA
+RoxygenNote: 6.1.0
