@@ -23,7 +23,12 @@ or a vector of the same length as years.}
 
 \item{group_ages}{Make space-age-year variance equal across these ages}
 
-\item{group_years}{Make space-age-year vairance equal across these years}
+\item{group_years}{Make space-age-year variance equal across these years}
+
+\item{mesh}{The mesh used to generate the precision matrix}
+
+\item{barrier.triangles}{the set of triangles in the barrier of the mesh
+for the barrier model}
 }
 \value{
 Returns a function for use in \code{\link{sim_distribution}}.
@@ -35,6 +40,7 @@ generate the error term.
 \examples{
 
 ##SPDE Approach
+\dontrun{
 ##Make a grid
 MyGrid <- make_grid(res = c(10,10))
 ##Make a mesh based off it
@@ -56,8 +62,9 @@ sim <- sim_abundance(ages=1:10,years=1:10) \%>\%
                                                          phi_year = 0.1,
                                                          model = "barrier",
                                                          mesh = survey_lite_mesh$mesh,
-                                                         barrier.triangles = survey_lite_mesh$barrier_tri),
+                                                         barrier.triangles =
+                                                         survey_lite_mesh$barrier_tri),
                           depth_par = sim_parabola())
 plot_distribution(sim,ages = 1:5, years = 1:5,type="heatmap")
-
+}
 }

@@ -50,13 +50,17 @@
 #' @param phi_year Defines autocorrelation through years. Can be one value
 #'        or a vector of the same length as years.
 #' @param group_ages Make space-age-year variance equal across these ages
-#' @param group_years Make space-age-year vairance equal across these years
+#' @param group_years Make space-age-year variance equal across these years
+#' @param mesh The mesh used to generate the precision matrix
+#' @param barrier.triangles the set of triangles in the barrier of the mesh
+#' for the barrier model
 #'
 #' @return Returns a function for use in \code{\link{sim_distribution}}.
 #'
 #' @examples
 #'
 #' ##SPDE Approach
+#' \dontrun{
 #' ##Make a grid
 #' MyGrid <- make_grid(res = c(10,10))
 #' ##Make a mesh based off it
@@ -78,10 +82,11 @@
 #'                                                          phi_year = 0.1,
 #'                                                          model = "barrier",
 #'                                                          mesh = survey_lite_mesh$mesh,
-#'                                                          barrier.triangles = survey_lite_mesh$barrier_tri),
+#'                                                          barrier.triangles =
+#'                                                          survey_lite_mesh$barrier_tri),
 #'                           depth_par = sim_parabola())
 #' plot_distribution(sim,ages = 1:5, years = 1:5,type="heatmap")
-#'
+#' }
 #' @export
 sim_ays_covar_spde <- function(sd = 2.8,range = 300,model = "barrier",phi_age = 0.5,phi_year = 0.9,group_ages = 5:20, group_years = NULL,mesh,barrier.triangles){
     function(x = NULL, ages = NULL, years = NULL, cells = NULL){
