@@ -15,8 +15,8 @@
 \usage{
 plot_trend(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...)
 
-plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat,
-  ...)
+plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year",
+  zlab = mat, ...)
 
 plot_grid(grid, ...)
 
@@ -25,11 +25,12 @@ plot_distribution(sim, ages = 1:10, years = 1:10, type = "contour",
 
 plot_survey(sim, which_year = 1, which_sim = 1)
 
-plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by = -10),
-  ...)
+plot_total_strat_fan(sim, surveys = 1:5, quants = seq(90, 10, by =
+  -10), ...)
 
-plot_length_strat_fan(sim, surveys = 1:5, years = 1:10, lengths = 1:50,
-  select_by = "year", quants = seq(90, 10, by = -10), ...)
+plot_length_strat_fan(sim, surveys = 1:5, years = 1:10,
+  lengths = 1:50, select_by = "year", quants = seq(90, 10, by = -10),
+  ...)
 
 plot_age_strat_fan(sim, surveys = 1:5, years = 1:10, ages = 1:10,
   select_by = "year", quants = seq(90, 10, by = -10), ...)
