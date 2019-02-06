@@ -526,6 +526,76 @@ knitr::include_graphics("figures/plot_age_strat_fan.png")
 ```
 
 
+The relative performance of the surveys tested can be compared using `plot_survey_rank` and `plot_error_surface`. The `plot_survey_rank` function produces a divergent dot plot of the results which ranks the surveys by RMSE. Using the `wich_strat` argument, the plot can be focused on total, length or age based stratified results. The `plot_error_surface` focuses solely on the age based stratified results by plotting a surface of RMSE (z-axis) by set (drop down selection), length (y-axis) and age (z-axis) sampling effort. The sampling effort axes can be rule or sample size based (`plot_by = "rule"` or `plot_by = "samples"`, respectively). See figures \@ref(fig:rank) and \@ref(fig:rmse-surface) for examples of the output from the code below.
+
+```{r, echo = TRUE, eval = FALSE}
+
+plot_survey_rank(tests, which_strat = "length")
+plot_error_surface(tests, plot_by = "rule")
+
+```
+
+
+```{r, eval = replot}
+
+sim <- tests
+sim$surveys <- sim$surveys[sim$surveys$set_den %in% c("0.01", "0.002", "0.0005")]
+
+p <- plot_survey_rank(sim, which_strat = "length")
+export_plot(p, file = "analysis/paper/figures/plot_survey_rank.png", width = 450, height = 400)
+
+totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
+                                 n_measured = mean(n_measured), n_aged = mean(n_aged)),
+                          by = "survey"]
+errors <- merge(sim$surveys, sim$age_strat_error_stats, by = "survey")
+d <- merge(errors, totals, by = "survey")
+
+split_d <- split(d, d$set_den)
+x <- sort(unique(d$ages_cap))
+y <- sort(unique(d$lengths_cap))
+
+scene <- list(
+  xaxis = list(title = "Ages cap"),
+  yaxis = list(title = "Lengths cap"),
+  zaxis = list(title = "RMSE"),
+  camera = list(eye = list(x = 1.5, y = 1.5, z = 1.5))
+)
+
+xshift <- c(-30, 0, 30)
+p_list <- lapply(seq_along(split_d), function(i) {
+  scene <- paste0("scene", i)
+  z <- stats::xtabs(RMSE ~ ages_cap + lengths_cap, data = split_d[[i]], subset = NULL)
+  plot_ly(x = x, y = y, scene = scene) %>% add_surface(z = t(z), showscale = FALSE) %>% 
+    add_labels(x = 0.5, y = 1, text = paste("D<sub>sets</sub> =", names(split_d[i])), 
+               yshift = -20, xshift = xshift[i])
+})
+
+p <- subplot(p_list) %>%  
+  layout(scene = c(list(domain = list(x = c(0, 1/3), y = c(0, 1))), scene),
+         scene2 = c(list(domain = list(x = c(1/3, 2/3), y = c(0, 1))), scene),
+         scene3 = c(list(domain = list(x = c(2/3, 1), y = c(0, 1))), scene),
+         autosize = FALSE, margin = list(t = 0, l = 10, r = 10, b = 10))
+  
+export_plot(p, file = "analysis/paper/figures/plot_error_surface.png", width = 1250, height = 400)
+
+
+```
+
+
+```{r rank, fig.cap = "- Divergent dot plot of the percision and accuracy (RMSE) of length based stratified estimates of abundance, and total sampling effort (number of sets [$N_{sets}$] and length measurements [$N_{measured}$]), under various sampling protocol (set density [$D_{sets}$] and maximum number of lengths measured per set [$M_{lengths}$])."}
+
+knitr::include_graphics("figures/plot_survey_rank.png")
+
+```
+
+```{r rmse-surface, fig.cap = "- Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group (M_{ages}). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that the z-axes scales are different across the facets."}
+
+knitr::include_graphics("figures/plot_error_surface.png")
+
+```
+
+
+
 ## Assumptions
 
 Like any model, this simulation is a simplification of a much more complex reality. For instance, the population is assumed to aggregate by age-class and be uniformly distributed within a cell when, in the real-world, they may aggregate by length and form finer-scale clusters. The survey is also an instantaneous snapshot of the population, meaning that the population is assumed to be in the same location from the beginning to the end of the survey. Also, fish are aged at random within length bins and ages are estimated without error. Finally, area trawled is assumed to be perfectly standard. This is a short, non-inclusive, list of additional variability that likely occurs in the real-world but was not implemented here for simplicity. Nevertheless, the SimSurvey package provides the most realistic operating model that we are aware of for simulating stratified-random survey data from a population that varies across age, year and space dimensions.

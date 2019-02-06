@@ -42,4 +42,4 @@ Suggests:
     lme4,
     igraph,
     ggplot2
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
