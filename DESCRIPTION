@@ -16,6 +16,7 @@ Description: This package simulates stratified-random samples from
 Depends:
     R (>= 3.3.0)
 License: GPL-3 | file LICENSE
+Additional_repositories: https://inla.r-inla-download.org/R/stable/
 LazyData: true
 ByteCompile: true
 URL: https://github.com/PaulRegular/SimSurvey
@@ -41,5 +42,6 @@ Suggests:
     viridis,
     lme4,
     igraph,
-    ggplot2
+    ggplot2,
+    INLA
 RoxygenNote: 6.1.1
