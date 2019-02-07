@@ -576,7 +576,7 @@ p <- subplot(p_list) %>%
          scene3 = c(list(domain = list(x = c(2/3, 1), y = c(0, 1))), scene),
          autosize = FALSE, margin = list(t = 0, l = 10, r = 10, b = 10))
   
-export_plot(p, file = "analysis/paper/figures/plot_error_surface.png", width = 1250, height = 400)
+export_plot(p, file = "analysis/paper/figures/plot_error_surface.png", width = 990, height = 270)
 
 
 ```
@@ -588,7 +588,7 @@ knitr::include_graphics("figures/plot_survey_rank.png")
 
 ```
 
-```{r rmse-surface, fig.cap = "- Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group (M_{ages}). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that the z-axes scales are different across the facets."}
+```{r rmse-surface, fig.cap = "- Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that the z-axes scales are different across the facets."}
 
 knitr::include_graphics("figures/plot_error_surface.png")
 
