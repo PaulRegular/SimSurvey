@@ -1,7 +1,7 @@
 ---
 title: "Using simulation to optimize the sampling design of fisheries-independent trawl surveys"
 author: "Paul M. Regular & Fran Mowbray"
-date: "September 12^th^, 2018"
+date: "2019-02-08"
 output:
   ioslides_presentation:
     widescreen: true
@@ -27,10 +27,14 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.width = 10, 
                       fig.height = 5.2)
 knitr::opts_knit$set(root.dir = "../..")
+
 ```
 
 
 ```{r data, include = FALSE}
+
+# xaringan::inf_mr()
+
 library(SimSurvey)
 library(plotly)
 library(crosstalk)
@@ -38,7 +42,7 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
-load("analysis/cod_sim_exports/2018-09-04_test/test_output.RData")
+load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
 
 boat_txt <- '<br>
 <img src="graphics/teleost_twitter_crop.jpg" width="400"/>
@@ -61,11 +65,14 @@ tight_layout <- function(p,
 ```
 
 
+# N?
+
+
 ## Fisheries-independent trawl surveys {.columns-2}
 
 - Conducted by many RFMOs
 - Becoming increasingly important in stock assessment
-- Very costly 💰
+- Very costly!
 - General goal:
     - Maximize information & minimize expenses
 
@@ -113,6 +120,7 @@ Sampling clusters of fish that have similar characteristics (e.g. length)
 Graphic from <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002915">Tunstrøm et al (2013) PLoS Comput Biol 9(2): e1002915.</a>
 </font>
 </center>
+
 
 ## Fisheries-independent trawl surveys {.columns-2}
 
@@ -168,23 +176,21 @@ cat(boat_txt)
 
 ### Trend in total abundance
 
-<dev class = "left">
 ```{r}
 plot_trend(sim) %>% 
   tight_layout(yaxis = list(rangemode = "tozero"),
                margin = list(l = 70, r = 0, t = 0, b = 40, pad = 0))
 ```
-</dev>
+
 
 ## Simulate abundance {.tighter}
 
 ### Trend in abundance at age
 
-<dev class = "left">
 ```{r}
-plot_surface(sim) %>% tight_layout()
+plot_surface(sim) %>% tight_layout(scene = list(xaxis = list(range = c(1, 10))))
 ```
-</dev>
+
 
 ## Simulate spatial aggregation
 
@@ -196,36 +202,14 @@ plot_surface(sim) %>% tight_layout()
         - $\xi_{a,y,s}$ is a combination of Matérn covariance and the age-year covariance described in Cadigan [-@Cadigan2016]
 
 
-## Simulate spatial aggregation  {.tighter}
-
-### Square grid with depth gradient
-
-<dev class = "left">
-```{r}
-plot_ly(data = sim$grid_xy, x = ~x, y = ~y, color = ~depth, 
-        symbol = I(15), size = I(4.5), name = "grid", type = "scatter", 
-        text = ~depth) %>%
-  colorbar(title = "Depth") %>%
-  tight_layout(yaxis = list(title = "", scaleanchor = "x", zeroline = FALSE, 
-                            showgrid = FALSE, showticklabels = FALSE,
-                            tickcolor = "transparent"),
-               xaxis = list(title = "", zeroline = FALSE, 
-                            showgrid = FALSE, showticklabels = FALSE,
-                            tickcolor = "transparent"))
-```
-</dev>
-
-
 ## Simulate spatial aggregation {.tighter}
 
 ### Distribution for ages 1-6 in years 1-6
 
-<dev class = "left">
 ```{r}
-plot_distribution_slider(sim, ages = 1:6, years = 1:6) %>% 
+plot_distribution(sim, ages = 1:6, years = 1:6, type = "heatmap") %>% 
   tight_layout(margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
-</dev>
 
 
 ## Simulate survey
@@ -249,12 +233,11 @@ plot_distribution_slider(sim, ages = 1:6, years = 1:6) %>%
 
 ### Catch in year 1 survey simulation 1
 
-<dev class = "left">
 ```{r}
-plot_samp_dist(sim) %>% 
+plot_survey(sim) %>% 
   tight_layout(margin = list(l = 0, r = 0, t = 0, b = 40, pad = 0))
 ```
-</dev>
+
 
 ## Settings and analysis {.build}
 
@@ -291,19 +274,17 @@ plot_samp_dist(sim) %>%
 
 ### Total abundance
 
-<dev class = "left">
 ```{r}
 plot_total_strat_fan(sim, surveys = 1:5, 
                      plot_bgcolor = "transparent", paper_bgcolor = "transparent",
                      font = list(size = 14, family = "'Montserrat', sans-serif"))
 ```
-</dev>
+
 
 ## Truth vs. estimate
 
 ### Abundance at age
 
-<dev class = "left">
 ```{r}
 surveys <- sim$surveys[set_den %in% c(0.0005, 0.001, 0.002, 0.01) &
                          lengths_cap %in% c(10, 100, 500, 1000) &
@@ -313,28 +294,24 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
                    plot_bgcolor = "transparent", paper_bgcolor = "transparent",
                    font = list(size = 14, family = "'Montserrat', sans-serif"))
 ```
-</dev>
 
 
 ## Truth vs. estimate
 
 ### Abundance at age
 
-<dev class = "left">
 ```{r}
 plot_age_strat_fan(sim, surveys = surveys$survey, 
                    ages = 2:6, years = sim$years, select_by = "age",
                    plot_bgcolor = "transparent", paper_bgcolor = "transparent",
                    font = list(size = 14, family = "'Montserrat', sans-serif"))
 ```
-</dev>
 
 
 ## Truth vs. estimate {.tighter}
 
 ### RMSE ~ sampling protocol
 
-<dev class = "left">
 ```{r}
 slide_font <- list(size = 14, color = rgb(121, 121, 121, maxColorValue = 255))
 surface_font <- list(titlefont = slide_font, 
@@ -348,20 +325,17 @@ plot_error_surface(sim, plot_by = "rule") %>%
   tight_layout(scene = surface_scene,
                margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
-</dev>
 
 
 ## Truth vs. estimate {.tighter}
 
 ### RMSE ~ sample size
 
-<dev class = "left">
 ```{r}
 plot_error_surface(sim, plot_by = "samples") %>% 
   tight_layout(scene = surface_scene,
                margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
-</dev>
 
 
 
@@ -383,7 +357,6 @@ plot_error_surface(sim, plot_by = "samples") %>%
 
 ### Turned off age-specific clustering
 
-<dev class = "left">
 ```{r}
 main_sim <- sim
 load("analysis/cod_sim_exports/2018-09-07_test/test_output.RData")
@@ -392,20 +365,17 @@ plot_age_strat_fan(sim, surveys = surveys$survey,
                    plot_bgcolor = "transparent", paper_bgcolor = "transparent",
                    font = list(size = 14, family = "'Montserrat', sans-serif"))
 ```
-</dev>
 
 
 ## Check bias {.tighter}
 
 ### Turned off age-specific clustering
 
-<dev class = "left">
 ```{r}
 plot_error_surface(sim, plot_by = "samples") %>% 
   tight_layout(scene = surface_scene,
                margin = list(l = 0, r = 0, t = 40, b = 0, pad = 0))
 ```
-</dev>
 
 
 ## Check bias
@@ -466,54 +436,6 @@ Results suggest that
 >- **Feedback and advice:** Alejandro Buren, Dave Cote, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Dwayne Pittman, Don Power, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward, ...
 >- **Support:** Fisheries and Oceans Canada and NSERC
 
-
-## Code {.smaller}
-
-### Population
-
-```{r, echo = TRUE, eval = FALSE}
-
-      set.seed(438)
-      pop <- sim_abundance(ages = 1:20, years = 1:20,
-                           R = sim_R(mean = 30000000, log_sd = 0.5,
-                                     random_walk = TRUE),
-                           Z = sim_Z(mean = 0.5, log_sd = 0.2,
-                                     phi_age = 0.9, phi_year = 0.5)) %>%
-        sim_distribution(grid = sim_grid(x_range = c(-140, 140), y_range = c(-140, 140),
-                                         res = c(3.5, 3.5), shelf_depth = 200,
-                                         shelf_width = 100, depth_range = c(0, 1000),
-                                         n_div = 1, strat_breaks = seq(0, 1000, by = 20),
-                                         strat_splits = 2),
-                         ays_covar = sim_ays_covar(sd = 2.8, range = 300,
-                                                   phi_age = 0.5, phi_year = 0.9,
-                                                   group_ages = 5:20),
-                         depth_par = sim_parabola(mu = 200, sigma = 70))
-
-```
-
-
-## Code {.smaller}
-
-### Surveys
-
-```{r, echo = TRUE, eval = FALSE}
-
-      surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
-                                lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
-                                ages_cap = c(2, 5, 10, 20, 50))
-      sim <- test_surveys(pop,
-                          surveys = surveys, n_sims = 5,
-                          n_loops = 200, cores = 6,
-                          q = sim_logistic(k = 2, x0 = 3),
-                          growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0),
-                          export = "analysis/cod_sim_exports")
-
-```
-
-
-
-
-<!-- There is a conflict somewhere...had to contain plotly plots in a dev to get it working and I had to add a bunch of spaces to fudge centering in one of the tables -->
 
 ## References {.smaller}
 
