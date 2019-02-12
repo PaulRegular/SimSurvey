@@ -155,7 +155,7 @@ b <- sim_abundance(ages = 1:6,
 
 The `sim_abundance` function returns a list with the sequence of ages (`ages`), sequence of years (`years`), sequence of lengths (`lengths`), numbers of recruits across all years (`R`), numbers at age in the first year (`N0`), total mortality matrix (`Z`), abundance at age matrix (`N`), abundance at length matrix (`N_at_length`) and the function supplied to the `growth` argument (`sim_length`). The growth function is retained for later use in `sim_survey` to simulate lengths given simulated catch at age in a simulated survey.
 
-The package also includes several plotting function for making quick plotly-based [@sievert2018] interactive visuals of the simulated population. For instance, the `plot_surface` function can be used to make quick visuals of matricies contained within the list returned by `sim_abundance`. The plots output from the below code are combined into Figure \@ref(fig:surface). Here we display the abundance at age matrix (object named `N` in the list produceb by `sim_abundance`); other names can be supplied to the `mat` argument to visualize a different matrix from the `sim_abundance` list, such as `Z`.
+The package also includes several plotting function for making quick plotly-based [@sievert2018] interactive visuals of the simulated population. For instance, the `plot_surface` function can be used to make quick visuals of matrices contained within the list returned by `sim_abundance`. The plots output from the below code are combined into Figure \@ref(fig:surface). Here we display the abundance at age matrix (object named `N` in the list produced by `sim_abundance`); other names can be supplied to the `mat` argument to visualize a different matrix from the `sim_abundance` list, such as `Z`.
 
 ```{r, echo = TRUE, eval = FALSE}
 plot_surface(a, mat = "N")
@@ -422,7 +422,7 @@ tests <- sim
 
 ```
 
-Processing time will system (i.e. amount of RAM and number of cores) and setting (i.e. `n_loops` and `n_sims` ratio) dependent. The `test_survey` function will print a progress bar, generated using the progress package [@csardi2016], which details percent completion and will also include an eta after the first step of the loop completes. Keep in mind that thousands of simulations of hundreds of survey designs may take days to run. The `test_surveys` function therefore includes an option for exporting intermediate results to a local directory, via the `export_dir` argument, and the `resume_test` function can be used resume a `test_surveys` run that had to be stopped part way through the process. The final object produced will be a list that includes all objects from `sim_abundance` and `sim_distribution` with the table of survey designs tested (named `surveys`) and tables produced by `strat_error` that end with the names `_strat_error` and `_strat_error_stats`. These tables include a `survey` column to allow merging of the survey protocol table with the error tables. Objects produced by `sim_survey` (set and sampling details) and `run_strat` (full stratified analysis results) are not retained to minimize object size. Like other core functions, some convenience functions are included in SimSurvey for creating interactive plots of the results from `test_surveys`. For instance a series of plotting functions ending in `_fan` produces fancharts where stratified estimates of abundance from each simulated survey are converted into a series of quantiles to depict the probability that estimates fall within a praticular range. True values of abundance available to the survey are overlaid on the series of probability envelopes. These plots help visually assess the level of percision and bias from a specific set of survey protocol. The three lines of code below will produce interactive fancharts for stratified estimates of total abundance, abundance at length and abundance at age, respectively. A subset of these plots have been combined into static plots (Figure \@ref(fig:fan1), \@ref(fig:fan2), \@ref(fig:fan3)).
+Processing time will system (i.e. amount of RAM and number of cores) and setting (i.e. `n_loops` and `n_sims` ratio) dependent. The `test_survey` function will print a progress bar, generated using the progress package [@csardi2016], which details percent completion and will also include an eta after the first step of the loop completes. Keep in mind that thousands of simulations of hundreds of survey designs may take days to run. The `test_surveys` function therefore includes an option for exporting intermediate results to a local directory, via the `export_dir` argument, and the `resume_test` function can be used resume a `test_surveys` run that had to be stopped part way through the process. The final object produced will be a list that includes all objects from `sim_abundance` and `sim_distribution` with the table of survey designs tested (named `surveys`) and tables produced by `strat_error` that end with the names `_strat_error` and `_strat_error_stats`. These tables include a `survey` column to allow merging of the survey protocol table with the error tables. Objects produced by `sim_survey` (set and sampling details) and `run_strat` (full stratified analysis results) are not retained to minimize object size. Like other core functions, some convenience functions are included in SimSurvey for creating interactive plots of the results from `test_surveys`. For instance a series of plotting functions ending in `_fan` produces fan charts where stratified estimates of abundance from each simulated survey are converted into a series of quantiles to depict the probability that estimates fall within a particular range. True values of abundance available to the survey are overlaid on the series of probability envelopes. These plots help visually assess the level of precision and bias from a specific set of survey protocol. The three lines of code below will produce interactive fan charts for stratified estimates of total abundance, abundance at length and abundance at age, respectively. A subset of these plots have been combined into static plots (Figure \@ref(fig:fan1), \@ref(fig:fan2), \@ref(fig:fan3)).
 
 ```{r, echo = TRUE, eval = FALSE}
 
@@ -454,7 +454,7 @@ export_plot(p, file = "analysis/paper/figures/plot_total_strat_fan.png", width =
 ```
 
 
-```{r fan1, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan1, fig.cap = "- Fan chart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
 knitr::include_graphics("figures/plot_total_strat_fan.png")
 
@@ -497,7 +497,7 @@ export_plot(p, file = "analysis/paper/figures/plot_length_strat_fan.png", width 
 ```
 
 
-```{r fan2, fig.cap = "- Fanchart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan2, fig.cap = "- Fan chart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
 knitr::include_graphics("figures/plot_length_strat_fan.png")
 
@@ -519,7 +519,7 @@ export_plot(p, file = "analysis/paper/figures/plot_age_strat_fan.png", width = 7
 ```
 
 
-```{r fan3, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan3, fig.cap = "- Fan chart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
 knitr::include_graphics("figures/plot_age_strat_fan.png")
 
@@ -602,6 +602,13 @@ Like any model, this simulation is a simplification of a much more complex reali
 
 
 # Results
+
+The SimSurvey package serves as a tool for simulating surveys of dynamic populations that vary across ages, time and space. The core of the simulation is based on the widely used cohort equation and, even though the processes that define recruitment and total mortality are simple, a wide range of stock dynamics can be simulated by changing a few parameters (Figure \@ref(fig:surface)). This base population can then be distributed through a grid (Figure \@ref(fig:grid)) and relationships with depth can be defined as can the nature of the correlation across ages, years and space (Figure \@ref(fig:distribution)). Together, two functions (`sim_abundance` and `sim_distribution`) are capable of simulating a wide range of populations with different life histories and spatial properties. The next necessary step to generating data similar to actual observations is to conduct a survey. In this package we implement a function, `sim_survey`, that conducts a stratified random survey of the population. The sampling process is governed by the area covered by the trawl as well as age-specific catchability. Sub-sampling protocol (length and age sampling) can also be varied. As such, data from a wide range of surveys can be simulated (Figure \@ref(fig:survey)).
+
+
+
+
+
 
 
 - Make the results more general, almost about the flexibility of the package, then hone in on the case study??
@@ -704,7 +711,7 @@ While much work has yet to be done, results from the simple simulation echo the 
 
 <!-- <br> -->
 
-<!-- ```{r tot, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fanchart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."} -->
+<!-- ```{r tot, cache = TRUE, fig.width = 8, fig.height = 3, fig.cap = "- Fan chart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey."} -->
 
 <!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
 <!-- which_len_caps <- c(10, 100, 1000) -->
@@ -722,7 +729,7 @@ While much work has yet to be done, results from the simple simulation echo the 
 
 <!-- <br> -->
 
-<!-- ```{r length, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true population available to the survey."} -->
+<!-- ```{r length, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fan chart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true population available to the survey."} -->
 
 <!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
 <!-- which_len_caps <- c(10, 100, 1000) -->
@@ -746,7 +753,7 @@ While much work has yet to be done, results from the simple simulation echo the 
 <!-- ``` -->
 
 
-<!-- ```{r age, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."} -->
+<!-- ```{r age, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fan chart of stratified estimates of abundance at age from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true population available to the survey."} -->
 
 <!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
 <!-- which_len_caps <- c(10, 100, 1000) -->
@@ -773,7 +780,7 @@ While much work has yet to be done, results from the simple simulation echo the 
 
 <!-- <br> -->
 
-<!-- ```{r year, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fanchart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."} -->
+<!-- ```{r year, cache = TRUE, fig.width = 8, fig.height = 6, fig.cap = "- Fan chart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true trend in the population available to the survey."} -->
 
 <!-- which_set_dens <- c(0.0005, 0.002, 0.01) -->
 <!-- which_len_caps <- c(10, 100, 1000) -->

@@ -681,7 +681,8 @@ plot_survey_rank <- function(sim, which_strat = "age") {
 
   suppressWarnings({
     subplot(a, b, titleX = TRUE, shareY = TRUE, nrows = 1, widths = c(0.3, 0.7),
-            margin = 0.01)
+            margin = 0.01) %>%
+      layout(margin = list(b = 10, l = 10))
   })
 
 }
