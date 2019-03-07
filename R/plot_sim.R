@@ -210,7 +210,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
     group_by(set) %>%
     filter(!is.na(measured)) %>%
     slice(rep(1:n(), each = 2)) %>%
-    mutate(lab = rep(c("caught", "sampled"), times = n() / 2))
+    mutate(lab = rep(c("caught", "sampled"), times = length(measured) / 2))
 
   lf_p <- hist_base %>%
     filter(measured & lab == "sampled" | lab == "caught") %>%
