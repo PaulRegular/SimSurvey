@@ -606,13 +606,29 @@ Like any model, this simulation is a simplification of a much more complex reali
 
 # Research opportunities
 
-- Catchability
-- Stratified vs. random age sampling
-- Model testing
+The case study used here provides one example of ways in which the **`SimSurvey`** package can be used to simulation test the design of fisheries-independent trawl surveys. There are multiple layers to the sampling design of such surveys and the end results are inextricably linked with the way such data are analyzed. Below we outline some examples where the **`SimSurvey`** package may aid future research efforts.
+
+## Design or model-based approach
+
+The analysis of data from fisheries-independent surveys have generally been confined to design-based mean and variance estimates of abundance using standard formula for stratified-random designs [e.g. @Cochran1977]. Nevertheless, there has long been interest in using model-based approaches to improve abundance estimates [e.g. @smith1990; @Berg2014; @Thorson2015]. The **`SimSurvey`** can serve as a convenient tool for simulation testing the mean and variance estimates provided by a range of different approaches (design-based analyses, bootstrap estimates, generalized additive models, geostatistical models, etc.). Moreover, the full analytical pathway for obtaining age-disaggregated estimates of abundance has rarely been simulation tested, perhaps because there are few alternate options to a design-based approach [but see @Berg2014]. Existing and future approaches to the integrated use of age-length keys or von Bertalanffy growth and catch-at-length data to obtain age-based indices of abundance can be simulation tested using *`SimSurvey`*.
+
+## Growth analyses
+
+Assessing ages for a large number of fish is very time-consuming and, as such, length-stratified sampling is often used to estimate age frequencies of fish populations. The resultant sub-sample is used to construct an age-length key (i.e. the probability a fish is a specific age given length) and age frequencies are obtained by applying this key to length-frequencies obtained via more expansive random sampling. One age-length key is typically assumed to be representative of the whole stock area, however, spatial variability in the relationship may introduce bias in the abundance-at-age estimates [@Berg2012]. Results from the case study presented here (Appendix 1) reiterate this message and **`SimSurvey`** may serve as a platform for testing potential model-based solutions to this problem [e.g. @Berg2012].
+
+## Random or stratified sampling
+
+**`SimSurvey`** can be used to compare the precision and bias of population estimates obtained using random or stratified sampling. Simple random sampling can be implemented using a grid with one strata (e.g. `make_grid(depth_range = c(0, 1000), strat_breaks = c(0, 1000), strat_split = 0)`). Sub-sampling of ages can also be random rather than length-stratified by setting the `age_sampling` argument in the `sim_survey` function to `"random"` rather than `"stratified"`. This can facilitate research similar to work presented in Puerta et al. [-@puerta2019].
+
 
 # Future directions
 
+- Multi-species, multiple goals
 - Cost-benefit
+- Survey coverage
+
+Up to now, the package has focused on testing...
+
 
 # Summary
 
