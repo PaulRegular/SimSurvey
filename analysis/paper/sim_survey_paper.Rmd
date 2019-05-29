@@ -606,15 +606,15 @@ Like any model, this simulation is a simplification of a much more complex reali
 
 # Research opportunities
 
-The case study used here provides one example of ways in which the **`SimSurvey`** package can be used to simulation test the design of fisheries-independent trawl surveys. There are multiple layers to the sampling design of such surveys and the end results are inextricably linked with the way such data are analyzed. Below we outline some examples where the **`SimSurvey`** package may aid future research efforts.
+The case study used here provides one example of ways in which **`SimSurvey`** can be used to simulation test the design of fisheries-independent trawl surveys. There are multiple layers to the sampling design of such surveys and the end results are inextricably linked with the way such data are analyzed. Below we outline some examples where the **`SimSurvey`** package may aid future research efforts.
 
 ## Design or model-based approach
 
-The analysis of data from fisheries-independent surveys have generally been confined to design-based mean and variance estimates of abundance using standard formula for stratified-random designs [e.g. @Cochran1977]. Nevertheless, there has long been interest in using model-based approaches to improve abundance estimates [e.g. @smith1990; @Berg2014; @Thorson2015]. The **`SimSurvey`** can serve as a convenient tool for simulation testing the mean and variance estimates provided by a range of different approaches (design-based analyses, bootstrap estimates, generalized additive models, geostatistical models, etc.). Moreover, the full analytical pathway for obtaining age-disaggregated estimates of abundance has rarely been simulation tested, perhaps because there are few alternate options to a design-based approach [but see @Berg2014]. Existing and future approaches to the integrated use of age-length keys or von Bertalanffy growth and catch-at-length data to obtain age-based indices of abundance can be simulation tested using *`SimSurvey`*.
+The analysis of data from fisheries-independent surveys have generally been confined to design-based mean and variance estimates of abundance using standard formula for stratified-random designs [e.g. @Cochran1977]. Nevertheless, there has long been interest in using model-based approaches to improve abundance estimates [e.g. @smith1990; @Berg2014; @Thorson2015]. **`SimSurvey`** can serve as a convenient tool for simulation testing mean and variance estimates provided by a range of different approaches (design-based analyses, bootstrap estimates, generalized additive models, geostatistical models, etc.). Moreover, the full analytical pathway for obtaining age-disaggregated estimates of abundance has rarely been simulation tested. Existing and future approaches for calculating age-based indices of abundance can be simulation tested using *`SimSurvey`*.
 
 ## Growth analyses
 
-Assessing ages for a large number of fish is very time-consuming and, as such, length-stratified sampling is often used to estimate age frequencies of fish populations. The resultant sub-sample is used to construct an age-length key (i.e. the probability a fish is a specific age given length) and age frequencies are obtained by applying this key to length-frequencies obtained via more expansive random sampling. One age-length key is typically assumed to be representative of the whole stock area, however, spatial variability in the relationship may introduce bias in the abundance-at-age estimates [@Berg2012]. Results from the case study presented here (Appendix 1) reiterate this message and **`SimSurvey`** may serve as a platform for testing potential model-based solutions to this problem [e.g. @Berg2012].
+Assessing ages for a large number of fish is very time-consuming and, as such, length-stratified sampling is often used to estimate age frequencies of fish populations. The resultant sub-sample is used to construct an age-length key (i.e. the probability a fish is a specific age given length) and age frequencies are obtained by applying this key to length-frequencies obtained via more expansive random sampling. One age-length key is typically assumed to be representative of the whole stock area, however, spatial variability in the relationship may introduce bias in abundance-at-age estimates [@Berg2012]. Results from the case study presented here (Appendix 1) reiterate this message and **`SimSurvey`** may serve as a platform for testing potential model-based solutions to this problem [e.g. @Berg2012].
 
 ## Random or stratified sampling
 
@@ -623,11 +623,7 @@ Assessing ages for a large number of fish is very time-consuming and, as such, l
 
 # Future directions
 
-- Multi-species, multiple goals
-- Cost-benefit
-- Survey coverage
-
-Up to now, the package has focused on testing...
+Up to now, the package has focused on the effects of sampling design on the precision and bias of population estimates obtained from fisheries-independent surveys, however, the costs associated with sampling has yet to be considered. In future iterations of **`SimSurvey`**, we hope to add options for integrating data on the time and monetary costs associated with each level of sampling (sets, length measurements, age determination) to facilitate cost-benefit analyses. We also realize that a single fisheries-independent survey may have multiple goals as data obtained are often used to assess multiple species or to conduct community analyses. We therefore endeavor to add functions for simulating multi-species surveys. Finally, it would be useful to add an option for testing the consequences of surveys with partial coverage of a population as survey coverage is a frequent concern in stock assessment.
 
 
 # Summary
@@ -637,7 +633,7 @@ The **`SimSurvey`** package serves as a tool for simulating stratified random su
 
 # Acknowledgements
 
-- Feedback and advice: Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Keith Lewis, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Greg Robertson, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward
+- Feedback and advice: Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Keith Lewis, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Greg Robertson, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward
 - Dave Cote for a review of a previous version of this manuscript
 - NSERC visiting-fellow program
 
