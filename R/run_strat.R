@@ -150,7 +150,12 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 
 #' Run stratified analysis on simulated data
 #'
-#' @param sim    Simulation from \code{\link{sim_survey}}
+#' @param sim               Simulation from \code{\link{sim_survey}}
+#' @param strat_data_fun    Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})
+#' @param strat_means_fun   Function for calculating stratified means (e.g. \code{\link{strat_means}})
+#'
+#' @details The \code{"strat_data_fun"} and \code{"strat_means_fun"} allow the use of custom
+#'          \code{\link{strat_data}} and  \code{\link{strat_means}} functions.
 #'
 #' @return Adds stratified analysis results for the total population (\code{"total_strat"})
 #'         and the population aggregated by length group and age (\code{"length_strat"} and
@@ -168,12 +173,14 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' @export
 #'
 
-run_strat <- function(sim) {
+run_strat <- function(sim,
+                      strat_data_fun = strat_data,
+                      strat_means_fun = strat_means) {
 
   length_group <- get("length_group", envir = environment(sim$sim_length))
 
   ## Prep data for strat_means function
-  data <- strat_data(sim, length_group = length_group)
+  data <- strat_data_fun(sim, length_group = length_group)
   data$setdet <- data$setdet[, c("sim", "year", "division", "strat", "strat_area", "tow_area", "set", "n"), with = FALSE]
   data$lf <- merge(data$setdet[, setdiff(names(data$setdet), "n"), with = FALSE], data$lf, by = "set", all = TRUE)
   data$af <- merge(data$setdet[, setdiff(names(data$setdet), "n"), with = FALSE], data$af, by = "set", all = TRUE)
@@ -183,17 +190,17 @@ run_strat <- function(sim) {
                      metric = "n",
                      strat_groups = c("sim", "year", "division", "strat", "strat_area", "tow_area"),
                      survey_groups = c("sim", "year"))
-  sim$total_strat <- do.call(strat_means, strat_args)
+  sim$total_strat <- do.call(strat_means_fun, strat_args)
 
   strat_args$data <- data$lf
   strat_args$strat_groups <- c(strat_args$strat_groups, "length")
   strat_args$survey_groups <- c(strat_args$survey_groups, "length")
-  sim$length_strat <- do.call(strat_means, strat_args)
+  sim$length_strat <- do.call(strat_means_fun, strat_args)
 
   strat_args$data <- data$af
   strat_args$strat_groups[strat_args$strat_groups == "length"] <- "age"
   strat_args$survey_groups[strat_args$survey_groups == "length"] <- "age"
-  sim$age_strat <- do.call(strat_means, strat_args)
+  sim$age_strat <- do.call(strat_means_fun, strat_args)
 
   ## Return results
   sim

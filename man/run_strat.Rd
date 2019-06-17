@@ -4,10 +4,15 @@
 \alias{run_strat}
 \title{Run stratified analysis on simulated data}
 \usage{
-run_strat(sim)
+run_strat(sim, strat_data_fun = strat_data,
+  strat_means_fun = strat_means)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}
+
+\item{strat_data_fun}{Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})}
+
+\item{strat_means_fun}{Function for calculating stratified means (e.g. \code{\link{strat_means}})}
 }
 \value{
 Adds stratified analysis results for the total population (\code{"total_strat"})
@@ -16,6 +21,10 @@ Adds stratified analysis results for the total population (\code{"total_strat"})
 }
 \description{
 Run stratified analysis on simulated data
+}
+\details{
+The \code{"strat_data_fun"} and \code{"strat_means_fun"} allow the use of custom
+         \code{\link{strat_data}} and  \code{\link{strat_means}} functions.
 }
 \examples{
 
