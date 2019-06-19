@@ -1,5 +1,6 @@
 ---
 title: "`SimSurvey`: an `R` package for simulation testing the design and analysis of fisheries-independent trawl surveys"
+subtitle: "ALTERNATE TITLE - `SimSurvey`: an `R` package to optimize the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"
 author: "Paul M. Regular, Fran Mowbray, et al.?"
 date: "Fisheries and Oceans Canada, Northwest Atlantic Fisheries Center, 80 East White Hills, St. John's, Newfoundland and Labrador, A1C 5X1, Canada"
 output: 
@@ -41,15 +42,15 @@ replot <- FALSE # plot the figures again? (acts as a manual cache)
 
 # Summary
 
-**1\.** Fisheries scientists are often faced with two critical questions: (i) how many samples are needed to adequately represent a population? And, (ii) how should samples from multi-stage sampling be analyzed?
+**1\.** Age-structured fish stocks often show complex spatial and temporal dynamics, creating challenges in designing and implementing effective population surveys. Inappropriate sampling designs can potentially lead to both under-sampling (reducing precision and increasing the risk of bias) and over-sampling (through the extensive sampling of correlated metrics).
 
-**2\.** For assessments based on fisheries-independent surveys, our ability to estimate population characteristics, such as abundance at age, is affected by multiple levels of sampling (i.e. the number of sets, lengths and ages sampled in a survey) as well as the methods used to analyze the data.
+**2\.** For assessments based on fisheries-independent surveys, the ability to estimate population parameters is affected by multiple levels of sampling, such as the number of fishing sets and sub-sampling the fish captured to measure biological characteristics (e.g. lengths or ages). Multiple analysis approaches are also now available.
 
-**3\.** Though simulations are a useful tool for exploring the efficacy of specific sampling strategies and statistical methods, system and survey complexity have limited the number of frameworks that simulation test the full sampling and analytical pathway of fisheries-independent survey data.
+**3\.** Though simulations are a useful tool for exploring the efficacy of specific sampling strategies and statistical methods, complex fish population structure has limited the number of tools that allow for simulation testing of a range of sampling and analytical pathways for fisheries-independent survey data.
 
-**4\.** Here we introduce the `R` package **`SimSurvey`**, which has been designed to simplify the process of simulating surveys of spatial fish populations. The packages includes methods for simulating age-structured populations that varies in space and time as well as multi-stage surveys that sample the virtual population. A series of parameters can be used to control the characteristics of the population and the sampling intensity of the survey. **`SimSurvey`** also include a function for running a stratified-random analysis of the simulated data.
+**4\.** Here we introduce the `R` package **`SimSurvey`**, which has been designed to simplify the process of simulating surveys of age-structured and spatially-distributed fish populations. The package allows the user to simulate age-structured populations that vary in space and time and then explore the efficacy of a range of sampling protocols to reproduce the population parameters of the known population. **`SimSurvey`** also include a function for running a stratified-random analysis of the simulated data.
 
-**5\.** **`SimSurvey`** can serve as a convenient, accessible and flexible platform for simulating a wide range of sampling strategies of a range of species. Various design- or model-based approaches can be applied to the results to test the efficacy of different approaches.
+**5\.** **`SimSurvey`** can serve as a convenient, accessible and flexible platform for simulating a wide range of sampling strategies for fish stocks that show complex structuring. Various design- or model-based approaches can then be applied to the results to test the efficacy of different analytical approaches.
 
 **Key-words:** length and age distribution; simulation; spatial correlation; stratified analysis; survey design
 
@@ -75,7 +76,7 @@ devtools::install_github("PaulRegular/SimSurvey")
 The construction of the **`SimSurvey`** package was motivated by a regional need for assessing the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO division 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Below we outline the equations behind a series of **`SimSurvey`** functions that were used to simulate survey data with similar features to data obtained by the survey of 3Ps cod. The settings were iteratively modified until it was difficult to distinguish the simulated data from real survey data; these values were set as the defaults for the main functions in the package. Here we evaluate the efficacy of alternate sampling protocol by assessing deviation between stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. While assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use. See Table \@ref(tab:par) for a description of the code used to generate the case study results. Text below provides more detail on each function and also demonstrates a series of functions for visualizing the results. See Appendix 1 for an interpretation and discussion of the case study results.
 
 
-Table: (\#tab:par) - Main function calls, with argument descriptions and associated parameter symbols, used to simulate the cod-like population used in the case study presented here. Note that the settings below largely correspond with the defaults used in the functions.
+Table: (\#tab:par)Main function calls, with argument descriptions and associated parameter symbols, used to simulate the cod-like population used in the case study presented here. Note that the settings below largely correspond with the defaults used in the functions.
 
 |                                       **Function call** |                                            **Description** |                 **Symbol** |
 |:------------------------------------------------------- |:---------------------------------------------------------- | :------------------------- |
@@ -194,7 +195,7 @@ export_plot(p, file = "analysis/paper/figures/plot_surface.png", width = 800, he
 ```
 
 
-```{r surface, fig.cap = "- Surface plots of simulated abundance at age of a relatively a) long lived (case study settings) and b) short lived species. These plots were produced by `plot_surface` when supplied a list produced by `sim_abundance`."}
+```{r surface, fig.cap = "Surface plots of simulated abundance at age of a relatively a) long lived (case study settings) and b) short lived species. These plots were produced by `plot_surface` when supplied a list produced by `sim_abundance`."}
 
 knitr::include_graphics("figures/plot_surface.png")
 
@@ -239,7 +240,7 @@ export_plot(p, file = "analysis/paper/figures/plot_grid.png", width = 800, heigh
 ```
 
 
-```{r grid, fig.cap = "- Plots produced by `plot_grid` when supplied an raster object produced by `make_grid` a) using default case study settings and b) settings generates a grid with four divisions and a more linear depth gradient. In these plots, the color gradient represents depth, the grey lines delineate divisions and white lines delineate strata."}
+```{r grid, fig.cap = "Plots produced by `plot_grid` when supplied an raster object produced by `make_grid` a) using default case study settings and b) settings generates a grid with four divisions and a more linear depth gradient. In these plots, the color gradient represents depth, the grey lines delineate divisions and white lines delineate strata."}
 
 knitr::include_graphics("figures/plot_grid.png")
 
@@ -304,7 +305,7 @@ export_plot(p, file = "analysis/paper/figures/plot_distribution.png", width = 60
 ```
 
 
-```{r distribution, fig.cap = "- Distribution plots of simulated populations that form a) tight clusters with stronger correlation through years than ages (case study settings), and b) relatively diffuse clusters with stronger correlation through ages than years. This plot is a facet of plots produced by `plot_distribution` when supplied simulations from `sim_distribution`."}
+```{r distribution, fig.cap = "Distribution plots of simulated populations that form a) tight clusters with stronger correlation through years than ages (case study settings), and b) relatively diffuse clusters with stronger correlation through ages than years. This plot is a facet of plots produced by `plot_distribution` when supplied simulations from `sim_distribution`."}
 
 knitr::include_graphics("figures/plot_distribution.png")
 
@@ -371,7 +372,7 @@ magick::image_write(p, path = "analysis/paper/figures/plot_survey.png")
 ```
 
 
-```{r survey, fig.cap = "- Bubble plots and histograms of set catches from a simulated stratified-random survey of the case study population under relatively a) high and b) low sampling effort. Histograms of length and age composition include the distribution caught and sampled overlaid with a line of the true distribution of length and ages available to the survey. Note that the first simulation of the survey in year 20 is depicted here. These plots are produced by `plot_survey` when supplied survey data simulated using `sim_survey`."}
+```{r survey, fig.cap = "Bubble plots and histograms of set catches from a simulated stratified-random survey of the case study population under relatively a) high and b) low sampling effort. Histograms of length and age composition include the distribution caught and sampled overlaid with a line of the true distribution of length and ages available to the survey. Note that the first simulation of the survey in year 20 is depicted here. These plots are produced by `plot_survey` when supplied survey data simulated using `sim_survey`."}
 
 knitr::include_graphics("figures/plot_survey.png")
 
@@ -460,7 +461,7 @@ export_plot(p, file = "analysis/paper/figures/plot_total_strat_fan.png", width =
 ```
 
 
-```{r fan1, fig.cap = "- Fan chart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan1, fig.cap = "Fan chart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{sets}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
 knitr::include_graphics("figures/plot_total_strat_fan.png")
 
@@ -503,7 +504,7 @@ export_plot(p, file = "analysis/paper/figures/plot_length_strat_fan.png", width 
 ```
 
 
-```{r fan2, fig.cap = "- Fan chart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan2, fig.cap = "Fan chart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
 knitr::include_graphics("figures/plot_length_strat_fan.png")
 
@@ -525,7 +526,7 @@ export_plot(p, file = "analysis/paper/figures/plot_age_strat_fan.png", width = 7
 ```
 
 
-```{r fan3, fig.cap = "- Fan chart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan3, fig.cap = "Fan chart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{sets}$, and length sampling protocol, $M_{lengths}$. Number of ages sampled per length group, $M_{ages}$, was 10 in all scenarios. The heavy dark line indicates the true tred in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
 knitr::include_graphics("figures/plot_age_strat_fan.png")
 
@@ -588,13 +589,13 @@ export_plot(p, file = "analysis/paper/figures/plot_error_surface.png", width = 9
 ```
 
 
-```{r rank, fig.cap = "- Divergent dot plot of the precision and accuracy (RMSE) of length based stratified estimates of abundance, and total sampling effort (number of sets [$N_{sets}$] and length measurements [$N_{measured}$]), under various sampling protocol (set density [$D_{sets}$] and maximum number of lengths measured per set [$M_{lengths}$])."}
+```{r rank, fig.cap = "Divergent dot plot of the precision and accuracy (RMSE) of length based stratified estimates of abundance, and total sampling effort (number of sets [$N_{sets}$] and length measurements [$N_{measured}$]), under various sampling protocol (set density [$D_{sets}$] and maximum number of lengths measured per set [$M_{lengths}$])."}
 
 knitr::include_graphics("figures/plot_survey_rank.png")
 
 ```
 
-```{r rmse-surface, fig.cap = "- Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that the z-axes scales are different across the facets."}
+```{r rmse-surface, fig.cap = "Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{sets}$), x-axes represent the maximum sampling effort of lengths per set ($M_{lengths}$), and y-axes represent the maximum number of ages to collect per length group ($M_{ages}$). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that the z-axes scales are different across the facets."}
 
 knitr::include_graphics("figures/plot_error_surface.png")
 
@@ -620,6 +621,8 @@ Assessing ages for a large number of fish is very time-consuming and, as such, l
 ## Random or stratified sampling
 
 **`SimSurvey`** can be used to compare the precision and bias of population estimates obtained using random or stratified sampling. Simple random sampling can be implemented using a grid with one strata (e.g. `make_grid(depth_range = c(0, 1000), strat_breaks = c(0, 1000), strat_split = 0)`). Sub-sampling of ages can also be random rather than length-stratified by setting the `age_sampling` argument in the `sim_survey` function to `"random"` rather than `"stratified"`. This can facilitate research similar to work presented in Puerta et al. [-@puerta2019].
+
+<!-- ESTIMATION OF VARIANCE. What does the stratified estimates of variance look like with the simulations you already have? Do negative values disapear above a praticular sampling intensity? -->
 
 
 # Future directions
