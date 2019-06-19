@@ -19,7 +19,7 @@ License: GPL-3 | file LICENSE
 Additional_repositories: https://inla.r-inla-download.org/R/stable/
 LazyData: true
 ByteCompile: true
-URL: https://github.com/PaulRegular/SimSurvey
+URL: https://paulregular.github.io/SimSurvey/
 BugReports: https://github.com/PaulRegular/SimSurvey/issues
 Imports:
     sp,
