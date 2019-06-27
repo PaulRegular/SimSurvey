@@ -32,6 +32,7 @@ library(raster)
 library(lattice)
 library(viridis)
 library(data.table)
+library(magrittr)
 Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoicGF1bHJlZ3VsYXIiLCJhIjoiY2pueGIxejMxMGM0MjNqbjR1aXdwYm92bSJ9.R-t1SCa0VHKf4N-PQmYI5Q")
 source("analysis/paper/helper_functions.R")
 
@@ -59,82 +60,45 @@ replot <- FALSE # plot the figures again? (acts as a manual cache)
 
 Fisheries-independent trawl surveys have become a mainstay in the management of dynamic fish stocks as they provide indices of population abundance as well as estimates of various population characteristics such as length and age frequencies [@Pennington1998]. While costly to obtain, this information forms the basis of many stock assessments throughout the world. Efficient and informed management decisions therefore require surveys and analyses that maximize information while minimizing the expense of data collection. While simulations provide a platform for exploring solutions to this optimization problem, building the necessary simulation framework is not a trivial task given the multi-stage nature of the typical sampling program and the complexity of the population processes we aim to represent. Notably, many fish stocks show size-specific patterns of aggregation, making it difficult to collect biological sub-samples (e.g. lengths and ages) that are representative of the entire target population. This undermines the assumptions of many analyses as sub-samples from such populations tend to exhibit strong positive intracluster correlation [@Aanes2015]. These complexities may explain why simulations that test the full sampling and analytical pathway of fisheries-independent surveys are rare [but see @puerta2019; @schnute2003].
 
-Here we document **`SimSurvey`**, an `R` package designed to simplify and facilitate realistic simulations of fisheries-independent trawl surveys. The package has two main components, the first focuses on mimicking realistic fish stocks by simulating a spatially and age-correlated fish stock distributed across a habitat gradient, and the second component focuses on simulating various surveys of these virtual fish stocks. This simulation framework has similarities to those presented by Schnute and Haigh [-@schnute2003] and Puerta et al. [-@puerta2019], however, efforts were focused on developing a series of general and accessible functions to simplify the process of testing multiple sampling scenarios and analytical pathways. The steps taken to simulate surveys of spatial, age-structure populations are outlined below.
+Here we document **`SimSurvey`**, an `R` package designed to simplify and facilitate realistic simulations of fisheries-independent trawl surveys. In short, the package allows for the simulation of random or stratified-random surveys of an age-structured population that varies in space and time
+
+The package has two main components, the first focuses on mimicking realistic fish stocks by simulating a spatially and age-correlated fish stock distributed across a habitat gradient, and the second component focuses on simulating various surveys of these virtual fish stocks. 
+
+This simulation framework has similarities to those presented by Schnute and Haigh [-@schnute2003] and Puerta et al. [-@puerta2019], however, efforts were focused on developing a series of general and accessible functions to simplify the process of testing multiple sampling scenarios and analytical pathways. The steps taken to simulate surveys of spatial, age-structure populations are outlined below.
 
 # The **`SimSurvey`** package
 
-The **`SimSurvey`** package was written in the programming language `R` [@R] and, in short, the package allows for the simulation of random or stratified-random surveys of an age-structured population that varies in space and time. **`SimSurvey`** relies heavily on functions from the **`data.table`** [@dowle2017], **`raster`** [@hijmans2016] and **`plotly`** [@sievert2018] packages for their efficient data processing, geographic and plotting facilities, respectively. All the source `R` code behind **`SimSurvey`** is available on GitHub (https://github.com/PaulRegular/SimSurvey) and the package can be installed via GitHub:
+The **`SimSurvey`** package was written in the programming language `R` [@R] and it holds a series of functions for simulating the abundance and distribution of virtural fish populations with correlation across space, time and age dimensions, as well as functions for simulating surveys with a range of sampling stratigies and intensities (Table \@ref(tab:fun)). The equations behind these functions are detailed in the sections below. **`SimSurvey`** relies heavily on functions from the **`data.table`** [@dowle2017], **`raster`** [@hijmans2016] and **`plotly`** [@sievert2018] packages for their efficient data processing, geographic and plotting facilities, respectively. Package documentation has been published online using **`pkgdown`** (https://paulregular.github.io/SimSurvey/) and all the source `R` code behind **`SimSurvey`** is available on GitHub (https://github.com/PaulRegular/SimSurvey). **`SimSurvey`** can be installed via GitHub using the **`remotes`** package:
 
 ```{r, echo = TRUE, eval = FALSE}
-install.packages("devtools")
-devtools::install_github("PaulRegular/SimSurvey")
+install.packages("remotes")
+remotes::install_github("PaulRegular/SimSurvey")
 ```
 
+Table: (\#tab:fun) Names and descritpions of the key functions of **`SimSurvey`**. Functions in bold font are core functions and those in medium font are designed for use inside the core functions. The latter are typicaly closures, which are functions that contain data and return functions [@wickham2014]; here they are used to store parameter values and return functions that require dimensions, such as ages or years, to be supplied.
 
-## Case study
-
-The construction of the **`SimSurvey`** package was motivated by a regional need for assessing the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO division 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Below we outline the equations behind a series of **`SimSurvey`** functions that were used to simulate survey data with similar features to data obtained by the survey of 3Ps cod. The settings were iteratively modified until it was difficult to distinguish the simulated data from real survey data; these values were set as the defaults for the main functions in the package. Here we evaluate the efficacy of alternate sampling protocol by assessing deviation between stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. While assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use. See Table \@ref(tab:par) for a description of the code used to generate the case study results. Text below provides more detail on each function and also demonstrates a series of functions for visualizing the results. See Appendix 1 for an interpretation and discussion of the case study results.
-
-
-Table: (\#tab:par)Main function calls, with argument descriptions and associated parameter symbols, used to simulate the cod-like population used in the case study presented here. Note that the settings below largely correspond with the defaults used in the functions.
-
-|                                       **Function call** |                                            **Description** |                 **Symbol** |
-|:------------------------------------------------------- |:---------------------------------------------------------- | :------------------------- |
-| `> set.seed(438)`                                       |      Set random number generator seed to replicate results |                            |
-| `>`                                                     |                                                            |                            |
-| `> abundance <- sim_abundance(`                         |                                       *Simulate abundance* |                            |
-| `+   ages = 1:20,`                                      |                                                       Ages |                        $a$ |
-| `+   years = 1:20,`                                     |                                                      Years |                        $y$ |
-| `+   R = sim_R(mean = 30000000,`                        |                                           Mean recruitment |                    $\mu_r$ |
-| `+             log_sd = 0.5),`                          |                      Standard deviation of log-recruitment |                 $\sigma_r$ |
-| `+   Z = sim_Z(mean = 0.5,`                             |                                       Mean total mortality |                    $\mu_Z$ |
-| `+             log_sd = 0.2,`                           |                      Standard deviation of total mortality |                 $\sigma_Z$ |
-| `+             phi_age = 0.9,`                          |    Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |
-| `+             phi_year = 0.5),`                        |   Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |
-| `+   growth = sim_vonB(Linf = 120,`                     |                                Mean asymptotic length (cm) |               $l_{\infty}$ |
-| `+                     L0 = 5,`                         |                                       Length at birth (cm) |                      $l_0$ |
-| `+                     K = 0.1,`                        |                                                Growth rate |                        $K$ |
-| `+                     log_sd = 0.1,`                   |     Standard deviation of the von Bertalanffy growth curve |                 $\sigma_l$ |
-| `+                     length_group = 3))`              |                  Length group for abundance at length (cm) |            $l_{group}^{N}$ |      
-| `>`                                                     |                                                            |                            |
-| `> grid <- make_grid(`                                  |                                              *Make a grid* |                            |
-| `+   x_range = c(-140, 140),`                           |                           Range of grid in the x dimension |                            |
-| `+   y_range = c(-140, 140),`                           |                           Range of grid in the y dimension |                            | 
-| `+   res = c(3.5, 3.5),`                                |                                       Grid resolution (km) |                        $R$ |
-| `+   shelf_depth = 200,`                                |                                           Shelf depth (km) |                $d_{shelf}$ |
-| `+   shelf_width = 100,`                                |                                           Shelf width (km) |                $w_{shelf}$ |
-| `+   depth_range = c(0, 1000),`                         |                                            Depth range (m) |       $[d_{min}, d_{max}]$ |
-| `+   n_div = 1,`                                        |                                        Number of divisions |                  $N_{div}$ |
-| `+   strat_breaks = seq(0, 1000, by = 40))`             |                 Series of depth breaks for defining strata |                            |
-| `>`                                                     |                                                            |                            |
-| `> distribution <- sim_distribution(`                   |                                    *Simulate distribution* |                            |     
-| `+   sim = abundance,`                                  |                Object produced by `sim_abundance` function |                            |     
-| `+   grid = grid,`                                      |                    Object produced by `make_grid` function |                            |
-| `+   ays_covar = sim_ays_covar(sd = 2.8,`               |          Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |
-| `+                             range = 300,`            |                          Range of spatial correlation (km) |                        $r$ |
-| `+                             phi_age = 0.5,`          |            Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |
-| `+                             phi_year = 0.9,`         |           Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |
-| `+                             group_ages = 5:20),`     |       Make space-age-year variance equal across these ages |                            |
-| `+   depth_par = sim_parabola(mu = 200,`                |          Depth at which abundance is typically highest (m) |                    $\mu_d$ |
-| `+                            sigma = 70))`             |              Dispersion around depth of peak abundance (m) |                 $\sigma_d$ |
-| `>`                                                     |                                                            |                            |
-| `> surveys <- expand_surveys(`                          |                       *Define a series of surveys to test* |                            |
-| `+   set_den = c(0.0005, 0.001, 0.002, 0.005, 0.01),`   |                                       Set density (km^-2^) |                 $D_{sets}$ |
-| `+   lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),`   |                 Maximum number of lengths to collect / set |              $M_{lengths}$ |
-| `+   ages_cap = c(2, 5, 10, 20, 50))`                   | Maximum number of ages to sample / length group / division |                 $M_{ages}$ |
-| `>`                                                     |                                                            |                            |
-| `> tests <- test_surveys(`                              |                             *Simulate and analyze surveys* |                            |
-| `+   sim = distribution,`                               |             Object produced by `sim_distribution` function |                            |
-| `+   surveys = surveys,`                                |               Object produced by `expand_surveys` function |                            |
-| `+   n_loops = 1000,`                                   |                    Number of times to simulate each survey |                            | 
-| `+   q = sim_logistic(k = 2,`                           |                Steepness of logistic curve of catchability |                        $k$ |
-| `+                   x0 = 3),`                          |                 Midpoint of logistic curve of catchability |                      $x_0$ |
-| `+   trawl_dim = c(1.5, 0.02),`                         |       Trawl dimensions (km) - i.e. area covered by a trawl |                $A_{trawl}$ |
-| `+   length_group = 1)`                                 |                         Length group for age sampling (cm) |                $l_{group}$ |
-
-*Caution:* as written, the `test_surveys` function call may take days or weeks to run. Run duration can be decreased by running multiple simulations per loop (`n_sims` argument) and by running the loops in parallel (`cores` argument). See help file for more details (`?test_surveys`).
+| Function | Description                   |
+|:---------|:------------------------------|
+| **`sim_abundance`**  | Simulate a basic age-structured population dynamics model |
+| `sim_R`, `sim_Z`, `sim_N0`, `sim_vonB` | Closures, to use inside `sim_abundance`, for simulating recruitment, total mortality, initial abundance and growth, respectively | 
+| **`sim_distribution`** | Simulate spatial and temporal distribution of an age-structured population |
+| `sim_ays_covar`, `sim_parabola` | Closures, to use inside `sim_distribution`, for simulating age-year-space covariance and parabolic relationships with covariates (e.g. depth), respectively |
+| `make_grid` | Make a basic depth stratified square grid to use inside `sim_distribution` |
+| **`sim_survey`** | Simulate a survey of a spatial, age-structured population |
+| `sim_logistic` | Closure, to use inside `sim_survey`, for simulating age-specific catchability as a logistic curve |
+| **`run_strat`** | Run a stratified analysis on simulated survey data |
+| **`strat_error`** | Calculate the error of stratified estimates (e.g. root mean squared error of stratified estimates from true values) |
+| **`test_surveys`** | Test the sampling design of multiple surveys using a stratified analysis (internally loops over `sim_survey`, `run_strat` and `strat_error`) |
+| `expand_surveys` | Create a data frame, for use in `test_surveys`,  with all combinations of supplied survey settings |
 
 <br>
+
+
+TODO:
+> increase the margins on the table in the template
+> re-read the initial SimSurvey section and expand as necessary to better allign with the table
+> in each section, expand upon the details of the core functions and the associated equation symbols (i.e. break down case-study table into several tables)
+> in the case study section, copy and paste (and clean-up) the code used to generate the case study results
 
 
 ## Simulate abundance
@@ -650,7 +614,69 @@ Simulation testing is an important tool in the field of fisheries science as the
 **Funding:** NSERC visiting-fellow program
 
 
-# Appendix 1: case study results and discussion
+# Appendix 1: case study
+
+The construction of the **`SimSurvey`** package was motivated by a regional need to assess the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO division 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Function settings were iteratively modified until it was difficult to distinguish the simulated data from real survey data; these values were set as the defaults for the main functions in the package. Here we evaluate the efficacy of alternate sampling protocol by assessing deviation between stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. Although assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use. See Table \@ref(tab:par) for a description of the code used to generate the case study results.
+
+Table: (\#tab:par) Main function calls, with argument descriptions and associated parameter symbols, used to simulate the cod-like population used in the case study presented here. Note that the settings below largely correspond with the defaults used in the functions.
+
+|                                       **Function call** |                                            **Description** |                 **Symbol** |
+|:------------------------------------------------------- |:---------------------------------------------------------- | :------------------------- |
+| `> set.seed(438)`                                       |      Set random number generator seed to replicate results |                            |
+| `>`                                                     |                                                            |                            |
+| `> abundance <- sim_abundance(`                         |                                       *Simulate abundance* |                            |
+| `+   ages = 1:20,`                                      |                                                       Ages |                        $a$ |
+| `+   years = 1:20,`                                     |                                                      Years |                        $y$ |
+| `+   R = sim_R(mean = 30000000,`                        |                                           Mean recruitment |                    $\mu_r$ |
+| `+             log_sd = 0.5),`                          |                      Standard deviation of log-recruitment |                 $\sigma_r$ |
+| `+   Z = sim_Z(mean = 0.5,`                             |                                       Mean total mortality |                    $\mu_Z$ |
+| `+             log_sd = 0.2,`                           |                      Standard deviation of total mortality |                 $\sigma_Z$ |
+| `+             phi_age = 0.9,`                          |    Correlation across ages in error around total mortality |    $\varphi_{\delta, age}$ |
+| `+             phi_year = 0.5),`                        |   Correlation across years in error around total mortality |   $\varphi_{\delta, year}$ |
+| `+   growth = sim_vonB(Linf = 120,`                     |                                Mean asymptotic length (cm) |               $l_{\infty}$ |
+| `+                     L0 = 5,`                         |                                       Length at birth (cm) |                      $l_0$ |
+| `+                     K = 0.1,`                        |                                                Growth rate |                        $K$ |
+| `+                     log_sd = 0.1,`                   |     Standard deviation of the von Bertalanffy growth curve |                 $\sigma_l$ |
+| `+                     length_group = 3))`              |                  Length group for abundance at length (cm) |            $l_{group}^{N}$ |      
+| `>`                                                     |                                                            |                            |
+| `> grid <- make_grid(`                                  |                                              *Make a grid* |                            |
+| `+   x_range = c(-140, 140),`                           |                           Range of grid in the x dimension |                            |
+| `+   y_range = c(-140, 140),`                           |                           Range of grid in the y dimension |                            | 
+| `+   res = c(3.5, 3.5),`                                |                                       Grid resolution (km) |                        $R$ |
+| `+   shelf_depth = 200,`                                |                                           Shelf depth (km) |                $d_{shelf}$ |
+| `+   shelf_width = 100,`                                |                                           Shelf width (km) |                $w_{shelf}$ |
+| `+   depth_range = c(0, 1000),`                         |                                            Depth range (m) |       $[d_{min}, d_{max}]$ |
+| `+   n_div = 1,`                                        |                                        Number of divisions |                  $N_{div}$ |
+| `+   strat_breaks = seq(0, 1000, by = 40))`             |                 Series of depth breaks for defining strata |                            |
+| `>`                                                     |                                                            |                            |
+| `> distribution <- sim_distribution(`                   |                                    *Simulate distribution* |                            |     
+| `+   sim = abundance,`                                  |                Object produced by `sim_abundance` function |                            |     
+| `+   grid = grid,`                                      |                    Object produced by `make_grid` function |                            |
+| `+   ays_covar = sim_ays_covar(sd = 2.8,`               |          Standard deviation of age-year-space distribution |             $\sigma_{\xi}$ |
+| `+                             range = 300,`            |                          Range of spatial correlation (km) |                        $r$ |
+| `+                             phi_age = 0.5,`          |            Correlation across ages in spatial distribution |       $\varphi_{\xi, age}$ |
+| `+                             phi_year = 0.9,`         |           Correlation across years in spatial distribution |      $\varphi_{\xi, year}$ |
+| `+                             group_ages = 5:20),`     |       Make space-age-year variance equal across these ages |                            |
+| `+   depth_par = sim_parabola(mu = 200,`                |          Depth at which abundance is typically highest (m) |                    $\mu_d$ |
+| `+                            sigma = 70))`             |              Dispersion around depth of peak abundance (m) |                 $\sigma_d$ |
+| `>`                                                     |                                                            |                            |
+| `> surveys <- expand_surveys(`                          |                       *Define a series of surveys to test* |                            |
+| `+   set_den = c(0.0005, 0.001, 0.002, 0.005, 0.01),`   |                                       Set density (km^-2^) |                 $D_{sets}$ |
+| `+   lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),`   |                 Maximum number of lengths to collect / set |              $M_{lengths}$ |
+| `+   ages_cap = c(2, 5, 10, 20, 50))`                   | Maximum number of ages to sample / length group / division |                 $M_{ages}$ |
+| `>`                                                     |                                                            |                            |
+| `> tests <- test_surveys(`                              |                             *Simulate and analyze surveys* |                            |
+| `+   sim = distribution,`                               |             Object produced by `sim_distribution` function |                            |
+| `+   surveys = surveys,`                                |               Object produced by `expand_surveys` function |                            |
+| `+   n_loops = 1000,`                                   |                    Number of times to simulate each survey |                            | 
+| `+   q = sim_logistic(k = 2,`                           |                Steepness of logistic curve of catchability |                        $k$ |
+| `+                   x0 = 3),`                          |                 Midpoint of logistic curve of catchability |                      $x_0$ |
+| `+   trawl_dim = c(1.5, 0.02),`                         |       Trawl dimensions (km) - i.e. area covered by a trawl |                $A_{trawl}$ |
+| `+   length_group = 1)`                                 |                         Length group for age sampling (cm) |                $l_{group}$ |
+
+*Caution:* as written, the `test_surveys` function call may take days or weeks to run. Run duration can be decreased by running multiple simulations per loop (`n_sims` argument) and by running the loops in parallel (`cores` argument). See help file for more details (`?test_surveys`).
+
+<br>
 
 ## Results
 
