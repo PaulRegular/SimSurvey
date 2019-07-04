@@ -84,7 +84,7 @@ plot_grid <- function(grid, ...) {
     add_paths(data = df_strat, x = ~long, y = ~lat, color = I("white"),
               hoverinfo = "none", size = I(0.5), showlegend = FALSE) %>%
     add_paths(data = df_div, x = ~long, y = ~lat, color = I("darkgrey"),
-              hoverinfo = "none", size = I(2), showlegend = FALSE) %>%
+              hoverinfo = "none", size = I(4), showlegend = FALSE) %>%
     layout(xaxis = xax, yaxis = yax)
 
 }
