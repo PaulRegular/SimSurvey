@@ -107,7 +107,7 @@ survey <- sim_survey(pop,
 
 ## COMPS ----------
 
-set.seed(9999)
+set.seed(12)
 
 ax <- list(
   zeroline = FALSE,
@@ -133,10 +133,13 @@ real <- setdet %>%
   filter(survey.year == sample(c(1997:2005, 2007:2017), 1)) %>%
   mutate(zero = number == 0) %>%
   arrange(-number) %>%
-  mutate(rank = seq(1, nrow(.))) %>%
-  mutate(sel = ifelse(rank <= 3, rank, 0))
+  mutate(rank = seq(1, nrow(.)))
 
-sub_real <- head(real$id, 3)
+sub_real <- sample(real$id[real$number > 50], 3)
+
+sel <- as.numeric(factor(real$id, levels = sub_real))
+sel[is.na(sel)] <- 0
+real$sel <- sel
 
 real_hist <- real %>%
   plot_ly(x = ~number) %>%
@@ -157,10 +160,13 @@ simulated <- survey$setdet %>%
   filter(year == sample(1:20, 1)) %>%
   mutate(zero = n == 0) %>%
   arrange(-n) %>%
-  mutate(rank = seq(1, nrow(.))) %>%
-  mutate(sel = ifelse(rank <= 3, rank, 0))
+  mutate(rank = seq(1, nrow(.)))
 
-sub_sim <- head(simulated$set, 3)
+sub_sim <- sample(simulated$set[simulated$n > 50], 3)
+
+sel <- as.numeric(factor(simulated$set, levels = sub_sim))
+sel[is.na(sel)] <- 0
+simulated$sel <- sel
 
 sim_hist <- simulated %>%
   plot_ly(x = ~n) %>%
@@ -191,16 +197,33 @@ real_samps <- len_samp %>%
   filter(id %in% sub_real) %>%
   mutate(sel = factor(id, levels = sub_real))
 
+real_ag <- ag %>%
+  filter(id %in% sub_real) %>%
+  mutate(sel = factor(id, levels = sub_real))
 
 real_len <- list()
 cols <- viridis::viridis(3)
 for (i in 1:3) {
-  real_len[[i]] <- real_samps %>%
+
+  l <- real_samps %>%
+    filter(as.numeric(sel) == i) %>%
+    group_by(length) %>%
+    summarise(n = n())
+
+  a <- real_ag %>%
     filter(as.numeric(sel) == i) %>%
     group_by(length) %>%
     summarise(n = n()) %>%
-    plot_ly(x = ~length, y = ~n, color = I(cols[i])) %>%
-    add_bars()
+    rename(n_aged = n)
+
+  s <- left_join(l, a, by = "length")
+
+  real_len[[i]] <- s %>%
+    plot_ly(x = ~length, color = I(cols[i])) %>%
+    add_bars(y = ~n_aged, alpha = 1) %>%
+    add_bars(y = ~n, alpha = 0.5) %>%
+    layout(barmode = "stack")
+
 }
 
 real_len <- subplot(real_len, nrows = 3, shareX = TRUE, margin = 0.05) %>%
@@ -220,9 +243,11 @@ for (i in 1:3) {
   sim_len[[i]] <- sim_samps %>%
     filter(as.numeric(sel) == i) %>%
     group_by(length) %>%
-    summarise(n = n()) %>%
-    plot_ly(x = ~length, y = ~n, color = I(cols[i])) %>%
-    add_bars()
+    summarise(n = sum(measured), n_aged = sum(aged)) %>%
+    plot_ly(x = ~length, color = I(cols[i])) %>%
+    add_bars(y = ~n_aged, alpha = 1) %>%
+    add_bars(y = ~n, alpha = 0.5) %>%
+    layout(barmode = "stack")
 }
 
 sim_len <- subplot(sim_len, nrows = 3, shareX = TRUE, margin = 0.05) %>%
