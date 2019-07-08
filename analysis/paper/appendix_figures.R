@@ -274,5 +274,5 @@ p <- subplot(hist_row,
 
 p
 
-export_plot(p, file = "analysis/paper/figures/appendix_1_figure.png", width = 500, height = 650)
+export_plot(p, file = "analysis/paper/figures/real_sim_comp.png", width = 500, height = 650)
 
