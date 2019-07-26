@@ -136,9 +136,11 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
   survey_tab[sapply(survey_tab,  is.nan)] <- NA
 
   ## Rename cols
-  survey_tab <- survey_tab[, c(survey_groups,  "n", "N", "meanYst",  "meanYst_lcl", "meanYst_ucl",
+  survey_tab <- survey_tab[, c(survey_groups,  "n", "N", "df", "varYst",
+                               "meanYst",  "meanYst_lcl", "meanYst_ucl",
                                "sumYst", "sumYst_lcl", "sumYst_ucl"),  with = FALSE]
-  setnames(survey_tab, names(survey_tab), c(survey_groups, "sets", "sampling_units",
+  survey_tab$varYst <- sqrt(survey_tab$varYst) # convert to sd
+  setnames(survey_tab, names(survey_tab), c(survey_groups, "sets", "sampling_units", "df", "sd",
                                             "mean", "mean_lcl", "mean_ucl",
                                             "total", "total_lcl", "total_ucl"))
 
