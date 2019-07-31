@@ -20,5 +20,6 @@ sim_survey_paper_cache/
 sim_survey_paper_files/
 sim_survey_presentation_files/
 cod_sim_exports/
+analysis/paper/drafting
 !docs/**
 
