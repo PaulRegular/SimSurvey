@@ -14,6 +14,7 @@
 *.svg
 *.pdf
 *.html
+*.zip
 sim_survey_paper.docx
 .Rproj.user
 sim_survey_paper_cache/
