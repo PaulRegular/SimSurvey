@@ -1,12 +1,10 @@
 ---
 title: "`SimSurvey`: an `R` package to optimize the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"
-author: "Paul M. Regular, Gregory J. Robertson, Keith P. Lewis, Jonathan Babyn, Fran Mowbray"
-date: "Fisheries and Oceans Canada, Northwest Atlantic Fisheries Center, 80 East White Hills, St. John's, Newfoundland and Labrador, A1C 5X1, Canada"
 output: 
   bookdown::word_document2:
     reference_docx: template.docx
 bibliography: references.bib
-csl: ices-journal-of-marine-science.csl
+csl: plos.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -39,11 +37,25 @@ replot <- FALSE # plot the figures again? (acts as a manual cache)
 
 ```
 
+<br>
+<br>
 
-<!-- Items to discuss -->
-<!-- - Title -->
-<!-- - Target journal -->
-<!-- - Actual figures in appendix (html article, with interactive figures, as supplement?) -->
+Paul M. Regular^1^*, Gregory J. Robertson^1^, Keith P. Lewis^1^, Jonathan Babyn^1^, Brian Healey^1^, Fran Mowbray^1^  
+
+<br>
+<br>
+
+^1^ Fisheries and Oceans Canada, Northwest Atlantic Fisheries Center, 80 East White Hills, St. John's, Newfoundland and Labrador, A1C 5X1, Canada  
+
+<br>
+<br>
+
+*Corresponding author  
+E-mail: Paul.Regular@dfo-mpo.gc.ca (PMR)
+
+<br>
+<br>
+
 
 # Things to manually fix in word
 
@@ -56,19 +68,11 @@ replot <- FALSE # plot the figures again? (acts as a manual cache)
 7. Remove this section
 
 
-# Summary
+# Abstract
 
-**1\.** Fish populations often show complex spatial and temporal dynamics, creating challenges in designing and implementing effective surveys. Inappropriate sampling designs can potentially lead to both under-sampling (reducing precision and increasing the risk of bias) and over-sampling (through the extensive and potentially expensive sampling of correlated metrics).
+Fish populations often show complex spatial and temporal dynamics, creating challenges in designing and implementing effective surveys. Inappropriate sampling designs can potentially lead to both under-sampling (reducing precision and increasing the risk of bias) and over-sampling (through the extensive and potentially expensive sampling of correlated metrics). For assessments based on fisheries-independent surveys, the ability to estimate population parameters is affected by multiple levels of sampling, such as the number of sampling stations as well as the sub-sampling of fish captured to measure biological characteristics (e.g. lengths or ages). Population estimates are also affected by the pathway taken to analyze such data. Though simulations are a useful tool for exploring the efficacy of specific sampling strategies and statistical methods, there are a limited the number of tools that facilitate the simulation testing of a range of sampling and analytical pathways for fisheries-independent survey data. Here we introduce the `R` package **`SimSurvey`**, which has been designed to simplify the process of simulating surveys of age-structured and spatially-distributed fish populations. The package allows the user to simulate age-structured populations that vary in space and time and explore the efficacy of a range of sampling protocols to reproduce the population parameters of the known population. **`SimSurvey`** also includes a function for estimating the stratified mean and variance of the simulated data. **`SimSurvey`** can serve as a convenient, accessible and flexible platform for simulating a wide range of sampling strategies for fish stocks that show complex structuring. Various statistical approaches can then be applied to the results to test the efficacy of different analytical approaches.
 
-**2\.** For assessments based on fisheries-independent surveys, the ability to estimate population parameters is affected by multiple levels of sampling, such as the number of sampling stations as well as the sub-sampling of fish captured to measure biological characteristics (e.g. lengths or ages). Population estimates are also affected by the pathway taken to analyze such data.
-
-**3\.** Though simulations are a useful tool for exploring the efficacy of specific sampling strategies and statistical methods, there are a limited the number of tools that facilitate the simulation testing of a range of sampling and analytical pathways for fisheries-independent survey data.
-
-**4\.** Here we introduce the `R` package **`SimSurvey`**, which has been designed to simplify the process of simulating surveys of age-structured and spatially-distributed fish populations. The package allows the user to simulate age-structured populations that vary in space and time and explore the efficacy of a range of sampling protocols to reproduce the population parameters of the known population. **`SimSurvey`** also includes a function for estimating the stratified mean and variance of the simulated data.
-
-**5\.** **`SimSurvey`** can serve as a convenient, accessible and flexible platform for simulating a wide range of sampling strategies for fish stocks that show complex structuring. Various statistical approaches can then be applied to the results to test the efficacy of different analytical approaches.
-
-**Key-words:** length and age distribution; simulation; spatial correlation; stratified analysis; survey design
+<!-- **Key-words:** length and age distribution; simulation; spatial correlation; stratified analysis; survey design -->
 
 
 # Introduction
@@ -77,7 +81,7 @@ Fisheries-independent surveys have become a mainstay in the management of dynami
 
 Here we document **`SimSurvey`**, an `R` package designed to simplify and facilitate realistic simulations of fisheries-independent trawl surveys. In short, the package allows for the simulation of random or stratified-random surveys of an age-structured population that varies in space and time. The package has two main components: the first focuses on mimicking realistic fish stocks by simulating a spatially and age-correlated population distributed across a habitat gradient, and the second component focuses on simulating various surveys of these virtual fish stocks. 
 
-This simulation framework has similarities to those presented by Schnute and Haigh [-@schnute2003] and Puerta et al. [-@puerta2019], however, efforts were focused on developing a series of general and accessible functions to simplify the process of testing multiple sampling scenarios and analytical pathways. The steps taken to simulate surveys of spatial, age-structure populations are outlined below. While the core of this paper focuses on how to use this package, it is important to note that the defaults of the package are based on a case study. Output from default function calls are therefore relevant to the case study and these results are described and discussed in [*Appendix A*][Appendix A: Case study].
+This simulation framework has similarities to those presented by Schnute and Haigh [-@schnute2003] and Puerta et al. [-@puerta2019], however, efforts were focused on developing a series of general and accessible functions to simplify the process of testing multiple sampling scenarios and analytical pathways. The steps taken to simulate surveys of spatial, age-structure populations are outlined below. While the core of this paper focuses on how to use this package, it is important to note that the defaults of the package are based on a case study. Output from default function calls are therefore relevant to the case study and these results are described and discussed in [*S1 Appendix*][S1 Appendix: Case study].
 
 # The **`SimSurvey`** package
 
@@ -197,7 +201,7 @@ The next step in the simulation is to distribute the abundance at age matrix sim
 
 $$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
 
-Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean depth. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation within ages and years, and a two dimension AR1 age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations are controlled by a smoothing ($\lambda$) and a scaling parameter ($\kappa$) [here $\kappa$ is approximated from the range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years is controlled by $\varphi_{\xi, \mathrm{age}}$ and $\varphi_{\xi, \mathrm{year}}$, respectively. The overall variance of the spatial process is controlled by $\sigma_{\xi}^2$ (see [*Appendix B*][Appendix B: Age-year-space covariance] for a more detailed description of the space-age-year covariance structure). In short, this formulation allows control of depth preferences, the level of spatial aggregation and the degree of age and year specific clustering. Note that $\eta_{a,y,s}$ values are rounded and re-scaled to ensure that discrete numbers of fish reside in each grid cell and to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model.
+Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean depth. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation within ages and years, and a two dimension AR1 age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations are controlled by a smoothing ($\lambda$) and a scaling parameter ($\kappa$) [here $\kappa$ is approximated from the range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years is controlled by $\varphi_{\xi, \mathrm{age}}$ and $\varphi_{\xi, \mathrm{year}}$, respectively. The overall variance of the spatial process is controlled by $\sigma_{\xi}^2$ (see [*S2 Appendix*][S2 Appendix: Age-year-space covariance] for a more detailed description of the space-age-year covariance structure). In short, this formulation allows control of depth preferences, the level of spatial aggregation and the degree of age and year specific clustering. Note that $\eta_{a,y,s}$ values are rounded and re-scaled to ensure that discrete numbers of fish reside in each grid cell and to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model.
 
 Table: (\#tab:distribution) Default `sim_distribution` function call, with descriptions and associated parameter symbols of key arguments.
 
@@ -423,7 +427,7 @@ As noted above, available RAM may limit the utility of the `sim_survey` function
 
 ## Stratified analysis
 
-While there are many model-based options for obtaining an abundance index from survey data [e.g. @Thorson2015], design-based approaches, such as stratified analyses, are often used. Here we apply formula presented in Smith and Somerton [-@Smith1981; equations are replicated in [*Appendix C*][Appendix C: Stratified analysis equations]] to calculate stratified estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). Note that estimates of total abundance are based on aggregate catch while abundance at length requires length frequencies to be scaled up using set-specific ratios of measured to caught fish, and these length frequencies are converted to age by applying a division-level age-length-key. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
+While there are many model-based options for obtaining an abundance index from survey data [e.g. @Thorson2015], design-based approaches, such as stratified analyses, are often used. Here we apply formula presented in Smith and Somerton [-@Smith1981; equations are replicated in [*S3 Appendix*][S3 Appendix: Stratified analysis equations]] to calculate stratified estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). Note that estimates of total abundance are based on aggregate catch while abundance at length requires length frequencies to be scaled up using set-specific ratios of measured to caught fish, and these length frequencies are converted to age by applying a division-level age-length-key. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
 
 $$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
 
@@ -446,7 +450,7 @@ The returned object will include all the objects accumulated through the `sim_ab
 
 ## Testing survey protocol
 
-Assuming a stratified analysis as the default method for obtaining an index of abundance, a series of survey protocols can be tested using the `test_surveys` function. Provided a simulated population from `sim_distribution` and a series of survey protocols from `expand_surveys`, this function will simulate and analyze data from each survey using the `sim_survey`, `run_strat` and `strat_error` functions. Like `sim_survey_parallel`, this function operates in parallel and allows the specification of `n_sims` and `n_loops`, and the product of these two arguments equals the number of times each survey is simulated. Keep in mind that low numbers of `n_sims` and high numbers of `n_loops` will be less demanding on RAM, but may be slower, especially if the work is spread across few `cores`. Because most of the default settings of the functions match the case study settings, the code below will replicate the results from our case study (see [*Appendix A*][Appendix A: Case study] for more detail). The `expand_surveys` function sets up a series of `r nrow(expand_surveys())` surveys to test (i.e. all possible combinations of the `set_den`, `lengths_cap` and `ages_cap` vectors) and the `test_surveys` function will run 1000 simulations of each survey and compare stratified estimates of abundance to the true abundance available to the survey.
+Assuming a stratified analysis as the default method for obtaining an index of abundance, a series of survey protocols can be tested using the `test_surveys` function. Provided a simulated population from `sim_distribution` and a series of survey protocols from `expand_surveys`, this function will simulate and analyze data from each survey using the `sim_survey`, `run_strat` and `strat_error` functions. Like `sim_survey_parallel`, this function operates in parallel and allows the specification of `n_sims` and `n_loops`, and the product of these two arguments equals the number of times each survey is simulated. Keep in mind that low numbers of `n_sims` and high numbers of `n_loops` will be less demanding on RAM, but may be slower, especially if the work is spread across few `cores`. Because most of the default settings of the functions match the case study settings, the code below will replicate the results from our case study (see [*S1 Appendix*][S1 Appendix: Case study] for more detail). The `expand_surveys` function sets up a series of `r nrow(expand_surveys())` surveys to test (i.e. all possible combinations of the `set_den`, `lengths_cap` and `ages_cap` vectors) and the `test_surveys` function will run 1000 simulations of each survey and compare stratified estimates of abundance to the true abundance available to the survey.
 
 ```{r, echo = TRUE, eval = FALSE}
 
@@ -649,7 +653,7 @@ Like any model, this simulation is a simplification of a much more complex reali
 
 # Research opportunities
 
-The case study described in [*Appendix A*][Appendix A: Case study] provides one example of how **`SimSurvey`** can be used to simulation test the design of fisheries-independent trawl surveys. There are multiple layers to the sampling design of such surveys and the end results are linked with the way such data are analyzed. Below we outline some examples where the **`SimSurvey`** package may aid future research efforts.
+The case study described in [*S1 Appendix*][S1 Appendix: Case study] provides one example of how **`SimSurvey`** can be used to simulation test the design of fisheries-independent trawl surveys. There are multiple layers to the sampling design of such surveys and the end results are linked with the way such data are analyzed. Below we outline some examples where the **`SimSurvey`** package may aid future research efforts.
 
 ## Design or model-based approach
 
@@ -657,13 +661,11 @@ The analysis of data from fisheries-independent surveys have generally been conf
 
 ## Growth analyses
 
-Assessing ages for a large number of fish is very time-consuming and, as such, length-stratified sampling is often used to estimate age frequencies of fish populations. The resultant sub-sample is used to construct an age-length key (i.e. the probability a fish is a specific age given length) and age frequencies are obtained by applying this key to length-frequencies obtained via more expansive random sampling. One age-length key is typically assumed to be representative of the whole stock area, however, spatial variability in the relationship may introduce bias in abundance-at-age estimates [@Berg2012]. Results from the case study (see [*Appendix A*][Appendix A: Case study]) reiterate this point and **`SimSurvey`** may serve as a platform for testing potential model-based solutions to this problem [e.g. @Berg2012].
+Assessing ages for a large number of fish is very time-consuming and, as such, length-stratified sampling is often used to estimate age frequencies of fish populations. The resultant sub-sample is used to construct an age-length key (i.e. the probability a fish is a specific age given length) and age frequencies are obtained by applying this key to length-frequencies obtained via more expansive random sampling. One age-length key is typically assumed to be representative of the whole stock area, however, spatial variability in the relationship may introduce bias in abundance-at-age estimates [@Berg2012]. Results from the case study (see [*S1 Appendix*][S1 Appendix: Case study]) reiterate this point and **`SimSurvey`** may serve as a platform for testing potential model-based solutions to this problem [e.g. @Berg2012].
 
 ## Random or stratified sampling
 
 **`SimSurvey`** can be used to compare the precision and bias of population estimates obtained using random or stratified sampling. Simple random sampling can be implemented using a grid with one strata (e.g. `make_grid(depth_range = c(0, 1000), strat_breaks = c(0, 1000), strat_split = 0)`). Sub-sampling of ages can also be random rather than length-stratified by setting the `age_sampling` argument in the `sim_survey` function to `"random"` rather than `"stratified"`. This can facilitate research similar to work presented in Puerta et al. [-@puerta2019].
-
-<!-- ESTIMATION OF VARIANCE. What does the stratified estimates of variance look like with the simulations you already have? Do negative values disapear above a particular sampling intensity? -->
 
 
 # Future directions
@@ -682,14 +684,10 @@ Simulation testing is an important tool in the field of fisheries science as the
 
 # Acknowledgements
 
-**Feedback and advice:** Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Brian Healey, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury, Peter Upward
-
-**Review of previous draft:** Dave Cote, Joanne Morgan, Brian Healey
-
-**Funding:** NSERC visiting-fellow program
+This work has benifited from valuable feedback from numerous colleagues, including Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury and Peter Upward. We also thank Dave Cote and Joanne Morgan for providing constructive comments on a previous version of this manuscript. This work was supporded by the NSERC visiting-fellow program.
 
 
-# Appendix A: Case study
+# S1 Appendix: Case study
 
 The construction of the **`SimSurvey`** package was motivated by a need to assess the sampling design of trawl surveys conducted along the Newfoundland and Labrador shelf by Fisheries and Oceans Canada. As a tangible first step, we focused our efforts on emulating data from the survey of cod in NAFO Subdivision 3Ps since it is one of the most dynamic and heavily sampled stocks in the region. Function settings were iteratively modified until it was difficult to distinguish the simulated data from real survey data; these values were set as the defaults for the main functions in the package. Here we evaluate the efficacy of alternate sampling protocols by assessing deviation of stratified estimates of abundance [@Smith1981] from the true abundance available to the survey. Although assessing model-based analyses was an option, we focused on the design-based stratified analysis for simplicity and because of its widespread use. The code below displays the core defaults will replicate the results of this case study. Results produced here are the same as those produced and displayed in a series of figures in the *[Testing survey protocol]* section of the paper.
 
@@ -780,7 +778,7 @@ The negative consequences of excessive length sampling on abundance at age estim
 While much work has yet to be done, results from the simple simulation echo the growing body of literature which concludes that extra sub-sampling is an ineffective means of improving estimates relative to sampling more locations [@Pennington1994; @Pennington2002; @Stewart2014; @Bogstad1995; @Coggins2013; @Zhang2013]. In general, the most significant source of variation in fisheries-independent surveys stems from set-to-set variation, and not variability from individual sub-samples. This is largely because fish caught together tend to be more similar than those in the general population [@Pennington1994]. Therefore, if the goal of a trawl survey is to maximize information, it is likely better to stop collecting correlated samples and, instead, focus efforts the next set and/or other species. This is simply one example of the questions that can be explored using **`SimSurvey`**.
 
 
-# Appendix B: Age-year-space covariance
+# S2 Appendix: Age-year-space covariance
 
 The simulation applied in this paper was set-up to control covariance across ages, years and space. To do this we used a combination of Matérn covariance, to control the level of spatial aggregation, and the age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. As described in Appendix A in Cadigan [-@Cadigan2016], the age-year covariance can be broken down into a series of AR(1) processes. We integrate Matérn covariance into this series of equations:
 
@@ -793,7 +791,7 @@ where $\left |s_i - s_j \right|$ is the Euclidean distance between two locations
 
 <br>
 
-# Appendix C: Stratified analysis equations
+# S3 Appendix: Stratified analysis equations
 
 Standard notation for use in the analysis of stratified-random survey data [modified from @Smith1981]:
                                                      
@@ -817,24 +815,6 @@ Standard notation for use in the analysis of stratified-random survey data [modi
 
 
 # References
-
-
-
-<!-- # Quotes -->
-
-<!-- "To effectively manage rare populations, accurate monitoring data are critical. Yet many monitoring programs are initiated without careful consideration of whether chosen sampling designs will provide accurate estimates of population parameters. Obtaining accurate estimates is especially difficult when natural variability is high, or limited budgets determine that only a small fraction of the population can be sampled." - Morrison et al. (2008) Popul Ecol 50:417–425 -->
-
-<!-- "Fishery independent surveys provide valuable information on fish population characteristics and play important roles in fisheries stock assessment (Gunderson, 1993; Rago, 2005). The importance of fishery independent surveys has been well recognized, but the important role of sampling design for these surveys is less appreciated. Often, traditional survey methods are used without considering survey designs that maximize the precision and accuracy of the estimator (Mier and Picquelle, 2008). Fishery independent surveys are usually expensive and time-consuming, and an efficient sampling design is key to the success of these surveys. Recently, investigators have begun to pay more attention to the importance of survey sampling and are exploring a variety of aspects of designs (Bez, 2002; Brown, 2003; Kimura and Somerton, 2006). Based on the previous studies, we compared the performance of traditional and adaptive sampling designs with emphasis on simulation application for performance comparison." - Yu et al. (2012) Fisheries Research 113: 173–181 -->
-
-<!-- # Examples -->
-
-<!-- Good examples of papers on packages: -->
-<!-- - https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0092725#s4 -->
-<!-- - file:///C:/Users/RegularP/Downloads/Mildenberger_et_al-2017-Methods_in_Ecology_and_Evolution.pdf -->
-
-<!-- # READ -->
-
-<!-- - https://onlinelibrary.wiley.com/doi/pdf/10.1046/j.1467-2960.2001.00047.x -->
 
 
 
