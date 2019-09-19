@@ -3,6 +3,10 @@ title: "`SimSurvey`: an `R` package to optimize the design and analysis of fishe
 output: 
   bookdown::word_document2:
     reference_docx: template.docx
+  bookdown::html_document2:
+    number_sections: false
+    toc: true
+    toc_float: true
 bibliography: references.bib
 csl: plos.csl
 ---
@@ -14,7 +18,8 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       warning = FALSE,
                       dev = "png",
-                      dpi = 300)
+                      dpi = 300,
+                      out.width = "100%")
 knitr::opts_knit$set(root.dir = "../..")
 options(scipen = 999) # turn off scientific notation to simplify printing
 
@@ -34,38 +39,37 @@ Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoicGF1bHJlZ3VsYXIiLCJhIjoiY2pueGIxejMxMGM0
 source("analysis/paper/helper_functions.R")
 
 replot <- FALSE # plot the figures again? (acts as a manual cache)
+is_html <- knitr::is_html_output()
 
 ```
 
 <br>
-<br>
 
 Paul M. Regular^1^*, Gregory J. Robertson^1^, Keith P. Lewis^1^, Jonathan Babyn^1^, Brian Healey^1^, Fran Mowbray^1^  
 
-<br>
-<br>
 
 ^1^ Fisheries and Oceans Canada, Northwest Atlantic Fisheries Center, 80 East White Hills, St. John's, Newfoundland and Labrador, A1C 5X1, Canada  
-
-<br>
-<br>
 
 *Corresponding author  
 E-mail: Paul.Regular@dfo-mpo.gc.ca (PMR)
 
-<br>
-<br>
 
 
-# Things to manually fix in word
+```{r, eval = !is_html, results = "asis"}
 
-1. Adjust font size of code strings
-2. Decrease font size of tables
-3. Indent closures in Table \@ref(tab:fun)
-4. Replace pluses (`+`) with spaces in Tables \@ref(tab:abundance) to (\#tab:survey)
-5. Adjust size of footnote below Table \@ref(tab:abundance)
-6. Adjust size of Figure \@ref(fig:real-sim-comp)
-7. Remove this section
+cat("# Things to manually fix in word  \n")
+
+cat("1. Adjust font size of code strings  \n")
+cat("2. Decrease font size of tables  \n")
+cat("3. Indent closures in Table \\@ref(tab:fun)  \n")
+cat("4. Replace pluses (`+`) with spaces in Tables \\@ref(tab:abundance) to \\@ref(tab:survey)  \n")
+cat("5. Adjust size of footnote below Table \\@ref(tab:abundance)  \n")
+cat("6. Adjust size of Figure \\@ref(fig:real-sim-comp)  \n")
+cat("7. Place supplements in separate documents  \n")
+cat("8. Remove this section  \n")
+
+```
+
 
 
 # Abstract
@@ -149,7 +153,7 @@ Table: (\#tab:abundance) Default `sim_abundance` function call, with description
 
 Abundance at age and length is simulated using the `sim_abundance` function and a default function call is described in Table \@ref(tab:abundance) along with associated symbols from the equations outlined above. This function has a simple structure and requires the specification of a series of `ages` and `years` along with functions known as "closures", such as `sim_R`, `sim_Z` and `sim_vonB`, for simulating recruitment (`R`), total mortality (`Z`) and growth (`growth`), respectively. Closures are functions that contain data and return functions [@wickham2014]. For example, `sim_R(mean = 500, log_sd = 0.5)` returns a function that holds the supplied parameter values and requires a sequence of years to be supplied. (Note that each of the above-mentioned closures include a plot argument such that quick visuals can be obtained using a line of code like this: `sim_R(mean = 500, log_sd = 0.5, plot = TRUE)(years = 1:100)`). This structure was chosen to avoid the repeated specifications of ages and years. The use of closures also allows users to construct and use their own closures with a similar structure but different underlying formula. Overall, the function provides a simple tool for simulating a range of dynamic age-structured populations. For instance, below we provide examples where we simulate a relatively long and short lived species (note that default variance, starting abundance and growth settings were used in both simulations).
 
-```{r, echo = TRUE, eval = replot}
+```{r, echo = TRUE, eval = replot | is_html}
 set.seed(438)
 long <- sim_abundance(ages = 1:20,
                       R = sim_R(mean = 3e+07),
@@ -169,7 +173,7 @@ plot_surface(short, mat = "N")
 ```
 
 
-```{r, eval = replot}
+```{r, eval = replot | is_html}
 
 pa <- plot_surface(long, mat = "N", scene = "scene1", showscale = FALSE) %>% 
   add_labels(x = 0.05, y = 0.9, text = "a)")
@@ -183,13 +187,18 @@ p <- subplot(pa, pb) %>%
                        yaxis = list(title = "Year"),
                        zaxis = list(title = "N")))
 
-export_plot(p, file = "analysis/paper/figures/plot_surface.png", width = 800, height = 370)
+if (replot) export_plot(p, file = "analysis/paper/figures/plot_surface.png", width = 800, height = 370)
+
 ```
 
 
-```{r surface, fig.cap = "Surface plots of simulated abundance at age of a relatively a) long lived and b) short lived species. These plots were produced by `plot_surface` when supplied a list produced by `sim_abundance`."}
+```{r surface, out.height = "370px", fig.cap = "Surface plots of simulated abundance at age of a relatively a) long lived and b) short lived species. These plots were produced by `plot_surface` when supplied a list produced by `sim_abundance`."}
 
-knitr::include_graphics("figures/plot_surface.png")
+if (is_html) {
+  p
+} else {
+  knitr::include_graphics("figures/plot_surface.png")
+}
 
 ```
 
@@ -246,7 +255,7 @@ plot_grid(c)
 ```
 
 
-```{r eval = replot}
+```{r eval = replot | is_html}
 
 a <- make_grid() %>% 
   plot_grid(showscale = TRUE) %>% 
@@ -259,21 +268,25 @@ c <- make_grid(n_div = 4, shelf_depth = 500, shelf_width = 0, depth_range = c(0,
   add_labels(x = 0.08, y = 1, text = "c)")
 p <- subplot(a, b, c)
 
-export_plot(p, file = "analysis/paper/figures/plot_grid.png", width = 800, height = 320)
+if (replot) export_plot(p, file = "analysis/paper/figures/plot_grid.png", width = 800, height = 320)
 
 ```
 
 
-```{r grid, fig.cap = "Plots produced by `plot_grid` when supplied a raster object produced by `make_grid` a) using default settings, b) settings that increase the number of times depth strata are horizontally split, and c) settings that produce a more linear depth gradient and increase the number of divisions. In these plots, the color gradient represents depth, the thick grey lines delineate divisions and thin white lines delineate strata."}
+```{r grid, out.height = "320px", fig.cap = "Plots produced by `plot_grid` when supplied a raster object produced by `make_grid` a) using default settings, b) settings that increase the number of times depth strata are horizontally split, and c) settings that produce a more linear depth gradient and increase the number of divisions. In these plots, the color gradient represents depth, the thick grey lines delineate divisions and thin white lines delineate strata."}
 
-knitr::include_graphics("figures/plot_grid.png")
+if (is_html) {
+  p
+} else {
+  knitr::include_graphics("figures/plot_grid.png")
+}
 
 ```
 
 
 In addition to supplying objects produced by `sim_abundance` and `make_grid`, the `sim_distribution` function requires two closures that describe the age-year-space covariance and the relationship with depth. Here we use `sim_ays_covar` and `sim_parabola` to control these relationships and a wide range of age and year specific distributions can be obtained by tweaking a few parameters in these closures. Below we run a default `sim_distribution` call, which generates a population that forms tight clusters that are more strongly correlated across years than ages, and another call that generates a population that is more diffuse (i.e. wider `range`) and exhibits stronger correlation across ages than years (i.e. lower `phi_year` and higher `phi_age`). Distributions can also be forced to be the same across ages and years by using the `group_ages` and `group_years` arguments, respectively, in the `sim_ays_covar` closure. Variance in the size of the clusters can also be modified by changing the `sd` argument in the `sim_ays_covar` function. In other words, these parameters can be modified to control the degree of age-specific clustering and inter-annual site-fidelity exhibited by the simulated population. Note that the resolution of the default grid is high and, as such, the simulations below may take minutes to complete. Also note that the key functions in the **`SimSurvey`** package have been set-up to be pipe [`%>%`; @bache2014] friendly.
 
-```{r, echo = TRUE, eval = replot}
+```{r, echo = TRUE, eval = replot | is_html}
 
 set.seed(438)
 a <- sim_distribution(sim = sim_abundance(), # nested approach
@@ -297,7 +310,7 @@ plot_distribution(b, ages = 1:3, years = 1:3, type = "heatmap")
 ```
 
 
-```{r, eval = replot}
+```{r, eval = replot | is_html}
 
 facet_distribution <- function(data) {
   ay <- expand.grid(age = 1:3, year = 1:3)
@@ -325,14 +338,39 @@ p <- subplot(a_plots, b_plots) %>%
   add_labels(text = "a)", x = 0, y = 1, yshift = 20, xshift = -20) %>% 
   add_labels(text = "b)", x = 0.54, y = 1, yshift = 20, xshift = -20)
 
-export_plot(p, file = "analysis/paper/figures/plot_distribution.png", width = 600, height = 300)
+if (replot) export_plot(p, file = "analysis/paper/figures/plot_distribution.png", width = 600, height = 300)
+
+a_plots <- plot_distribution(a, ages = 1:3, years = 1:3, type = "heatmap") %>% 
+  add_labels(x = 0.08, y = 1, text = "a)")
+b_plots <- plot_distribution(b, ages = 1:3, years = 1:3, type = "heatmap") %>% 
+  add_labels(x = 0.08, y = 1, text = "b)")
 
 ```
 
 
-```{r distribution, fig.cap = "Distribution plots of simulated populations that form a) tight clusters with stronger correlation through years than ages (default settings), and b) relatively diffuse clusters with stronger correlation through ages than years. This plot is a facet of plots produced by `plot_distribution` when supplied simulations from `sim_distribution`."}
+```{r}
+cap <- "Distribution plots of simulated populations that form a) tight clusters with stronger correlation through years than ages (default settings), and b) relatively diffuse clusters with stronger correlation through ages than years."
+if (is_html) {
+  cap <- paste(cap, "These plots were produced by `plot_distribution` when supplied simulations from `sim_distribution`.")
+} else {
+  cap <- paste(cap, "This plot is a facet of plots produced by `plot_distribution` when supplied simulations from `sim_distribution`.")
+}
+```
 
-knitr::include_graphics("figures/plot_distribution.png")
+
+```{r eval = is_html, out.height = "400px"}
+a_plots
+```
+
+
+```{r distribution, out.height = "400px", fig.cap = cap}
+
+if (is_html) {
+  b_plots
+} else {
+  knitr::include_graphics("figures/plot_distribution.png")
+}
+
 
 ```
 
@@ -366,7 +404,7 @@ Table: (\#tab:survey) Default `sim_survey` function call, with descriptions and 
 
 The function `sim_survey` can be used to simulate data from one survey over a population created using `sim_distribution`. A default function call is described in Table \@ref(tab:survey). The `sim_survey` function simulates the sampling process of the survey and, as such, requires a closure for defining catchability as a function of age and definitions of the design of the survey. Specifically, the `q` argument requires a closure, such as `sim_logistic`, for defining the probability of catching specific age groups, trawl dimensions are defined in the `trawl_dim` argument, and set, length and age sampling effort are defined using the `set_den`, `lengths_cap` and `ages_cap` arguments, respectively. Like `sim_abundance` and `sim_distribution`, custom closures can be supplied to `sim_survey` to impose alternate parametric curves for catchability at age. Multiple simulations of the same survey can be run using the `n_sims` argument, however, requesting large numbers of simulations can be computationally demanding depending on the processing capacity available. Below we use `sim_survey` to simulate two surveys over a default population, of which one is set-up to have higher set density (`set_den`) than the other.
 
-```{r, echo = TRUE, eval = replot}
+```{r, echo = TRUE, eval = replot | is_html}
 
 set.seed(438)
 pop <- sim_abundance() %>% 
@@ -394,7 +432,7 @@ plot_survey(b, which_sim = 1, which_year = 20)
 ```
 
 
-```{r eval = replot}
+```{r eval = replot | is_html}
 
 plot_a <- plot_survey(a, which_sim = 1, which_year = 20) %>% 
   add_labels(text = "a)", x = 0, y = 1, yshift = 5, xshift = -5) %>% 
@@ -404,22 +442,32 @@ plot_b <- plot_survey(b, which_sim = 1, which_year = 20) %>%
   layout(margin = list(l = 10, r = 10, t = 10, b = 10))
 
 ## plotly::subplot was not amenable to combining these two plots, I therefore used ImageMagick to combine a and b
-
-paths <- c(a = "analysis/paper/figures/plot_survey_a.png", b = "analysis/paper/figures/plot_survey_b.png")
-export_plot(plot_a, file = paths["a"], width = 800, height = 400)
-export_plot(plot_b, file = paths["b"], width = 800, height = 400)
-
-image_a <- magick::image_read(paths["a"])
-image_b <- magick::image_read(paths["b"])
-p <- magick::image_append(c(image_a, image_b), stack = TRUE)
-magick::image_write(p, path = "analysis/paper/figures/plot_survey.png")
+if (replot) {
+  paths <- c(a = "analysis/paper/figures/plot_survey_a.png", b = "analysis/paper/figures/plot_survey_b.png")
+  export_plot(plot_a, file = paths["a"], width = 800, height = 400)
+  export_plot(plot_b, file = paths["b"], width = 800, height = 400)
+  
+  image_a <- magick::image_read(paths["a"])
+  image_b <- magick::image_read(paths["b"])
+  p <- magick::image_append(c(image_a, image_b), stack = TRUE)
+  magick::image_write(p, path = "analysis/paper/figures/plot_survey.png")
+}
 
 ```
 
 
-```{r survey, fig.cap = "Bubble plots of abundance and histograms of set catches from a simulated stratified-random survey of a default population under relatively a) low and b) high sampling effort. Point size and color are scaled by abundance in the bubble plots. Histograms of length and age composition include the distribution of all fish caught next to those sampled overlaid with a line of the true distribution of lengths and ages available to the survey. Note that the first simulation of the survey in year 20 is depicted here. These plots are produced by `plot_survey` when supplied survey data simulated using `sim_survey`."}
+```{r eval = is_html, out.height = "400px"}
+plot_a
+```
 
-knitr::include_graphics("figures/plot_survey.png")
+
+```{r survey, out.height = "400px", fig.cap = "Bubble plots of abundance and histograms of set catches from a simulated stratified-random survey of a default population under relatively a) low and b) high sampling effort. Point size and color are scaled by abundance in the bubble plots. Histograms of length and age composition include the distribution of all fish caught next to those sampled overlaid with a line of the true distribution of lengths and ages available to the survey. Note that the first simulation of the survey in year 20 is depicted here. These plots are produced by `plot_survey` when supplied survey data simulated using `sim_survey`."}
+
+if (is_html) {
+  plot_b
+} else {
+  knitr::include_graphics("figures/plot_survey.png")
+}
 
 ```
 
@@ -467,7 +515,7 @@ tests <- test_surveys(pop, surveys = surveys,
 
 ```
 
-```{r data, eval = replot}
+```{r data, eval = replot | is_html}
 
 load("analysis/cod_sim_exports/2018-10-26_age_clust_test/test_output.RData")
 tests <- sim
@@ -485,7 +533,7 @@ plot_age_strat_fan(tests, years = 1:20, ages = 1:10)
 ```
 
 
-```{r eval = replot}
+```{r eval = replot | is_html}
 
 surveys <- tests$surveys
 set_dens <- c(0.0005, 0.002, 0.01)
@@ -501,19 +549,23 @@ p <- subplot(a, b, c, nrows = 1, shareY = TRUE, titleX = FALSE) %>%
   add_labels(x = c(0.1, 0.5, 0.9), y = rep(1, 3), yshift = 20, 
              text = paste("D<sub>sets</sub> =", set_dens))
 
-export_plot(p, file = "analysis/paper/figures/plot_total_strat_fan.png", width = 700, height = 250)
+if (replot) export_plot(p, file = "analysis/paper/figures/plot_total_strat_fan.png", width = 700, height = 250)
 
 ```
 
 
-```{r fan1, fig.cap = "Fan chart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{\\mathrm{sets}}$. The thick black line indicates the true trend in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan1, out.height = "250px", fig.cap = "Fan chart of stratified estimates of the trend in total abundance from surveys with different set densities, $D_{\\mathrm{sets}}$. The thick black line indicates the true trend in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
-knitr::include_graphics("figures/plot_total_strat_fan.png")
+if (is_html) {
+  p
+} else {
+  knitr::include_graphics("figures/plot_total_strat_fan.png")
+}
 
 ```
 
 
-```{r eval = replot}
+```{r eval = replot | is_html}
 
 facet_fan <- function(data, ages = NULL, lengths = NULL, ylim = NULL, set_dens = c(0.0005, 0.002, 0.01), lengths_caps = c(10, 100, 1000)) {
   surveys <- data$surveys
@@ -532,6 +584,7 @@ facet_fan <- function(data, ages = NULL, lengths = NULL, ylim = NULL, set_dens =
       plot_list[[which(s$set_den == set_dens[i] & s$lengths_cap == lengths_caps[j])]] <- p
     }
   }
+  rm(data)
   subplot(plot_list, nrows = length(set_dens), shareX = TRUE, shareY = TRUE, titleX = FALSE, titleY = FALSE)
 } 
 
@@ -544,18 +597,23 @@ p <- facet_fan(tests, lengths = 1:100, ylim = c(0, 21000000)) %>%
   add_labels(x = 0.5, y = 0, text = "Length", yshift = -40) %>% 
   add_labels(x = 0, y = 0.5, text = "Abundance index", xshift = -60, textangle = -90)
 
-export_plot(p, file = "analysis/paper/figures/plot_length_strat_fan.png", width = 700, height = 600)
+if (replot) export_plot(p, file = "analysis/paper/figures/plot_length_strat_fan.png", width = 700, height = 600)
 
 ```
 
 
-```{r fan2, fig.cap = "Fan chart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{\\mathrm{sets}}$, and length sampling protocol, $M_{\\mathrm{lengths}}$. The thick black line indicates the true trend in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan2, out.height = "600px", fig.cap = "Fan chart of stratified estimates of abundance at length from year seven of the simulation from surveys with different set densities, $D_{\\mathrm{sets}}$, and length sampling protocol, $M_{\\mathrm{lengths}}$. The thick black line indicates the true trend in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
-knitr::include_graphics("figures/plot_length_strat_fan.png")
+if (is_html) {
+  p
+} else {
+  knitr::include_graphics("figures/plot_length_strat_fan.png")
+}
+
 
 ```
 
-```{r, eval = replot}
+```{r, eval = replot | is_html}
 
 p <- facet_fan(tests, ages = 1:10, ylim = c(0, 51000000)) %>% 
   layout(margin = list(r = 30)) %>% 
@@ -566,14 +624,19 @@ p <- facet_fan(tests, ages = 1:10, ylim = c(0, 51000000)) %>%
   add_labels(x = 0.5, y = 0, text = "Age", yshift = -40) %>% 
   add_labels(x = 0, y = 0.5, text = "Abundance index", xshift = -60, textangle = -90)
 
-export_plot(p, file = "analysis/paper/figures/plot_age_strat_fan.png", width = 700, height = 600)
+if (replot) export_plot(p, file = "analysis/paper/figures/plot_age_strat_fan.png", width = 700, height = 600)
 
 ```
 
 
-```{r fan3, fig.cap = "Fan chart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{\\mathrm{sets}}$, and length sampling protocol, $M_{\\mathrm{lengths}}$. Number of ages sampled per length group, $M_{\\mathrm{ages}}$, was 10 in all scenarios. The thick black line indicates the true trend in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
+```{r fan3, out.height = "600px", fig.cap = "Fan chart of stratified estimates of the trend in abundance at age four from surveys with different set densities, $D_{\\mathrm{sets}}$, and length sampling protocol, $M_{\\mathrm{lengths}}$. Number of ages sampled per length group, $M_{\\mathrm{ages}}$, was 10 in all scenarios. The thick black line indicates the true trend in the total population available to the survey and the color gradient represents a range of probability envelopes from 10% to 90%. This plot is a facet of plots produced by `plot_total_strat_fan` when supplied results from `test_surveys`."}
 
-knitr::include_graphics("figures/plot_age_strat_fan.png")
+if (is_html) {
+  p
+} else {
+  knitr::include_graphics("figures/plot_age_strat_fan.png")
+}
+
 
 ```
 
@@ -588,13 +651,13 @@ plot_error_surface(tests, plot_by = "rule")
 ```
 
 
-```{r, eval = replot}
+```{r, eval = replot | is_html}
 
 sim <- tests
 sim$surveys <- sim$surveys[sim$surveys$set_den %in% c("0.01", "0.002", "0.0005")]
 
-p <- plot_survey_rank(sim, which_strat = "length")
-export_plot(p, file = "analysis/paper/figures/plot_survey_rank.png", width = 450, height = 400)
+rank_p <- plot_survey_rank(sim, which_strat = "length")
+if (replot) export_plot(rank_p, file = "analysis/paper/figures/plot_survey_rank.png", width = 450, height = 400)
 
 totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
                                  n_measured = mean(n_measured), n_aged = mean(n_aged)),
@@ -622,27 +685,46 @@ p_list <- lapply(seq_along(split_d), function(i) {
                yshift = -20, xshift = xshift[i])
 })
 
-p <- subplot(p_list) %>%  
+surface_p <- subplot(p_list) %>% 
   layout(scene = c(list(domain = list(x = c(0, 1/3), y = c(0, 1))), scene),
          scene2 = c(list(domain = list(x = c(1/3, 2/3), y = c(0, 1))), scene),
          scene3 = c(list(domain = list(x = c(2/3, 1), y = c(0, 1))), scene),
-         autosize = FALSE, margin = list(t = 0, l = 10, r = 10, b = 10))
+         autosize = is_html, margin = list(t = 0, l = 10, r = 10, b = 10))
   
-export_plot(p, file = "analysis/paper/figures/plot_error_surface.png", width = 990, height = 270)
+if (replot) export_plot(surface_p, file = "analysis/paper/figures/plot_error_surface.png", width = 1090, height = 320)
+
+surface_p <- plot_error_surface(tests, plot_by = "rule")
 
 
 ```
 
 
-```{r rank, fig.cap = "Divergent dot plot of the precision and accuracy (RMSE) of length based stratified estimates of abundance, and total sampling effort (number of sets [$N_{\\mathrm{sets}}$] and length measurements [$N_{\\mathrm{measured}}$]), under various sampling protocols (set density [$D_{\\mathrm{sets}}$] and maximum number of lengths measured per set [$M_{\\mathrm{lengths}}$]). Records are ranked by lowest to highest RMSE score. Within each plot, a color ramp is applied from lowest to highest value as an additional visual aid. Note that the exponent format of the axes defaults to SI unit symbols (e.g. M for million)."}
+```{r rank, out.height = "400px", fig.cap = "Divergent dot plot of the precision and accuracy (RMSE) of length based stratified estimates of abundance, and total sampling effort (number of sets [$N_{\\mathrm{sets}}$] and length measurements [$N_{\\mathrm{measured}}$]), under various sampling protocols (set density [$D_{\\mathrm{sets}}$] and maximum number of lengths measured per set [$M_{\\mathrm{lengths}}$]). Records are ranked by lowest to highest RMSE score. Within each plot, a color ramp is applied from lowest to highest value as an additional visual aid. Note that the exponent format of the axes defaults to SI unit symbols (e.g. M for million)."}
 
-knitr::include_graphics("figures/plot_survey_rank.png")
+if (is_html) {
+  rank_p
+} else {
+  knitr::include_graphics("figures/plot_survey_rank.png")
+}
 
 ```
 
-```{r rmse-surface, fig.cap = "Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{\\mathrm{sets}}$), x-axes represent the maximum sampling effort of lengths per set ($M_{\\mathrm{lengths}}$), and y-axes represent the maximum number of ages to collect per length group ($M_{\\mathrm{ages}}$). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that RMSE scales are different across $D_{\\mathrm{sets}}$ facets. Note that the exponent format of the axes defaults to SI unit symbols (e.g. M for million)."}
+```{r}
+cap <- "Surface plots of RMSE from an array of surveys with different sampling protocol. Panels represent surveys with different set densities ($D_{\\mathrm{sets}}$), x-axes represent the maximum sampling effort of lengths per set ($M_{\\mathrm{lengths}}$), and y-axes represent the maximum number of ages to collect per length group ($M_{\\mathrm{ages}}$). This plot is a facet of plots produced by `plot_error_surface` when supplied results from `test_surveys`. Note that RMSE scales are different across $D_{\\mathrm{sets}}$ panels. Note that the exponent format of the axes defaults to SI unit symbols (e.g. M for million)."
+if (is_html) {
+  cap <- gsub(" a facet of plots ", " ", cap)
+}
 
-knitr::include_graphics("figures/plot_error_surface.png")
+```
+
+
+```{r rmse-surface, out.height = "500px", fig.cap = cap}
+
+if (is_html) {
+  surface_p
+} else {
+  knitr::include_graphics("figures/plot_error_surface.png")
+}
 
 ```
 
@@ -752,7 +834,7 @@ surveys <- test_surveys(
 
 The default settings of `sim_abundance` and `sim_distribution` produces a dynamic population with a patchy and age-clustered distribution (Figure \@ref(fig:surface)a, \@ref(fig:distribution)a). In general, the function defaults dictate that all ages tend to aggregate in fairly dense clusters and that low-density zones are relatively wide-spread. Surveys, therefore, tend to be characterized by regions with large catches interspersed with regions of no catch (Figure \@ref(fig:survey)). The samples within each successful set are also variable and rarely include all length or age groups. This is because only moderate correlation ($\varphi_{\xi, \mathrm{age}}$ of 0.5) was imposed on the distributions of ages 1-5+, allowing individuals of different ages to occupy different locations, as is typically observed in the actual survey. These settings were chosen to simulated data that roughly correspond to actual survey data of cod from NAFO Subdivision 3Ps, where each age group between 1-4 tend to be caught at different locations while cod older than 4 years tend to be found at similar locations. In short, simulated data roughly emulate actual survey data with clustered catches and length samples with clear intra-haul correlation (Figure \@ref(fig:real-sim-comp)).
 
-```{r real-sim-comp, fig.cap = "Comparison of a) real and b) simulated survey data where, from top to bottom, histograms of numbers caught across sets, distributions of set catches, and length-frequency distributions from three random sets are shown from a randomly selected year from the real and simulated 3Ps cod survey data. The colors of the length-frequency plots correspond to the colored locations. The deeper shades in the length-frequency plots represent numbers of fish sampled for age determination."}
+```{r real-sim-comp, out.width = "90%", fig.cap = "Comparison of a) real and b) simulated survey data where, from top to bottom, histograms of numbers caught across sets, distributions of set catches, and length-frequency distributions from three random sets are shown from a randomly selected year from the real and simulated 3Ps cod survey data. The colors of the length-frequency plots correspond to the colored locations. The deeper shades in the length-frequency plots represent numbers of fish sampled for age determination."}
 
 knitr::include_graphics("figures/real_sim_comp.png")
 
