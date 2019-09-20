@@ -1,0 +1,35 @@
+---
+output: word_document
+---
+
+
+Joerg Heber, Ph.D.  
+Editor-in-Chief  
+PLOS ONE  
+1160 Battery Street  
+Koshland Building East, Suite 225  
+San Francisco, CA 94111  
+United States  
+
+`r format(Sys.time(), '%Y-%m-%d')`
+
+
+Dear Dr. Heber,
+
+I am writing to submit our manuscript entitled, **"`SimSurvey`: an `R` package to optimize the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"**, for consideration as a **Research Article** in **PLOS ONE**. In our manuscript we introduce the `R` package **`SimSurvey`**, which has been designed to simplify the process of simulating surveys of age-structured and spatially-distributed fish populations. We believe our work to be a valuable contribution to the scientific literature as few tools have been built to facilitate simulation tests of the design and analysis of costly fishery independent surveys. Such surveys have become an integral part of the population monitoring programs led by many fisheries organizations and, as with any other monitoring program, good survey design and analysis is a critical prerequisite for obtaining reliable results. It has long been recognized that simulations are a useful tool for optimizing such surveys and, as such, several frameworks have been proposed and applied to try and answer the common question of "how much sampling is enough?"(e.g. Schnute and Haigh,  Canadian Journal of Fisheries and Aquatic Sciences, 2003). The **`SimSurvey`** package builds upon previous frameworks but extends the accessibility of the underlying simulation by wrapping it in an open-source `R` package.
+
+This is our first interaction with PLOS regarding the submitted manuscript. We would like to suggest George Tserpes or Rui Coelho to act as the Academic Editor given their background in fisheries science.
+
+We look forward to your decision.
+
+Sincerely,
+
+Paul Regular  
+Fisheries and Oceans Canada  
+Northwest Atlantic Fisheries Center  
+80 East White Hills, St. John’s, NL  
+A1C 5X1, Canada  
+E-mail: Paul.Regular@dfo-mpo.gc.ca  
+Phone: (709) 772-2067  
+
+
