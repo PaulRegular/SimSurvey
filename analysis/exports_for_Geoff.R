@@ -229,14 +229,14 @@ comp_fun(x_y_year = c(110.25, 68.25, 7),
 
 
 
-## 2018-12-17 - real 3Ps data --------------------------------------------------
+## 2019-11-26 - real 3Ps data --------------------------------------------------
 
 library(Rstrap)
 
 ## Load survey data compiled for Rstrap
-load("analysis/rv_data/converted_set_details_2018-02-26.Rdata")
-load("analysis/rv_data/converted_length-frequency_data_2018-02-26.Rdata")
-load("analysis/rv_data/age-growth_data_2018-02-26.Rdata")
+load("analysis/rv_data/converted_set_details_2019-10-03.Rdata")
+load("analysis/rv_data/converted_length-frequency_data_2019-10-03.Rdata")
+load("analysis/rv_data/age-growth_data_2019-10-03.Rdata")
 
 ## Subset data to cod
 con.setdet <- con.setdet[(con.setdet$rec == 5 |
@@ -256,7 +256,7 @@ out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  group.by = "length & age",
                  export = NULL, plot.results = FALSE)
 
-fwrite(out$raw.data$set.details, file = "analysis/cod_sim_exports/2018-09-12_for_Geoff/cod_3Ps_setdet.csv")
-fwrite(out$raw.data$age.growth, file = "analysis/cod_sim_exports/2018-09-12_for_Geoff/cod_3Ps_samp.csv")
+fwrite(out$raw.data$set.details, file = "analysis/cod_sim_exports/2019-11-26_for_Geoff/cod_3Ps_setdet.csv")
+fwrite(out$raw.data$age.growth, file = "analysis/cod_sim_exports/2019-11-26_for_Geoff/cod_3Ps_samp.csv")
 
 
