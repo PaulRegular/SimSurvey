@@ -2,7 +2,7 @@ Package: SimSurvey
 Type: Package
 Title: A tool for the simulation testing of the design and analysis of
     fisheries-independent trawl surveys
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: as.person(c(
             "Paul Regular <Paul.Regular@dfo-mpo.gc.ca> [aut, cre]",
             "Jonathan Babyn <Jonathan.Babyn@dfo-mpo.gc.ca> [ctb]",

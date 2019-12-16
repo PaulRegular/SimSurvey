@@ -134,9 +134,9 @@ Table: (\#tab:abundance) Default `sim_abundance` function call, with description
 | `sim_abundance(`                            | &nbsp;                                                     | &nbsp;                              |
 | `+  ages = 1:20,`                           | Ages                                                       | $a$                                 |
 | `+  years = 1:20,`                          | Years                                                      | $y$                                 |
-| `+  R = sim_R(mean = 30000000,`             | Mean recruitment^1^                                        | $\mu_r$                             |
+| `+  R = sim_R(log_mean = log(30000000),`    | Mean recruitment^1^                                        | $\mu_r$                             |
 | `+            log_sd = 0.5),`               | Standard deviation of log-recruitment                      | $\sigma_r$                          |
-| `+  Z = sim_Z(mean = 0.5,`                  | Mean total mortality^2^                                    | $\mu_Z$                             |
+| `+  Z = sim_Z(log_mean = log(0.5),`         | Mean total mortality^2^                                    | $\mu_Z$                             |
 | `+            log_sd = 0.2,`                | Standard deviation of total mortality (log)                | $\sigma_Z$                          |
 | `+            phi_age = 0.9,`               | Correlation across ages in error around total mortality    | $\varphi_{\delta, \mathrm{age}}$    |
 | `+            phi_year = 0.5),`             | Correlation across years in error around total mortality   | $\varphi_{\delta, \mathrm{year}}$   |
@@ -151,16 +151,16 @@ Table: (\#tab:abundance) Default `sim_abundance` function call, with description
 
 <br>  
 
-Abundance at age and length is simulated using the `sim_abundance` function and a default function call is described in Table \@ref(tab:abundance) along with associated symbols from the equations outlined above. This function has a simple structure and requires the specification of a series of `ages` and `years` along with functions known as "closures", such as `sim_R`, `sim_Z` and `sim_vonB`, for simulating recruitment (`R`), total mortality (`Z`) and growth (`growth`), respectively. Closures are functions that contain data and return functions [@wickham2014]. For example, `sim_R(mean = 500, log_sd = 0.5)` returns a function that holds the supplied parameter values and requires a sequence of years to be supplied. (Note that each of the above-mentioned closures include a plot argument such that quick visuals can be obtained using a line of code like this: `sim_R(mean = 500, log_sd = 0.5, plot = TRUE)(years = 1:100)`). This structure was chosen to avoid the repeated specifications of ages and years. The use of closures also allows users to construct and use their own closures with a similar structure but different underlying formula. Overall, the function provides a simple tool for simulating a range of dynamic age-structured populations. For instance, below we provide examples where we simulate a relatively long and short lived species (note that default variance, starting abundance and growth settings were used in both simulations).
+Abundance at age and length is simulated using the `sim_abundance` function and a default function call is described in Table \@ref(tab:abundance) along with associated symbols from the equations outlined above. This function has a simple structure and requires the specification of a series of `ages` and `years` along with functions known as "closures", such as `sim_R`, `sim_Z` and `sim_vonB`, for simulating recruitment (`R`), total mortality (`Z`) and growth (`growth`), respectively. Closures are functions that contain data and return functions [@wickham2014]. For example, `sim_R(log_mean = log(500), log_sd = 0.5)` returns a function that holds the supplied parameter values and requires a sequence of years to be supplied. (Note that each of the above-mentioned closures include a plot argument such that quick visuals can be obtained using a line of code like this: `sim_R(log_mean = log(500), log_sd = 0.5, plot = TRUE)(years = 1:100)`). This structure was chosen to avoid the repeated specifications of ages and years. The use of closures also allows users to construct and use their own closures with a similar structure but different underlying formula. Overall, the function provides a simple tool for simulating a range of dynamic age-structured populations. For instance, below we provide examples where we simulate a relatively long and short lived species (note that default variance, starting abundance and growth settings were used in both simulations).
 
 ```{r, echo = TRUE, eval = replot | is_html}
 set.seed(438)
 long <- sim_abundance(ages = 1:20,
-                      R = sim_R(mean = 3e+07),
-                      Z = sim_Z(mean = 0.2))
+                      R = sim_R(log_mean = log(3e+07)),
+                      Z = sim_Z(log_mean = log(0.2)))
 short <- sim_abundance(ages = 1:6,
-                       R = sim_R(mean = 1e+10),
-                       Z = sim_Z(mean = 0.8))
+                       R = sim_R(log_mean = log(1e+10)),
+                       Z = sim_Z(log_mean = log(0.8)))
 ```
 
 The `sim_abundance` function returns a list with the sequence of ages (`ages`), sequence of years (`years`), sequence of lengths (`lengths`), numbers of recruits across all years (`R`), numbers at age in the first year (`N0`), total mortality matrix (`Z`), abundance at age matrix (`N`), abundance at length matrix (`N_at_length`) and the function supplied to the `growth` argument (`sim_length`). The growth function is retained for later use in `sim_survey` to simulate lengths given simulated catch at age in a simulated survey.
@@ -784,9 +784,9 @@ set.seed(438)
 abundance <- sim_abundance(
   ages = 1:20,
   years = 1:20,
-  R = sim_R(mean = 30000000,
+  R = sim_R(log_mean = log(30000000),
             log_sd = 0.5),
-  Z = sim_Z(mean = 0.5,
+  Z = sim_Z(log_mean = log(0.5),
             log_sd = 0.2,
             phi_age = 0.9,
             phi_year = 0.5),

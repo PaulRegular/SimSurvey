@@ -5,7 +5,7 @@
 #' @description These functions return a function to use inside \code{\link{sim_abundance}}.
 #' Given parameters, it generates N0, R and Z values.
 #'
-#' @param mean One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
+#' @param log_mean One mean value or a vector of means, in log scale, of length equal to years for \code{sim_R} or a matrix of means with
 #' rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.
 #' @param random_walk Simulate recruitment as a random walk?
 #' @param log_sd Standard deviation of the variable in the log scale.
@@ -25,22 +25,22 @@
 #'
 #' @examples
 #'
-#' R_fun <- sim_R(mean = 100000, log_sd = 0.1, random_walk = TRUE, plot = TRUE)
+#' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 #' R_fun(years = 1:100)
-#' sim_abundance(R = sim_R(mean = 100000, log_sd = 0.5))
+#' sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
 #' sim_abundance(years = 1:20,
-#'               R = sim_R(mean = c(rep(100000, 10), rep(10000, 10)), plot = TRUE))
+#'               R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
 #'
-#' Z_fun <- sim_Z(mean = 0.5, log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
+#' Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 #' Z_fun(years = 1:100, ages = 1:20)
-#' sim_abundance(Z = sim_Z(mean = 0.5, log_sd = 0.1, plot = TRUE))
+#' sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
 #' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 #' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 #' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
 #' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(mean = Z_mat, plot = TRUE))
+#'               Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
 #' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(mean = Z_mat, log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+#'               Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
 #'
 #' N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 #' N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
@@ -48,29 +48,30 @@
 #'
 #' @export
 #' @rdname sim_R
-sim_R <- function(mean = 30000000, log_sd = 0.5, random_walk = TRUE, plot = FALSE) {
+sim_R <- function(log_mean = log(30000000), log_sd = 0.5, random_walk = TRUE, plot = FALSE) {
   function(years = NULL) {
-    if (length(mean) > 1 && length(mean) != length(years)) {
-      stop("The number of means supplied for recruitment != number of years.")
+    if (length(log_mean) > 1 && length(log_mean) != length(years)) {
+      stop("The number of log_means supplied for recruitment != number of years.")
     }
     e <- stats::rnorm(length(years), mean = 0, sd = log_sd)
     if (random_walk) e <- cumsum(e)
-    r <- log(mean) + e
+    r <- log_mean + e
     names(r) <- years
     if (plot) { plot(years, exp(r), type = "l", main = "sim_R", xlab = "Year", ylab = "Recruitment") }
     exp(r)
   }
 }
 
+
 #' @export
 #' @rdname sim_R
-sim_Z <- function(mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
+sim_Z <- function(log_mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
   function(ages = NULL, years = NULL) {
 
     na <- length(ages)
     ny <- length(years)
-    if (is.matrix(mean) && (nrow(mean) != na | ncol(mean) != ny)) {
-      stop("The matrix of means supplied for Z != number of years and/or ages.")
+    if (is.matrix(log_mean) && (nrow(log_mean) != na | ncol(log_mean) != ny)) {
+      stop("The matrix of log means supplied for Z != number of years and/or ages.")
     }
 
     Z <- matrix(NA, nrow = na, ncol = ny,
@@ -101,7 +102,7 @@ sim_Z <- function(mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot 
         }
       }
     }
-    Z <- log(mean) + Z
+    Z <- log_mean + Z
     if (plot) { image(years, ages, t(exp(Z)), main = "sim_Z", xlab = "Year", ylab = "Age") }
     exp(Z)
 
@@ -278,22 +279,22 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #'
 #' @examples
 #'
-#' R_fun <- sim_R(mean = 100000, log_sd = 0.1, random_walk = TRUE, plot = TRUE)
+#' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 #' R_fun(years = 1:100)
-#' sim_abundance(R = sim_R(mean = 100000, log_sd = 0.5))
+#' sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
 #' sim_abundance(years = 1:20,
-#'               R = sim_R(mean = c(rep(100000, 10), rep(10000, 10)), plot = TRUE))
+#'               R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
 #'
-#' Z_fun <- sim_Z(mean = 0.5, log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
+#' Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 #' Z_fun(years = 1:100, ages = 1:20)
-#' sim_abundance(Z = sim_Z(mean = 0.5, log_sd = 0.1, plot = TRUE))
+#' sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
 #' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 #' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 #' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
 #' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(mean = Z_mat, plot = TRUE))
+#'               Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
 #' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(mean = Z_mat, log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+#'               Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
 #'
 #' N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 #' N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)

@@ -6,15 +6,16 @@
 \alias{sim_N0}
 \title{Simulate startinig abundance, random recruitment and total mortality}
 \usage{
-sim_R(mean = 3e+07, log_sd = 0.5, random_walk = TRUE, plot = FALSE)
+sim_R(log_mean = log(3e+07), log_sd = 0.5, random_walk = TRUE,
+  plot = FALSE)
 
-sim_Z(mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5,
+sim_Z(log_mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5,
   plot = FALSE)
 
 sim_N0(N0 = "exp", plot = FALSE)
 }
 \arguments{
-\item{mean}{One mean value or a vector of means of length equal to years for \code{sim_R} or a matrix of means with
+\item{log_mean}{One mean value or a vector of means, in log scale, of length equal to years for \code{sim_R} or a matrix of means with
 rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.}
 
 \item{log_sd}{Standard deviation of the variable in the log scale.}
@@ -41,22 +42,22 @@ in the age and/or year dimension. The covariance structure follows that describe
 }
 \examples{
 
-R_fun <- sim_R(mean = 100000, log_sd = 0.1, random_walk = TRUE, plot = TRUE)
+R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 R_fun(years = 1:100)
-sim_abundance(R = sim_R(mean = 100000, log_sd = 0.5))
+sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
 sim_abundance(years = 1:20,
-              R = sim_R(mean = c(rep(100000, 10), rep(10000, 10)), plot = TRUE))
+              R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
 
-Z_fun <- sim_Z(mean = 0.5, log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
+Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 Z_fun(years = 1:100, ages = 1:20)
-sim_abundance(Z = sim_Z(mean = 0.5, log_sd = 0.1, plot = TRUE))
+sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
 Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
 sim_abundance(ages = 1:10, years = 1:20,
-              Z = sim_Z(mean = Z_mat, plot = TRUE))
+              Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
 sim_abundance(ages = 1:10, years = 1:20,
-              Z = sim_Z(mean = Z_mat, log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+              Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
 
 N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
