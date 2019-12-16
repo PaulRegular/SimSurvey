@@ -122,9 +122,13 @@ The simulation starts with an exponential decay  cohort model where the abundanc
 $$N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$$
 Here, numbers at age in the first year are filled via exponential decay, $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$, numbers at age 1 (i.e. recruits) vary around a baseline value, $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, and total mortality is set to a baseline level plus process error, $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$. The error around the recruitment process was set to follow a random walk, $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$, and the process error was simulated using the covariance structure described in Cadigan [-@Cadigan2016], $\delta_{a,y} \sim N(0, \Sigma_{a,y})$. The covariance across ages and years is controlled by a process error variance parameter ($\sigma_{\delta}^2$) along with age and year correlation parameters ($\varphi_{\delta, \mathrm{age}}$ and $\varphi_{\delta, \mathrm{year}}$, respectively). This structure allows for autocorrelation in process errors across ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and/or time). Abundance at age is then converted to abundance at length using the original von Bertalanffy growth curve [@von1938]:
 
-$$log(l) = log(l_{\infty} - (l_{\infty} - l_0) e^{-Ka}) + \varepsilon$$
+$$log(L) = log(L_{\infty} - (L_{\infty} - L_0) e^{-Ka}) + \varepsilon$$
 
-Where $l_{\infty}$ is the mean asymptotic length, $l_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{l}^2)$. Abundance in discrete length groups, $l_{\mathrm{group}}^{N}$, was determined by using this formula to calculate the probability of being within a specific length group given age and then using the resultant length-age-key to convert abundance at age to abundance at length. Though some typical relationships have yet to be implemented (e.g. stock-recruitment), this formulation facilitates the simulation of age-structured populations that are dynamic enough to test an array of survey designs.
+Where $L_{\infty}$ is the mean asymptotic length, $L_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{L}^2)$. Numbers at age are distributed across discrete length groups following a lognormal distribution by calculating the probability of being in a specific length group given age. These probabilities are calculated using the standard normal cumulative density function $\Phi$ for a sequence of length groups $l$ from length 0 to 10 times the maximum predicted length $L$ at an interval of $l_{group}^{N}$:
+
+$$ \phi_{a,l} = \Phi \left ( \frac{log(L_l)}{\sigma_{L}} \right ) - \Phi \left ( \frac{log(L_{l-1})}{\sigma_{L}} \right )$$
+
+Though some typical relationships have yet to be implemented (e.g. stock-recruitment), this formulation facilitates the simulation of age-structured populations that are dynamic enough to test an array of survey designs.
 
 
 Table: (\#tab:abundance) Default `sim_abundance` function call, with descriptions, default values and associated parameter symbols of key arguments.
@@ -140,11 +144,11 @@ Table: (\#tab:abundance) Default `sim_abundance` function call, with description
 | `+            log_sd = 0.2,`                | Standard deviation of total mortality (log)                | $\sigma_Z$                          |
 | `+            phi_age = 0.9,`               | Correlation across ages in error around total mortality    | $\varphi_{\delta, \mathrm{age}}$    |
 | `+            phi_year = 0.5),`             | Correlation across years in error around total mortality   | $\varphi_{\delta, \mathrm{year}}$   |
-| `+  growth = sim_vonB(Linf = 120,`          | Mean asymptotic length (cm)                                | $l_{\infty}$                        |
-| `+                    L0 = 5,`              | Length in birth year (cm)                                  | $l_0$                               |
+| `+  growth = sim_vonB(Linf = 120,`          | Mean asymptotic length (cm)                                | $L_{\infty}$                        |
+| `+                    L0 = 5,`              | Length in birth year (cm)                                  | $L_0$                               |
 | `+                    K = 0.1,`             | Growth rate                                                | $K$                                 |
-| `+                    log_sd = 0.1,`        | Standard deviation of the von Bertalanffy growth curve     | $\sigma_l$                          |
-| `+                    length_group = 3))`   | Length group bin size for abundance at length (cm)         | $l_{\mathrm{group}}^{N}$            | 
+| `+                    log_sd = 0.1,`        | Standard deviation of the von Bertalanffy growth curve     | $\sigma_L$                          |
+| `+                    length_group = 3))`   | Length group bin size for abundance at length (cm)         | $l_{group}^{N}$                     | 
   
 ^1^ Can be a vector of means with a length equal to the number of years in the simulation.  
 ^2^ Can be a matrix of means with number of rows and columns equaling the number of ages and years in the simulation, respectively.  
@@ -206,7 +210,7 @@ if (is_html) {
 
 ## Simulate spatial distribution
 
-The next step in the simulation is to distribute the abundance at age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ cells is generated where each cell has an area of $A$ and depth $d$; depth is defined using a sigmoid curve, applied across longitude only, with a depth range of $[d_{\mathrm{min}}, d_{\mathrm{max}}]$, shelf depth of $d_{\mathrm{shelf}}$ and a shelf width of $w_{\mathrm{shelf}}$. The grid is divided into $L_{\mathrm{div}}$ divisions (e.g. NAFO or ICES divisions) and $L_{\mathrm{strat}}$ depth-based strata. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space via:
+The next step in the simulation is to distribute the abundance at age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ cells is generated where each cell has an area of $A$ and depth $d$; depth is defined using a sigmoid curve, applied across longitude only, with a depth range of $[d_{\mathrm{min}}, d_{\mathrm{max}}]$, shelf depth of $d_{\mathrm{shelf}}$ and a shelf width of $w_{\mathrm{shelf}}$. The grid is divided into $H_{\mathrm{div}}$ divisions (e.g. NAFO or ICES divisions) and $H_{\mathrm{strat}}$ depth-based strata. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space via:
 
 $$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
 
@@ -224,7 +228,7 @@ Table: (\#tab:distribution) Default `sim_distribution` function call, with descr
 | `+                   shelf_depth = 200,`                | Shelf depth (m)                                              | $d_{\mathrm{shelf}}$                    |
 | `+                   shelf_width = 100,`                | Shelf width (km)                                             | $w_{\mathrm{shelf}}$                    |
 | `+                   depth_range = c(0, 1000),`         | Depth range from coast to slope (m)                          | $[d_{\mathrm{min}}, d_{\mathrm{max}}]$  |
-| `+                   n_div = 1,`                        | Number of divisions                                          | $L_{\mathrm{div}}$                      |
+| `+                   n_div = 1,`                        | Number of divisions                                          | $H_{\mathrm{div}}$                      |
 | `+                   strat_splits = 2,`                 | Number of times to horizontally split strat                  | &nbsp;                                  |
 | `+                   strat_breaks = seq(0, 1000, 40)),` | Series of depth breaks for defining strata                   | &nbsp;                                  |
 | `+  ays_covar = sim_ays_covar(sd = 2.8,`                | Standard deviation of age-year-space distribution            | $\sigma_{\xi}$                          |
@@ -766,7 +770,7 @@ Simulation testing is an important tool in the field of fisheries science as the
 
 # Acknowledgements
 
-This work has benifited from valuable feedback from numerous colleagues, including Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury and Peter Upward. We also thank Dave Cote and Joanne Morgan for providing constructive comments on a previous version of this manuscript. This work was supported by the NSERC visiting-fellow program and Fisheries and Oceans Canada.
+This work has benefited from valuable feedback from numerous colleagues, including Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury and Peter Upward. We also thank Dave Cote and Joanne Morgan for providing constructive comments on a previous version of this manuscript. This work was supported by the NSERC visiting-fellow program and Fisheries and Oceans Canada.
 
 
 # S1 Appendix: Case study
@@ -879,19 +883,19 @@ Standard notation for use in the analysis of stratified-random survey data [modi
                                                      
 | **Equation** | **Description** |
 |:---------- |:----- |
-| $L$ | Number of strata ($h = 1, 2, ....., L$) |
+| $H$ | Number of strata ($h = 1, 2, ....., H$) |
 | $A_h$ | Area of the $h^{th}$ stratum |
 | $A_{\mathrm{trawl}}$ | Area covered by a standard trawl |
 | $N_h = \frac{A_h}{A_{\mathrm{trawl}}}$ | Total number of sample units in the $h^{th}$ stratum |
 | $n_h$ | Total number of units sampled in the $h^{th}$ stratum ($i = 1, 2, ....., n_h$) |
-| $N = \sum^{L}_{h = 1} N_h$ | Total number of sample units in the survey |
-| $n = \sum^{L}_{h = 1} n_h$ | Total number of observations in the survey |
+| $N = \sum^{H}_{h = 1} N_h$ | Total number of sample units in the survey |
+| $n = \sum^{H}_{h = 1} n_h$ | Total number of observations in the survey |
 | $W_h = \frac{N_h}{N}$ | Stratum weight |
 | $f_h = \frac{n_h}{N_h}$ | Sampling fraction in the $h^{th}$ stratum |
 | $\overline{I}_h = \sum^{n_h}_{i = 1} \frac{I_{h, i}}{n_h}$ | Sample mean in the $h^{th}$ stratum, where $I_{h, i}$ is the $i^{th}$ observation in the $h^{th}$ stratum |
 | $s^2_h = \sum^{n_h}_{i = 1} \frac{(I_{h, i} - \overline{I}_h)}{(n_h - 1)}$ | Sample variance in the $h^{th}$ stratum |
-| $\overline{I} = \sum^{L}_{h = 1} W_h \overline{I}_h$ | Estimate of the population mean per unit (i.e. stratified mean catch per tow) |
-| $s^2(\overline{I}) = \frac{1}{N^2} \sum^{L}_{h=1} N_h (N_h - n_h) \frac{s^2_h}{n_h}$ | Estimate of the variance of the stratified mean |
+| $\overline{I} = \sum^{H}_{h = 1} W_h \overline{I}_h$ | Estimate of the population mean per unit (i.e. stratified mean catch per tow) |
+| $s^2(\overline{I}) = \frac{1}{N^2} \sum^{H}_{h=1} N_h (N_h - n_h) \frac{s^2_h}{n_h}$ | Estimate of the variance of the stratified mean |
 | $\widehat{I} = N \overline{I}$ | Estimate of the population total over the survey area |
 
 

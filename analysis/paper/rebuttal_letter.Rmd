@@ -93,7 +93,7 @@ In other word, the mean(R) is not simply exp(meanR_log_scale). exp(meanR_log_sca
 L107: there is not enough description to understand how you converted the abundance at age to abundance at length. What were the choice of length bin groups? Every 5 cm, 10cm? Such information is also missing in the tables. Please add that. But then you have to calculate some cumulative distribution (until length l) for the length at age distribution (using the VB growth equation) and do some subtractions to be able to allocate the abundance at age to each length group.
 See equation A.1.14 in here for example. https://www.nwfsc.noaa.gov/news/events/program_reviews/documents/C.2_Methot_Wetzel_SSTechnicalDescription.pdf  
 
-*TODO*  
+*Another good catch as we did not provide enough information to replicate the approach. We have added more detail on the calculations behind the sim_vonB function; turns out our approach was similar to the one described in the exemplar the reviewer provided.* 
 
 “Simulate spatial distribution”:  
 

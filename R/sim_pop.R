@@ -185,8 +185,8 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
     pred_length <- Linf - (Linf - L0) * exp(-K * age)
 
     if (length_age_key) {
-      breaks <- seq(0, max(pred_length) * 10, length_group)
-      breaks[1] <- 0.0000001
+
+      breaks <- seq(0, ceiling(max(pred_length)) * 10, length_group)
       lak <- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
                                     age = age))
