@@ -37,8 +37,8 @@
 #'                    length as ages
 #' @param phi_year    Defines autocorrelation through years. Can be one value or a vector of the same
 #'                    length as years
-#' @param group_ages  Make space-age-year variance equal across these ages
-#' @param group_years Make space-age-year variance equal across these years
+#' @param group_ages  Make space-age-year noise equal across these ages
+#' @param group_years Make space-age-year noise equal across these years
 #' @param model       String indicating either "exponential" or "matern" as the correlation function
 #'
 #' @export
