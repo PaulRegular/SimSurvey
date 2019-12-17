@@ -12,7 +12,7 @@ G5H 3Z4, Canada
 
 Dear Dr. Duplisea,
 
-Thank you for considering a revision of the manuscript PONE-D-19-26904,  **"`SimSurvey`: an `R` package to optimize the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"** by Paul M. Regular, Gregory J. Robertson, Bob Rogers, and Keith P. Lewis. In accordance to one of the reviewers' suggestions, the paper has been renamed **"`SimSurvey`: an `R` package to compare the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"**.
+Thank you for considering a revision of the manuscript PONE-D-19-26904,  **"`SimSurvey`: an `R` package to optimize the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"** by Paul M. Regular, Gregory J. Robertson, Bob Rogers, and Keith P. Lewis. In accordance to one of the reviewers' suggestions, the paper has been renamed **"`SimSurvey`: an `R` package for comparing the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"**.
 
 We thank the Reviewers for their thoughtful and thorough comments which will clarify and improve the manuscript.  We agree with many of the comments and have made every effort to incorporate these into the manuscript.  Below are the reviewers' comments with a brief accounting of our response to each concern or suggestion.  
 
@@ -101,15 +101,15 @@ I have a few comments on this section:
 
 1. First of all, I think it is important to state that you assume that the population dynamic model and the spatial distribution is independent i.e. you do not have a spatially-explicit population dynamics model. And talk about what it means (is it realistic, limitation, etc).  
 
-*TODO*
+*We have prefaced this section with the caveat that population and spatial dynamics are modeled as independent processes and we note the pros and cons of this approach. In short: the con is that the approach is a simplification of reality as it does not explicitly account for dynamics such as larval dispersal, spatial differences in growth and meta-population connectivity; the pro is that this simplification limits the number of unknown parameters that need to be specified while facilitating the simulation of a sufficiently complex population for testing the efficacy of various survey designs.*
 
 2. L161. I think it would be better to rename “depth” as “main covariate influencing the species distribution”. And “depth” happens to be one of them for many species, but there are cases when this is not the case.  
 
-*See next comment*  
+*Fair point, however, we focused on "depth" for two reasons: 1) it is an important covariate for many species (as the reviewer noted), and 2) most surveys that we are aware of are depth-stratified (also noted by the reviewer below). We therefore retained the "depth" naming as it ought to satisfy most use cases. Users can satisfy other, less common, cases by supplying user-specified grids and/or spatial populations.*
 
 3. L161. I think it would be good to say upfront that there are two ways of defining the spatial structure. Using the function in the package or user defined.
 
-*In response to this suggestion and the previous one, we have modified the text (lines X-X)*
+*TODO*
 
 4. L161: I think another possibility is to generate a random field by using the package “Randomfields” for example. This way you can generate a map where “depth” is patchily distributed (maybe more like an island type case study)  
 

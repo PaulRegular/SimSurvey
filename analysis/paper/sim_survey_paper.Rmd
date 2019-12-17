@@ -1,5 +1,5 @@
 ---
-title: "`SimSurvey`: an `R` package to compare the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"
+title: "`SimSurvey`: an `R` package for comparing the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"
 output: 
   bookdown::word_document2:
     reference_docx: template.docx
@@ -85,9 +85,62 @@ Fisheries-independent surveys have become a mainstay in the management of dynami
 
 Here we document **`SimSurvey`**, an `R` package designed to simplify and facilitate realistic simulations of fisheries-independent trawl surveys. In short, the package allows for the simulation of random or stratified-random surveys of an age-structured population that varies in space and time. The package has two main components: the first focuses on mimicking realistic fish stocks by simulating a spatially and age-correlated population distributed across a habitat gradient, and the second component focuses on simulating various surveys of these virtual fish stocks. 
 
-This simulation framework has similarities to those presented by Schnute and Haigh [-@schnute2003] and Puerta et al. [-@puerta2019], however, efforts were focused on developing a series of general and accessible functions to simplify the process of testing multiple sampling scenarios and analytical pathways. The steps taken to simulate surveys of spatial, age-structure populations are outlined below. While the core of this paper focuses on how to use this package, it is important to note that the defaults of the package are based on a case study. Output from default function calls are therefore relevant to the case study and these results are described and discussed in [*S1 Appendix*][S1 Appendix: Case study].
+This simulation framework has similarities to those presented by Schnute and Haigh [-@schnute2003] and Puerta et al. [-@puerta2019], however, efforts were focused on developing a series of general and accessible functions to simplify the process of testing multiple sampling scenarios and analytical pathways. The steps taken to simulate surveys of spatial, age-structure populations are outlined below. First we outline the equations underlying the package in the [*Model structure*][Model structure] section and then move into a vignette of the package under the [_Using **`SimSurvey`**_][Using **`SimSurvey`**] section. While the core of this paper focuses on how to use this package, it is important to note that the defaults of the package are based on a case study. Output from default function calls are therefore relevant to the case study and these results are described and discussed in [*S1 Appendix*][S1 Appendix: Case study].
 
-# The **`SimSurvey`** package
+
+# Model structure
+
+In this section, we describe the framework currently implemented in the **`SimSurvey`** package. With this framework, we tried to strike a balance between realism, simplicity, generality and computational feasibility. The framework follows four general steps: 1) simulate a spatially-aggregated age-structured population; 2) distribute the population throughout a spatial grid, imposing correlation across space, time and age; 3) sample the population using random sampling; and, 4) obtain population estimates using a design-based analysis. Though there is a degree of flexibility in each of these steps, keep in mind that users can circumvent specific components by applying user defined equations, inputs and/or analyses.
+
+## Simulate abundance
+
+The simulation starts with an exponential decay cohort model where the abundance at age $a$ in year $y$ ($N_{a,y}$) equals the abundance of that cohort in the previous year multiplied by the associated survival rate, which is expressed in terms of total mortality ($Z_{a,y}$):
+
+$$N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$$
+
+Here, numbers at age in the first year are filled via exponential decay, $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$, numbers at age 1 (i.e. recruits) vary around a baseline value, $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, and total mortality is set to a baseline level plus process error, $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$. The error around the recruitment process was set to follow a random walk, $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$, and the process error was simulated using the covariance structure described in Cadigan [-@Cadigan2016], $\delta_{a,y} \sim N(0, \Sigma_{a,y})$. The covariance across ages and years is controlled by a process error variance parameter ($\sigma_{\delta}^2$) along with age and year correlation parameters ($\varphi_{\delta, \mathrm{age}}$ and $\varphi_{\delta, \mathrm{year}}$, respectively). This structure allows for autocorrelation in process errors across ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and/or time). Abundance at age is then converted to abundance at length using the original von Bertalanffy growth curve [@von1938]:
+
+$$log(L) = log(L_{\infty} - (L_{\infty} - L_0) e^{-Ka}) + \varepsilon$$
+
+Where $L_{\infty}$ is the mean asymptotic length, $L_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{L}^2)$. Numbers at age are distributed across discrete length groups following a lognormal distribution by calculating the probability of being in a specific length group given age, $\phi_{a,l}$. These probabilities are calculated using the standard normal cumulative density function $\Phi$ for a sequence of length groups $l$ from length 0 to 10 times the maximum predicted length $L$ at an interval of $l_{group}^{N}$:
+
+$$ \phi_{a,l} = \Phi \left ( \frac{log(L_l)}{\sigma_{L}} \right ) - \Phi \left ( \frac{log(L_{l-1})}{\sigma_{L}} \right )$$
+
+Though some typical relationships have yet to be implemented (e.g. stock-recruitment), this formulation facilitates the simulation of age-structured populations that are dynamic enough to test an array of survey designs.
+
+
+## Simulate spatial distribution
+
+Rather than developing a full spatially-explicit model, population and spatial dynamics are modeled as independent processes for simplicity. The complexities of spatial population dynamics - such as larval dispersal, spatial differences in growth and meta-population connectivity - are therefor not accounted for and, as such, the model is a substantial simplification of reality. Despite this limitation, the approach taken facilitates the simulation of spatial, age-structured populations with sufficient complexity for testing the efficacy of various survey designs. The simplicity also limits the number of unknown parameters that need to be specified to simulate a population. Parameter estimates from  spatially-aggregated age-structured models, which are commonly used in stock assessments, can therefore be used to simulate a population using the cohort model and the resultant abundance at age values can be distributed across a spatial grid. Here, a grid of $s$ cells is generated where each cell has an area of $A$ and depth $d$; depth is defined using a sigmoid curve, applied across longitude only, with a depth range of $[d_{\mathrm{min}}, d_{\mathrm{max}}]$, shelf depth of $d_{\mathrm{shelf}}$ and a shelf width of $w_{\mathrm{shelf}}$. The grid is divided into $H_{\mathrm{div}}$ divisions (e.g. NAFO or ICES divisions) and $H_{\mathrm{strat}}$ depth-based strata. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space via:
+
+$$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
+
+Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean depth. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation within ages and years, and a two dimension AR1 age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations are controlled by a smoothing ($\lambda$) and a scaling parameter ($\kappa$) [here $\kappa$ is approximated from the range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years is controlled by $\varphi_{\xi, \mathrm{age}}$ and $\varphi_{\xi, \mathrm{year}}$, respectively. The overall variance of the spatial process is controlled by $\sigma_{\xi}^2$ (see [*S2 Appendix*][S2 Appendix: Age-year-space covariance] for a more detailed description of the space-age-year covariance structure). In short, this formulation allows control of depth preferences, the level of spatial aggregation and the degree of age and year specific clustering. Note that $\eta_{a,y,s}$ values are rounded and re-scaled to ensure that discrete numbers of fish reside in each grid cell and to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model.
+
+
+## Simulate survey
+
+The final step in the simulation is to sample the simulated population over the age-year-space array generated. The sampling is stratified random, emulating real-world surveys conducted by many research institutions around the world. The area of each strata is calculated and this is used to define the number of sampling stations, hereafter referred to as sets, allocated to each strata under a particular set density, $D_{\mathrm{sets}}$. The allocated number of cells are randomly selected in each strata and the number of fish caught in each set is calculated by applying binomial sampling of the fish in each sampled cell by the proportion of the area covered by the trawl and the catchability of each age:
+
+$$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{\mathrm{trawl}}}{A_{\mathrm{cell}}} q_a )$$
+
+Where $n_{a,y,s}$ is the number of fish of age $a$ in year $y$ sampled by a set at location $s$, $A_{\mathrm{trawl}}$ indicates the area covered by the trawl, $A_{\mathrm{cell}}$ is the area of a grid cell, and $q_a$ is the catchability coefficient of each age (i.e. the ability of the trawling gear to catch specific age groups). Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the von Bertalanffy growth equation found above in the *[Simulate abundance]* section. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{\mathrm{lengths}}$, and a maximum number of ages, $M_{\mathrm{ages}}$, are sampled per length group, $l_{\mathrm{group}}$, per division. Such sub-sampling is common in fisheries-independent surveys as it is costly, impractical and unnecessary to sample every fish captured. Age determination is especially time-consuming, which is why otoliths for age-determination tend to be sub-sampled by length-bin to obtain a representative age sample across a wider range of lengths than would be obtained via random sampling.
+
+
+## Stratified analysis
+
+While there are many model-based options for obtaining an abundance index from survey data [e.g. @Thorson2015], design-based approaches, such as stratified analyses, are often used. Here we apply formula presented in Smith and Somerton [-@Smith1981; equations are replicated in [*S3 Appendix*][S3 Appendix: Stratified analysis equations]] to calculate stratified estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). Note that estimates of total abundance are based on aggregate catch while abundance at length requires length frequencies to be scaled up using set-specific ratios of measured to caught fish, and these length frequencies are converted to age by applying a division-level age-length-key. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
+
+$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
+
+Where $N_a$, $N_y$, and $N_k$ are the number of ages, years and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates, where the above formula is indexed by length groups $l$, and total abundance, which lacks a group index of $a$ or $l$.
+
+## Assumptions
+
+Like any model, this simulation is a simplification of a much more complex reality. For instance, the population is assumed to aggregate by age-class and be uniformly distributed within a cell, instead fish may aggregate by length and form finer-scale clusters. The survey is also an instantaneous snapshot of the population, meaning that the population is assumed to be in the same location from the beginning to the end of the survey. Also, fish are aged at random within length bins and ages are estimated without error. Finally, area trawled is assumed to be perfectly standard. These assumptions, plus a range of others, will surely under-represent the natural variability of fish populations and survey protocol. Nevertheless, the **`SimSurvey`** package provides a relatively complex and flexible operating model for simulating stratified-random survey data from a population that varies across age, year and space dimensions.
+
+
+# Using **`SimSurvey`**
 
 The **`SimSurvey`** package was written in the programming language `R` [@R] and it holds a series of functions for 1) simulating the abundance and distribution of virtual fish populations with correlation across space, time and age (`sim_abundance`, `sim_distribution`), 2) simulating surveys with a range of sampling strategies and intensities (`sim_survey`), and 3) estimating the stratified mean and variance of simulated survey data (`test_surveys`; Table \@ref(tab:fun)). The equations behind these functions are detailed in the sections below. **`SimSurvey`** relies heavily on functions from the **`data.table`** [@dowle2017], **`raster`** [@hijmans2016] and **`plotly`** [@sievert2018] packages for their efficient data processing, geographic and plotting facilities, respectively. Package documentation has been published online using **`pkgdown`** (https://paulregular.github.io/SimSurvey/) and all the source `R` code behind **`SimSurvey`** is available on GitHub (https://github.com/PaulRegular/SimSurvey). **`SimSurvey`** can be installed via GitHub using the **`remotes`** package:
 
@@ -115,21 +168,7 @@ Table: (\#tab:fun) Names and descriptions of the key functions of **`SimSurvey`*
 <br>
 
 
-## Simulate abundance
-
-The simulation starts with an exponential decay  cohort model where the abundance at age $a$ in year $y$ ($N_{a,y}$) equals the abundance of that cohort in the previous year multiplied by the associated survival rate, which is expressed in terms of total mortality ($Z_{a,y}$):
-
-$$N_{a,y} = N_{a-1,y-1} e^{-Z_{a-1,y-1}}$$
-Here, numbers at age in the first year are filled via exponential decay, $N_{a,1} = N_{a-1,1} e^{-Z_{a-1,1}}$, numbers at age 1 (i.e. recruits) vary around a baseline value, $log(N_{1,y}) = log(\mu_r) + \epsilon_{y}$, and total mortality is set to a baseline level plus process error, $log(Z_{a,y}) = log(\mu_Z) + \delta_{a,y}$. The error around the recruitment process was set to follow a random walk, $\epsilon_{y} \sim N(\epsilon_{y - 1}, \sigma_{r}^{2})$, and the process error was simulated using the covariance structure described in Cadigan [-@Cadigan2016], $\delta_{a,y} \sim N(0, \Sigma_{a,y})$. The covariance across ages and years is controlled by a process error variance parameter ($\sigma_{\delta}^2$) along with age and year correlation parameters ($\varphi_{\delta, \mathrm{age}}$ and $\varphi_{\delta, \mathrm{year}}$, respectively). This structure allows for autocorrelation in process errors across ages and years (i.e. total mortality can be made to be more similar for fish that are closer together in age and/or time). Abundance at age is then converted to abundance at length using the original von Bertalanffy growth curve [@von1938]:
-
-$$log(L) = log(L_{\infty} - (L_{\infty} - L_0) e^{-Ka}) + \varepsilon$$
-
-Where $L_{\infty}$ is the mean asymptotic length, $L_0$ is length at birth, $K$ is the growth rate parameter and the error is assumed to follow the normal distribution, $\varepsilon \sim N(0, \sigma_{L}^2)$. Numbers at age are distributed across discrete length groups following a lognormal distribution by calculating the probability of being in a specific length group given age. These probabilities are calculated using the standard normal cumulative density function $\Phi$ for a sequence of length groups $l$ from length 0 to 10 times the maximum predicted length $L$ at an interval of $l_{group}^{N}$:
-
-$$ \phi_{a,l} = \Phi \left ( \frac{log(L_l)}{\sigma_{L}} \right ) - \Phi \left ( \frac{log(L_{l-1})}{\sigma_{L}} \right )$$
-
-Though some typical relationships have yet to be implemented (e.g. stock-recruitment), this formulation facilitates the simulation of age-structured populations that are dynamic enough to test an array of survey designs.
-
+## `sim_abundance`
 
 Table: (\#tab:abundance) Default `sim_abundance` function call, with descriptions, default values and associated parameter symbols of key arguments.
 
@@ -207,14 +246,7 @@ if (is_html) {
 ```
 
 
-
-## Simulate spatial distribution
-
-The next step in the simulation is to distribute the abundance at age matrix simulated using the cohort model throughout a spatial field. Here, a grid of $s$ cells is generated where each cell has an area of $A$ and depth $d$; depth is defined using a sigmoid curve, applied across longitude only, with a depth range of $[d_{\mathrm{min}}, d_{\mathrm{max}}]$, shelf depth of $d_{\mathrm{shelf}}$ and a shelf width of $w_{\mathrm{shelf}}$. The grid is divided into $H_{\mathrm{div}}$ divisions (e.g. NAFO or ICES divisions) and $H_{\mathrm{strat}}$ depth-based strata. The simulated population is distributed through the grid by simulating spatial-temporal noise controlled by a parabolic relationship with depth and covariance between ages, years and space via:
-
-$$\begin{aligned}log(N_{a,y,s}) &= log(N_{a,y}) + \eta_{a,y,s} \\ \eta_{a,y,s} &= \frac{(d_s - \mu_{d}) ^ 2}{2 \sigma_d^2} + \xi_{a,y,s} \end{aligned}$$
-
-Where $d_s$ is the depth in a specific cell of the grid, $\mu_d$ is the mean depth where abundance is typically highest and $\sigma_d$ controls the width or dispersion of abundance around the mean depth. Residual noise $\xi_{a,y,s}$ is added to this depth relationship using a combination of Matérn covariance, to control the level of spatial aggregation within ages and years, and a two dimension AR1 age-year covariance described in Cadigan [-@Cadigan2016], to control the level of similarity in distributions across ages and years. Spatial correlations are controlled by a smoothing ($\lambda$) and a scaling parameter ($\kappa$) [here $\kappa$ is approximated from the range parameter ($r$), $\kappa = \sqrt{8 \lambda} / r$; @Blangiardo2015] and correlation across ages and years is controlled by $\varphi_{\xi, \mathrm{age}}$ and $\varphi_{\xi, \mathrm{year}}$, respectively. The overall variance of the spatial process is controlled by $\sigma_{\xi}^2$ (see [*S2 Appendix*][S2 Appendix: Age-year-space covariance] for a more detailed description of the space-age-year covariance structure). In short, this formulation allows control of depth preferences, the level of spatial aggregation and the degree of age and year specific clustering. Note that $\eta_{a,y,s}$ values are rounded and re-scaled to ensure that discrete numbers of fish reside in each grid cell and to ensure that the total population of each age for each year through the grid equals the number simulated by the cohort model.
+## `sim_distribution`
 
 Table: (\#tab:distribution) Default `sim_distribution` function call, with descriptions and associated parameter symbols of key arguments.
 
@@ -379,13 +411,7 @@ if (is_html) {
 ```
 
 
-## Simulate survey
-
-The final step in the simulation is to sample the simulated population over the age-year-space array generated. The sampling is stratified random, emulating real-world surveys conducted by many research institutions around the world. The area of each strata is calculated and this is used to define the number of sampling stations, hereafter referred to as sets, allocated to each strata under a particular set density, $D_{\mathrm{sets}}$. The allocated number of cells are randomly selected in each strata and the number of fish caught in each set is calculated by applying binomial sampling of the fish in each sampled cell by the proportion of the area covered by the trawl and the catchability of each age:
-
-$$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{\mathrm{trawl}}}{A_{\mathrm{cell}}} q_a )$$
-
-Where $n_{a,y,s}$ is the number of fish of age $a$ in year $y$ sampled by a set at location $s$, $A_{\mathrm{trawl}}$ indicates the area covered by the trawl, $A_{\mathrm{cell}}$ is the area of a grid cell, and $q_a$ is the catchability coefficient of each age (i.e. the ability of the trawling gear to catch specific age groups). Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. The lengths of the fish sampled by the set are then simulated using the von Bertalanffy growth equation found above in the *[Simulate abundance]* section. Depending on the number of fish caught, sub-sampling is then conducted. Specifically, a maximum number of lengths are measured per set, $M_{\mathrm{lengths}}$, and a maximum number of ages, $M_{\mathrm{ages}}$, are sampled per length group, $l_{\mathrm{group}}$, per division. Such sub-sampling is common in fisheries-independent surveys as it is costly, impractical and unnecessary to sample every fish captured. Age determination is especially time-consuming, which is why otoliths for age-determination tend to be sub-sampled by length-bin to obtain a representative age sample across a wider range of lengths than would be obtained via random sampling.
+## `sim_survey`
 
 Table: (\#tab:survey) Default `sim_survey` function call, with descriptions and associated parameter symbols of key arguments.
 
@@ -477,13 +503,8 @@ if (is_html) {
 
 As noted above, available RAM may limit the utility of the `sim_survey` function for running thousands of simulations of the same survey. The `sim_survey_parallel` function was therefore constructed to facilitate this process. This function is set-up to run multiple `sim_survey` calls in parallel using the **`doParallel`** package [@weston2015] and, as such, multiple loops can be run using the `n_loops` argument and, within each loop, multiple simulations can be run (controlled using the `n_sims` argument). Total simulations will be the product of `n_loops` and `n_sims` arguments. If more than one core (`cores`) is specified, then the simulations will be run in parallel to speed up the process. Low numbers of `n_sims` and high numbers of `n_loops` will be easier on RAM, but may be slower. The optimum ratio of `n_sims` to `n_loops` will depend on the amount of RAM and number of cores in a given computer. In any case, this function simplifies the process of running thousands of simulations of the same survey and the simulated data can then be supplied to survey-based or model-based analyses that require simulation testing. 
 
-## Stratified analysis
 
-While there are many model-based options for obtaining an abundance index from survey data [e.g. @Thorson2015], design-based approaches, such as stratified analyses, are often used. Here we apply formula presented in Smith and Somerton [-@Smith1981; equations are replicated in [*S3 Appendix*][S3 Appendix: Stratified analysis equations]] to calculate stratified estimates of total abundance ($\hat{I}_{y,k}$), abundance at length ($\hat{I}_{l,y,k}$) and abundance at age ($\hat{I}_{a,y,k}$). Note that estimates of total abundance are based on aggregate catch while abundance at length requires length frequencies to be scaled up using set-specific ratios of measured to caught fish, and these length frequencies are converted to age by applying a division-level age-length-key. We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
-
-$$RMSE = \sqrt{\frac{ \sum_{a = 1}^{N_a} \sum_{y = 1}^{N_y} \sum_{k = 1}^{N_k} (\hat{I}_{a,y,k} - I_{a,y})^2}{N_a N_y N_k}}$$
-
-Where $N_a$, $N_y$, and $N_k$ are the number of ages, years and simulations, respectively, and $I_{a,y}$ is the true abundance available to the survey (i.e. catchability corrected abundance; $I_{a,y} = q_a N_{a,y}$). RMSE was also calculated for abundance at length estimates, where the above formula is indexed by length groups $l$, and total abundance, which lacks a group index of $a$ or $l$.
+## `run_strat`
 
 Stratified estimates of abundance are obtained by supplying the output from `sim_survey` to the `run_strat` function. RMSE of the stratified estimates can then be calculated using the `strat_error` function. Results and error of a stratified analysis of one survey over a population are obtained using the following code (using default values):
 
@@ -500,7 +521,7 @@ sim <- sim_abundance() %>%
 
 The returned object will include all the objects accumulated through the `sim_abundance` to `strat_error`. The `run_strat` function adds three data.tables called `total_strat`, `length_strat` and `age_strat` that include stratified estimates of total abundance, abundance at length, and abundance at age, respectively. To this, `strat_error` adds data.tables ending with `_strat_error` or `_strat_error_stats`. The `_strat_error` objects simply contain stratified estimates of abundance (column named `I_hat`) with corresponding true values of abundance available to the survey (column named `I`) and the `strat_error_stats` data.frame includes metrics of mean absolute error (`MAE`), mean-squared error (`MSE`) and root-mean-squared error (`RMSE`).
 
-## Testing survey protocol
+## `test_surveys`
 
 Assuming a stratified analysis as the default method for obtaining an index of abundance, a series of survey protocols can be tested using the `test_surveys` function. Provided a simulated population from `sim_distribution` and a series of survey protocols from `expand_surveys`, this function will simulate and analyze data from each survey using the `sim_survey`, `run_strat` and `strat_error` functions. Like `sim_survey_parallel`, this function operates in parallel and allows the specification of `n_sims` and `n_loops`, and the product of these two arguments equals the number of times each survey is simulated. Keep in mind that low numbers of `n_sims` and high numbers of `n_loops` will be less demanding on RAM, but may be slower, especially if the work is spread across few `cores`. Because most of the default settings of the functions match the case study settings, the code below will replicate the results from our case study (see [*S1 Appendix*][S1 Appendix: Case study] for more detail). The `expand_surveys` function sets up a series of `r nrow(expand_surveys())` surveys to test (i.e. all possible combinations of the `set_den`, `lengths_cap` and `ages_cap` vectors) and the `test_surveys` function will run 1000 simulations of each survey and compare stratified estimates of abundance to the true abundance available to the survey.
 
@@ -733,10 +754,6 @@ if (is_html) {
 ```
 
 
-## Assumptions
-
-Like any model, this simulation is a simplification of a much more complex reality. For instance, the population is assumed to aggregate by age-class and be uniformly distributed within a cell, instead fish may aggregate by length and form finer-scale clusters. The survey is also an instantaneous snapshot of the population, meaning that the population is assumed to be in the same location from the beginning to the end of the survey. Also, fish are aged at random within length bins and ages are estimated without error. Finally, area trawled is assumed to be perfectly standard. These assumptions, plus a range of others, will surely under-represent the natural variability of fish populations and survey protocol. Nevertheless, the **`SimSurvey`** package provides a relatively complex and flexible operating model for simulating stratified-random survey data from a population that varies across age, year and space dimensions.
-
 # Research opportunities
 
 The case study described in [*S1 Appendix*][S1 Appendix: Case study] provides one example of how **`SimSurvey`** can be used to simulation test the design of fisheries-independent trawl surveys. There are multiple layers to the sampling design of such surveys and the end results are linked with the way such data are analyzed. Below we outline some examples where the **`SimSurvey`** package may aid future research efforts.
@@ -770,7 +787,7 @@ Simulation testing is an important tool in the field of fisheries science as the
 
 # Acknowledgements
 
-This work has benefited from valuable feedback from numerous colleagues, including Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury and Peter Upward. We also thank Dave Cote and Joanne Morgan for providing constructive comments on a previous version of this manuscript. This work was supported by the NSERC visiting-fellow program and Fisheries and Oceans Canada.
+This work has benefited from valuable feedback from numerous colleagues, including Aaron Adamack, Alejandro Buren, Noel Cadigan, Karen Dwyer, Geoff Evans, Paul Higdon, Danny Ings, Mariano Koen-Alonso, Joanne Morgan, Derek Osborne, Pierre Pepin, Dwayne Pittman, Don Power, Craig Purchase, Martha Robertson, Mark Simpson, Brad Squires, Don Stansbury and Peter Upward. We also thank Dave Cote and Joanne Morgan for providing constructive comments on a previous version of this manuscript. Finally, the package and the manuscript were greatly improved by feedback from two anonymous reviewers. This work was supported by the NSERC visiting-fellow program and Fisheries and Oceans Canada.
 
 
 # S1 Appendix: Case study
