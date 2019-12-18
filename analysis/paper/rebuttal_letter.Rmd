@@ -99,7 +99,7 @@ I have a few comments on this section:
 
 3. L161. I think it would be good to say upfront that there are two ways of defining the spatial structure. Using the function in the package or user defined.
 
-*Given a suggestion from Reviewer #2, we have restructured the paper to have two core sections: "Model structure" and "Using SimSurvey". We have included a blanket statement under the "Model structure" section noting that users can circumvent specific components of the framework.*
+*Given a suggestion from Reviewer #2, we have restructured the paper to have two core sections: "Model structure" and "Using __`SimSurvey`__". We have included a blanket statement under the "Model structure" section noting that users can circumvent specific components of the framework.*
 
 4. L161: I think another possibility is to generate a random field by using the package “Randomfields” for example. This way you can generate a map where “depth” is patchily distributed (maybe more like an island type case study)  
 
@@ -119,7 +119,7 @@ I have a few comments on this section:
 
 8. L167: this “depth preference” function is very simplistic and gives only very “smooth” symmetric distribution. More often, fish have a skewed depth preference: often right-skewed.  
 
-*True. Some users may find this parameterization insufficient for their species and we hope they will implement their own closure to use in the `sim_distribution` function to better simulate the effect. In addition to our blanket statement under the "Model structure" section, we have added a more specific statement under the "Using SimSurvey" section stating that alternate formulations can be used by supplying alternate closures to the core functions.*
+*True. Some users may find this parameterization insufficient for their species and we hope they will implement their own closure to use in the `sim_distribution` function to better simulate the effect. In addition to our blanket statement under the "Model structure" section, we have added a more specific statement under the "Using __`SimSurvey`__" section stating that alternate formulations can be used by supplying alternate closures to the core functions.*
 
 9. L173-174: I think it might be worth adding, in simpler terms, the meaning of the spatial smoothing and scaling parameters.
 
@@ -242,7 +242,7 @@ Please consider revising the title (e.g. “compare” and instead of “optimiz
 
 The manuscript might be easier to follow if the manuscript was restructured: 1) Model description, 2) Using SimSurvey. The later section would then group all example code which could again be subdivided into running simulations and exploring results (plot functions).
 
-*TODO*  
+*This is an excellent suggestion! We have re-structured our manuscript accordingly and feel that this structure will be much easier for a reader to follow.*  
 
 3. Parameterisation
 To use SimSurvey for a real world problem realistic parameter values are needed. The package comes with default values chosen for a particular case study. However, no mention is made in the manuscript how to choose appropriate values for the many model parameters to tailor the simulations to a population of interest. I suggest the authors add a section on parameterisation and a table summarizing all parameters with a column specifying how to parameterize. For example, parameters for population dynamics and growth could probably be taken from the literature (or a stock assessment report). However this is not possible for the parameters of the spatial distribution function sim_distribution() such as correlation between ages etc. Ideally the package would include a fitting function for estimating these parameters from actual data. These input data could come from a pilot survey and include location (lat, long) and numbers by length/age.
@@ -252,27 +252,23 @@ To use SimSurvey for a real world problem realistic parameter values are needed.
 Minor issues
 - line 93: I assume there is an age plus but this needs to be mentioned. Also, please specify how you set the initial numbers for plus group ().
 
-*TODO*  
+*We have now noted in the manuscript that a plus group is not modeled as the number of ages can easily be extended to include groups with zero fish. This choice simplifies the simulation, including the setting of initial numbers which is done via exponential decay. Further, the lack of a plus group is inconsequential for survey based estimates of abundance at age.*  
 
 - line 121: I don’t understand the explanation of a closure. What do you mean by “return functions”? Do you mean it returns an object with different attributes?
 
-*TODO*  
+*We have improved our explanation of a closure at the beginning of the Using __`SimSurvey`__ section*  
 
 - line 125: the number of right and left brackets is unbalanced, please check
 
-*We have made the suggested change.*
+*This was actually correct and, given an improved description of a closure, the logic behind this line of code should be clearer now.*
 
 - line 126 “This structure was chosen to avoid the repeated specifications of ages and years”. As far as I can see the example code only specifies years, not ages.
 
-*TODO*  
+*Again, we hope that our improved description of a closure will clarify what we mean by this.*  
 
 - line 227 Please explain what a pipe is and how it is used. In the example I understand that the output of sim_abundance( ) is provided to (piped) into sim_distribution(). I am unclear what the object b contains. Is it the result of sim_distribution()?
 
-*CHECK*
-
-*We have added the following text: Also note that the key functions in the SimSurvey package have been set-up to be pipe [13] friendly, i.e. pipes are an operator to forward the values into a function or call expression.* 
-
-*Object b is the same as Object a but the variance in the size of clusters has been changed. We believe that this is clear from the text on L228-231 and the code on L235-243 but defer to the editor’s judgement on this matter.*
+*We have clarified how a pipe works, noting that it forwards values from one function call to the next function call, and we now state that the output from the two examples provided (nested approach vs. pipe approach) are functionally the same though the approach is slightly different.*
 
 - There is no table 1, please revise table numbering.
 

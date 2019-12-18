@@ -16,6 +16,8 @@
 *.html
 *.zip
 sim_survey_paper.docx
+rebuttal_letter.docx
+cover_letter.docx
 .Rproj.user
 sim_survey_paper_cache/
 sim_survey_paper_files/
