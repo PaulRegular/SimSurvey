@@ -1,12 +1,12 @@
 ---
 title: "`SimSurvey`: an `R` package for comparing the design and analysis of fisheries surveys by simulating spatially-correlated fish stocks"
 output: 
-  bookdown::word_document2:
-    reference_docx: template.docx
   bookdown::html_document2:
     number_sections: false
     toc: true
     toc_float: true
+  bookdown::word_document2:
+    reference_docx: template.docx
 bibliography: references.bib
 csl: plos.csl
 ---
