@@ -7,10 +7,10 @@ library(SimSurvey)
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 30000000,
+                     R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(mean = 0.5,
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -72,10 +72,10 @@ gc()
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 30000000,
+                     R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(mean = 0.5,
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -123,5 +123,32 @@ setMKLthreads() # turn hyperthreading on again
 # ## visualize results
 # load("analysis/cod_sim_exports/2018-10-28_no_age_clust_test/test_output.RData")
 # vis_sim(sim)
+
+
+
+## Test survey with strat-specific age-length-keys --------------------------------------
+
+library(SimSurvey)
+
+set.seed(438)
+pop <- sim_abundance() %>%
+  sim_distribution()
+
+
+default_survey <- pop %>%
+  sim_survey(n_sims = 10)
+
+alt_survey <- pop %>%
+  sim_survey(n_sims = 10, ages_cap = 5, age_length_group = 5,
+             age_space_group = "strat")
+
+
+
+
+
+
+
+
+
 
 
