@@ -4,11 +4,20 @@
 \alias{run_strat}
 \title{Run stratified analysis on simulated data}
 \usage{
-run_strat(sim, strat_data_fun = strat_data,
-  strat_means_fun = strat_means)
+run_strat(sim, length_group = 3, alk_scale = "division",
+  strat_data_fun = strat_data, strat_means_fun = strat_means)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}
+
+\item{length_group}{Size of the length frequency bins for both abundance at length calculations
+and age-length-key construction. This value should match the length group
+defined inside \code{\link{sim_abundance}} using \code{\link{sim_length}};
+a mismatch in length groupings will cause issues with \code{\link{strat_error}}
+as true vs. estimated length groupings will be mismatched.}
+
+\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
+"division" or "strat".}
 
 \item{strat_data_fun}{Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})}
 

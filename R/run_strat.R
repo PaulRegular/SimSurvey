@@ -23,16 +23,19 @@ error_stats <- function(error) {
 #'
 #' @param sim           Simulation from \code{\link{sim_survey}}
 #' @param length_group  Size of the length frequency bins
+#' @param alk_scale     Spatial scale at which to construct and apply age-length-keys:
+#'                      "division" or "strat".
 #'
 #' @export
 #'
 
-strat_data <- function(sim, length_group = 3) {
+strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 
   ## Extract setdet and samp objects, and add sim and year to samp data
   setdet <- sim$setdet
   samp <- sim$samp
-  samp <- merge(setdet[, list(set, sim, year)], samp, by = "set")
+  samp <- merge(setdet[, c("set", "sim", "year", alk_scale), with = FALSE],
+                samp, by = "set")
 
   ## Construct length-frequency table
   lf <- samp
@@ -50,23 +53,23 @@ strat_data <- function(sim, length_group = 3) {
   ## Add zeros to length-frequency table
   cj <- CJ(set = setdet$set, length = sort(unique(lf$length)), unique = TRUE)
   setkeyv(cj, c("set", "length"))
-  cj <- merge(setdet[, list(set, sim, year)], cj, by = "set", all = TRUE)
+  cj <- merge(setdet[, c("set", "sim", "year", alk_scale), with = FALSE], cj, by = "set", all = TRUE)
   lf <- merge(cj, lf, by = c("set", "length"), all = TRUE)
   lf$length_freq[is.na(lf$length_freq)] <- 0 # replace NA's with 0's
 
-  ## Construct age-length key by sim and year
+  ## Construct age-length key by sim and year. Split by division or strat if requested.
   ag <- samp
   ag <- ag[ag$aged, ] # discard records without corresponding length and age values
   ag$length <- group_lengths(ag$length, length_group)
-  alk <- ag[, list(age_freq = .N), by = c("sim", "year", "length", "age")] # combined alk
-  alk[, age_tot := sum(age_freq), by = c("sim", "year", "length")]
-  alk[, age_prop := age_freq / age_tot, by = c("sim", "year", "length")]
-  setkeyv(alk, c("sim", "year", "length"))
+  alk <- ag[, list(age_freq = .N), by = c("sim", "year", "length", "age", alk_scale)] # combined alk
+  alk[, age_tot := sum(age_freq), by = c("sim", "year", "length", alk_scale)]
+  alk[, age_prop := age_freq / age_tot, by = c("sim", "year", "length", alk_scale)]
+  setkeyv(alk, c("sim", "year", "length", alk_scale))
 
   ## Merge lf and alk objects
-  alf <- merge(lf, alk, by = c("sim", "year", "length"), all = TRUE, allow.cartesian = TRUE)
+  alf <- merge(lf, alk, by = c("sim", "year", "length", alk_scale), all = TRUE, allow.cartesian = TRUE)
   alf <- alf[!is.na(length_freq)] # drop matches lacking length frequencies (further ensure bins not observed in the sets are not represented in the results)
-  alf[, age_freq := ifelse(is.na(age), length_freq, length_freq * age_prop)] # pass 100% len.freq if age is unknown for that length bin, otherwise apply proportion
+  alf[, age_freq := ifelse(is.na(age), length_freq, length_freq * age_prop)] # pass 100% len freq if age is unknown for that length bin, otherwise apply proportion
   af <- alf[, list(age_freq = sum(age_freq, na.rm = TRUE)), by = c("set", "age")]
   setkeyv(af, c("set", "age"))
 
@@ -153,6 +156,13 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' Run stratified analysis on simulated data
 #'
 #' @param sim               Simulation from \code{\link{sim_survey}}
+#' @param length_group      Size of the length frequency bins for both abundance at length calculations
+#'                          and age-length-key construction. This value should match the length group
+#'                          defined inside \code{\link{sim_abundance}} using \code{\link{sim_length}};
+#'                          a mismatch in length groupings will cause issues with \code{\link{strat_error}}
+#'                          as true vs. estimated length groupings will be mismatched.
+#' @param alk_scale         Spatial scale at which to construct and apply age-length-keys:
+#'                          "division" or "strat".
 #' @param strat_data_fun    Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})
 #' @param strat_means_fun   Function for calculating stratified means (e.g. \code{\link{strat_means}})
 #'
@@ -177,13 +187,21 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #'
 
 run_strat <- function(sim,
+                      length_group = 3,
+                      alk_scale = "division",
                       strat_data_fun = strat_data,
                       strat_means_fun = strat_means) {
 
-  length_group <- get("length_group", envir = environment(sim$sim_length))
+  sim_length_group <- get("length_group", envir = environment(sim$sim_length))
+  if (length_group != sim_length_group) {
+    warning(paste0("length_group value should be set to ", sim_length_group,
+                   " to match the length group defined inside sim_abundance using sim_length",
+                   "; a mismatch in length groupings will cause issues with strat_error",
+                   " as true vs. estimated length groupings will be mismatched."))
+  }
 
   ## Prep data for strat_means function
-  data <- strat_data_fun(sim, length_group = length_group)
+  data <- strat_data_fun(sim, length_group = length_group, alk_scale = alk_scale)
   data$setdet <- data$setdet[, c("sim", "year", "division", "strat", "strat_area", "tow_area", "set", "n"), with = FALSE]
   data$lf <- merge(data$setdet[, setdiff(names(data$setdet), "n"), with = FALSE], data$lf, by = "set", all = TRUE)
   data$af <- merge(data$setdet[, setdiff(names(data$setdet), "n"), with = FALSE], data$af, by = "set", all = TRUE)

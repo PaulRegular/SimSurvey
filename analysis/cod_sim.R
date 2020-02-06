@@ -140,7 +140,8 @@ default_survey <- pop %>%
 
 alt_survey <- pop %>%
   sim_survey(n_sims = 10, ages_cap = 5, age_length_group = 5,
-             age_space_group = "strat")
+             age_space_group = "strat") %>%
+  run_strat(alk_scale = "strat")
 
 
 
