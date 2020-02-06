@@ -65,7 +65,7 @@ sim_R <- function(log_mean = log(30000000), log_sd = 0.5, random_walk = TRUE, pl
 
 #' @export
 #' @rdname sim_R
-sim_Z <- function(log_mean = 0.5, log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
+sim_Z <- function(log_mean = log(0.5), log_sd = 0.2, phi_age = 0.9, phi_year = 0.5, plot = FALSE) {
   function(ages = NULL, years = NULL) {
 
     na <- length(ages)
