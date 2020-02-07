@@ -144,12 +144,24 @@ alt_survey <- pop %>%
   run_strat(alk_scale = "strat")
 
 
+## Test alternate survey with strat specific age sampling and age-length-keys
+setMKLthreads(1) # turn off MKL hyperthreading
+surveys <- expand_surveys(set_den = 2 / 1000,
+                          lengths_cap = c(100, 10000),
+                          ages_cap = c(5, 10000))
+sim <- test_surveys(pop,
+                    surveys = surveys,
+                    keep_details = 1,
+                    n_sims = 5,
+                    n_loops = 20,
+                    cores = 7,
+                    export_dir = "analysis/cod_sim_exports/2020-02-06_strat_alk",
+                    age_length_group = 5,
+                    alk_scale = "strat")
+# sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-06_strat_alk")
+setMKLthreads() # turn hyperthreading on again
 
 
+## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
 
-
-
-
-
-
-
+vis_sim(sim)

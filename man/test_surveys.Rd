@@ -6,7 +6,8 @@
 \title{Test sampling design of multiple surveys using a stratified analysis}
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
-  n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...)
+  n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
+  length_group = 3, alk_scale = "division", ...)
 
 resume_test(export_dir = NULL)
 }
@@ -33,6 +34,15 @@ will be easier on RAM, but may be slower.}
 \item{export_dir}{Directory for exporting results as they are generated. Main use of the export
 is to allow this process to pick up where \code{test_survey} left off by
 calling \code{resume_test}. If NULL, nothing is exported.}
+
+\item{length_group}{Size of the length frequency bins for both abundance at length calculations
+and age-length-key construction. This value should match the length group
+defined inside \code{\link{sim_abundance}} using \code{\link{sim_length}};
+a mismatch in length groupings will cause issues with \code{\link{strat_error}}
+as true vs. estimated length groupings will be mismatched.}
+
+\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
+"division" or "strat".}
 
 \item{...}{Arguments passed on to \code{sim_survey}
 \describe{
