@@ -37,7 +37,6 @@ pop <- sim_abundance(ages = 1:20,
 
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
-setMKLthreads(1) # turn off MKL hyperthreading
 surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                           lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
                           ages_cap = c(2, 5, 10, 20, 50))
@@ -53,7 +52,6 @@ sim <- test_surveys(pop,
                     q = sim_logistic(k = 2, x0 = 3),
                     export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
-setMKLthreads() # turn hyperthreading on again
 
 
 # ## visualize results
@@ -101,7 +99,6 @@ pop <- sim_abundance(ages = 1:20,
 
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
-setMKLthreads(1) # turn off MKL hyperthreading
 surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                           lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
                           ages_cap = c(2, 5, 10, 20, 50))
@@ -117,7 +114,6 @@ sim <- test_surveys(pop,
                     q = sim_logistic(k = 2, x0 = 3),
                     export = "analysis/cod_sim_exports/2018-10-28_no_age_clust_test")
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-28_no_age_clust_test")
-setMKLthreads() # turn hyperthreading on again
 
 
 # ## visualize results
@@ -151,22 +147,20 @@ vis_sim(alt_survey)
 
 
 ## Test alternate survey with strat specific age sampling and age-length-keys
-setMKLthreads(1) # turn off MKL hyperthreading
-surveys <- expand_surveys(set_den = 2 / 1000,
-                          lengths_cap = c(100, 500, 100000),
-                          ages_cap = c(1, 5, 10, 10000))
+surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
+                          lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
+                          ages_cap = c(2, 5, 10, 20, 50))
 sim <- test_surveys(pop,
                     surveys = surveys,
                     keep_details = 1,
                     n_sims = 5,
-                    n_loops = 20,
+                    n_loops = 200,
                     cores = 7,
                     export_dir = "analysis/cod_sim_exports/2020-02-06_strat_alk",
                     age_length_group = 5,
                     age_space_group = "set",
                     alk_scale = "set")
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-06_strat_alk")
-setMKLthreads() # turn hyperthreading on again
 
 ## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
 
