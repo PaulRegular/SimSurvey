@@ -131,24 +131,30 @@ setMKLthreads() # turn hyperthreading on again
 library(SimSurvey)
 
 set.seed(438)
-pop <- sim_abundance() %>%
+pop <- sim_abundance(growth = sim_vonB(length_group = 5)) %>%
   sim_distribution()
 
 
 default_survey <- pop %>%
-  sim_survey(n_sims = 10)
+  sim_survey(n_sims = 5)
+
+sum(default_survey$samp$aged)
 
 alt_survey <- pop %>%
-  sim_survey(n_sims = 10, ages_cap = 5, age_length_group = 5,
-             age_space_group = "strat") %>%
-  run_strat(alk_scale = "strat")
+  sim_survey(n_sims = 5, lengths_cap = 100, ages_cap = 5,
+             age_length_group = 5, age_space_group = "set") %>%
+  run_strat(alk_scale = "set")
+
+sum(alt_survey$samp$aged)
+
+vis_sim(alt_survey)
 
 
 ## Test alternate survey with strat specific age sampling and age-length-keys
 setMKLthreads(1) # turn off MKL hyperthreading
 surveys <- expand_surveys(set_den = 2 / 1000,
-                          lengths_cap = c(100, 10000),
-                          ages_cap = c(5, 10000))
+                          lengths_cap = c(100, 500, 100000),
+                          ages_cap = c(1, 5, 10, 10000))
 sim <- test_surveys(pop,
                     surveys = surveys,
                     keep_details = 1,
@@ -157,11 +163,15 @@ sim <- test_surveys(pop,
                     cores = 7,
                     export_dir = "analysis/cod_sim_exports/2020-02-06_strat_alk",
                     age_length_group = 5,
-                    alk_scale = "strat")
+                    age_space_group = "set",
+                    alk_scale = "set")
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-06_strat_alk")
 setMKLthreads() # turn hyperthreading on again
-
 
 ## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
 
 vis_sim(sim)
+
+plot_age_strat_fan(sim)
+
+

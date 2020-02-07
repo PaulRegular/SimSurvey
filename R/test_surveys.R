@@ -110,7 +110,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 
 test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
                          n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
-                         length_group = 3, alk_scale = "division", ...) {
+                         length_group = "inherit", alk_scale = "division", ...) {
 
   if (!is.null(export_dir)) {
     save(list = ls(all.names = TRUE),

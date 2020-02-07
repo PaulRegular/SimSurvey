@@ -12,7 +12,7 @@ strat_data(sim, length_group = 3, alk_scale = "division")
 \item{length_group}{Size of the length frequency bins}
 
 \item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
-"division" or "strat".}
+"division", "strat" or "set".}
 }
 \description{
 Generate set details (setdet), length-frequency (lf)

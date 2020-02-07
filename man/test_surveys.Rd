@@ -7,7 +7,7 @@
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
   n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
-  length_group = 3, alk_scale = "division", ...)
+  length_group = "inherit", alk_scale = "division", ...)
 
 resume_test(export_dir = NULL)
 }
@@ -36,10 +36,11 @@ is to allow this process to pick up where \code{test_survey} left off by
 calling \code{resume_test}. If NULL, nothing is exported.}
 
 \item{length_group}{Size of the length frequency bins for both abundance at length calculations
-and age-length-key construction. This value should match the length group
-defined inside \code{\link{sim_abundance}} using \code{\link{sim_length}};
-a mismatch in length groupings will cause issues with \code{\link{strat_error}}
-as true vs. estimated length groupings will be mismatched.}
+and age-length-key construction. By default this value is inherited from
+the value defined in \code{\link{sim_abundance}} using \code{\link{sim_length}}
+("inherit"). A numeric value can also be supplied, however, a mismatch in length
+groupings will cause issues with \code{\link{strat_error}} as true vs. estimated
+length groupings will be mismatched.}
 
 \item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
 "division" or "strat".}
@@ -71,8 +72,8 @@ from measured fish per set.}
   \item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
   \item{age_length_group}{Numeric value indicating the size of the length bins for stratified
 age sampling. Ignored if \code{age_sampling = "random"}.}
-  \item{age_space_group}{Should age sampling occur at the "division" (default) or "strat" spatial scale?
-That is, age sampling can be spread across each "division" or "strat"
+  \item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
   \item{light}{Drop some objects from the output to keep object size low?}

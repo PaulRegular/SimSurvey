@@ -49,8 +49,8 @@ from measured fish per set.}
   \item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
   \item{age_length_group}{Numeric value indicating the size of the length bins for stratified
 age sampling. Ignored if \code{age_sampling = "random"}.}
-  \item{age_space_group}{Should age sampling occur at the "division" (default) or "strat" spatial scale?
-That is, age sampling can be spread across each "division" or "strat"
+  \item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
   \item{light}{Drop some objects from the output to keep object size low?}

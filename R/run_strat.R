@@ -24,7 +24,7 @@ error_stats <- function(error) {
 #' @param sim           Simulation from \code{\link{sim_survey}}
 #' @param length_group  Size of the length frequency bins
 #' @param alk_scale     Spatial scale at which to construct and apply age-length-keys:
-#'                      "division" or "strat".
+#'                      "division", "strat" or "set".
 #'
 #' @export
 #'
@@ -34,8 +34,11 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
   ## Extract setdet and samp objects, and add sim and year to samp data
   setdet <- sim$setdet
   samp <- sim$samp
-  samp <- merge(setdet[, c("set", "sim", "year", alk_scale), with = FALSE],
-                samp, by = "set")
+  cols <- c("set", "sim", "year")
+  if (alk_scale != "set") {
+    cols <- c(cols, alk_scale)
+  }
+  samp <- merge(setdet[, cols, with = FALSE], samp, by = "set")
 
   ## Construct length-frequency table
   lf <- samp
@@ -53,7 +56,7 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
   ## Add zeros to length-frequency table
   cj <- CJ(set = setdet$set, length = sort(unique(lf$length)), unique = TRUE)
   setkeyv(cj, c("set", "length"))
-  cj <- merge(setdet[, c("set", "sim", "year", alk_scale), with = FALSE], cj, by = "set", all = TRUE)
+  cj <- merge(setdet[, cols, with = FALSE], cj, by = "set", all = TRUE)
   lf <- merge(cj, lf, by = c("set", "length"), all = TRUE)
   lf$length_freq[is.na(lf$length_freq)] <- 0 # replace NA's with 0's
 
@@ -157,10 +160,11 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #'
 #' @param sim               Simulation from \code{\link{sim_survey}}
 #' @param length_group      Size of the length frequency bins for both abundance at length calculations
-#'                          and age-length-key construction. This value should match the length group
-#'                          defined inside \code{\link{sim_abundance}} using \code{\link{sim_length}};
-#'                          a mismatch in length groupings will cause issues with \code{\link{strat_error}}
-#'                          as true vs. estimated length groupings will be mismatched.
+#'                          and age-length-key construction. By default this value is inherited from
+#'                          the value defined in \code{\link{sim_abundance}} using \code{\link{sim_length}}
+#'                          ("inherit"). A numeric value can also be supplied, however, a mismatch in length
+#'                          groupings will cause issues with \code{\link{strat_error}} as true vs. estimated
+#'                          length groupings will be mismatched.
 #' @param alk_scale         Spatial scale at which to construct and apply age-length-keys:
 #'                          "division" or "strat".
 #' @param strat_data_fun    Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})
@@ -187,17 +191,21 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #'
 
 run_strat <- function(sim,
-                      length_group = 3,
+                      length_group = "inherit",
                       alk_scale = "division",
                       strat_data_fun = strat_data,
                       strat_means_fun = strat_means) {
 
   sim_length_group <- get("length_group", envir = environment(sim$sim_length))
-  if (length_group != sim_length_group) {
-    warning(paste0("length_group value should be set to ", sim_length_group,
-                   " to match the length group defined inside sim_abundance using sim_length",
-                   "; a mismatch in length groupings will cause issues with strat_error",
-                   " as true vs. estimated length groupings will be mismatched."))
+  if (is.character(length_group) && length_group == "inherit") {
+    length_group <- sim_length_group
+  } else {
+    if (length_group != sim_length_group) {
+      warning(paste0("length_group value should be set to ", sim_length_group,
+                     " to match the length group defined inside sim_abundance using sim_length",
+                     "; a mismatch in length groupings will cause issues with strat_error",
+                     " as true vs. estimated length groupings will be mismatched."))
+    }
   }
 
   ## Prep data for strat_means function

@@ -121,8 +121,8 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' @param age_sampling        Should age sampling be "stratified" (default) or "random"?
 #' @param age_length_group    Numeric value indicating the size of the length bins for stratified
 #'                            age sampling. Ignored if \code{age_sampling = "random"}.
-#' @param age_space_group     Should age sampling occur at the "division" (default) or "strat" spatial scale?
-#'                            That is, age sampling can be spread across each "division" or "strat"
+#' @param age_space_group     Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+#'                            That is, age sampling can be spread across each "division", "strat" or "set"
 #'                            in each year to a maximum number within each length bin (cap is defined using
 #'                            the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.
 #' @param light               Drop some objects from the output to keep object size low?
@@ -155,8 +155,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   if (age_sampling == "random" && ages_cap > lengths_cap) {
     stop('When age_sampling = "random", ages_cap cannot exceed lengths_cap.')
   }
-  if (!age_space_group %in% c("division", "strat")) {
-    stop('age_space_group must be either "division" or "strat". Other options have yet to be implemented.')
+  if (!age_space_group %in% c("division", "strat", "set")) {
+    stop('age_space_group must be either "division", "strat" or "set". Other options have yet to be implemented.')
   }
 
   ## Round simulated population and calculate numbers available to survey
