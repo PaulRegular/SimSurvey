@@ -127,7 +127,7 @@ $$n_{a,y,s} \sim Bin(N_{a,y,s}, \frac{A_{\mathrm{trawl}}}{A_{\mathrm{cell}}} q_a
 
 Where $n_{a,y,s}$ is the number of fish of age $a$ in year $y$ sampled by a set at location $s$, $A_{\mathrm{trawl}}$ indicates the area covered by the trawl, $A_{\mathrm{cell}}$ is the area of a grid cell, and $q_a$ is the catchability coefficient of each age (i.e. the ability of the trawling gear to catch specific age groups). Here, catchabilities were defined using a logistic curve controlled by a steepness, $k$, and midpoint parameter, $x_0$. In cases where there are multiple sets in one cell, the population in that cell is divided across the sets. While this means that numbers caught in an isolated simulation cannot exceed the numbers in the population, keep in mind that the survey, no matter how intense, is assumed to have no impact on the population from one year to the next. 
 
-Once catches are simulated, lengths of the fish sampled by each set are simulated using the von Bertalanffy growth equation found above in the **[Simulate abundance]** section. Sub-sampling is then conducted whereby a subset of fish are sampled for length measurements and a subset of this subset are sampled for age determination. Specifically, a maximum number of lengths are measured per set, $M_{\mathrm{lengths}}$, and a maximum number of ages, $M_{\mathrm{ages}}$, are sampled per length group, $l_{\mathrm{group}}$, per division, strata or set. Such sub-sampling is common in fisheries-independent surveys as it is costly, impractical and unnecessary to sample every fish captured. Age determination is especially time-consuming, which is why otoliths for age-determination tend to be sub-sampled by length-bin to obtain a representative age sample across a wider range of lengths than would be obtained via random sampling.
+Once catches are simulated, lengths of the fish sampled by each set are simulated using the von Bertalanffy growth equation found above in the **[Simulate abundance]** section. Sub-sampling is then conducted whereby a subset of fish are sampled for length measurements and a subset of this subset are sampled for age determination. Specifically, a maximum number of lengths are measured per set, $M_{\mathrm{lengths}}$, and a maximum number of ages, $M_{\mathrm{ages}}$, are sampled per length group, $l_{\mathrm{group}}$, per division, strata or set $s_{\mathrm{group}}$. Such sub-sampling is common in fisheries-independent surveys as it is costly, impractical and unnecessary to sample every fish captured. Age determination is especially time-consuming, which is why otoliths for age-determination tend to be sub-sampled by length-bin to obtain a representative age sample across a wider range of lengths than would be obtained via random sampling.
 
 
 ### Stratified analysis
@@ -140,7 +140,7 @@ Likewise, age frequencies need to be calculated to obtain stratified estimates o
 
 $$n_{a,i} = \sum_{l = 1}^{L} n_{l,i} \times \frac{m^{\prime}_{a,l,g}}{m^{\prime}_{l,g}}$$
 
-Here, the prime symbol $^{\prime}$ indicates that these values are tertiary sampling units as they represent fish sub-sampled for age determination from those sub-sampled for length measurements. Within this sub-sample, $m^{\prime}_{l,g}$ represents the number of fish within length bin $l$ and from area $g$, and $m^{\prime}_{a,l,g}$ represents the number of fish within age-class $a$, length bin $l$ and area $g$. The area $g$ can be division, strata or set specific. Though age-length keys are typically constructed and applied over large spatial scales (e.g. division), calculating proportions at finer scales may better account for the hierarchical sample designs [@Aanes2015].
+Here, the prime symbol $^{\prime}$ indicates that these values are tertiary sampling units as they represent fish sub-sampled for age determination from those sub-sampled for length measurements. Within this sub-sample, $m^{\prime}_{l,g}$ represents the number of fish within length bin $l$ and from area $g$, and $m^{\prime}_{a,l,g}$ represents the number of fish within age-class $a$, length bin $l$ and area $g$. The area $g$ can be division, strata or set specific. Though age-length keys are typically constructed and applied over large spatial scales (e.g. division), Aanes and Vølstad [@Aanes2015] recommends calculating proportions at finer scales to better account for hierarchical sample designs.
 
 We used root-mean-squared error (RMSE) as a measure of the precision and bias of the abundance at age estimates from each survey:
 
@@ -209,7 +209,7 @@ Table: (\#tab:abundance) Default `sim_abundance` function call, with description
 | `+                    L0 = 5,`              | Length in birth year (cm)                                  | $L_0$                               |
 | `+                    K = 0.1,`             | Growth rate                                                | $K$                                 |
 | `+                    log_sd = 0.1,`        | Standard deviation of the von Bertalanffy growth curve     | $\sigma_L$                          |
-| `+                    length_group = 3))`   | Length group bin size for abundance at length (cm)         | $l_{group}^{N}$                     | 
+| `+                    length_group = 3))`   | Length group bin size for abundance at length (cm)         | $l_{\mathrm{group}}^{N}$            | 
   
 ^1^ Can be a vector of means with a length equal to the number of years in the simulation.  
 ^2^ Can be a matrix of means with number of rows and columns equaling the number of ages and years in the simulation, respectively.  
@@ -440,20 +440,23 @@ if (is_html) {
 
 Table: (\#tab:survey) Default `sim_survey` function call, with descriptions and associated parameter symbols of key arguments.
 
-| **Function call**                   | **Description**                                                         | **Symbol**              |
-|:----------------------------------- |:----------------------------------------------------------------------- | :---------------------- |
-| `sim_survey(`                       | &nbsp;                                                                  | &nbsp;                  |
-| `+  sim,`                           | Simulated spatial population from `sim_distribution`                    | &nbsp;                  |
-| `+  n_sims = 1`                     | Number of times to repeat the survey                                    | &nbsp;                  |
-| `+  q = sim_logistic(k = 2,`        | Steepness of logistic curve of catchability                             | $k$                     |
-| `+                   x0 = 3),`      | Midpoint of logistic curve of catchability (age)                        | $x_0$                   |
-| `+  trawl_dim = c(1.5, 0.02),`      | Trawl dimensions (distance towed, trawl width; km) - i.e. area trawled  | $A_{\mathrm{trawl}}$    |
-| `+  min_sets = 2`                   | Minimum number of sets to conduct per strata                            | &nbsp;                  |
-| `+  set_den = 2/1000,`              | Set density (km^-2^)                                                    | $D_{\mathrm{sets}}$     |
-| `+  lengths_cap = 500,`             | Maximum number of lengths to collect / set                              | $M_{\mathrm{lengths}}$  |
-| `+  length_group = 1,`              | Length group bin size for age sampling (cm)                             | $l_{\mathrm{group}}$    |
-| `+  ages_cap = 10,`                 | Maximum number of ages to sample / length group / division              | $M_{\mathrm{ages}}$     |
-| `+  age_sampling = "stratified")`   | Controls whether age sampling is length `"stratified"` or `"random"`    | &nbsp;                  |
+| **Function call**                   | **Description**                                                             | **Symbol**              |
+|:----------------------------------- |:--------------------------------------------------------------------------- | :---------------------- |
+| `sim_survey(`                       | &nbsp;                                                                      | &nbsp;                  |
+| `+  sim,`                           | Simulated spatial population from `sim_distribution`                        | &nbsp;                  |
+| `+  n_sims = 1`                     | Number of times to repeat the survey                                        | &nbsp;                  |
+| `+  q = sim_logistic(k = 2,`        | Steepness of logistic curve of catchability                                 | $k$                     |
+| `+                   x0 = 3),`      | Midpoint of logistic curve of catchability (age)                            | $x_0$                   |
+| `+  trawl_dim = c(1.5, 0.02),`      | Trawl dimensions (distance towed, trawl width; km) - i.e. area trawled      | $A_{\mathrm{trawl}}$    |
+| `+  min_sets = 2`                   | Minimum number of sets to conduct per strata                                | &nbsp;                  |
+| `+  set_den = 2/1000,`              | Set density (km^-2^)                                                        | $D_{\mathrm{sets}}$     |
+| `+  lengths_cap = 500,`             | Maximum number of lengths to collect / set                                  | $M_{\mathrm{lengths}}$  |
+| `+  ages_cap = 10,`                 | Maximum number of ages to sample / length group / spatial group ^1^         | $M_{\mathrm{ages}}$     |
+| `+  age_sampling = "stratified")`   | Controls whether age sampling is length `"stratified"` or `"random"`        | &nbsp;                  |
+| `+  age_length_group = 1)`          | Length group bin size for stratified age sampling (cm)                      | $l_{\mathrm{group}}$    |
+| `+  age_space_group = "division")`  | Spatial scale of stratified age sampling (`"division"`, `"strat"`, `"set"`) | $s_{\mathrm{group}}$    |
+
+^1^ Length group and spatial group are defined using the `age_length_group` and `age_space_group` arguments, respectively. These arguments are ignored if `age_sampling` is set to `"random"` and the value supplied to `ages_cap` represents the maximum number of ages to sample per set.
 
 <br>
 
@@ -533,7 +536,7 @@ As noted above, available RAM may limit the utility of the `sim_survey` function
 
 ### `run_strat`
 
-Stratified estimates of abundance are obtained by supplying the output from `sim_survey` to the `run_strat` function. RMSE of the stratified estimates can then be calculated using the `strat_error` function. Results and error of a stratified analysis of one survey over a population are obtained using the following code (using default values):
+Stratified estimates of abundance are obtained by supplying the output from `sim_survey` to the `run_strat` function. There are only four arguments in the `run_strat` function: `length_group`, `alk_scale`, `strat_data_fun` and `strat_means_fun`. The `length_group` argument defines the size of the length frequency bins for both abundance at length calculations and age-length key construction; this argument is set to `"inherit"`, by default, to utilize the `length_group` value defined inside the closure supplied to the `growth` argument in `sim_abundance`. The `alk_scale` argument defines the scale at which to construct and apply age-length keys (`"division"` [default], `"strat"` or `"set"`). RMSE of the stratified estimates from `run_strat` can then be calculated using the `strat_error` function. Results and error of a stratified analysis of one survey over a population are obtained using the following code (using default values):
 
 ```{r, echo = TRUE, eval = FALSE}
 
