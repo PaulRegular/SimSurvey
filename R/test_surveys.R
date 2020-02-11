@@ -56,10 +56,10 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @return Adds a table of survey designs tested. Also adds details and summary
 #'         stats of stratified estimate error to the \code{sim} list, ending with
 #'         \code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
-#'         includes mean absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}),
-#'         and root mean squared error (\code{"RMSE"}). Also adds a sample size summary table
-#'         (\code{"samp_totals"}) to the list. Survey and stratified analysis
-#'         details are not kept to minimize object size.
+#'         includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
+#'         mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
+#'         Also adds a sample size summary table (\code{"samp_totals"}) to the list.
+#'         Survey and stratified analysis details are not kept to minimize object size.
 #'
 #' @examples
 #'
@@ -246,10 +246,10 @@ resume_test <- function(export_dir = NULL) {
   sim$length_strat_error <- data.table::rbindlist(length_strat_error); rm(length_strat_error)
   sim$age_strat_error <- data.table::rbindlist(age_strat_error); rm(age_strat_error)
 
-  ## Calculate some stats (limit to RMSE to limit size)
-  sim$total_strat_error_stats <- sim$total_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
-  sim$length_strat_error_stats <- sim$length_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
-  sim$age_strat_error_stats <- sim$age_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
+  ## Calculate some stats
+  sim$total_strat_error_stats <- sim$total_strat_error[, as.list(error_stats(error)), by = "survey"]
+  sim$length_strat_error_stats <- sim$length_strat_error[, as.list(error_stats(error)), by = "survey"]
+  sim$age_strat_error_stats <- sim$age_strat_error[, as.list(error_stats(error)), by = "survey"]
 
   ## Keep details from one survey
   i <- which(surveys$survey == keep_details)

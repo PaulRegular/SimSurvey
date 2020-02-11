@@ -3,14 +3,18 @@
 #'
 #' @param error Vector of errors
 #'
-#' @return Returns a named vector of error statistics including mean absolute
+#' @return Returns a named vector of error statistics including
+#'         mean error (\code{"ME"}),
+#'         mean absolute error (\code{"MAE"}),
+#'         mean squared error (\code{"MSE"}) and
 #'         root mean squared error (\code{"RMSE"})
 #'
 #' @export
 #'
 
 error_stats <- function(error) {
-  c(MAE = mean(abs(error)),
+  c(ME = mean(error),
+    MAE = mean(abs(error)),
     MSE = mean(error ^ 2),
     RMSE = sqrt(mean(error ^ 2)))
 }
