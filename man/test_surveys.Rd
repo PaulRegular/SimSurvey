@@ -47,10 +47,6 @@ length groupings will be mismatched.}
 
 \item{...}{Arguments passed on to \code{sim_survey}
 \describe{
-  \item{sim}{Simulation from \code{\link{sim_distribution}}}
-  \item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM. Use
-\code{\link{sim_survey_parallel}} if many simulations are required.}
   \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
   \item{trawl_dim}{Trawl width and distance (same units as grid)}
@@ -59,16 +55,6 @@ because depletion is imposed at the cell level.}
   \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.}
   \item{min_sets}{Minimum number of sets per strat}
-  \item{set_den}{Set density (number of sets per [grid unit] squared). WARNING:
-may return an error if \code{set_den} is high and
-\code{resample_cells = FALSE} because the number of sets allocated may
-exceed the number of cells in a strata.}
-  \item{lengths_cap}{Maximum number of lengths measured per set}
-  \item{ages_cap}{If \code{age_sampling = "stratified"}, this cap represents the maximum
-number of ages to sample per length group (defined using the \code{age_length_group}
-argument) per division or strat (defined using the \code{age_space_group} argument)
-per year. If \code{age_sampling = "random"}, it is the maximum number of ages to sample
-from measured fish per set.}
   \item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
   \item{age_length_group}{Numeric value indicating the size of the length bins for stratified
 age sampling. Ignored if \code{age_sampling = "random"}.}
@@ -76,7 +62,6 @@ age sampling. Ignored if \code{age_sampling = "random"}.}
 That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
-  \item{light}{Drop some objects from the output to keep object size low?}
 }}
 }
 \value{

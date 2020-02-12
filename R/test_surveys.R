@@ -45,7 +45,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'                          is to allow this process to pick up where \code{test_survey} left off by
 #'                          calling \code{resume_test}. If NULL, nothing is exported.
 #' @inherit                 run_strat
-#' @inheritDotParams        sim_survey
+#' @inheritDotParams        sim_survey -sim -n_sims -set_den -lengths_cap -ages_cap -light
 #'
 #' @details Depening on the settings, \code{test_surveys} may take a long time to run.
 #' The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
