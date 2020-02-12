@@ -149,7 +149,7 @@ vis_sim(alt_survey)
 ## Test alternate survey with strat specific age sampling and age-length-keys
 surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                           lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
-                          ages_cap = c(2, 5, 10, 20, 50))
+                          ages_cap = c(1, 2, 5, 10, 20))
 sim <- test_surveys(pop,
                     surveys = surveys,
                     keep_details = 1,
@@ -168,4 +168,41 @@ vis_sim(sim)
 
 plot_age_strat_fan(sim)
 
+plot_survey_rank(sim, which_strat = "length")
+
+
+
+
+## 3 cm bins would be more comprable...
+
+set.seed(438)
+pop <- sim_abundance() %>%
+  sim_distribution()
+
+
+## Test alternate survey with strat specific age sampling and age-length-keys
+surveys <- expand_surveys(set_den = 2 / 1000,
+                          lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
+                          ages_cap = c(1, 2, 3, 5, 10))
+sim <- test_surveys(pop,
+                    surveys = surveys,
+                    keep_details = 1,
+                    n_sims = 5,
+                    n_loops = 200,
+                    cores = 7,
+                    export_dir = "analysis/cod_sim_exports/2020-02-10_strat_alk",
+                    age_length_group = 3,
+                    age_space_group = "set",
+                    alk_scale = "set")
+# sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-10_strat_alk")
+
+## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
+
+vis_sim(sim)
+
+sim$surveys
+
+plot_age_strat_fan(sim, surveys = 5, ages = 1:10, years = 7)
+
+plot_survey_rank(sim, which_strat = "length")
 
