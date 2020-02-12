@@ -12,10 +12,10 @@ run_strat(sim, length_group = "inherit", alk_scale = "division",
 
 \item{length_group}{Size of the length frequency bins for both abundance at length calculations
 and age-length-key construction. By default this value is inherited from
-the value defined in \code{\link{sim_abundance}} using \code{\link{sim_length}}
-("inherit"). A numeric value can also be supplied, however, a mismatch in length
-groupings will cause issues with \code{\link{strat_error}} as true vs. estimated
-length groupings will be mismatched.}
+the value defined in \code{\link{sim_abundance}} from the closure supplied to
+\code{sim_length} ("inherit"). A numeric value can also be supplied, however,
+a mismatch in length groupings will cause issues with \code{\link{strat_error}}
+as true vs. estimated length groupings will be mismatched.}
 
 \item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
 "division" or "strat".}

@@ -165,10 +165,10 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' @param sim               Simulation from \code{\link{sim_survey}}
 #' @param length_group      Size of the length frequency bins for both abundance at length calculations
 #'                          and age-length-key construction. By default this value is inherited from
-#'                          the value defined in \code{\link{sim_abundance}} using \code{\link{sim_length}}
-#'                          ("inherit"). A numeric value can also be supplied, however, a mismatch in length
-#'                          groupings will cause issues with \code{\link{strat_error}} as true vs. estimated
-#'                          length groupings will be mismatched.
+#'                          the value defined in \code{\link{sim_abundance}} from the closure supplied to
+#'                          \code{sim_length} ("inherit"). A numeric value can also be supplied, however,
+#'                          a mismatch in length groupings will cause issues with \code{\link{strat_error}}
+#'                          as true vs. estimated length groupings will be mismatched.
 #' @param alk_scale         Spatial scale at which to construct and apply age-length-keys:
 #'                          "division" or "strat".
 #' @param strat_data_fun    Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})
