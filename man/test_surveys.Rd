@@ -6,7 +6,8 @@
 \title{Test sampling design of multiple surveys using a stratified analysis}
 \usage{
 test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
-  n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...)
+  n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
+  length_group = "inherit", alk_scale = "division", ...)
 
 resume_test(export_dir = NULL)
 }
@@ -34,12 +35,18 @@ will be easier on RAM, but may be slower.}
 is to allow this process to pick up where \code{test_survey} left off by
 calling \code{resume_test}. If NULL, nothing is exported.}
 
+\item{length_group}{Size of the length frequency bins for both abundance at length calculations
+and age-length-key construction. By default this value is inherited from
+the value defined in \code{\link{sim_abundance}} from the closure supplied to
+\code{sim_length} ("inherit"). A numeric value can also be supplied, however,
+a mismatch in length groupings will cause issues with \code{\link{strat_error}}
+as true vs. estimated length groupings will be mismatched.}
+
+\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
+"division" or "strat".}
+
 \item{...}{Arguments passed on to \code{sim_survey}
 \describe{
-  \item{sim}{Simulation from \code{\link{sim_distribution}}}
-  \item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM. Use
-\code{\link{sim_survey_parallel}} if many simulations are required.}
   \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
   \item{trawl_dim}{Trawl width and distance (same units as grid)}
@@ -48,28 +55,23 @@ because depletion is imposed at the cell level.}
   \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.}
   \item{min_sets}{Minimum number of sets per strat}
-  \item{set_den}{Set density (number of sets per [grid unit] squared). WARNING:
-may return an error if \code{set_den} is high and
-\code{resample_cells = FALSE} because the number of sets allocated may
-exceed the number of cells in a strata.}
-  \item{lengths_cap}{Maximum number of lengths measured per set}
-  \item{length_group}{Length group for otolith collection}
-  \item{ages_cap}{If \code{age_sampling = "length stratified"}, this cap represents the
-maximum number of otoliths to collect per length group
-per division per year. If \code{age_sampling = "random"}, it is the
-maximum number of otoliths to collect from measured fish per set.}
-  \item{age_sampling}{Should age sampling be length "stratified" or "random"?}
-  \item{light}{Drop some objects from the output to keep object size low?}
+  \item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
+  \item{age_length_group}{Numeric value indicating the size of the length bins for stratified
+age sampling. Ignored if \code{age_sampling = "random"}.}
+  \item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
+in each year to a maximum number within each length bin (cap is defined using
+the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
 }}
 }
 \value{
 Adds a table of survey designs tested. Also adds details and summary
         stats of stratified estimate error to the \code{sim} list, ending with
         \code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
-        includes mean absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}),
-        and root mean squared error (\code{"RMSE"}). Also adds a sample size summary table
-        (\code{"samp_totals"}) to the list. Survey and stratified analysis
-        details are not kept to minimize object size.
+        includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
+        mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
+        Also adds a sample size summary table (\code{"samp_totals"}) to the list.
+        Survey and stratified analysis details are not kept to minimize object size.
 }
 \description{
 This function allows a series of sampling design settings to

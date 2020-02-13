@@ -154,6 +154,11 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
 }
 
 
+## little helper for scaling the bubbles (using plotly's scale results in a warning)
+.scale_between <- function(x, new_min = 0, new_max = 1) {
+  (x - min(x)) / (max(x) - min(x)) * (new_max - new_min) + new_min
+}
+
 #' @export
 #' @rdname plot_trend
 plot_survey <- function(sim, which_year = 1, which_sim = 1) {
@@ -196,9 +201,11 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
   sp_p <- base %>%
     group_by(set) %>%
     summarise(x = unique(x), y = unique(y), n = sum(!is.na(measured))) %>%
-    add_markers(x = ~x, y = ~y, size = ~n, text = ~n,
-                color = ~n, sizes = c(2, 600), name = "n",
-                showlegend = FALSE) %>%
+    add_markers(x = ~x, y = ~y, text = ~n,
+                color = ~n, name = "n",
+                showlegend = FALSE,
+                marker = list(size = ~.scale_between(n, 2, 600),
+                              sizemode = "area")) %>%
     add_paths(data = df_strat, x = ~long, y = ~lat, color = I("black"),
               hoverinfo = "none", size = I(0.5), showlegend = FALSE,
               alpha = 0.1) %>%

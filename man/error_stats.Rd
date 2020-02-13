@@ -10,7 +10,10 @@ error_stats(error)
 \item{error}{Vector of errors}
 }
 \value{
-Returns a named vector of error statistics including mean absolute
+Returns a named vector of error statistics including
+        mean error (\code{"ME"}),
+        mean absolute error (\code{"MAE"}),
+        mean squared error (\code{"MSE"}) and
         root mean squared error (\code{"RMSE"})
 }
 \description{

@@ -44,7 +44,8 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @param export_dir        Directory for exporting results as they are generated. Main use of the export
 #'                          is to allow this process to pick up where \code{test_survey} left off by
 #'                          calling \code{resume_test}. If NULL, nothing is exported.
-#' @inheritDotParams        sim_survey
+#' @inherit                 run_strat
+#' @inheritDotParams        sim_survey -sim -n_sims -set_den -lengths_cap -ages_cap -light
 #'
 #' @details Depening on the settings, \code{test_surveys} may take a long time to run.
 #' The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
@@ -55,10 +56,10 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @return Adds a table of survey designs tested. Also adds details and summary
 #'         stats of stratified estimate error to the \code{sim} list, ending with
 #'         \code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
-#'         includes mean absolute error (\code{"MAE"}), mean squared error (\code{"MSE"}),
-#'         and root mean squared error (\code{"RMSE"}). Also adds a sample size summary table
-#'         (\code{"samp_totals"}) to the list. Survey and stratified analysis
-#'         details are not kept to minimize object size.
+#'         includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
+#'         mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
+#'         Also adds a sample size summary table (\code{"samp_totals"}) to the list.
+#'         Survey and stratified analysis details are not kept to minimize object size.
 #'
 #' @examples
 #'
@@ -108,7 +109,8 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 
 test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
-                         n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL, ...) {
+                         n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
+                         length_group = "inherit", alk_scale = "division", ...) {
 
   if (!is.null(export_dir)) {
     save(list = ls(all.names = TRUE),
@@ -116,7 +118,8 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
   }
   .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
-             complete = NULL, keep_details = keep_details, ...)
+             complete = NULL, keep_details = keep_details,
+             length_group = length_group, alk_scale = alk_scale, ...)
 
 }
 
@@ -128,7 +131,8 @@ resume_test <- function(export_dir = NULL) {
   load(file.path(export_dir, "complete.RData"))
   .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
-             complete = complete, keep_details = keep_details, ...)
+             complete = complete, keep_details = keep_details,
+             length_group = length_group, alk_scale = alk_scale, ...)
 }
 
 
@@ -136,7 +140,8 @@ resume_test <- function(export_dir = NULL) {
 ## Helper function for test_surveys and resume_test
 .test_loop <- function(sim = NULL, surveys = NULL, n_sims = NULL,
                        n_loops = NULL, cores = NULL, export_dir = NULL,
-                       complete = NULL, keep_details = NULL, ...) {
+                       complete = NULL, keep_details = NULL,
+                       length_group = NULL, alk_scale = NULL, ...) {
 
   ## Containers
   samp_totals <- total_strat_error <- length_strat_error <- age_strat_error <- vector("list", nrow(surveys))
@@ -164,14 +169,15 @@ resume_test <- function(export_dir = NULL) {
 
       cl <- makeCluster(cores) # use parallel computation
       registerDoParallel(cl)
-      loop_error <- foreach(j = seq(n_loops),
-                            .packages = "SimSurvey") %dopar% {
+      loop_error <- foreach(j = seq(n_loops), .packages = "SimSurvey") %dopar% {
                               res <- sim_survey(sim, n_sims = n_sims,
                                                 set_den = surveys$set_den[i],
                                                 lengths_cap = surveys$lengths_cap[i],
                                                 ages_cap = surveys$ages_cap[i],
                                                 ...) %>%
-                                run_strat() %>% strat_error()
+                                run_strat(length_group = length_group,
+                                          alk_scale = alk_scale) %>%
+                                strat_error()
                               samp_totals <- res$samp_totals
                               samp_totals$sim <- samp_totals$sim + (j * n_sims - n_sims)
                               total_strat_error <- res$total_strat_error
@@ -240,10 +246,10 @@ resume_test <- function(export_dir = NULL) {
   sim$length_strat_error <- data.table::rbindlist(length_strat_error); rm(length_strat_error)
   sim$age_strat_error <- data.table::rbindlist(age_strat_error); rm(age_strat_error)
 
-  ## Calculate some stats (limit to RMSE to limit size)
-  sim$total_strat_error_stats <- sim$total_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
-  sim$length_strat_error_stats <- sim$length_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
-  sim$age_strat_error_stats <- sim$age_strat_error[, list(RMSE = sqrt(mean(error ^ 2))), by = "survey"]
+  ## Calculate some stats
+  sim$total_strat_error_stats <- sim$total_strat_error[, as.list(error_stats(error)), by = "survey"]
+  sim$length_strat_error_stats <- sim$length_strat_error[, as.list(error_stats(error)), by = "survey"]
+  sim$age_strat_error_stats <- sim$age_strat_error[, as.list(error_stats(error)), by = "survey"]
 
   ## Keep details from one survey
   i <- which(surveys$survey == keep_details)

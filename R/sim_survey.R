@@ -113,12 +113,18 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'                            \code{resample_cells = FALSE} because the number of sets allocated may
 #'                            exceed the number of cells in a strata.
 #' @param lengths_cap         Maximum number of lengths measured per set
-#' @param length_group        Length group for otolith collection
-#' @param ages_cap            If \code{age_sampling = "length stratified"}, this cap represents the
-#'                            maximum number of otoliths to collect per length group
-#'                            per division per year. If \code{age_sampling = "random"}, it is the
-#'                            maximum number of otoliths to collect from measured fish per set.
-#' @param age_sampling        Should age sampling be length "stratified" or "random"?
+#' @param ages_cap            If \code{age_sampling = "stratified"}, this cap represents the maximum
+#'                            number of ages to sample per length group (defined using the \code{age_length_group}
+#'                            argument) per division or strat (defined using the \code{age_space_group} argument)
+#'                            per year. If \code{age_sampling = "random"}, it is the maximum number of ages to sample
+#'                            from measured fish per set.
+#' @param age_sampling        Should age sampling be "stratified" (default) or "random"?
+#' @param age_length_group    Numeric value indicating the size of the length bins for stratified
+#'                            age sampling. Ignored if \code{age_sampling = "random"}.
+#' @param age_space_group     Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+#'                            That is, age sampling can be spread across each "division", "strat" or "set"
+#'                            in each year to a maximum number within each length bin (cap is defined using
+#'                            the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.
 #' @param light               Drop some objects from the output to keep object size low?
 #'
 #' @return A list including rounded population simulation, set locations and details
@@ -138,7 +144,8 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
                        resample_cells = FALSE, binom_error = TRUE,
                        min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
-                       length_group = 1, ages_cap = 10, age_sampling = "stratified",
+                       ages_cap = 10, age_sampling = "stratified",
+                       age_length_group = 1, age_space_group = "division",
                        light = TRUE) {
 
   ## Couple error traps
@@ -147,6 +154,9 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   }
   if (age_sampling == "random" && ages_cap > lengths_cap) {
     stop('When age_sampling = "random", ages_cap cannot exceed lengths_cap.')
+  }
+  if (!age_space_group %in% c("division", "strat", "set")) {
+    stop('age_space_group must be either "division", "strat" or "set". Other options have yet to be implemented.')
   }
 
   ## Round simulated population and calculate numbers available to survey
@@ -194,12 +204,12 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   rm(measured)
 
   ## Sample ages
-  length_samp$length_group <- group_lengths(length_samp$length, length_group)
-  length_samp <- merge(sets[, list(set, sim, year, division)], length_samp, by = "set")
+  length_samp$length_group <- group_lengths(length_samp$length, age_length_group)
+  length_samp <- merge(sets[, list(set, sim, year, division, strat)], length_samp, by = "set")
   if (age_sampling == "stratified") {
     aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
                                               replace = FALSE)]),
-                        by = c("sim", "year", "division", "length_group")]
+                        by = c("sim", "year", age_space_group, "length_group")]
   }
   if (age_sampling == "random") {
     aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),

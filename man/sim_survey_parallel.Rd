@@ -41,12 +41,18 @@ may return an error if \code{set_den} is high and
 \code{resample_cells = FALSE} because the number of sets allocated may
 exceed the number of cells in a strata.}
   \item{lengths_cap}{Maximum number of lengths measured per set}
-  \item{length_group}{Length group for otolith collection}
-  \item{ages_cap}{If \code{age_sampling = "length stratified"}, this cap represents the
-maximum number of otoliths to collect per length group
-per division per year. If \code{age_sampling = "random"}, it is the
-maximum number of otoliths to collect from measured fish per set.}
-  \item{age_sampling}{Should age sampling be length "stratified" or "random"?}
+  \item{ages_cap}{If \code{age_sampling = "stratified"}, this cap represents the maximum
+number of ages to sample per length group (defined using the \code{age_length_group}
+argument) per division or strat (defined using the \code{age_space_group} argument)
+per year. If \code{age_sampling = "random"}, it is the maximum number of ages to sample
+from measured fish per set.}
+  \item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
+  \item{age_length_group}{Numeric value indicating the size of the length bins for stratified
+age sampling. Ignored if \code{age_sampling = "random"}.}
+  \item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
+in each year to a maximum number within each length bin (cap is defined using
+the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
   \item{light}{Drop some objects from the output to keep object size low?}
 }}
 }

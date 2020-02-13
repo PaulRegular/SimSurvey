@@ -7,10 +7,10 @@ library(SimSurvey)
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 30000000,
+                     R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(mean = 0.5,
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -37,7 +37,6 @@ pop <- sim_abundance(ages = 1:20,
 
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
-setMKLthreads(1) # turn off MKL hyperthreading
 surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                           lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
                           ages_cap = c(2, 5, 10, 20, 50))
@@ -53,7 +52,6 @@ sim <- test_surveys(pop,
                     q = sim_logistic(k = 2, x0 = 3),
                     export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
-setMKLthreads() # turn hyperthreading on again
 
 
 # ## visualize results
@@ -72,10 +70,10 @@ gc()
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 30000000,
+                     R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(mean = 0.5,
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -101,7 +99,6 @@ pop <- sim_abundance(ages = 1:20,
 
 ## Test a series of surveys
 ## Simulate surveys and compare stratified estimates to the true index
-setMKLthreads(1) # turn off MKL hyperthreading
 surveys <- expand_surveys(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                           lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
                           ages_cap = c(2, 5, 10, 20, 50))
@@ -117,11 +114,45 @@ sim <- test_surveys(pop,
                     q = sim_logistic(k = 2, x0 = 3),
                     export = "analysis/cod_sim_exports/2018-10-28_no_age_clust_test")
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-28_no_age_clust_test")
-setMKLthreads() # turn hyperthreading on again
 
 
 # ## visualize results
 # load("analysis/cod_sim_exports/2018-10-28_no_age_clust_test/test_output.RData")
 # vis_sim(sim)
 
+
+
+## Test survey with set-specific age-length-keys --------------------------------------
+
+library(SimSurvey)
+
+set.seed(438)
+pop <- sim_abundance() %>%
+  sim_distribution()
+
+## Test alternate survey with strat specific age sampling and age-length-keys
+surveys <- expand_surveys(set_den = 2 / 1000,
+                          lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
+                          ages_cap = c(1, 2, 3, 5, 10))
+sim <- test_surveys(pop,
+                    surveys = surveys,
+                    keep_details = 1,
+                    n_sims = 5,
+                    n_loops = 200,
+                    cores = 7,
+                    export_dir = "analysis/cod_sim_exports/2020-02-10_set_alk",
+                    age_length_group = 3,
+                    age_space_group = "set",
+                    alk_scale = "set")
+# sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-10_set_alk")
+
+## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
+
+vis_sim(sim)
+
+sim$surveys
+
+plot_age_strat_fan(sim, surveys = 5, ages = 1:10, years = 7)
+
+plot_survey_rank(sim, which_strat = "length")
 

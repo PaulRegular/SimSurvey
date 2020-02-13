@@ -6,8 +6,9 @@
 \usage{
 sim_survey(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5,
   0.02), resample_cells = FALSE, binom_error = TRUE, min_sets = 2,
-  set_den = 2/1000, lengths_cap = 500, length_group = 1,
-  ages_cap = 10, age_sampling = "stratified", light = TRUE)
+  set_den = 2/1000, lengths_cap = 500, ages_cap = 10,
+  age_sampling = "stratified", age_length_group = 1,
+  age_space_group = "division", light = TRUE)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
@@ -36,14 +37,21 @@ exceed the number of cells in a strata.}
 
 \item{lengths_cap}{Maximum number of lengths measured per set}
 
-\item{length_group}{Length group for otolith collection}
+\item{ages_cap}{If \code{age_sampling = "stratified"}, this cap represents the maximum
+number of ages to sample per length group (defined using the \code{age_length_group}
+argument) per division or strat (defined using the \code{age_space_group} argument)
+per year. If \code{age_sampling = "random"}, it is the maximum number of ages to sample
+from measured fish per set.}
 
-\item{ages_cap}{If \code{age_sampling = "length stratified"}, this cap represents the
-maximum number of otoliths to collect per length group
-per division per year. If \code{age_sampling = "random"}, it is the
-maximum number of otoliths to collect from measured fish per set.}
+\item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
 
-\item{age_sampling}{Should age sampling be length "stratified" or "random"?}
+\item{age_length_group}{Numeric value indicating the size of the length bins for stratified
+age sampling. Ignored if \code{age_sampling = "random"}.}
+
+\item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
+in each year to a maximum number within each length bin (cap is defined using
+the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
 
 \item{light}{Drop some objects from the output to keep object size low?}
 }

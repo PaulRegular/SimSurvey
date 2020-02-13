@@ -4,12 +4,15 @@
 \alias{strat_data}
 \title{Prepare simulated data for stratified analysis}
 \usage{
-strat_data(sim, length_group = 3)
+strat_data(sim, length_group = 3, alk_scale = "division")
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}
 
 \item{length_group}{Size of the length frequency bins}
+
+\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
+"division", "strat" or "set".}
 }
 \description{
 Generate set details (setdet), length-frequency (lf)
