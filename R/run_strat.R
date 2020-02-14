@@ -44,6 +44,16 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
   }
   samp <- merge(setdet[, cols, with = FALSE], samp, by = "set")
 
+  ## Produce warnings if age sampling scale does not match scale requested for age-length key
+  ag_check <- setdet[n_measured > 0, list(n_aged = sum(n_aged)), by = c("sim", "year", "strat")]
+  if (alk_scale == "strat" && any(ag_check$n_aged == 0)) {
+    warning("Age-length keys cannot be constructed at the strat level because ages were not sampled at every strat. This discrepancy may introduce bias. Consider running sim_survey with age_space_group = 'strat'")
+  }
+  ag_check <- setdet[n_measured > 0, list(n_aged = sum(n_aged)), by = c("sim", "year", "set")]
+  if (alk_scale == "set" && any(ag_check$n_aged == 0)) {
+    warning("Age-length keys cannot be constructed at the set level because ages were not sampled at every set. This discrepancy may introduce bias. Consider running sim_survey with age_space_group = 'set'")
+  }
+
   ## Construct length-frequency table
   lf <- samp
   lf[, n := .N, by = "set"]
