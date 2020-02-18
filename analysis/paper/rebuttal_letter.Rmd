@@ -34,7 +34,7 @@ Phone: (709) 772-2067
   
   
 
-Additional Editor Comments (if provided):
+Additional Editor Comments:
 
 Dear Paul, you have made lots of excellent changes that I think help with the use of the package and responded to the many specific comments of reviewers which has no doubt corrected many technical issues and clarifications. The one thing I would say that you have not really done is get at the deeper research merits of this work beyond introducing a new piece of software. I think paper, as it stands, lacks a larger context and content which is important for the primary publication. My diagnosis for why this is is that the manuscript does not conform very well to more typical scientific reports (Intro, M&M, Result, Discussion) which can make it difficult for readers to find the larger scientific merits of the work. It is useful of course for those who already understand the merits of this kind of work but this work is for primary publication and it needs to appeal more to the former than the latter group. There is a very "how-to" feel to it (e.g. line 64 "In this section") which I think detracts from getting at the larger purpose of the work.
 
@@ -42,13 +42,14 @@ I would really like you to address this issue of moving it from a software manua
 
 Try to follow a more traditional paper structure. This will help readers and it likely will also make it clearer for you on how you can inject content into the paper to move it beyond the software manual approach:
 
+
 Introduction:
 
 - You need to talk about wider issues and examples. e.g. examples of when poor survey design meant that scientific questions could not be properly addressed when good survey design meant they were. Examples of when good survey design allowed researchers to address needs that were unanticipated at the time it was designed. i.e. you need to build a better case (not just cost) of why survey design is really important and it is most powerful to do this with examples. You should try to bring in ideas related to ecosystem and climate changes and being able to track communities. Perhaps bring in species at risk ideas and tracking decline, you could bring in ideas related to MSC certification. These are just examples of specifics but you get the idea: the Introduction needs to have more general information outlining in both a broad and specific sense why we should be concerned about this.
  
 - Keep in mind an educated reader who may not be in fisheries but is interested in why anyone should care about this or could, for example, be interested in surveying say caribou or songbirds or something outside of fisheries but where many of the motivation and concepts may be similar and they are doing a more general literature search before designing their own survey.
 
-*Thank you for thinking beyond a fisheries biologist audience, as this is the audience we have been targeting from the onset. In the case that this is short-sighted, we have modified our introduction, as suggested, to pitch the concept to a broader audience. The reason we did not think about other biologists is because fisheries biologist tend to have access to age-based data while others (e.g. seabird and caribou biologists) do not. Alas, we agree that there could be biologists outside the field of fisheries that have such data or stage-based data who may find the package useful; if nothing else, the general framework may be useful to adapt to other marine or terrestrial situations.*
+*Thank you for thinking beyond a fisheries biologist audience, as this is the audience we have been targeting from the onset. In case this is short-sighted, we have modified our introduction, as suggested, to pitch the concept to a broader audience. The reason we did not think about other biologists is because fisheries biologist tend to have access to age-based data while others (e.g. seabird and caribou biologists) do not. Alas, we agree that there could be biologists outside the field of fisheries that have such data or stage-based data who may find the package useful; if nothing else, the general framework may be useful to adapt to other marine or terrestrial situations.*
 
 
 Methods:
@@ -57,21 +58,29 @@ Methods:
  
 - I can see that it is hard to separate your Methods from Results. Your results are really in the section "Using SimSurvey" I would not be opposed to putting this as a separate Results section but I leave it to you to decide. Essentially what you have is a case study as an example of how it works and therefore specific results are less interesting than how you got there with the package. You might title it something like "Results: running a SimSurvey simulation". This section also has a lot of content without a lot of explanation. for example, you have several large and complicated figures in a row. You should discuss not only what figures are meant to offer in the package but also what they mean. So for example on line 473 you refer to three figures (5,6,7) but you offer little interpretation of those figures just why you can make them which is another example of the limitations of the how-to manual approach. So you need to think of it as a case study and help someone decide the implications of their survey design.
 
-*We really struggled to accommodate a traditional Methods and Results section as any structure we attempted betrayed the definition of these sections. ----DESCRIBE WHAT WE DID HERE----. Below we discuss a couple of failed attempts:*
+*We really struggled to accommodate a traditional Methods and Results section because any structure we attempted defied the definition of these sections. To maintain a logical flow that describes how and why to use the package, we landed on a mix of methods and case study results/discussion through the body of the paper. We first describe the "Model structure", then the "Core functions", then we describe and discuss the case study results in the "Interpretation" section (this section also includes a solution to bias generated by the standard sampling/analysis approach) and, finally, we move to the "Parameterisation" section where we provide some guidance on how to modify default settings to suit specific needs. The how to content still remains with this structure, however, it has been augmented with more case study results (and one new result) which should bring out the real-world implications of the package, plus it provides some meaning to several of the complex figures shown through the paper.*
 
-*1) We tried to start the methods section with the "Model Structure" section, as suggested, and shunt the figures to a "Results" section; this, however, broke the flow and left a gap in the methods section where we show the methods (functions) for running a simulation but do not show the plotting methods.*
+*Below we discuss a couple of failed attempts to force the content into Methods and Results sections:*
 
-*2) We tried to keep the methods section as is (i.e. describe equations and functions) and describe some of the key case study results in the results section, but it was difficult to find a logical placement for the "Parameterisation" section and it did not seem right to segue to a solution to a problem identified in the case study in a traditional results section. In contrast, it seemed fine to describe and discuss the case study results demonstrated through the "Core functions" section and then jump to a solution to a problem in an independent section.*
+*1) We tried to start the methods section with "Model Structure", as suggested, and shunt the figures to a "Results" section; this, however, broke the flow and left a gap in the methods section where we demonstrate the methods (functions) for running a simulation but not the plotting methods.*
+
+*2) We tried to keep the methods section as is (i.e. describe equations and functions) and describe some of the key case study results in the results section, but it was difficult to find a logical placement for the "Parameterisation" section (it seemed awkward to keep it in between the "Core functions" section and the "Results" section). It also seemed awkward to segue from a description of the case study results to a discussion that leads to a potential solution to a problem in a traditional "Results" section.*
+
+*3) Earlier iterations of the paper were focused entirely on the case study, the format was traditional and the package was a side-note in the methods section. It became apparent, however, that the package was more interesting and generally applicable than the case study results. We then began re-working the paper towards a vignette style and we used a couple papers as a guide on how to document a new R package (e.g. https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0092725).*
 
 
 Results:
 
 - see comment above
 
+*Ditto*
+
 
 Discussion:
 
 - This starts just before "Research Opportunities". You can keep these sections but there should be more preamble before jumping right into research opportunities. I suggest a general paragraph(s) that segue into your subsections of "research opportunities", "future research". In the Discussion you should address again some of the broader issues from the Introduction, e.g. how could spatial (depth) distribution changes anticipated under climate change for some population be tackled by survey design exploration now so that we can continue to track these changing populations 20 years down the road and do not lose the signal. How can this software help with that?
+
+*In contrast to a Methods or Results section, a Discussion section was easier to accommodate. Here we lean on the case study results to reiterate the importance of planing a survey or testing an existing survey. We then use this preamble to segue into the "Research opportunities" section.*
  
 - I think something that can be useful for readers is to outline the steps in a thought process a researcher might undertake when setting up a survey (perhaps a separate subsection) and then how one might go about a SimSurvey run for this. It also gives you a good opportunity to discuss your multispecies ideas:
     - What is your current problem/needs
@@ -80,10 +89,16 @@ Discussion:
     - Resources available
     - What are your anticipated future needs (i.e. if climate change is going to make cod go deeper, will you be able to track it in 20 years?)
     - How could you consider some or all of these with SimSurvey
+    
+*As much as we would like to address each of these points and work towards a survey design handbook, it would be hard to be as cohesive and comprehensive as Cochran (1977; "Sampling techniques") or Sutherland (2006; "Ecological census techniques: a handbook"). Moreover, we have yet to implement features that could help users assess some of these trade-offs (i.e. cost-benefit analysis). We are hopeful that these are questions that future versions of SimSurvey may be able to help address as more features are added to elevate it from a purely statistical toolbox to something that also considers the human element.*
  
 - Your "Assumptions" section should come down into the Discussion
- 
+
+*Agreed, done.*
+
 - "Future Directions" should say something about randomfields re: Reviewer 1. Even if you just outline that you have considered it. You might also try to say something about optimisation of design which Reviewer 2 mentioned.
+
+*Good point. We have noted in under the "sim_distribution" section that a custom closure can be created that uses randomfields to simulate spatial noise. We have also noted in the "Future directions" section that we hope to implement alternatives to random or stratified random designs to allow for more comprehensive evaluations of various designs.*
 
 
 
