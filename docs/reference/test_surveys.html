@@ -9,20 +9,26 @@
 <title>Test sampling design of multiple surveys using a stratified analysis — test_surveys • SimSurvey</title>
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -35,7 +41,8 @@
 <meta property="og:description" content="This function allows a series of sampling design settings to
 be set and tested on the simulated population. True population values are compared
 to stratified estimates of abundance." />
-<meta name="twitter:card" content="summary" />
+
+
 
 
 
@@ -49,9 +56,10 @@ to stratified estimates of abundance." />
 <![endif]-->
 
 
+
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -65,7 +73,7 @@ to stratified estimates of abundance." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SimSurvey</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -73,19 +81,31 @@ to stratified estimates of abundance." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/custom_closures.html">Custom closures</a>
+    </li>
+  </ul>
+</li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/PaulRegular/SimSurvey">
-    <span class="fa fa-github fa-lg"></span>
+  <a href="https://github.com/PaulRegular/SimSurvey/">
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -96,6 +116,7 @@ to stratified estimates of abundance." />
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -115,7 +136,8 @@ to stratified estimates of abundance.</p>
     </div>
 
     <pre class="usage"><span class='fu'>test_surveys</span>(<span class='no'>sim</span>, <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span>(), <span class='kw'>keep_details</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+  <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>length_group</span> <span class='kw'>=</span> <span class='st'>"inherit"</span>, <span class='kw'>alk_scale</span> <span class='kw'>=</span> <span class='st'>"division"</span>, <span class='no'>...</span>)
 
 <span class='fu'>resume_test</span>(<span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
@@ -160,12 +182,22 @@ is to allow this process to pick up where <code>test_survey</code> left off by
 calling <code>resume_test</code>. If NULL, nothing is exported.</p></td>
     </tr>
     <tr>
+      <th>length_group</th>
+      <td><p>Size of the length frequency bins for both abundance at length calculations
+and age-length-key construction. By default this value is inherited from
+the value defined in <code><a href='sim_abundance.html'>sim_abundance</a></code> from the closure supplied to
+<code>sim_length</code> ("inherit"). A numeric value can also be supplied, however,
+a mismatch in length groupings will cause issues with <code><a href='strat_error.html'>strat_error</a></code>
+as true vs. estimated length groupings will be mismatched.</p></td>
+    </tr>
+    <tr>
+      <th>alk_scale</th>
+      <td><p>Spatial scale at which to construct and apply age-length-keys:
+"division" or "strat".</p></td>
+    </tr>
+    <tr>
       <th>...</th>
-      <td><p>Arguments passed on to <code>sim_survey</code></p><dl class='dl-horizontal'>
-  <dt>sim</dt><dd><p>Simulation from <code><a href='sim_distribution.html'>sim_distribution</a></code></p></dd>
-  <dt>n_sims</dt><dd><p>Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM. Use
-<code><a href='sim_survey_parallel.html'>sim_survey_parallel</a></code> if many simulations are required.</p></dd>
+      <td><p>Arguments passed on to <code>sim_survey</code></p><dl'>
   <dt>q</dt><dd><p>Closure, such as <code><a href='sim_logistic.html'>sim_logistic</a></code>, for simulating catchability at age
 (returned values must be between 0 and 1)</p></dd>
   <dt>trawl_dim</dt><dd><p>Trawl width and distance (same units as grid)</p></dd>
@@ -174,18 +206,14 @@ because depletion is imposed at the cell level.</p></dd>
   <dt>binom_error</dt><dd><p>Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.</p></dd>
   <dt>min_sets</dt><dd><p>Minimum number of sets per strat</p></dd>
-  <dt>set_den</dt><dd><p>Set density (number of sets per [grid unit] squared). WARNING:
-may return an error if <code>set_den</code> is high and
-<code>resample_cells = FALSE</code> because the number of sets allocated may
-exceed the number of cells in a strata.</p></dd>
-  <dt>lengths_cap</dt><dd><p>Maximum number of lengths measured per set</p></dd>
-  <dt>length_group</dt><dd><p>Length group for otolith collection</p></dd>
-  <dt>ages_cap</dt><dd><p>If <code>age_sampling = "length stratified"</code>, this cap represents the
-maximum number of otoliths to collect per length group
-per division per year. If <code>age_sampling = "random"</code>, it is the
-maximum number of otoliths to collect from measured fish per set.</p></dd>
-  <dt>age_sampling</dt><dd><p>Should age sampling be length "stratified" or "random"?</p></dd>
-  <dt>light</dt><dd><p>Drop some objects from the output to keep object size low?</p></dd>
+  <dt>age_sampling</dt><dd><p>Should age sampling be "stratified" (default) or "random"?</p></dd>
+  <dt>age_length_group</dt><dd><p>Numeric value indicating the size of the length bins for stratified
+age sampling. Ignored if <code>age_sampling = "random"</code>.</p></dd>
+  <dt>age_space_group</dt><dd><p>Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
+in each year to a maximum number within each length bin (cap is defined using
+the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</code>.</p></dd>
+
 </dl></td>
     </tr>
     </table>
@@ -195,10 +223,10 @@ maximum number of otoliths to collect from measured fish per set.</p></dd>
     <p>Adds a table of survey designs tested. Also adds details and summary
         stats of stratified estimate error to the <code>sim</code> list, ending with
         <code>"_strat_error"</code> or <code>"_strat_error_stats"</code>. Error statistics
-        includes mean absolute error (<code>"MAE"</code>), mean squared error (<code>"MSE"</code>),
-        and root mean squared error (<code>"RMSE"</code>). Also adds a sample size summary table
-        (<code>"samp_totals"</code>) to the list. Survey and stratified analysis
-        details are not kept to minimize object size.</p>
+        includes mean error (<code>"ME"</code>), mean absolute error (<code>"MAE"</code>),
+        mean squared error (<code>"MSE"</code>), and root mean squared error (<code>"RMSE"</code>).
+        Also adds a sample size summary table (<code>"samp_totals"</code>) to the list.
+        Survey and stratified analysis details are not kept to minimize object size.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
@@ -211,13 +239,13 @@ Note that progress bar time estimates will be biased here by previous completion
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-</div><span class='co'># NOT RUN {</span>
+<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='no'>pop</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>) <span class='kw'>%&gt;%</span>
-           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)))
+           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)))
 
-<span class='no'>surveys</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span>(<span class='kw'>set_den</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>) / <span class='fl'>1000</span>,
-                          <span class='kw'>lengths_cap</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>100</span>, <span class='fl'>500</span>),
-                          <span class='kw'>ages_cap</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>5</span>, <span class='fl'>20</span>))
+<span class='no'>surveys</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span>(<span class='kw'>set_den</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>) / <span class='fl'>1000</span>,
+                          <span class='kw'>lengths_cap</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>100</span>, <span class='fl'>500</span>),
+                          <span class='kw'>ages_cap</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>5</span>, <span class='fl'>20</span>))
 
 <span class='co'>## This call runs 500 simulations of 8 different surveys over the same</span>
 <span class='co'>## population, and then runs a stratified analysis and compares true vs</span>
@@ -225,15 +253,15 @@ Note that progress bar time estimates will be biased here by previous completion
 <span class='no'>tests</span> <span class='kw'>&lt;-</span> <span class='fu'>test_surveys</span>(<span class='no'>pop</span>, <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='no'>surveys</span>, <span class='kw'>keep_details</span> <span class='kw'>=</span> <span class='fl'>1</span>,
                       <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>50</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
 
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>plotly</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>plotly</span>)
 <span class='no'>tests</span>$<span class='no'>total_strat_error</span> <span class='kw'>%&gt;%</span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/plotly/topics/reexports'>filter</a></span>(<span class='no'>survey</span> <span class='kw'>==</span> <span class='fl'>8</span>, <span class='no'>sim</span> <span class='kw'>%in%</span> <span class='fl'>1</span>:<span class='fl'>50</span>) <span class='kw'>%&gt;%</span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/plotly/topics/reexports'>group_by</a></span>(<span class='no'>sim</span>) <span class='kw'>%&gt;%</span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/plotly/topics/plot_ly'>plot_ly</a></span>(<span class='kw'>x</span> <span class='kw'>=</span> ~<span class='no'>year</span>) <span class='kw'>%&gt;%</span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/plotly/topics/add_trace'>add_lines</a></span>(<span class='kw'>y</span> <span class='kw'>=</span> ~<span class='no'>I_hat</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"estimated"</span>) <span class='kw'>%&gt;%</span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/plotly/topics/add_trace'>add_lines</a></span>(<span class='kw'>y</span> <span class='kw'>=</span> ~<span class='no'>I</span>, <span class='kw'>color</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/AsIs'>I</a></span>(<span class='st'>"black"</span>), <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"true"</span>) <span class='kw'>%&gt;%</span>
-    <span class='fu'><a href='https://www.rdocumentation.org/packages/plotly/topics/layout'>layout</a></span>(<span class='kw'>xaxis</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='kw'>title</span> <span class='kw'>=</span> <span class='st'>"Year"</span>),
-           <span class='kw'>yaxis</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='kw'>title</span> <span class='kw'>=</span> <span class='st'>"Abundance index"</span>))
+    <span class='fu'><a href='https://rdrr.io/pkg/plotly/man/reexports.html'>filter</a></span>(<span class='no'>survey</span> <span class='kw'>==</span> <span class='fl'>8</span>, <span class='no'>sim</span> <span class='kw'>%in%</span> <span class='fl'>1</span>:<span class='fl'>50</span>) <span class='kw'>%&gt;%</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/plotly/man/reexports.html'>group_by</a></span>(<span class='no'>sim</span>) <span class='kw'>%&gt;%</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/plotly/man/plot_ly.html'>plot_ly</a></span>(<span class='kw'>x</span> <span class='kw'>=</span> ~<span class='no'>year</span>) <span class='kw'>%&gt;%</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/plotly/man/add_trace.html'>add_lines</a></span>(<span class='kw'>y</span> <span class='kw'>=</span> ~<span class='no'>I_hat</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"estimated"</span>) <span class='kw'>%&gt;%</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/plotly/man/add_trace.html'>add_lines</a></span>(<span class='kw'>y</span> <span class='kw'>=</span> ~<span class='no'>I</span>, <span class='kw'>color</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/AsIs.html'>I</a></span>(<span class='st'>"black"</span>), <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"true"</span>) <span class='kw'>%&gt;%</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/plotly/man/layout.html'>layout</a></span>(<span class='kw'>xaxis</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>title</span> <span class='kw'>=</span> <span class='st'>"Year"</span>),
+           <span class='kw'>yaxis</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>title</span> <span class='kw'>=</span> <span class='st'>"Abundance index"</span>))
 
 <span class='fu'><a href='plot_trend.html'>plot_total_strat_fan</a></span>(<span class='no'>tests</span>, <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>8</span>)
 <span class='fu'><a href='plot_trend.html'>plot_length_strat_fan</a></span>(<span class='no'>tests</span>, <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>8</span>)
@@ -246,23 +274,15 @@ Note that progress bar time estimates will be biased here by previous completion
 <span class='fu'><a href='plot_trend.html'>plot_survey_rank</a></span>(<span class='no'>tests</span>, <span class='kw'>which_strat</span> <span class='kw'>=</span> <span class='st'>"length"</span>)
 <span class='fu'><a href='plot_trend.html'>plot_survey_rank</a></span>(<span class='no'>tests</span>, <span class='kw'>which_strat</span> <span class='kw'>=</span> <span class='st'>"age"</span>)
 
-<span class='co'># }</span><div class='input'>
-</div></pre>
+}</div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-
-      <li><a href="#details">Details</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -270,13 +290,16 @@ Note that progress bar time estimates will be biased here by previous completion
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

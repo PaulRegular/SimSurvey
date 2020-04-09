@@ -9,20 +9,26 @@
 <title>Simulate stratified random surveys using parallel computation — sim_survey_parallel • SimSurvey</title>
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -37,7 +43,8 @@ many more total itterations to be run than sim_survey before running
 into RAM limitations. Unlike test_surveys, this function retains
 the full details of the survey and it may therefore be more useful for testing
 alternate approaches to a stratified analysis for obtaining survey indices." />
-<meta name="twitter:card" content="summary" />
+
+
 
 
 
@@ -51,9 +58,10 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
 <![endif]-->
 
 
+
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -67,7 +75,7 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SimSurvey</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -75,19 +83,31 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/custom_closures.html">Custom closures</a>
+    </li>
+  </ul>
+</li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/PaulRegular/SimSurvey">
-    <span class="fa fa-github fa-lg"></span>
+  <a href="https://github.com/PaulRegular/SimSurvey/">
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -98,6 +118,7 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -150,7 +171,7 @@ will be easier on RAM, but may be slower.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Arguments passed on to <code>sim_survey</code></p><dl class='dl-horizontal'>
+      <td><p>Arguments passed on to <code>sim_survey</code></p><dl'>
   <dt>sim</dt><dd><p>Simulation from <code><a href='sim_distribution.html'>sim_distribution</a></code></p></dd>
   <dt>n_sims</dt><dd><p>Number of surveys to simulate over the simulated population. Note: requesting
 a large number of simulations may max out your RAM. Use
@@ -168,13 +189,20 @@ may return an error if <code>set_den</code> is high and
 <code>resample_cells = FALSE</code> because the number of sets allocated may
 exceed the number of cells in a strata.</p></dd>
   <dt>lengths_cap</dt><dd><p>Maximum number of lengths measured per set</p></dd>
-  <dt>length_group</dt><dd><p>Length group for otolith collection</p></dd>
-  <dt>ages_cap</dt><dd><p>If <code>age_sampling = "length stratified"</code>, this cap represents the
-maximum number of otoliths to collect per length group
-per division per year. If <code>age_sampling = "random"</code>, it is the
-maximum number of otoliths to collect from measured fish per set.</p></dd>
-  <dt>age_sampling</dt><dd><p>Should age sampling be length "stratified" or "random"?</p></dd>
+  <dt>ages_cap</dt><dd><p>If <code>age_sampling = "stratified"</code>, this cap represents the maximum
+number of ages to sample per length group (defined using the <code>age_length_group</code>
+argument) per division or strat (defined using the <code>age_space_group</code> argument)
+per year. If <code>age_sampling = "random"</code>, it is the maximum number of ages to sample
+from measured fish per set.</p></dd>
+  <dt>age_sampling</dt><dd><p>Should age sampling be "stratified" (default) or "random"?</p></dd>
+  <dt>age_length_group</dt><dd><p>Numeric value indicating the size of the length bins for stratified
+age sampling. Ignored if <code>age_sampling = "random"</code>.</p></dd>
+  <dt>age_space_group</dt><dd><p>Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+That is, age sampling can be spread across each "division", "strat" or "set"
+in each year to a maximum number within each length bin (cap is defined using
+the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</code>.</p></dd>
   <dt>light</dt><dd><p>Drop some objects from the output to keep object size low?</p></dd>
+
 </dl></td>
     </tr>
     </table>
@@ -186,30 +214,23 @@ maximum number of otoliths to collect from measured fish per set.</p></dd>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-</div><span class='co'># NOT RUN {</span>
+<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='co'>## This call runs a total of 100 simulations of the same survey over</span>
 <span class='co'>## the same population</span>
 <span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>) <span class='kw'>%&gt;%</span>
-           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>))) <span class='kw'>%&gt;%</span>
+           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>))) <span class='kw'>%&gt;%</span>
            <span class='fu'>sim_survey_parallel</span>(<span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
                                <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(<span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='fl'>3</span>),
                                <span class='kw'>quiet</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
-<span class='co'># }</span><div class='input'>
-
-</div></pre>
+}</div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#details">Details</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -217,13 +238,16 @@ maximum number of otoliths to collect from measured fish per set.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

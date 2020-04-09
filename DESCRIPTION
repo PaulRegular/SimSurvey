@@ -43,5 +43,7 @@ Suggests:
     lme4,
     igraph,
     ggplot2,
-    INLA
+    INLA,
+    knitr
 RoxygenNote: 6.1.1
+VignetteBuilder: knitr
