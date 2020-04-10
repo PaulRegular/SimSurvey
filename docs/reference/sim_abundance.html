@@ -768,8 +768,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x0000000033866790&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x00000000283b50f0&gt;
 #&gt; </div><div class='input'><span class='fu'>sim_abundance</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
               <span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'><a href='sim_R.html'>sim_R</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>100000</span>, <span class='fl'>10</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>10000</span>, <span class='fl'>10</span>))), <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</div><div class='img'><img src='sim_abundance-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $ages
 #&gt;  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
@@ -1318,8 +1318,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x00000000314211c0&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x000000002fb81298&gt;
 #&gt; </div><div class='input'>
 <span class='no'>Z_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_R.html'>sim_Z</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>Z_fun</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>100</span>, <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)</div><div class='img'><img src='sim_abundance-3.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;     year
@@ -2198,8 +2198,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x00000000328245a0&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x00000000257f44f8&gt;
 #&gt; </div><div class='input'><span class='no'>Za_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.1</span>, <span class='fl'>0</span>, <span class='fl'>0.1</span>, <span class='fl'>0.2</span>, <span class='fl'>0.3</span>, <span class='fl'>0.3</span>, <span class='fl'>0.2</span>, <span class='fl'>0.1</span>, <span class='fl'>0</span>)
 <span class='no'>Zy_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>)
 <span class='no'>Z_mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/outer.html'>outer</a></span>(<span class='no'>Za_dev</span>, <span class='no'>Zy_dev</span>, <span class='st'>"+"</span>) + <span class='fl'>0.5</span>
@@ -2598,8 +2598,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x0000000034536110&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x0000000024f9f3c8&gt;
 #&gt; </div><div class='input'><span class='fu'>sim_abundance</span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
               <span class='kw'>Z</span> <span class='kw'>=</span> <span class='fu'><a href='sim_R.html'>sim_Z</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>Z_mat</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</div><div class='img'><img src='sim_abundance-6.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $ages
 #&gt;  [1]  1  2  3  4  5  6  7  8  9 10
@@ -2983,8 +2983,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x00000000251545c0&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x0000000034fa7a68&gt;
 #&gt; </div><div class='input'>
 <span class='no'>N0_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_R.html'>sim_N0</a></span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>N0_fun</span>(<span class='kw'>R0</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>Z0</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.5</span>, <span class='fl'>20</span>), <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)</div><div class='img'><img src='sim_abundance-7.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;  [1] 1.000000e+03 6.065307e+02 3.678794e+02 2.231302e+02 1.353353e+02
@@ -3537,8 +3537,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x0000000030e2e900&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x00000000300d68a0&gt;
 #&gt; </div><div class='input'>
 <span class='no'>growth_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_vonB.html'>sim_vonB</a></span>(<span class='kw'>Linf</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>L0</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>K</span> <span class='kw'>=</span> <span class='fl'>0.2</span>, <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>growth_fun</span>(<span class='kw'>age</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>1</span>:<span class='fl'>15</span>, <span class='kw'>each</span> <span class='kw'>=</span> <span class='fl'>100</span>))</div><div class='img'><img src='sim_abundance-9.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;    [1]  24  22  23  23  23  22  23  22  22  22  22  25  22  22  22  22  22  21
@@ -4602,8 +4602,8 @@ distributions by length is yet to be implemented.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000024601930&gt;
-#&gt; &lt;environment: 0x0000000025894ad8&gt;
+#&gt; &lt;bytecode: 0x0000000031406938&gt;
+#&gt; &lt;environment: 0x000000003179eb90&gt;
 #&gt; </div><div class='input'>
 <span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_abundance</span>()
 <span class='fu'><a href='plot_trend.html'>plot_trend</a></span>(<span class='no'>sim</span>)

@@ -1,1 +1,57 @@
 destination: docs
+
+reference:
+- title: Simulate abundance
+- contents:
+  - sim_abundance
+  - sim_R
+  - sim_Z
+  - sim_N0
+  - sim_vonB
+- title: Simulate distribution
+- contents:
+  - sim_distribution
+  - sim_ays_covar
+  - sim_ays_covar_spde
+  - sim_parabola
+  - make_grid
+  - make_mesh
+- title: Simulate survey
+- contents:
+  - sim_survey
+  - sim_survey_parallel
+  - sim_logistic
+  - sim_sets
+- title: Stratified analysis
+- contents:
+  - run_strat
+  - strat_error
+  - error_stats
+  - strat_data
+  - strat_means
+- title: Testing multiple surveys
+- contents:
+  - test_surveys
+  - resume_test
+  - expand_surveys
+- title: Plotting functions
+- contents:
+  - starts_with("plot", internal = TRUE)
+  - vis_sim
+- title: Helpers
+- contents:
+  - round_sim
+  - convert_N
+  - group_lengths
+  - icc
+  - fibonacci
+  - object_size
+  - .Q
+- title: Data
+- contents:
+  - bathy
+  - land
+  - survey_grid
+  - survey_lite_mesh
+  - survey_mesh
+

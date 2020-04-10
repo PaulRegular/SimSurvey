@@ -156,7 +156,7 @@ The **`SimSurvey`** package was written in the programming language `R` [@R] and
 
 ```{r, echo = TRUE, eval = FALSE}
 install.packages("remotes")
-remotes::install_github("PaulRegular/SimSurvey")
+remotes::install_github("PaulRegular/SimSurvey", build_vignettes = TRUE)
 ```
 
 Table: (\#tab:fun) Names and descriptions of the key functions of **`SimSurvey`**. Functions in bold font are core functions and those in medium font are designed for use inside the core functions. The latter are typically closures, which are functions that contain data and return functions [@wickham2014]; here they are used to store parameter values and return functions that require dimensions, such as ages or years, to be supplied.
