@@ -8,7 +8,7 @@ The **`SimSurvey`** package has been designed to facilitate simulations of sampl
 
 ```
 install.packages("remotes")
-remotes::install_github("PaulRegular/SimSurvey", build_vignettes = TRUE)
+remotes::install_github("PaulRegular/SimSurvey")
 ```
 
 ## Documentation

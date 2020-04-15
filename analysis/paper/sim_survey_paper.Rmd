@@ -35,6 +35,7 @@ library(lattice)
 library(viridis)
 library(data.table)
 library(magrittr)
+library(here)
 Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoicGF1bHJlZ3VsYXIiLCJhIjoiY2pueGIxejMxMGM0MjNqbjR1aXdwYm92bSJ9.R-t1SCa0VHKf4N-PQmYI5Q")
 source("analysis/paper/helper_functions.R")
 
@@ -156,7 +157,7 @@ The **`SimSurvey`** package was written in the programming language `R` [@R] and
 
 ```{r, echo = TRUE, eval = FALSE}
 install.packages("remotes")
-remotes::install_github("PaulRegular/SimSurvey", build_vignettes = TRUE)
+remotes::install_github("PaulRegular/SimSurvey")
 ```
 
 Table: (\#tab:fun) Names and descriptions of the key functions of **`SimSurvey`**. Functions in bold font are core functions and those in medium font are designed for use inside the core functions. The latter are typically closures, which are functions that contain data and return functions [@wickham2014]; here they are used to store parameter values and return functions that require dimensions, such as ages or years, to be supplied.
@@ -184,7 +185,7 @@ R_fun <- sim_R(log_mean = log(500), log_sd = 0.5)
 R_vec <- R_fun(years = 1:100)
 ```
 
-Here, the `R_vec` object holds 100 years of simulated recruitment values and each run of the `R_fun` function will result in different simulated values using the internal formulation and the parameters supplied to `sim_R`. The other closures included in the package operate in a similar way in that parameter inputs are supplied to the closure and the functions returned by the closure requires inputs such as ages and/or years. This was done to avoid the repeated specifications of key arguments, such as ages and years. Moreover, this approach provides an option for advanced R users to inspect and modify the closures implemented in the package to supply custom closures with alternate equations. ... . Also note that each of the closures implemented in the package includes a plot argument such that quick visuals can be obtained using a line of code like this: `sim_R(log_mean = log(500), log_sd = 0.5, plot = TRUE)(years = 1:100)`). 
+Here, the `R_vec` object holds 100 years of simulated recruitment values and each run of the `R_fun` function will result in different simulated values using the internal formulation and the parameters supplied to `sim_R`. The other closures included in the package operate in a similar way in that parameter inputs are supplied to the closure and the functions returned by the closure requires inputs such as ages and/or years. This was done to avoid the repeated specifications of key arguments, such as ages and years. Moreover, this approach provides an option for advanced R users to inspect and modify the closures implemented in the package to supply custom closures with alternate equations (see https://paulregular.github.io/SimSurvey/articles/custom_closures.html for a short vignette on creating custom closures). Also note that each of the closures implemented in the package includes a plot argument such that quick visuals can be obtained using a line of code like this: `sim_R(log_mean = log(500), log_sd = 0.5, plot = TRUE)(years = 1:100)`). 
 
 
 ## `sim_abundance`
@@ -196,10 +197,10 @@ Table: (\#tab:abundance) Default `sim_abundance` function call, with description
 | `sim_abundance(`                            | &nbsp;                                                     | &nbsp;                              |
 | `+  ages = 1:20,`                           | Ages                                                       | $a$                                 |
 | `+  years = 1:20,`                          | Years                                                      | $y$                                 |
-| `+  R = sim_R(log_mean = log(30000000),`    | Mean recruitment^1^                                        | $\mu_r$                             |
-| `+            log_sd = 0.5),`               | Standard deviation of log-recruitment                      | $\sigma_r$                          |
-| `+  Z = sim_Z(log_mean = log(0.5),`         | Mean total mortality^2^                                    | $\mu_Z$                             |
-| `+            log_sd = 0.2,`                | Standard deviation of total mortality (log)                | $\sigma_Z$                          |
+| `+  R = sim_R(log_mean = log(30000000),`    | Mean log recruitment^1^                                    | $\mu_r$                             |
+| `+            log_sd = 0.5),`               | Standard deviation of log recruitment                      | $\sigma_r$                          |
+| `+  Z = sim_Z(log_mean = log(0.5),`         | Mean log total mortality ^2^                               | $\mu_Z$                             |
+| `+            log_sd = 0.2,`                | Standard deviation of log total mortality                  | $\sigma_Z$                          |
 | `+            phi_age = 0.9,`               | Correlation across ages in error around total mortality    | $\varphi_{\delta, \mathrm{age}}$    |
 | `+            phi_year = 0.5),`             | Correlation across years in error around total mortality   | $\varphi_{\delta, \mathrm{year}}$   |
 | `+  growth = sim_vonB(Linf = 120,`          | Mean asymptotic length (cm)                                | $L_{\infty}$                        |
@@ -259,7 +260,7 @@ if (replot) export_plot(p, file = "analysis/paper/figures/plot_surface.png", wid
 if (is_html) {
   p
 } else {
-  knitr::include_graphics("figures/plot_surface.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_surface.png"))
 }
 
 ```
@@ -336,13 +337,13 @@ if (replot) export_plot(p, file = "analysis/paper/figures/plot_grid.png", width 
 if (is_html) {
   p
 } else {
-  knitr::include_graphics("figures/plot_grid.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_grid.png"))
 }
 
 ```
 
 
-In addition to supplying objects produced by `sim_abundance` and `make_grid`, the `sim_distribution` function requires two closures that describe the age-year-space covariance and the relationship with depth. Here we use `sim_ays_covar` and `sim_parabola` to control these relationships and a wide range of age and year specific distributions can be obtained by adjusting a few parameters in these closures (Figure \@ref(fig:distribution)). Though we only provide one option for simulating a spatial noise (see **[S3 Appendix][S3 Appendix: Age-year-space covariance]** for details), advanced users could construct closures that leverage simulation models provided by packages such as **`RandomFields`** [@schlather2020] or **`INLA`** [@rue2009]. Below we run a default `sim_distribution` call, which generates a population that forms tight clusters that are more strongly correlated across years than ages, and another call that generates a population that is more diffuse (i.e. wider `range`) and exhibits stronger correlation across ages than years (i.e. lower `phi_year` and higher `phi_age`). Distributions can also be forced to be the same across ages and years by using the `group_ages` and `group_years` arguments, respectively, in the `sim_ays_covar` closure. Variance in the size of the clusters can also be modified by changing the `sd` argument in the `sim_ays_covar` function. In other words, these parameters can be modified to control the degree of age-specific clustering and inter-annual site-fidelity exhibited by the simulated population. Note that the resolution of the default grid is high and, as such, the simulations below may take minutes to complete. Also note that the key functions in the **`SimSurvey`** package have been set-up to be pipe (`%>%`; [@bache2014]) friendly such that values from one function call are forwarded to the next function (i.e. output from the two calls below are functionally the same though the approach is slightly different). 
+In addition to supplying objects produced by `sim_abundance` and `make_grid`, the `sim_distribution` function requires two closures that describe the age-year-space covariance and the relationship with depth. Here we use `sim_ays_covar` and `sim_parabola` to control these relationships and a wide range of age and year specific distributions can be obtained by adjusting a few parameters in these closures (Figure \@ref(fig:distribution)). While here we only describe one option for simulating a spatial noise (see **[S3 Appendix][S3 Appendix: Age-year-space covariance]** for details), custom colsures can be used that leverage simulation models provided by packages such as **`RandomFields`** [@schlather2020] or **`INLA`** [@rue2009] (see the code behind `sim_ays_covar_sped` [https://github.com/PaulRegular/SimSurvey/blob/master/R/sim_dist_spde.R] for an example of how the `sim_ays_covar` closure was modified to apply a Stochastic Partial Differential Equation approach using the **`INLA`** package). Below we run a default `sim_distribution` call, which generates a population that forms tight clusters that are more strongly correlated across years than ages, and another call that generates a population that is more diffuse (i.e. wider `range`) and exhibits stronger correlation across ages than years (i.e. lower `phi_year` and higher `phi_age`). Distributions can also be forced to be the same across ages and years by using the `group_ages` and `group_years` arguments, respectively, in the `sim_ays_covar` closure. Variance in the size of the clusters can also be modified by changing the `sd` argument in the `sim_ays_covar` function. In other words, these parameters can be modified to control the degree of age-specific clustering and inter-annual site-fidelity exhibited by the simulated population. Note that the resolution of the default grid is high and, as such, the simulations below may take minutes to complete. Also note that the key functions in the **`SimSurvey`** package have been set-up to be pipe (`%>%`; [@bache2014]) friendly such that values from one function call are forwarded to the next function (i.e. output from the two calls below are functionally the same though the approach is slightly different). 
 
 ```{r, echo = TRUE, eval = replot | is_html}
 
@@ -426,7 +427,7 @@ a_plots
 if (is_html) {
   b_plots
 } else {
-  knitr::include_graphics("figures/plot_distribution.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_distribution.png"))
 }
 
 
@@ -523,7 +524,7 @@ plot_a
 if (is_html) {
   plot_b
 } else {
-  knitr::include_graphics("figures/plot_survey.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_survey.png"))
 }
 
 ```
@@ -613,7 +614,7 @@ if (replot) export_plot(p, file = "analysis/paper/figures/plot_total_strat_fan.p
 if (is_html) {
   p
 } else {
-  knitr::include_graphics("figures/plot_total_strat_fan.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_total_strat_fan.png"))
 }
 
 ```
@@ -661,7 +662,7 @@ if (replot) export_plot(p, file = "analysis/paper/figures/plot_length_strat_fan.
 if (is_html) {
   p
 } else {
-  knitr::include_graphics("figures/plot_length_strat_fan.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_length_strat_fan.png"))
 }
 
 
@@ -688,7 +689,7 @@ if (replot) export_plot(p, file = "analysis/paper/figures/plot_age_strat_fan.png
 if (is_html) {
   p
 } else {
-  knitr::include_graphics("figures/plot_age_strat_fan.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_age_strat_fan.png"))
 }
 
 
@@ -758,7 +759,7 @@ surface_p <- plot_error_surface(tests, plot_by = "rule")
 if (is_html) {
   rank_p
 } else {
-  knitr::include_graphics("figures/plot_survey_rank.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_survey_rank.png"))
 }
 
 ```
@@ -777,7 +778,7 @@ if (is_html) {
 if (is_html) {
   surface_p
 } else {
-  knitr::include_graphics("figures/plot_error_surface.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "plot_error_surface.png"))
 }
 
 ```
@@ -868,7 +869,7 @@ if (replot) export_plot(p, file = "analysis/paper/figures/alt_tests_plots.png", 
 if (is_html) {
   p
 } else {
-  knitr::include_graphics("figures/alt_tests_plots.png")
+  knitr::include_graphics(here("analysis", "paper", "figures", "alt_tests_plots.png"))
 }
 
 
@@ -998,7 +999,7 @@ The default settings of `sim_abundance` and `sim_distribution` produces a dynami
 
 ```{r real-sim-comp, out.width = "90%", fig.cap = "Comparison of a) real and b) simulated survey data where, from top to bottom, histograms of numbers caught across sets, distributions of set catches, and length-frequency distributions from three random sets are shown from a randomly selected year from the real and simulated 3Ps cod survey data. The colors of the length-frequency plots correspond to the colored locations. The deeper shades in the length-frequency plots represent numbers of fish sampled for age determination."}
 
-knitr::include_graphics("figures/real_sim_comp.png")
+knitr::include_graphics(here("analysis", "paper", "figures", "real_sim_comp.png"))
 
 ```
 
