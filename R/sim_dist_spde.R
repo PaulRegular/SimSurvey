@@ -15,6 +15,7 @@
 #' @param model 'spde' for the SPDE approach, 'barrier' for barrier approach
 #'
 #' @return Q a sparse precision matrix of type dgTMatrix
+#' @keywords internal
 #'
 .Q <- function(mesh,barrier.triangles,range=50,range_fraction=0.2,
                sigma_u = 1,model="spde"){

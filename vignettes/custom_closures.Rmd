@@ -72,7 +72,7 @@ sim <- sim_abundance() %>%
 
 ## Custom closures
 
-Users are not restricted to the limited number of parametric relationships captured inside the closures built into the **`SimSurvey`** package. The code can be copped and modified to impose different relationships. For instance, the `sim_logistic` closure can be modified to make a `sim_gaussian` closure for use in the `sim_survey` function to impose dome-shaped survey catchability.
+Users are not restricted to the limited number of parametric relationships captured inside the closures built into the **`SimSurvey`** package. The code can be copied and modified to impose different relationships. For instance, the `sim_logistic` closure can be modified to make a `sim_gaussian` closure for use in the `sim_survey` function to impose dome-shaped survey catchability.
 
 
 ```{r}

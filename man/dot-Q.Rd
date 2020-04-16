@@ -30,3 +30,4 @@ specified range. This is currently set up to support the standard spde
 approach of precision matrices and the barrier model version. Similar
 in purpose to .sp_covar.
 }
+\keyword{internal}

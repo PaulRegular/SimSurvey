@@ -46,7 +46,6 @@ reference:
   - icc
   - fibonacci
   - object_size
-  - .Q
 - title: Data
 - contents:
   - bathy

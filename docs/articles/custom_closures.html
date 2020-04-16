@@ -119,7 +119,7 @@
 <div id="custom-closures" class="section level2">
 <h2 class="hasAnchor">
 <a href="#custom-closures" class="anchor"></a>Custom closures</h2>
-<p>Users are not restricted to the limited number of parametric relationships captured inside the closures built into the <strong><code>SimSurvey</code></strong> package. The code can be copped and modified to impose different relationships. For instance, the <code>sim_logistic</code> closure can be modified to make a <code>sim_gaussian</code> closure for use in the <code>sim_survey</code> function to impose dome-shaped survey catchability.</p>
+<p>Users are not restricted to the limited number of parametric relationships captured inside the closures built into the <strong><code>SimSurvey</code></strong> package. The code can be copied and modified to impose different relationships. For instance, the <code>sim_logistic</code> closure can be modified to make a <code>sim_gaussian</code> closure for use in the <code>sim_survey</code> function to impose dome-shaped survey catchability.</p>
 <div class="sourceCode" id="cb5"><html><body><pre class="r">
 <span class="no">sim_gaussian</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">a</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="no">b</span> <span class="kw">=</span> <span class="fl">10</span>, <span class="no">c</span> <span class="kw">=</span> <span class="fl">5</span>, <span class="no">plot</span> <span class="kw">=</span> <span class="fl">FALSE</span>) {
   <span class="kw">function</span>(<span class="no">x</span> <span class="kw">=</span> <span class="kw">NULL</span>) {
