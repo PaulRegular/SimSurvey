@@ -1,12 +1,12 @@
 ---
 title: "`SimSurvey`: an `R` package for comparing the design and analysis of surveys by simulating spatially-correlated populations"
 output: 
-  bookdown::word_document2:
-    reference_docx: template.docx
   bookdown::html_document2:
     number_sections: false
     toc: true
     toc_float: true
+  bookdown::word_document2:
+    reference_docx: template.docx
 bibliography: references.bib
 csl: plos.csl
 ---
@@ -875,7 +875,7 @@ if (is_html) {
 
 ```
 
-Unlike the default approach to collecting and analyzing age samples, results from this test appear to be unbiased and additional sub-sampling effort beyond a certain point appears to have little to no effect on the estimates (Figure \@ref(fig:alt))). This is an important result with real-world implications as they imply that 1) inference from the actual survey can be improved by altering the sampling and analysis of ages and, 2) valuable survey time can be saved by cutting back on sub-sampling effort. This example demonstrates how **`SimSurvey`** can be used to reveal problems and explore solutions to the sampling designs of fisheries-independent surveys.
+Unlike the default approach to collecting and analyzing age samples, results from this test appear to be unbiased and additional sub-sampling effort beyond a certain point appears to have little to no effect on the estimates (Figure \@ref(fig:alt)). This is an important result with real-world implications as they imply that 1) inference from the actual survey can be improved by altering the sampling and analysis of ages and, 2) valuable survey time can be saved by cutting back on sub-sampling effort. This example demonstrates how **`SimSurvey`** can be used to reveal problems and explore solutions to the sampling designs of fisheries-independent surveys.
 
 
 # Discussion
