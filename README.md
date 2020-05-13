@@ -13,4 +13,6 @@ remotes::install_github("PaulRegular/SimSurvey")
 
 ## Documentation
 
-`pkgdown` site: https://paulregular.github.io/SimSurvey/
+`pkgdown` site: https://paulregular.github.io/SimSurvey/  
+PLOS ONE journal article: https://doi.org/10.1371/journal.pone.0232822  
+
