@@ -205,8 +205,10 @@ sim_ays_covar_spde <- function(sd = 2.8,range = 300,model = "barrier",phi_age = 
 #'
 #' @examples
 #'
+#' \dontrun{
 #' basic_mesh <- make_mesh()
 #' plot(basic_mesh)
+#' }
 #'
 #' @export
 make_mesh <- function(grid = make_grid(),max.edge=50,bound.outer=150,cutoff=10,offset=c(max.edge,bound.outer),...){
@@ -214,8 +216,6 @@ make_mesh <- function(grid = make_grid(),max.edge=50,bound.outer=150,cutoff=10,o
     locs <- as.matrix(gridPoints[,1:2])
     mesh <- INLA::inla.mesh.2d(locs,offset=offset,max.edge=max.edge,cutoff=cutoff,...)
     mesh
-
-
 }
 
 

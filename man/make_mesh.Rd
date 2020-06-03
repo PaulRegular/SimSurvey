@@ -34,7 +34,9 @@ are designed for the default grid. Just a basic interface between the grid and i
 }
 \examples{
 
+\dontrun{
 basic_mesh <- make_mesh()
 plot(basic_mesh)
+}
 
 }

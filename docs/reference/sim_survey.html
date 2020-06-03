@@ -129,11 +129,22 @@
     <p>Simulate stratified-random survey</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sim_survey</span>(<span class='no'>sim</span>, <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(), <span class='kw'>trawl_dim</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1.5</span>,
-  <span class='fl'>0.02</span>), <span class='kw'>resample_cells</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>binom_error</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>min_sets</span> <span class='kw'>=</span> <span class='fl'>2</span>,
-  <span class='kw'>set_den</span> <span class='kw'>=</span> <span class='fl'>2</span>/<span class='fl'>1000</span>, <span class='kw'>lengths_cap</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>ages_cap</span> <span class='kw'>=</span> <span class='fl'>10</span>,
-  <span class='kw'>age_sampling</span> <span class='kw'>=</span> <span class='st'>"stratified"</span>, <span class='kw'>age_length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>age_space_group</span> <span class='kw'>=</span> <span class='st'>"division"</span>, <span class='kw'>light</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>sim_survey</span>(
+  <span class='no'>sim</span>,
+  <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(),
+  <span class='kw'>trawl_dim</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1.5</span>, <span class='fl'>0.02</span>),
+  <span class='kw'>resample_cells</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>binom_error</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>min_sets</span> <span class='kw'>=</span> <span class='fl'>2</span>,
+  <span class='kw'>set_den</span> <span class='kw'>=</span> <span class='fl'>2</span>/<span class='fl'>1000</span>,
+  <span class='kw'>lengths_cap</span> <span class='kw'>=</span> <span class='fl'>500</span>,
+  <span class='kw'>ages_cap</span> <span class='kw'>=</span> <span class='fl'>10</span>,
+  <span class='kw'>age_sampling</span> <span class='kw'>=</span> <span class='st'>"stratified"</span>,
+  <span class='kw'>age_length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>age_space_group</span> <span class='kw'>=</span> <span class='st'>"division"</span>,
+  <span class='kw'>light</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

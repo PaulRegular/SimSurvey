@@ -135,8 +135,14 @@ for convenience. Meshes are used for sim_ays_covar_spde. The defaults
 are designed for the default grid. Just a basic interface between the grid and inla.mesh.2d.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>make_mesh</span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(), <span class='kw'>max.edge</span> <span class='kw'>=</span> <span class='fl'>50</span>, <span class='kw'>bound.outer</span> <span class='kw'>=</span> <span class='fl'>150</span>,
-  <span class='kw'>cutoff</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>max.edge</span>, <span class='no'>bound.outer</span>), <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>make_mesh</span>(
+  <span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(),
+  <span class='kw'>max.edge</span> <span class='kw'>=</span> <span class='fl'>50</span>,
+  <span class='kw'>bound.outer</span> <span class='kw'>=</span> <span class='fl'>150</span>,
+  <span class='kw'>cutoff</span> <span class='kw'>=</span> <span class='fl'>10</span>,
+  <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>max.edge</span>, <span class='no'>bound.outer</span>),
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -170,8 +176,10 @@ are designed for the default grid. Just a basic interface between the grid and i
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='no'>basic_mesh</span> <span class='kw'>&lt;-</span> <span class='fu'>make_mesh</span>()</div><div class='output co'>#&gt; <span class='error'>Error in loadNamespace(name): there is no package called 'INLA'</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>basic_mesh</span>)</div><div class='output co'>#&gt; <span class='error'>Error in plot(basic_mesh): object 'basic_mesh' not found</span></div><div class='input'>
-</div></pre>
+<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='no'>basic_mesh</span> <span class='kw'>&lt;-</span> <span class='fu'>make_mesh</span>()
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.html'>plot</a></span>(<span class='no'>basic_mesh</span>)
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

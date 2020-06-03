@@ -133,9 +133,18 @@ be set and tested on the simulated population. True population values are compar
 to stratified estimates of abundance.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>test_surveys</span>(<span class='no'>sim</span>, <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span>(), <span class='kw'>keep_details</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>length_group</span> <span class='kw'>=</span> <span class='st'>"inherit"</span>, <span class='kw'>alk_scale</span> <span class='kw'>=</span> <span class='st'>"division"</span>, <span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>test_surveys</span>(
+  <span class='no'>sim</span>,
+  <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span>(),
+  <span class='kw'>keep_details</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>100</span>,
+  <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
+  <span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>length_group</span> <span class='kw'>=</span> <span class='st'>"inherit"</span>,
+  <span class='kw'>alk_scale</span> <span class='kw'>=</span> <span class='st'>"division"</span>,
+  <span class='no'>...</span>
+)
 
 <span class='fu'>resume_test</span>(<span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
 
@@ -195,23 +204,23 @@ as true vs. estimated length groupings will be mismatched.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Arguments passed on to <code>sim_survey</code></p><dl'>
-  <dt>q</dt><dd><p>Closure, such as <code><a href='sim_logistic.html'>sim_logistic</a></code>, for simulating catchability at age
+      <td><p>Arguments passed on to <code><a href='sim_survey.html'>sim_survey</a></code></p><dl'>
+    <dt><code>q</code></dt><dd><p>Closure, such as <code><a href='sim_logistic.html'>sim_logistic</a></code>, for simulating catchability at age
 (returned values must be between 0 and 1)</p></dd>
-  <dt>trawl_dim</dt><dd><p>Trawl width and distance (same units as grid)</p></dd>
-  <dt>resample_cells</dt><dd><p>Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
+    <dt><code>trawl_dim</code></dt><dd><p>Trawl width and distance (same units as grid)</p></dd>
+    <dt><code>resample_cells</code></dt><dd><p>Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
 because depletion is imposed at the cell level.</p></dd>
-  <dt>binom_error</dt><dd><p>Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
+    <dt><code>binom_error</code></dt><dd><p>Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.</p></dd>
-  <dt>min_sets</dt><dd><p>Minimum number of sets per strat</p></dd>
-  <dt>age_sampling</dt><dd><p>Should age sampling be "stratified" (default) or "random"?</p></dd>
-  <dt>age_length_group</dt><dd><p>Numeric value indicating the size of the length bins for stratified
+    <dt><code>min_sets</code></dt><dd><p>Minimum number of sets per strat</p></dd>
+    <dt><code>age_sampling</code></dt><dd><p>Should age sampling be "stratified" (default) or "random"?</p></dd>
+    <dt><code>age_length_group</code></dt><dd><p>Numeric value indicating the size of the length bins for stratified
 age sampling. Ignored if <code>age_sampling = "random"</code>.</p></dd>
-  <dt>age_space_group</dt><dd><p>Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+    <dt><code>age_space_group</code></dt><dd><p>Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
 That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</code>.</p></dd>
-
+  
 </dl></td>
     </tr>
     </table>
