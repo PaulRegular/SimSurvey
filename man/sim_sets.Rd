@@ -4,8 +4,14 @@
 \alias{sim_sets}
 \title{Simulate survey sets}
 \usage{
-sim_sets(sim, n_sims = 1, trawl_dim = c(1.5, 0.02), min_sets = 2,
-  set_den = 2/1000, resample_cells = FALSE)
+sim_sets(
+  sim,
+  n_sims = 1,
+  trawl_dim = c(1.5, 0.02),
+  min_sets = 2,
+  set_den = 2/1000,
+  resample_cells = FALSE
+)
 }
 \arguments{
 \item{sim}{Simulation object from \code{\link{sim_distribution}}}

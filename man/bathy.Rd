@@ -4,10 +4,12 @@
 \name{bathy}
 \alias{bathy}
 \title{Southern Newfoundland bathymetry}
-\format{A RasterLayer
+\format{
+A RasterLayer
 
 Derived from data downloaded from http://www.gebco.net/. Details provided in
-the data-raw folder for this package.}
+the data-raw folder for this package.
+}
 \usage{
 bathy
 }

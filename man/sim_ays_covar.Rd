@@ -4,9 +4,16 @@
 \alias{sim_ays_covar}
 \title{Simulate age-year-space covariance}
 \usage{
-sim_ays_covar(sd = 2.8, range = 300, lambda = 1, model = "matern",
-  phi_age = 0.5, phi_year = 0.9, group_ages = 5:20,
-  group_years = NULL)
+sim_ays_covar(
+  sd = 2.8,
+  range = 300,
+  lambda = 1,
+  model = "matern",
+  phi_age = 0.5,
+  phi_year = 0.9,
+  group_ages = 5:20,
+  group_years = NULL
+)
 }
 \arguments{
 \item{sd}{Variance (can be age specific).}

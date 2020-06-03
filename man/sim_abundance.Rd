@@ -4,8 +4,14 @@
 \alias{sim_abundance}
 \title{Simulate basic population dynamics model}
 \usage{
-sim_abundance(ages = 1:20, years = 1:20, Z = sim_Z(), R = sim_R(),
-  N0 = sim_N0(), growth = sim_vonB())
+sim_abundance(
+  ages = 1:20,
+  years = 1:20,
+  Z = sim_Z(),
+  R = sim_R(),
+  N0 = sim_N0(),
+  growth = sim_vonB()
+)
 }
 \arguments{
 \item{ages}{Ages to include in the simulation.}

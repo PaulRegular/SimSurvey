@@ -4,11 +4,13 @@
 \name{land}
 \alias{land}
 \title{Southern Newfoundland coastline}
-\format{A SpatialPolygons object
+\format{
+A SpatialPolygons object
 
 Derived from global administrative boundaries data (http://gadm.org/) downloaded
 using the \code{\link{getData}} function. Details provided in the
-data-raw folder for this package.}
+data-raw folder for this package.
+}
 \usage{
 land
 }

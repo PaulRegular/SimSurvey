@@ -5,9 +5,18 @@
 \alias{resume_test}
 \title{Test sampling design of multiple surveys using a stratified analysis}
 \usage{
-test_surveys(sim, surveys = expand_surveys(), keep_details = 1,
-  n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
-  length_group = "inherit", alk_scale = "division", ...)
+test_surveys(
+  sim,
+  surveys = expand_surveys(),
+  keep_details = 1,
+  n_sims = 1,
+  n_loops = 100,
+  cores = 2,
+  export_dir = NULL,
+  length_group = "inherit",
+  alk_scale = "division",
+  ...
+)
 
 resume_test(export_dir = NULL)
 }
@@ -45,24 +54,25 @@ as true vs. estimated length groupings will be mismatched.}
 \item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
 "division" or "strat".}
 
-\item{...}{Arguments passed on to \code{sim_survey}
-\describe{
-  \item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
+\item{...}{
+  Arguments passed on to \code{\link[=sim_survey]{sim_survey}}
+  \describe{
+    \item{\code{q}}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
-  \item{trawl_dim}{Trawl width and distance (same units as grid)}
-  \item{resample_cells}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
+    \item{\code{trawl_dim}}{Trawl width and distance (same units as grid)}
+    \item{\code{resample_cells}}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
 because depletion is imposed at the cell level.}
-  \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
+    \item{\code{binom_error}}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.}
-  \item{min_sets}{Minimum number of sets per strat}
-  \item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
-  \item{age_length_group}{Numeric value indicating the size of the length bins for stratified
+    \item{\code{min_sets}}{Minimum number of sets per strat}
+    \item{\code{age_sampling}}{Should age sampling be "stratified" (default) or "random"?}
+    \item{\code{age_length_group}}{Numeric value indicating the size of the length bins for stratified
 age sampling. Ignored if \code{age_sampling = "random"}.}
-  \item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
+    \item{\code{age_space_group}}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
 That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
-}}
+  }}
 }
 \value{
 Adds a table of survey designs tested. Also adds details and summary

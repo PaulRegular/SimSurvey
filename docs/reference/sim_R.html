@@ -8,11 +8,13 @@
 
 <title>Simulate startinig abundance, random recruitment and total mortality — sim_R • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,11 +38,10 @@
 
 
 
-<meta property="og:title" content="Simulate startinig abundance, random recruitment and total mortality — sim_R" />
 
+<meta property="og:title" content="Simulate startinig abundance, random recruitment and total mortality — sim_R" />
 <meta property="og:description" content="These functions return a function to use inside sim_abundance.
 Given parameters, it generates N0, R and Z values." />
-
 
 
 
@@ -100,7 +101,6 @@ Given parameters, it generates N0, R and Z values." />
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -127,10 +127,8 @@ Given parameters, it generates N0, R and Z values." />
     </div>
 
     <div class="ref-description">
-    
     <p>These functions return a function to use inside <code><a href='sim_abundance.html'>sim_abundance</a></code>.
 Given parameters, it generates N0, R and Z values.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>sim_R</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>3e+07</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>random_walk</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
@@ -140,7 +138,7 @@ Given parameters, it generates N0, R and Z values.</p>
   <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
 
 <span class='fu'>sim_N0</span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -175,19 +173,17 @@ rows equaling the number of ages and colums equaling the number of years for <co
 If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay.</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>sim_R generates uncorrelated recruitment values or random walk values from a log normal distribution.
 sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
 in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).</p>
-    
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
 Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
 Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
@@ -764,8 +760,8 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000023f0f208&gt;
-#&gt; &lt;environment: 0x0000000031a6d768&gt;
+#&gt; &lt;bytecode: 0x000000002fed6b00&gt;
+#&gt; &lt;environment: 0x00000000341bfe58&gt;
 #&gt; </div><div class='input'><span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
               <span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'>sim_R</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>100000</span>, <span class='fl'>10</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>10000</span>, <span class='fl'>10</span>))), <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</div><div class='img'><img src='sim_R-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $ages
 #&gt;  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
@@ -1316,8 +1312,8 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000023f0f208&gt;
-#&gt; &lt;environment: 0x0000000036515bb0&gt;
+#&gt; &lt;bytecode: 0x000000002fed6b00&gt;
+#&gt; &lt;environment: 0x00000000334d66b8&gt;
 #&gt; </div><div class='input'>
 <span class='no'>Z_fun</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_Z</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>Z_fun</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>100</span>, <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)</div><div class='img'><img src='sim_R-3.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;     year
@@ -2196,8 +2192,8 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000023f0f208&gt;
-#&gt; &lt;environment: 0x0000000034a2a980&gt;
+#&gt; &lt;bytecode: 0x000000002fed6b00&gt;
+#&gt; &lt;environment: 0x00000000317580f8&gt;
 #&gt; </div><div class='input'><span class='no'>Za_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.1</span>, <span class='fl'>0</span>, <span class='fl'>0.1</span>, <span class='fl'>0.2</span>, <span class='fl'>0.3</span>, <span class='fl'>0.3</span>, <span class='fl'>0.2</span>, <span class='fl'>0.1</span>, <span class='fl'>0</span>)
 <span class='no'>Zy_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>)
 <span class='no'>Z_mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/outer.html'>outer</a></span>(<span class='no'>Za_dev</span>, <span class='no'>Zy_dev</span>, <span class='st'>"+"</span>) + <span class='fl'>0.5</span>
@@ -2596,8 +2592,8 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000023f0f208&gt;
-#&gt; &lt;environment: 0x0000000032b48bd8&gt;
+#&gt; &lt;bytecode: 0x000000002fed6b00&gt;
+#&gt; &lt;environment: 0x000000003037da48&gt;
 #&gt; </div><div class='input'><span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
               <span class='kw'>Z</span> <span class='kw'>=</span> <span class='fu'>sim_Z</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>Z_mat</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</div><div class='img'><img src='sim_R-6.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $ages
 #&gt;  [1]  1  2  3  4  5  6  7  8  9 10
@@ -2981,8 +2977,8 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000023f0f208&gt;
-#&gt; &lt;environment: 0x00000000214fd108&gt;
+#&gt; &lt;bytecode: 0x000000002fed6b00&gt;
+#&gt; &lt;environment: 0x0000000032390af0&gt;
 #&gt; </div><div class='input'>
 <span class='no'>N0_fun</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_N0</span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>N0_fun</span>(<span class='kw'>R0</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>Z0</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.5</span>, <span class='fl'>20</span>), <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)</div><div class='img'><img src='sim_R-7.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;  [1] 1.000000e+03 6.065307e+02 3.678794e+02 2.231302e+02 1.353353e+02
@@ -3535,8 +3531,8 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 #&gt;         return(length)
 #&gt;     }
 #&gt; }
-#&gt; &lt;bytecode: 0x0000000023f0f208&gt;
-#&gt; &lt;environment: 0x0000000033fe0ab0&gt;
+#&gt; &lt;bytecode: 0x000000002fed6b00&gt;
+#&gt; &lt;environment: 0x0000000031166150&gt;
 #&gt; </div><div class='input'>
 </div></pre>
   </div>

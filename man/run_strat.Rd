@@ -4,8 +4,13 @@
 \alias{run_strat}
 \title{Run stratified analysis on simulated data}
 \usage{
-run_strat(sim, length_group = "inherit", alk_scale = "division",
-  strat_data_fun = strat_data, strat_means_fun = strat_means)
+run_strat(
+  sim,
+  length_group = "inherit",
+  alk_scale = "division",
+  strat_data_fun = strat_data,
+  strat_means_fun = strat_means
+)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_survey}}}

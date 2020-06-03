@@ -4,8 +4,12 @@
 \alias{sim_distribution}
 \title{Simulate spatial and temporal distribution}
 \usage{
-sim_distribution(sim, grid = make_grid(), ays_covar = sim_ays_covar(),
-  depth_par = sim_parabola())
+sim_distribution(
+  sim,
+  grid = make_grid(),
+  ays_covar = sim_ays_covar(),
+  depth_par = sim_parabola()
+)
 }
 \arguments{
 \item{sim}{A list with ages, years and an abundance at age matrix like

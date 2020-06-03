@@ -8,11 +8,13 @@
 
 <title>Make an R-INLA mesh based off a grid — make_mesh • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,13 +38,12 @@
 
 
 
-<meta property="og:title" content="Make an R-INLA mesh based off a grid — make_mesh" />
 
+<meta property="og:title" content="Make an R-INLA mesh based off a grid — make_mesh" />
 <meta property="og:description" content="This will make a mesh based off a given grid. Ideally the mesh
 construction and validation should be done by hand, but this exists
 for convenience. Meshes are used for sim_ays_covar_spde. The defaults
 are designed for the default grid. Just a basic interface between the grid and inla.mesh.2d." />
-
 
 
 
@@ -102,7 +103,6 @@ are designed for the default grid. Just a basic interface between the grid and i
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -129,17 +129,15 @@ are designed for the default grid. Just a basic interface between the grid and i
     </div>
 
     <div class="ref-description">
-    
     <p>This will make a mesh based off a given grid. Ideally the mesh
 construction and validation should be done by hand, but this exists
 for convenience. Meshes are used for sim_ays_covar_spde. The defaults
 are designed for the default grid. Just a basic interface between the grid and inla.mesh.2d.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>make_mesh</span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(), <span class='kw'>max.edge</span> <span class='kw'>=</span> <span class='fl'>50</span>, <span class='kw'>bound.outer</span> <span class='kw'>=</span> <span class='fl'>150</span>,
   <span class='kw'>cutoff</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>max.edge</span>, <span class='no'>bound.outer</span>), <span class='no'>...</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -168,7 +166,7 @@ are designed for the default grid. Just a basic interface between the grid and i
       <td><p>Other options to pass to inla.mesh.2d</p></td>
     </tr>
     </table>
-    
+
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

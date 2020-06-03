@@ -4,7 +4,9 @@
 \name{survey_lite_mesh}
 \alias{survey_lite_mesh}
 \title{Lite sample survey meshs and related items}
-\format{A list containing the same items as survey_mesh, but with fewer nodes to save on computational time}
+\format{
+A list containing the same items as survey_mesh, but with fewer nodes to save on computational time
+}
 \usage{
 survey_lite_mesh
 }

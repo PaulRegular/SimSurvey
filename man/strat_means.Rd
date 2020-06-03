@@ -4,8 +4,13 @@
 \alias{strat_means}
 \title{Calculate stratified means, variances and confidence intervals across groups}
 \usage{
-strat_means(data = NULL, metric = NULL, strat_groups = NULL,
-  survey_groups = NULL, confidence = 95)
+strat_means(
+  data = NULL,
+  metric = NULL,
+  strat_groups = NULL,
+  survey_groups = NULL,
+  confidence = 95
+)
 }
 \arguments{
 \item{data}{Expects data.table with all grouping variables in stacked format (must include

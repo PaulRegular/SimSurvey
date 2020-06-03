@@ -4,8 +4,14 @@
 \alias{make_mesh}
 \title{Make an R-INLA mesh based off a grid}
 \usage{
-make_mesh(grid = make_grid(), max.edge = 50, bound.outer = 150,
-  cutoff = 10, offset = c(max.edge, bound.outer), ...)
+make_mesh(
+  grid = make_grid(),
+  max.edge = 50,
+  bound.outer = 150,
+  cutoff = 10,
+  offset = c(max.edge, bound.outer),
+  ...
+)
 }
 \arguments{
 \item{grid}{grid object to make a mesh of}

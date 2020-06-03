@@ -4,9 +4,17 @@
 \alias{sim_ays_covar_spde}
 \title{Simulate age-year-space covariance using SPDE approach}
 \usage{
-sim_ays_covar_spde(sd = 2.8, range = 300, model = "barrier",
-  phi_age = 0.5, phi_year = 0.9, group_ages = 5:20,
-  group_years = NULL, mesh, barrier.triangles)
+sim_ays_covar_spde(
+  sd = 2.8,
+  range = 300,
+  model = "barrier",
+  phi_age = 0.5,
+  phi_year = 0.9,
+  group_ages = 5:20,
+  group_years = NULL,
+  mesh,
+  barrier.triangles
+)
 }
 \arguments{
 \item{sd}{Variance (can be age specific)}

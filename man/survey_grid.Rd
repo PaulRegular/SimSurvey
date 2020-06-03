@@ -4,7 +4,8 @@
 \name{survey_grid}
 \alias{survey_grid}
 \title{Sample survey simulation grid.}
-\format{A RasterStack with 4 variables:
+\format{
+A RasterStack with 4 variables:
 \describe{
   \item{cell}{Survey cell identifier}
   \item{division}{NAFO division}
@@ -13,7 +14,8 @@
 }
 
 For further details on how this file was created, see the data-raw folder for
-this package.}
+this package.
+}
 \usage{
 survey_grid
 }

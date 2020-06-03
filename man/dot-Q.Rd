@@ -4,8 +4,14 @@
 \alias{.Q}
 \title{Helper function to generate precision matrix Q for simulation}
 \usage{
-.Q(mesh, barrier.triangles, range = 50, range_fraction = 0.2,
-  sigma_u = 1, model = "spde")
+.Q(
+  mesh,
+  barrier.triangles,
+  range = 50,
+  range_fraction = 0.2,
+  sigma_u = 1,
+  model = "spde"
+)
 }
 \arguments{
 \item{mesh}{The mesh created by R-INLA representing spatial area}

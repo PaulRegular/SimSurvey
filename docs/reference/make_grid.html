@@ -8,11 +8,13 @@
 
 <title>Make a depth stratified survey grid — make_grid • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,12 +38,11 @@
 
 
 
-<meta property="og:title" content="Make a depth stratified survey grid — make_grid" />
 
+<meta property="og:title" content="Make a depth stratified survey grid — make_grid" />
 <meta property="og:description" content="This function sets up a depth stratified survey grid. A simple gradient in depth
 is simulated using spline with a shallow portion, shelf and
 deep portion. Adding covariance to the depth simulation is an option." />
-
 
 
 
@@ -101,7 +102,6 @@ deep portion. Adding covariance to the depth simulation is an option." />
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -128,18 +128,16 @@ deep portion. Adding covariance to the depth simulation is an option." />
     </div>
 
     <div class="ref-description">
-    
     <p>This function sets up a depth stratified survey grid. A simple gradient in depth
 is simulated using <code><a href='https://rdrr.io/r/stats/splinefun.html'>spline</a></code> with a shallow portion, shelf and
 deep portion. Adding covariance to the depth simulation is an option.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>make_grid</span>(<span class='kw'>x_range</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>140</span>, <span class='fl'>140</span>), <span class='kw'>y_range</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>140</span>, <span class='fl'>140</span>),
   <span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3.5</span>, <span class='fl'>3.5</span>), <span class='kw'>shelf_depth</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>shelf_width</span> <span class='kw'>=</span> <span class='fl'>100</span>,
   <span class='kw'>depth_range</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0</span>, <span class='fl'>1000</span>), <span class='kw'>n_div</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>strat_breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0</span>, <span class='fl'>1000</span>, <span class='kw'>by</span>
   <span class='kw'>=</span> <span class='fl'>40</span>), <span class='kw'>strat_splits</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spline"</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -184,11 +182,10 @@ deep portion. Adding covariance to the depth simulation is an option.</p>
       <td><p>Use a "spline" or "loess" to generate a smooth gradient or simply use "linear" interpolation?</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns RasterBrick of the same structure as <code><a href='survey_grid.html'>survey_grid</a></code></p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

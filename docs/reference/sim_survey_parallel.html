@@ -8,11 +8,13 @@
 
 <title>Simulate stratified random surveys using parallel computation — sim_survey_parallel • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,14 +38,13 @@
 
 
 
-<meta property="og:title" content="Simulate stratified random surveys using parallel computation — sim_survey_parallel" />
 
+<meta property="og:title" content="Simulate stratified random surveys using parallel computation — sim_survey_parallel" />
 <meta property="og:description" content="This function is a wrapper for sim_survey except it allows for
 many more total itterations to be run than sim_survey before running
 into RAM limitations. Unlike test_surveys, this function retains
 the full details of the survey and it may therefore be more useful for testing
 alternate approaches to a stratified analysis for obtaining survey indices." />
-
 
 
 
@@ -103,7 +104,6 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -130,18 +130,16 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
     </div>
 
     <div class="ref-description">
-    
     <p>This function is a wrapper for <code><a href='sim_survey.html'>sim_survey</a></code> except it allows for
 many more total itterations to be run than <code><a href='sim_survey.html'>sim_survey</a></code> before running
 into RAM limitations. Unlike <code><a href='test_surveys.html'>test_surveys</a></code>, this function retains
 the full details of the survey and it may therefore be more useful for testing
 alternate approaches to a stratified analysis for obtaining survey indices.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>sim_survey_parallel</span>(<span class='no'>sim</span>, <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,
   <span class='kw'>quiet</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -206,11 +204,10 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
 </dl></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code><a href='sim_survey.html'>sim_survey</a></code> is hard-wired here to be "light" to minimize object size.</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

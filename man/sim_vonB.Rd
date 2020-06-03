@@ -4,8 +4,15 @@
 \alias{sim_vonB}
 \title{Closure for simulating length given age using von Bertalanffy notation}
 \usage{
-sim_vonB(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
-  length_group = 3, digits = 0, plot = FALSE)
+sim_vonB(
+  Linf = 120,
+  L0 = 5,
+  K = 0.1,
+  log_sd = 0.1,
+  length_group = 3,
+  digits = 0,
+  plot = FALSE
+)
 }
 \arguments{
 \item{Linf}{Mean asymptotic length}

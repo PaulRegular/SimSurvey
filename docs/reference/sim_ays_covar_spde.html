@@ -8,11 +8,13 @@
 
 <title>Simulate age-year-space covariance using SPDE approach — sim_ays_covar_spde • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,11 +38,10 @@
 
 
 
-<meta property="og:title" content="Simulate age-year-space covariance using SPDE approach — sim_ays_covar_spde" />
 
+<meta property="og:title" content="Simulate age-year-space covariance using SPDE approach — sim_ays_covar_spde" />
 <meta property="og:description" content="Returns a function to use inside sim_distribution to
 generate the error term." />
-
 
 
 
@@ -100,7 +101,6 @@ generate the error term." />
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -127,16 +127,14 @@ generate the error term." />
     </div>
 
     <div class="ref-description">
-    
     <p>Returns a function to use inside <code><a href='sim_distribution.html'>sim_distribution</a></code> to
 generate the error term.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>sim_ays_covar_spde</span>(<span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>2.8</span>, <span class='kw'>range</span> <span class='kw'>=</span> <span class='fl'>300</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='st'>"barrier"</span>,
   <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>group_ages</span> <span class='kw'>=</span> <span class='fl'>5</span>:<span class='fl'>20</span>,
   <span class='kw'>group_years</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>mesh</span>, <span class='no'>barrier.triangles</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -180,11 +178,10 @@ or a vector of the same length as years.</p></td>
 for the barrier model</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a function for use in <code><a href='sim_distribution.html'>sim_distribution</a></code>.</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

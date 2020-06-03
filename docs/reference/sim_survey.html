@@ -8,11 +8,13 @@
 
 <title>Simulate stratified-random survey — sim_survey • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,10 +38,9 @@
 
 
 
+
 <meta property="og:title" content="Simulate stratified-random survey — sim_survey" />
-
 <meta property="og:description" content="Simulate stratified-random survey" />
-
 
 
 
@@ -99,7 +100,6 @@
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -126,9 +126,7 @@
     </div>
 
     <div class="ref-description">
-    
     <p>Simulate stratified-random survey</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>sim_survey</span>(<span class='no'>sim</span>, <span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(), <span class='kw'>trawl_dim</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1.5</span>,
@@ -136,7 +134,7 @@
   <span class='kw'>set_den</span> <span class='kw'>=</span> <span class='fl'>2</span>/<span class='fl'>1000</span>, <span class='kw'>lengths_cap</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>ages_cap</span> <span class='kw'>=</span> <span class='fl'>10</span>,
   <span class='kw'>age_sampling</span> <span class='kw'>=</span> <span class='st'>"stratified"</span>, <span class='kw'>age_length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>,
   <span class='kw'>age_space_group</span> <span class='kw'>=</span> <span class='st'>"division"</span>, <span class='kw'>light</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -213,13 +211,12 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
       <td><p>Drop some objects from the output to keep object size low?</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A list including rounded population simulation, set locations and details
 and sampling details. Note that that N = "true" population, I = population available
 to the survey, n = number caught by survey.</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

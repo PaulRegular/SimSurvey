@@ -4,11 +4,22 @@
 \alias{sim_survey}
 \title{Simulate stratified-random survey}
 \usage{
-sim_survey(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5,
-  0.02), resample_cells = FALSE, binom_error = TRUE, min_sets = 2,
-  set_den = 2/1000, lengths_cap = 500, ages_cap = 10,
-  age_sampling = "stratified", age_length_group = 1,
-  age_space_group = "division", light = TRUE)
+sim_survey(
+  sim,
+  n_sims = 1,
+  q = sim_logistic(),
+  trawl_dim = c(1.5, 0.02),
+  resample_cells = FALSE,
+  binom_error = TRUE,
+  min_sets = 2,
+  set_den = 2/1000,
+  lengths_cap = 500,
+  ages_cap = 10,
+  age_sampling = "stratified",
+  age_length_group = 1,
+  age_space_group = "division",
+  light = TRUE
+)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}

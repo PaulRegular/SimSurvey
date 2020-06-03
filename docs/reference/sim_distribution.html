@@ -8,11 +8,13 @@
 
 <title>Simulate spatial and temporal distribution — sim_distribution • SimSurvey</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -36,12 +38,11 @@
 
 
 
-<meta property="og:title" content="Simulate spatial and temporal distribution — sim_distribution" />
 
+<meta property="og:title" content="Simulate spatial and temporal distribution — sim_distribution" />
 <meta property="og:description" content="Provided an abundance at age matrix and a survey grid to populate, this function
 applies correlated space, age and year error to simulate the distribution
 of the population. The ability to simulate distributions by length is yet to be implemented." />
-
 
 
 
@@ -101,7 +102,6 @@ of the population. The ability to simulate distributions by length is yet to be 
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
@@ -128,16 +128,14 @@ of the population. The ability to simulate distributions by length is yet to be 
     </div>
 
     <div class="ref-description">
-    
     <p>Provided an abundance at age matrix and a survey grid to populate, this function
 applies correlated space, age and year error to simulate the distribution
 of the population. The ability to simulate distributions by length is yet to be implemented.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>sim_distribution</span>(<span class='no'>sim</span>, <span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(), <span class='kw'>ays_covar</span> <span class='kw'>=</span> <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(),
   <span class='kw'>depth_par</span> <span class='kw'>=</span> <span class='fu'><a href='sim_parabola.html'>sim_parabola</a></span>())</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -162,7 +160,7 @@ like <code><a href='sim_ays_covar.html'>sim_ays_covar</a></code></p></td>
 like <code><a href='sim_parabola.html'>sim_parabola</a></code></p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Appends three objects to the <code>sim</code> list:</p><ul>
@@ -171,14 +169,12 @@ like <code><a href='sim_parabola.html'>sim_parabola</a></code></p></td>
 <li><p><code>sp_N</code> - A data.table with abundance split by age, year and cell</p></li>
 </ul>
 
-    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This function simulates the probability of simulated fish inhabiting
 a cell as a function of a parabolic relationship with depth and space, age,
 and year autocorrelated errors. WARNING: it make take a long time to simulate
 abundance in a large grid across many ages and years - start small first.</p>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
