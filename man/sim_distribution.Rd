@@ -51,8 +51,7 @@ sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
                                                       phi_year = 0.1),
                             depth_par = sim_parabola(mu = 200,
                                                      sigma = 50))
-plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
-plot_distribution(sim, ages = 1, years = 1:10)
-plot_distribution(sim, ages = 1:10, years = 5)
+head(sim$sp_N)
+head(sim$grid_xy)
 
 }
