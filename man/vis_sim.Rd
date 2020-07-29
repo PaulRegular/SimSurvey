@@ -34,7 +34,7 @@ surveys <- expand_surveys(set_den = c(1, 2) / 1000,
                           lengths_cap = c(100, 500),
                           ages_cap = c(5, 20))
 tests <- test_surveys(dist, surveys = surveys, keep_details = 1,
-                      n_sims = 10, n_loops = 50, cores = 2)
+                      n_sims = 10, n_loops = 50, cores = 1)
 vis_sim(tests)
 
 }
