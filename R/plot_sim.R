@@ -27,6 +27,7 @@
 #' @param ...            Additional arguments to pass to \code{\link[plotly]{plot_ly}}.
 #'
 #' @import plotly
+#' @importFrom rlang .data
 #'
 #' @export
 #' @rdname plot_trend
@@ -71,9 +72,9 @@ plot_grid <- function(grid, ...) {
   yax <- c(scaleanchor = "x", xax)
 
   sp_div <- raster::rasterToPolygons(grid$division, dissolve = TRUE)
-  df_div <- suppressMessages(ggplot2::fortify(sp_div) %>% group_by(group))
+  df_div <- suppressMessages(ggplot2::fortify(sp_div) %>% group_by(.data$group))
   sp_strat <- raster::rasterToPolygons(grid$strat, dissolve = TRUE)
-  df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(group))
+  df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(.data$group))
   xyz <- data.frame(rasterToPoints(grid))
 
   plot_ly(...) %>%
@@ -93,6 +94,8 @@ plot_grid <- function(grid, ...) {
 #' @rdname plot_trend
 plot_distribution <- function(sim, ages = 1:10, years = 1:10,
                               type = "contour", scale = "natural", ...) {
+
+  age <- NULL
 
   xax <- list(
     title = "",
@@ -174,7 +177,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
   yax <- c(scaleanchor = "x", xax)
 
   sp_strat <- raster::rasterToPolygons(sim$grid$strat, dissolve = TRUE)
-  df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(group))
+  df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(.data$group))
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
@@ -200,7 +203,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 
   sp_p <- base %>%
     group_by(set) %>%
-    summarise(x = unique(x), y = unique(y), n = sum(!is.na(measured))) %>%
+    summarise(x = unique(.data$x), y = unique(.data$y), n = sum(!is.na(.data$measured))) %>%
     add_markers(x = ~x, y = ~y, text = ~n,
                 color = ~n, name = "n",
                 showlegend = FALSE,
@@ -215,12 +218,12 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
   hist_base <- base %>%
     mutate(length = group_lengths(length, length_group)) %>%
     group_by(set) %>%
-    filter(!is.na(measured)) %>%
-    slice(rep(1:length(measured), each = 2)) %>%
-    mutate(lab = rep(c("caught", "sampled"), times = length(measured) / 2))
+    filter(!is.na(.data$measured)) %>%
+    slice(rep(1:length(.data$measured), each = 2)) %>%
+    mutate(lab = rep(c("caught", "sampled"), times = length(.data$measured) / 2))
 
   lf_p <- hist_base %>%
-    filter(measured & lab == "sampled" | lab == "caught") %>%
+    filter(.data$measured & .data$lab == "sampled" | .data$lab == "caught") %>%
     add_histogram(x = ~length, color = ~lab, histnorm = "percent",
                   colors = c("#FDE725FF", "#21908CFF"),
                   legendgroup = ~lab) %>%
@@ -228,11 +231,11 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
               fill = "tozeroy", name = "true", fillcolor = "#44015433",
               legendgroup = "true") %>%
     layout(xaxis = list(title = "Length",
-                        range = extendrange(range(samp$length, na.rm = TRUE))),
+                        range = grDevices::extendrange(range(samp$length, na.rm = TRUE))),
            yaxis = list(title = "Percent", ticksuffix = "%"))
 
   af_p <- hist_base %>%
-    filter(aged & lab == "sampled" | lab == "caught") %>%
+    filter(.data$aged & .data$lab == "sampled" | .data$lab == "caught") %>%
     add_histogram(x = ~age, color = ~lab, histnorm = "percent",
                   colors = c("#FDE725FF", "#21908CFF"),
                   legendgroup = ~lab, showlegend = FALSE) %>%
@@ -240,7 +243,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
               fill = "tozeroy", name = "true", fillcolor = "#44015433",
               legendgroup = "true", showlegend = FALSE) %>%
     layout(xaxis = list(title = "Age",
-                        range = extendrange(range(samp$age, na.rm = TRUE))),
+                        range = grDevices::extendrange(range(samp$age, na.rm = TRUE))),
            yaxis = list(title = "Percent", ticksuffix = "%"))
 
   subplot(sp_p,
@@ -258,6 +261,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 
 ## helper function for calculating multiple quantiles by group
 .ints <- function(d, quants = seq(90, 10, by = -10), by = c("year", "survey")) {
+  I_hat <- NULL
   ints <- lapply(quants, function(q) {
     d[, list(prob = paste0(q, "%"),
              lower = quantile(I_hat, prob = (1 - q / 100) / 2),
@@ -289,6 +293,8 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 plot_total_strat_fan <- function(sim, surveys = 1:5,
                                  quants = seq(90, 10, by = -10),
                                  ...) {
+
+  survey <- set_den <- NULL
 
   d <- sim$total_strat_error
   sub_d <- d[survey %in% surveys, ]
@@ -337,6 +343,8 @@ plot_length_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
                                   lengths = 1:50, select_by = "year",
                                   quants = seq(90, 10, by = -10),
                                   ...) {
+
+  survey <- set_den <- lengths_cap <- NULL
 
   d <- sim$length_strat_error
   sub_d <- d[survey %in% surveys & year %in% years & length %in% lengths, ]
@@ -399,6 +407,8 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
                                quants = seq(90, 10, by = -10),
                                ...) {
 
+  survey <- age <- NULL
+
   d <- sim$age_strat_error
   sub_d <- d[survey %in% surveys & year %in% years & age %in% ages, ]
   true <- sub_d[sim == 1, list(year, age, survey, I)]
@@ -457,6 +467,8 @@ plot_age_strat_fan <- function(sim, surveys = 1:5, years = 1:10,
 #' @export
 #' @rdname plot_trend
 plot_error_surface <- function(sim, plot_by = "rule") {
+
+  n_sets <- n_caught <- n_measured <- n_aged <- NULL
 
   totals <- sim$samp_totals[, list(n_sets = mean(n_sets), n_caught = mean(n_caught),
                                    n_measured = mean(n_measured), n_aged = mean(n_aged)),
@@ -634,6 +646,8 @@ plot_error_surface <- function(sim, plot_by = "rule") {
 #' @export
 #' @rdname plot_trend
 plot_survey_rank <- function(sim, which_strat = "age") {
+
+  survey <- n_sets <- n_caught <- n_measured <- n_aged <- RMSE <- NULL
 
   surveys <- switch(which_strat,
                     total = sim$surveys[, list(survey = min(survey)), by = c("set_den")],

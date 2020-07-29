@@ -51,3 +51,4 @@ import(progress)
 import(raster, except = select)
 
 importFrom(magrittr,"%>%")
+importFrom(rlang,.data)

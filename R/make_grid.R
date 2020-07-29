@@ -11,7 +11,7 @@
 #' @param shelf_depth  Approximate depth of the shelf in m
 #' @param shelf_width  Approximate width of the shelf in km
 #' @param depth_range  Range (min depth, max depth) in depth in m
-#' @param n_div        Number of divisions to iniclude
+#' @param n_div        Number of divisions to include
 #' @param strat_breaks Define strata given these depth breaks
 #' @param strat_splits Number of times to horizontally split strat (i.e. easy way to increase the number of strata)
 #' @param method       Use a "spline" or "loess" to generate a smooth gradient or simply use "linear" interpolation?
@@ -36,6 +36,8 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
                       shelf_width = 100, depth_range = c(0, 1000),
                       n_div = 1, strat_breaks = seq(0, 1000, by = 40),
                       strat_splits = 2, method = "spline") {
+
+  cell <- NULL
 
   ## set-up raster
   r <- raster::raster(xmn = x_range[1], xmx = x_range[2],

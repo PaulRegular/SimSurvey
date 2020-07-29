@@ -51,7 +51,9 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
 #' Note that progress bar time estimates will be biased here by previous completions.
 #' \code{test_loop} is a helper function used in both \code{test_surveys} and
-#' \code{resume_test}.
+#' \code{resume_test}. CAUTION: while the dots construct is available in the \code{resume_test}
+#' function, be careful adding arguments as it will change the simulation settings
+#' if the arguments added were not specified in the initial \code{test_surveys} run.
 #'
 #' @return Adds a table of survey designs tested. Also adds details and summary
 #'         stats of stratified estimate error to the \code{sim} list, ending with
@@ -126,7 +128,9 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 
 #' @export
 #' @rdname test_surveys
-resume_test <- function(export_dir = NULL) {
+resume_test <- function(export_dir = NULL, ...) {
+  sim <- surveys <- n_sims <- n_loops <- cores <-
+    complete <- keep_details <- length_group <- alk_scale <- NULL
   load(file.path(export_dir, "test_inputs.RData"))
   load(file.path(export_dir, "complete.RData"))
   .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
@@ -142,6 +146,8 @@ resume_test <- function(export_dir = NULL) {
                        n_loops = NULL, cores = NULL, export_dir = NULL,
                        complete = NULL, keep_details = NULL,
                        length_group = NULL, alk_scale = NULL, ...) {
+
+  j <- error <- NULL
 
   ## Containers
   samp_totals <- total_strat_error <- length_strat_error <- age_strat_error <- vector("list", nrow(surveys))
