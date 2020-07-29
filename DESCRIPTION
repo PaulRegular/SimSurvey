@@ -41,7 +41,6 @@ Suggests:
     htmltools,
     viridis,
     lme4,
-    igraph,
     ggplot2,
     INLA,
     knitr
