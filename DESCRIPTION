@@ -24,6 +24,7 @@ BugReports: https://github.com/PaulRegular/SimSurvey/issues
 Imports:
     sp,
     raster,
+    igraph,
     rgeos,
     data.table,
     magrittr,
@@ -44,5 +45,5 @@ Suggests:
     ggplot2,
     INLA,
     knitr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
