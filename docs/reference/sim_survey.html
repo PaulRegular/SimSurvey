@@ -234,7 +234,26 @@ to the survey, n = number caught by survey.</p>
 <span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>) <span class='kw'>%&gt;%</span>
            <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>))) <span class='kw'>%&gt;%</span>
            <span class='fu'>sim_survey</span>(<span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(<span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='fl'>3</span>))
-<span class='fu'><a href='plot_trend.html'>plot_survey</a></span>(<span class='no'>sim</span>, <span class='kw'>which_year</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>which_sim</span> <span class='kw'>=</span> <span class='fl'>1</span>)</div></pre>
+<span class='fu'><a href='plot_trend.html'>plot_survey</a></span>(<span class='no'>sim</span>, <span class='kw'>which_year</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>which_sim</span> <span class='kw'>=</span> <span class='fl'>1</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: `group_by_()` is deprecated as of dplyr 0.7.0.</span>
+#&gt; <span class='warning'>Please use `group_by()` instead.</span>
+#&gt; <span class='warning'>See vignette('programming') for more help</span>
+#&gt; <span class='warning'><span style='color: #555555;'>This warning is displayed once every 8 hours.</span><span></span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>Call `lifecycle::last_warnings()` to see where this warning was generated.</span><span></span></div><div class='output co'>#&gt; <span class='warning'>Warning: `summarise_()` is deprecated as of dplyr 0.7.0.</span>
+#&gt; <span class='warning'>Please use `summarise()` instead.</span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>This warning is displayed once every 8 hours.</span><span></span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>Call `lifecycle::last_warnings()` to see where this warning was generated.</span><span></span></div><div class='output co'>#&gt; <span class='warning'>Warning: `mutate_()` is deprecated as of dplyr 0.7.0.</span>
+#&gt; <span class='warning'>Please use `mutate()` instead.</span>
+#&gt; <span class='warning'>See vignette('programming') for more help</span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>This warning is displayed once every 8 hours.</span><span></span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>Call `lifecycle::last_warnings()` to see where this warning was generated.</span><span></span></div><div class='output co'>#&gt; <span class='warning'>Warning: `filter_()` is deprecated as of dplyr 0.7.0.</span>
+#&gt; <span class='warning'>Please use `filter()` instead.</span>
+#&gt; <span class='warning'>See vignette('programming') for more help</span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>This warning is displayed once every 8 hours.</span><span></span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>Call `lifecycle::last_warnings()` to see where this warning was generated.</span><span></span></div><div class='output co'>#&gt; <span class='warning'>Warning: `slice_()` is deprecated as of dplyr 0.7.0.</span>
+#&gt; <span class='warning'>Please use `slice()` instead.</span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>This warning is displayed once every 8 hours.</span><span></span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>Call `lifecycle::last_warnings()` to see where this warning was generated.</span><span></span></div><div class='input'>
+</div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -146,7 +146,7 @@ to stratified estimates of abundance.</p>
   <span class='no'>...</span>
 )
 
-<span class='fu'>resume_test</span>(<span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+<span class='fu'>resume_test</span>(<span class='kw'>export_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -236,11 +236,13 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
         Survey and stratified analysis details are not kept to minimize object size.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Depening on the settings, <code>test_surveys</code> may take a long time to run.
+    <p>Depending on the settings, <code>test_surveys</code> may take a long time to run.
 The <code>resume_test</code> function is for resuming partial runs of <code>test_surveys</code>.
 Note that progress bar time estimates will be biased here by previous completions.
 <code>test_loop</code> is a helper function used in both <code>test_surveys</code> and
-<code>resume_test</code>.</p>
+<code>resume_test</code>. CAUTION: while the dots construct is available in the <code>resume_test</code>
+function, be careful adding arguments as it will change the simulation settings
+if the arguments added were not specified in the initial <code>test_surveys</code> run.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

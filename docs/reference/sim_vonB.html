@@ -1212,39 +1212,40 @@ stratified analysis run by <code><a href='run_strat.html'>run_strat</a></code>.<
 #&gt;    238 8.748688e-13 5.603462e-13 2.615465e-13 2.645701e-13 3.676637e-13
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x0000000031a0ab48&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x000000003908d698&gt;
 #&gt; </div><div class='input'>
 </div></pre>
   </div>

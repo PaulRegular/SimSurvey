@@ -14,5 +14,5 @@ group_lengths(length, group)
 \description{
 Helper function for converting lengths to length groups
 (Note: this isn't a general function; the output midpoints defining the
-groups alligns with DFO specific method/labeling)
+groups aligns with DFO specific method/labeling)
 }

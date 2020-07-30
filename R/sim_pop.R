@@ -6,7 +6,7 @@
 #' Given parameters, it generates N0, R and Z values.
 #'
 #' @param log_mean One mean value or a vector of means, in log scale, of length equal to years for \code{sim_R} or a matrix of means with
-#' rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.
+#' rows equaling the number of ages and columns equaling the number of years for \code{sim_Z}.
 #' @param random_walk Simulate recruitment as a random walk?
 #' @param log_sd Standard deviation of the variable in the log scale.
 #' @param phi_age Autoregressive parameter for the age dimension.
@@ -133,7 +133,7 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #'
 #' @description Helper function for converting lengths to length groups
 #' (Note: this isn't a general function; the output midpoints defining the
-#' groups alligns with DFO specific method/labeling)
+#' groups aligns with DFO specific method/labeling)
 #'
 #' @param length       Interval from \code{\link[base]{findInterval}}
 #' @param group        Length group used to cut the length data
@@ -254,7 +254,7 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #'                 \code{\link{sim_N0}}, for generating starting abundance vector.
 #' @param growth   Closure, such as \code{\link{sim_vonB}}, for simulating length given age.
 #'                 The function is used here to generate a abundance-at-age matrix and
-#'                 it is carried foward for later use in \code{\link{sim_survey}} to simulate
+#'                 it is carried forward for later use in \code{\link{sim_survey}} to simulate
 #'                 lengths from survey catch at age.
 #'
 #' @return A \code{list} of length 9:

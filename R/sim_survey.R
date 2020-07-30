@@ -257,7 +257,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #' Simulate stratified random surveys using parallel computation
 #'
 #' This function is a wrapper for \code{\link{sim_survey}} except it allows for
-#' many more total itterations to be run than \code{\link{sim_survey}} before running
+#' many more total iterations to be run than \code{\link{sim_survey}} before running
 #' into RAM limitations. Unlike \code{\link{test_surveys}}, this function retains
 #' the full details of the survey and it may therefore be more useful for testing
 #' alternate approaches to a stratified analysis for obtaining survey indices.

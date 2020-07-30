@@ -89,7 +89,7 @@ be set and tested on the simulated population. True population values are compar
 to stratified estimates of abundance.
 }
 \details{
-Depening on the settings, \code{test_surveys} may take a long time to run.
+Depending on the settings, \code{test_surveys} may take a long time to run.
 The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
 Note that progress bar time estimates will be biased here by previous completions.
 \code{test_loop} is a helper function used in both \code{test_surveys} and

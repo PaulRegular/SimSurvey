@@ -47,7 +47,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @inherit                 run_strat
 #' @inheritDotParams        sim_survey -sim -n_sims -set_den -lengths_cap -ages_cap -light
 #'
-#' @details Depening on the settings, \code{test_surveys} may take a long time to run.
+#' @details Depending on the settings, \code{test_surveys} may take a long time to run.
 #' The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
 #' Note that progress bar time estimates will be biased here by previous completions.
 #' \code{test_loop} is a helper function used in both \code{test_surveys} and

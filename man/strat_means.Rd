@@ -31,5 +31,5 @@ Calculate stratified means, variances and confidence intervals across groups
 }
 \details{
 Function was mainly created for use in the \code{\link{run_strat}} function.
-It first calculates strat-level statistics and then the larger-scale stistics like total abundance
+It first calculates strat-level statistics and then the larger-scale statistics like total abundance
 }

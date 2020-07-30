@@ -3,7 +3,7 @@
 \docType{data}
 \name{survey_lite_mesh}
 \alias{survey_lite_mesh}
-\title{Lite sample survey meshs and related items}
+\title{Lite sample survey mesh and related items}
 \format{
 A list containing the same items as survey_mesh, but with fewer nodes to save on computational time
 }
@@ -11,6 +11,6 @@ A list containing the same items as survey_mesh, but with fewer nodes to save on
 survey_lite_mesh
 }
 \description{
-Lite sample survey meshs and related items
+Lite sample survey mesh and related items
 }
 \keyword{datasets}

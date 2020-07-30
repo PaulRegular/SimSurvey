@@ -29,7 +29,7 @@ mortality matrix.}
 
 \item{growth}{Closure, such as \code{\link{sim_vonB}}, for simulating length given age.
 The function is used here to generate a abundance-at-age matrix and
-it is carried foward for later use in \code{\link{sim_survey}} to simulate
+it is carried forward for later use in \code{\link{sim_survey}} to simulate
 lengths from survey catch at age.}
 }
 \value{

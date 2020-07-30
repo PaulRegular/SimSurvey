@@ -168,7 +168,7 @@ mortality matrix.</p></td>
       <th>growth</th>
       <td><p>Closure, such as <code><a href='sim_vonB.html'>sim_vonB</a></code>, for simulating length given age.
 The function is used here to generate a abundance-at-age matrix and
-it is carried foward for later use in <code><a href='sim_survey.html'>sim_survey</a></code> to simulate
+it is carried forward for later use in <code><a href='sim_survey.html'>sim_survey</a></code> to simulate
 lengths from survey catch at age.</p></td>
     </tr>
     </table>
@@ -739,39 +739,40 @@ distributions by length is yet to be implemented.</p>
 #&gt;    238 1.368159e-16 2.086015e-16 6.168301e-16 9.884353e-16 5.267194e-16
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x0000000026bc2428&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x00000000383855d8&gt;
 #&gt; </div><div class='input'><span class='fu'>sim_abundance</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
               <span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'><a href='sim_R.html'>sim_R</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>100000</span>, <span class='fl'>10</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>10000</span>, <span class='fl'>10</span>))), <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</div><div class='img'><img src='sim_abundance-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $ages
 #&gt;  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
@@ -1289,39 +1290,40 @@ distributions by length is yet to be implemented.</p>
 #&gt;    238 9.443391e-17 3.120222e-16 7.224645e-16 1.581137e-15 3.173698e-15
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x000000002585fb10&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x000000003718bd38&gt;
 #&gt; </div><div class='input'>
 <span class='no'>Z_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_R.html'>sim_Z</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>Z_fun</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>100</span>, <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)</div><div class='img'><img src='sim_abundance-3.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;     year
@@ -2169,39 +2171,40 @@ distributions by length is yet to be implemented.</p>
 #&gt;    238 8.640286e-14 8.966286e-14 9.161110e-14 7.381930e-14 6.589849e-14
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x000000003156bd50&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x0000000038cdb168&gt;
 #&gt; </div><div class='input'><span class='no'>Za_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.1</span>, <span class='fl'>0</span>, <span class='fl'>0.1</span>, <span class='fl'>0.2</span>, <span class='fl'>0.3</span>, <span class='fl'>0.3</span>, <span class='fl'>0.2</span>, <span class='fl'>0.1</span>, <span class='fl'>0</span>)
 <span class='no'>Zy_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>)
 <span class='no'>Z_mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/outer.html'>outer</a></span>(<span class='no'>Za_dev</span>, <span class='no'>Zy_dev</span>, <span class='st'>"+"</span>) + <span class='fl'>0.5</span>
@@ -2569,39 +2572,40 @@ distributions by length is yet to be implemented.</p>
 #&gt;    178 8.234391e-13 6.540025e-12 5.361399e-12 4.095330e-11 3.052185e-11
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x0000000030735898&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x000000003b967140&gt;
 #&gt; </div><div class='input'><span class='fu'>sim_abundance</span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
               <span class='kw'>Z</span> <span class='kw'>=</span> <span class='fu'><a href='sim_R.html'>sim_Z</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>Z_mat</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</div><div class='img'><img src='sim_abundance-6.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; $ages
 #&gt;  [1]  1  2  3  4  5  6  7  8  9 10
@@ -2954,39 +2958,40 @@ distributions by length is yet to be implemented.</p>
 #&gt;    178 1.161771e-14 7.963970e-14 4.649009e-13 3.328237e-12 3.270192e-12
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x000000002f9e0bb0&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x00000000399116c8&gt;
 #&gt; </div><div class='input'>
 <span class='no'>N0_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_R.html'>sim_N0</a></span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>N0_fun</span>(<span class='kw'>R0</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>Z0</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.5</span>, <span class='fl'>20</span>), <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)</div><div class='img'><img src='sim_abundance-7.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;  [1] 1.000000e+03 6.065307e+02 3.678794e+02 2.231302e+02 1.353353e+02
@@ -3508,39 +3513,40 @@ distributions by length is yet to be implemented.</p>
 #&gt;    238 2.222451e-16 2.740356e-16 4.735942e-16 1.387403e-15 3.291236e-15
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x000000002433ce78&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x0000000029f9b5e8&gt;
 #&gt; </div><div class='input'>
 <span class='no'>growth_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_vonB.html'>sim_vonB</a></span>(<span class='kw'>Linf</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>L0</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>K</span> <span class='kw'>=</span> <span class='fl'>0.2</span>, <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='fu'>growth_fun</span>(<span class='kw'>age</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>1</span>:<span class='fl'>15</span>, <span class='kw'>each</span> <span class='kw'>=</span> <span class='fl'>100</span>))</div><div class='img'><img src='sim_abundance-9.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;    [1]  24  22  23  23  23  22  23  22  22  22  22  25  22  22  22  22  22  21
@@ -4573,45 +4579,49 @@ distributions by length is yet to be implemented.</p>
 #&gt;    238 1.161917e-13 7.071332e-14 6.823313e-14 5.808633e-14 6.246406e-14
 #&gt; 
 #&gt; $sim_length
-#&gt; function (age = NULL, length_age_key = FALSE) 
-#&gt; {
+#&gt; function(age = NULL, length_age_key = FALSE) {
+#&gt; 
 #&gt;     pred_length &lt;- Linf - (Linf - L0) * exp(-K * age)
+#&gt; 
 #&gt;     if (length_age_key) {
-#&gt;         breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
-#&gt;         lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 
-#&gt;             1, dimnames = list(length = group_lengths(breaks, 
-#&gt;             length_group)[-length(breaks)], age = age))
-#&gt;         for (i in seq_along(breaks)[-1]) {
-#&gt;             for (j in seq_along(pred_length)) {
-#&gt;                 lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), 
-#&gt;                   log(pred_length[j]), sd = log_sd) - stats::pnorm(log(breaks[i - 
-#&gt;                   1]), log(pred_length[j]), sd = log_sd)
-#&gt;             }
+#&gt; 
+#&gt;       breaks &lt;- seq(0, ceiling(max(pred_length)) * 10, length_group)
+#&gt;       lak &lt;- matrix(NA, ncol = length(pred_length), nrow = length(breaks) - 1,
+#&gt;                     dimnames = list(length = group_lengths(breaks, length_group)[-length(breaks)],
+#&gt;                                     age = age))
+#&gt;       for (i in seq_along(breaks)[-1]) {
+#&gt;         for (j in seq_along(pred_length)) {
+#&gt;           lak[i - 1, j] &lt;- stats::pnorm(log(breaks[i]), log(pred_length[j]), sd = log_sd) -
+#&gt;             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
 #&gt;         }
-#&gt;         lak &lt;- lak[rowSums(lak) &gt; 0, ]
-#&gt;         if (plot) 
-#&gt;             image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), 
-#&gt;                 z = t(lak), xlab = "Age", ylab = "Length", main = "P(Length | Age)", 
-#&gt;                 col = viridis::viridis(100))
-#&gt;         return(lak)
+#&gt;       }
+#&gt;       lak &lt;- lak[rowSums(lak) &gt; 0, ]
+#&gt;       if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+#&gt;                       xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+#&gt;                       col = viridis::viridis(100))
+#&gt;       return(lak)
+#&gt; 
+#&gt;     } else {
+#&gt; 
+#&gt;       log_length &lt;- stats::rnorm(length(age), log(pred_length), sd = log_sd)
+#&gt;       length &lt;- round(exp(log_length), digits)
+#&gt;       if (plot) plot(age, length)
+#&gt;       return(length)
+#&gt; 
 #&gt;     }
-#&gt;     else {
-#&gt;         log_length &lt;- stats::rnorm(length(age), log(pred_length), 
-#&gt;             sd = log_sd)
-#&gt;         length &lt;- round(exp(log_length), digits)
-#&gt;         if (plot) 
-#&gt;             plot(age, length)
-#&gt;         return(length)
-#&gt;     }
-#&gt; }
-#&gt; &lt;bytecode: 0x0000000025af02b0&gt;
-#&gt; &lt;environment: 0x00000000179611f0&gt;
+#&gt; 
+#&gt;   }
+#&gt; &lt;bytecode: 0x0000000036d6a348&gt;
+#&gt; &lt;environment: 0x0000000038a7cf18&gt;
 #&gt; </div><div class='input'>
 <span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_abundance</span>()
-<span class='fu'><a href='plot_trend.html'>plot_trend</a></span>(<span class='no'>sim</span>)
-<span class='fu'><a href='plot_trend.html'>plot_surface</a></span>(<span class='no'>sim</span>, <span class='kw'>mat</span> <span class='kw'>=</span> <span class='st'>"N"</span>)
+<span class='fu'><a href='plot_trend.html'>plot_trend</a></span>(<span class='no'>sim</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: `arrange_()` is deprecated as of dplyr 0.7.0.</span>
+#&gt; <span class='warning'>Please use `arrange()` instead.</span>
+#&gt; <span class='warning'>See vignette('programming') for more help</span>
+#&gt; <span class='warning'><span style='color: #555555;'>This warning is displayed once every 8 hours.</span><span></span>
+#&gt; <span class='warning'></span><span style='color: #555555;'>Call `lifecycle::last_warnings()` to see where this warning was generated.</span><span></span></div><div class='input'><span class='fu'><a href='plot_trend.html'>plot_surface</a></span>(<span class='no'>sim</span>, <span class='kw'>mat</span> <span class='kw'>=</span> <span class='st'>"N"</span>)
 <span class='fu'><a href='plot_trend.html'>plot_surface</a></span>(<span class='no'>sim</span>, <span class='kw'>mat</span> <span class='kw'>=</span> <span class='st'>"Z"</span>)
-<span class='fu'><a href='plot_trend.html'>plot_surface</a></span>(<span class='no'>sim</span>, <span class='kw'>mat</span> <span class='kw'>=</span> <span class='st'>"N_at_length"</span>, <span class='kw'>xlab</span> <span class='kw'>=</span> <span class='st'>"Length"</span>, <span class='kw'>zlab</span> <span class='kw'>=</span> <span class='st'>"N"</span>)</div></pre>
+<span class='fu'><a href='plot_trend.html'>plot_surface</a></span>(<span class='no'>sim</span>, <span class='kw'>mat</span> <span class='kw'>=</span> <span class='st'>"N_at_length"</span>, <span class='kw'>xlab</span> <span class='kw'>=</span> <span class='st'>"Length"</span>, <span class='kw'>zlab</span> <span class='kw'>=</span> <span class='st'>"N"</span>)</div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

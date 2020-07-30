@@ -20,7 +20,7 @@ sim_N0(N0 = "exp", plot = FALSE)
 }
 \arguments{
 \item{log_mean}{One mean value or a vector of means, in log scale, of length equal to years for \code{sim_R} or a matrix of means with
-rows equaling the number of ages and colums equaling the number of years for \code{sim_Z}.}
+rows equaling the number of ages and columns equaling the number of years for \code{sim_Z}.}
 
 \item{log_sd}{Standard deviation of the variable in the log scale.}
 
