@@ -47,7 +47,8 @@ vis_sim <- function(sim, ...) {
     ans <- readline(prompt = "are you sure you want to revert to plotly version 4.8? ")
     if (substr(ans, 1, 1) == "y") {
       utils::remove.packages("plotly")
-      devtools::install_version("plotly", version = "4.8.0", repos = "http://cran.us.r-project.org")
+      pkg_url <- "https://cran.r-project.org/src/contrib/Archive/plotly/plotly_4.8.0.tar.gz"
+      utils::install.packages(pkg_url, repos = NULL, type = "source")
     } else {
       stop("plotly version 4.8 is required.")
     }
