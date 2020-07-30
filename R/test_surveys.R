@@ -173,9 +173,9 @@ resume_test <- function(export_dir = NULL, ...) {
 
     for (i in incomplete) {
 
-      cl <- makeCluster(cores) # use parallel computation
-      registerDoParallel(cl)
-      loop_error <- foreach(j = seq(n_loops), .packages = "SimSurvey") %dopar% {
+      cl <- parallel::makeCluster(cores) # use parallel computation
+      doParallel::registerDoParallel(cl, cores = cores)
+      loop_error <- foreach::foreach(j = seq(n_loops), .packages = "SimSurvey") %dopar% {
                               res <- sim_survey(sim, n_sims = n_sims,
                                                 set_den = surveys$set_den[i],
                                                 lengths_cap = surveys$lengths_cap[i],
@@ -197,7 +197,7 @@ resume_test <- function(export_dir = NULL, ...) {
                                    length_strat_error = length_strat_error,
                                    age_strat_error = age_strat_error)
                             }
-      stopCluster(cl) # stop parallel process
+      parallel::stopCluster(cl) # stop parallel process
 
       samp_totals_i <- data.table::rbindlist(lapply(loop_error, `[[`, "samp_totals"))
       total_strat_error_i <- data.table::rbindlist(lapply(loop_error, `[[`, "total_strat_error"))
