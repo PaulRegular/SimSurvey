@@ -6,25 +6,23 @@
 ## R CMD check results
 > On windows-x86_64-devel (r-devel), ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
   checking CRAN incoming feasibility ... NOTE
-  Maintainer: 'Paul Regular <Paul.Regular@dfo-mpo.gc.ca>'
   
-  New submission
   
-  Possibly mis-spelled words in DESCRIPTION:
-    al (17:21)
-    et (17:18)
+  
+  Suggests or Enhances not in mainstream repositories:
     INLA
   Availability using Additional_repositories specification:
-  
     INLA   yes   https://inla.r-inla-download.org/R/stable/
-  Suggests or Enhances not in mainstream repositories:
+    et (17:18)
+  Possibly mis-spelled words in DESCRIPTION:
+  Maintainer: 'Paul Regular <Paul.Regular@dfo-mpo.gc.ca>'
+  New submission
+    al (17:21)
 
-> On windows-x86_64-devel (r-devel), ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
+> On ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
   checking examples ... NOTE
-  Examples with CPU (user + system) or elapsed time > 5s
-               user system elapsed
-  run_strat   11.63   0.36   11.60
-  strat_error 10.25   0.46   10.25
-  make_grid    5.69   0.08    5.75
+  Examples with CPU or elapsed time > 5s
+              user system elapsed
+  sim_survey 7.481  0.085   7.488
 
 0 errors √ | 0 warnings √ | 2 notes x

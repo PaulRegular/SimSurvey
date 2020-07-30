@@ -99,6 +99,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -151,12 +154,12 @@ survey along with stratified analysis results)</p></td>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>,
+<span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>,
                      <span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'><a href='sim_R.html'>sim_R</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1e+7</span>)),
                      <span class='kw'>growth</span> <span class='kw'>=</span> <span class='fu'><a href='sim_vonB.html'>sim_vonB</a></span>(<span class='kw'>length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>)) <span class='kw'>%&gt;%</span>
            <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)),
                             <span class='kw'>ays_covar</span> <span class='kw'>=</span> <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(<span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>)) <span class='kw'>%&gt;%</span>
-           <span class='fu'><a href='sim_survey.html'>sim_survey</a></span>(<span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(<span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='fl'>3</span>)) <span class='kw'>%&gt;%</span>
+           <span class='fu'><a href='sim_survey.html'>sim_survey</a></span>(<span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(<span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='fl'>3</span>)) <span class='kw'>%&gt;%</span>
            <span class='fu'><a href='run_strat.html'>run_strat</a></span>() <span class='kw'>%&gt;%</span>
            <span class='fu'>strat_error</span>()</div></pre>
   </div>

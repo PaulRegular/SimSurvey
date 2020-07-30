@@ -48,7 +48,7 @@ deep portion. Adding covariance to the depth simulation is an option.
 }
 \examples{
 
-r <- make_grid()
+r <- make_grid(res = c(10, 10))
 raster::plot(r)
 
 p <- raster::rasterToPolygons(r$strat, dissolve = TRUE)

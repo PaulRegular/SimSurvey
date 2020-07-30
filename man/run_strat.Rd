@@ -43,12 +43,12 @@ The \code{"strat_data_fun"} and \code{"strat_means_fun"} allow the use of custom
 }
 \examples{
 
-sim <- sim_abundance(ages = 1:10, years = 1:5,
+sim <- sim_abundance(ages = 1:5, years = 1:5,
                      R = sim_R(log_mean = log(1e+7)),
                      growth = sim_vonB(length_group = 1)) \%>\%
            sim_distribution(grid = make_grid(res = c(10, 10)),
                             ays_covar = sim_ays_covar(sd = 1)) \%>\%
-           sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3)) \%>\%
+           sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) \%>\%
            run_strat()
 
 }

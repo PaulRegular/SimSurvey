@@ -135,9 +135,9 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 #' @examples
 #'
-#' sim <- sim_abundance(ages = 1:20, years = 1:5) %>%
+#' sim <- sim_abundance(ages = 1:10, years = 1:5) %>%
 #'            sim_distribution(grid = make_grid(res = c(10, 10))) %>%
-#'            sim_survey(n_sims = 10, q = sim_logistic(k = 2, x0 = 3))
+#'            sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
 #' plot_survey(sim, which_year = 2, which_sim = 1)
 #'
 #' @export

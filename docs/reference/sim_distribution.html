@@ -101,6 +101,9 @@ of the population. The ability to simulate distributions by length is yet to be 
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -188,13 +191,13 @@ abundance in a large grid across many ages and years - start small first.</p>
                                                       <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.1</span>),
                             <span class='kw'>depth_par</span> <span class='kw'>=</span> <span class='fu'><a href='sim_parabola.html'>sim_parabola</a></span>(<span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>200</span>,
                                                      <span class='kw'>sigma</span> <span class='kw'>=</span> <span class='fl'>50</span>))
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sim</span>$<span class='no'>sp_N</span>)</div><div class='output co'>#&gt;    age year cell          N
-#&gt; 1:   1    1    1 41.5837143
-#&gt; 2:   2    1    1  0.6543435
-#&gt; 3:   3    1    1  0.4501173
-#&gt; 4:   4    1    1 13.6568484
-#&gt; 5:   5    1    1  0.3168045
-#&gt; 6:   6    1    1  0.1946551</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sim</span>$<span class='no'>grid_xy</span>)</div><div class='output co'>#&gt;       x   y depth cell division strat
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sim</span>$<span class='no'>sp_N</span>)</div><div class='output co'>#&gt;    age year cell            N
+#&gt; 1:   1    1    1 1.444270e-01
+#&gt; 2:   2    1    1 1.658102e-02
+#&gt; 3:   3    1    1 9.899707e-04
+#&gt; 4:   4    1    1 4.229607e+01
+#&gt; 5:   5    1    1 1.076753e+01
+#&gt; 6:   6    1    1 6.504473e+00</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sim</span>$<span class='no'>grid_xy</span>)</div><div class='output co'>#&gt;       x   y depth cell division strat
 #&gt; 1: -135 135    38    1        1     1
 #&gt; 2: -125 135   106    2        1     2
 #&gt; 3: -115 135   155    3        1     3
