@@ -41,12 +41,12 @@ vis_sim <- function(sim, ...) {
       stop(paste(p, "is needed for vis_fit to work. Please install it."), call. = FALSE)
     }
   }
-  if (packageVersion("plotly") > "4.8") {
+  if (utils::packageVersion("plotly") > "4.8") {
     message("Warning: plots will not render correctly in the dashboard using a version of plotly > 4.8.")
     ans <- readline(prompt = "Press [enter] to revert to version 4.8 or [esc] to abort. ")
     ans <- readline(prompt = "are you sure you want to revert to plotly version 4.8? ")
     if (substr(ans, 1, 1) == "y") {
-      remove.packages("plotly")
+      utils::remove.packages("plotly")
       devtools::install_version("plotly", version = "4.8.0", repos = "http://cran.us.r-project.org")
     } else {
       stop("plotly version 4.8 is required.")
