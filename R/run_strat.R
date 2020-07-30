@@ -35,6 +35,9 @@ error_stats <- function(error) {
 
 strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 
+  n_measured <- n_aged <- n <- n_lengths <- ratio <- length_freq <- age_tot <- age_freq <-
+    age_prop <- age <- NULL
+
   ## Extract setdet and samp objects, and add sim and year to samp data
   setdet <- sim$setdet
   samp <- sim$samp
@@ -126,6 +129,10 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 
 strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
                         survey_groups = NULL, confidence = 95) {
+
+  Nh <- strat_area <- tow_area <- Wh <- total <- sumYh <- nh <- gh <- meanYh <- varYh <-
+    meanYst_lcl <- meanYst <- varYst <- df <- meanYst_ucl <- sumYst <- N <- sumYst_lcl <-
+    sumYst_ucl <- NULL
 
   ## set-up
   lc <- (100 - confidence) / 200
@@ -278,6 +285,8 @@ run_strat <- function(sim,
 #'
 
 strat_error <- function(sim) {
+
+  total <- age <- NULL
 
   ## total_strat
   I_hat <- sim$total_strat[, list(sim, year, total)]

@@ -1,18 +1,21 @@
 Package: SimSurvey
 Type: Package
-Title: A tool for the simulation testing of the design and analysis of
-    fisheries-independent trawl surveys
+Title: A Tool for Comparing the Design and Analysis of Surveys by Simulating 
+    Spatially-Correlated Populations
 Version: 0.1.1
-Authors@R: as.person(c(
-            "Paul Regular <Paul.Regular@dfo-mpo.gc.ca> [aut, cre]",
-            "Jonathan Babyn <Jonathan.Babyn@dfo-mpo.gc.ca> [ctb]",
-            "Greg Robertson <Greg.Robertson@dfo-mpo.gc.ca> [ctb]"
-          ))
+Authors@R: c(
+    person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca", 
+    role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0318-2615")),
+    person("Jonathan", "Babyn", email = "Jonathan.Babyn@dfo-mpo.gc.ca", 
+    role = "ctb"),
+    person("Greg", "Robertson", email = "Greg.Robertson@dfo-mpo.gc.ca", 
+    role = "ctb"))
 Maintainer: Paul Regular <Paul.Regular@dfo-mpo.gc.ca>
-Description: This package simulates stratified-random samples from 
-    a spatially-correlated age-structured population to provide a tool for the 
-    simulation testing of the design and analyses of fisheries-independent trawl
-    surveys.
+Description: Simulate age-structured populations that vary in space and time and 
+    explore the efficacy of a range of built-in or user-defined sampling 
+    protocols to reproduce the population parameters of the known population. 
+    (See Regular et al. (2020) <doi.org/10.1371/journal.pone.0232822> for more
+    details).
 Depends:
     R (>= 3.3.0)
 License: GPL-3 | file LICENSE
@@ -32,7 +35,8 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    plotly
+    plotly,
+    rlang
 Suggests:
     fields,
     rmarkdown,

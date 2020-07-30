@@ -30,7 +30,7 @@ make_grid(
 
 \item{depth_range}{Range (min depth, max depth) in depth in m}
 
-\item{n_div}{Number of divisions to iniclude}
+\item{n_div}{Number of divisions to include}
 
 \item{strat_breaks}{Define strata given these depth breaks}
 

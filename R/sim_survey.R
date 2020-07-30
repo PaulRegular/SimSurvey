@@ -63,6 +63,8 @@ round_sim <- function(sim) {
 sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
                      min_sets = 2, set_den = 2 / 1000, resample_cells = FALSE) {
 
+  strat_sets <- cell_sets <- NULL
+
   ## Strat area and sampling effort
   cells <- data.table(rasterToPoints(sim$grid))
   strat_det <- cells[, list(strat_cells = .N), by = "strat"]
@@ -147,6 +149,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                        ages_cap = 10, age_sampling = "stratified",
                        age_length_group = 1, age_space_group = "division",
                        light = TRUE) {
+
+  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- NULL
 
   ## Couple error traps
   if (!age_sampling %in% c("stratified", "random")) {
@@ -289,6 +293,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 
 sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
                                 cores = 1, quiet = FALSE, ...) {
+
+  j <- loop <- new_set <- NULL
 
   start <- Sys.time()
   one_res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)

@@ -18,7 +18,7 @@ test_surveys(
   ...
 )
 
-resume_test(export_dir = NULL)
+resume_test(export_dir = NULL, ...)
 }
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}.}
@@ -93,7 +93,9 @@ Depening on the settings, \code{test_surveys} may take a long time to run.
 The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
 Note that progress bar time estimates will be biased here by previous completions.
 \code{test_loop} is a helper function used in both \code{test_surveys} and
-\code{resume_test}.
+\code{resume_test}. CAUTION: while the dots construct is available in the \code{resume_test}
+function, be careful adding arguments as it will change the simulation settings
+if the arguments added were not specified in the initial \code{test_surveys} run.
 }
 \examples{
 
