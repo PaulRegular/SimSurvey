@@ -1,7 +1,6 @@
 Package: SimSurvey
 Type: Package
-Title: A Tool for Comparing the Design and Analysis of Surveys by Simulating 
-    Spatially-Correlated Populations
+Title: Test Surveys by Simulating Spatially-Correlated Populations
 Version: 0.1.1
 Authors@R: c(
     person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca", 

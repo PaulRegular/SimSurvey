@@ -48,7 +48,7 @@ generate the error term.
 \examples{
 
 ##SPDE Approach
-\dontrun{
+\donttest{
 ##Make a grid
 MyGrid <- make_grid(res = c(10,10))
 ##Make a mesh based off it

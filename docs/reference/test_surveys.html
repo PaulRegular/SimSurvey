@@ -248,8 +248,8 @@ function, be careful adding arguments as it will change the simulation settings
 if the arguments added were not specified in the initial <code>test_surveys</code> run.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+    <pre class="examples">
+<span class='co'># \donttest{</span>
 <span class='no'>pop</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>) <span class='kw'>%&gt;%</span>
            <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)))
 
@@ -284,7 +284,7 @@ if the arguments added were not specified in the initial <code>test_surveys</cod
 <span class='fu'><a href='plot_trend.html'>plot_survey_rank</a></span>(<span class='no'>tests</span>, <span class='kw'>which_strat</span> <span class='kw'>=</span> <span class='st'>"length"</span>)
 <span class='fu'><a href='plot_trend.html'>plot_survey_rank</a></span>(<span class='no'>tests</span>, <span class='kw'>which_strat</span> <span class='kw'>=</span> <span class='st'>"age"</span>)
 
-}</div></pre>
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -215,8 +215,8 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
     <p><code><a href='sim_survey.html'>sim_survey</a></code> is hard-wired here to be "light" to minimize object size.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+    <pre class="examples">
+<span class='co'># \donttest{</span>
 <span class='co'>## This call runs a total of 100 simulations of the same survey over</span>
 <span class='co'>## the same population</span>
 <span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>) <span class='kw'>%&gt;%</span>
@@ -224,7 +224,7 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
            <span class='fu'>sim_survey_parallel</span>(<span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>n_loops</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
                                <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(<span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='fl'>3</span>),
                                <span class='kw'>quiet</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
-}</div></pre>
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

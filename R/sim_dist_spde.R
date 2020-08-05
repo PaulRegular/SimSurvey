@@ -61,7 +61,7 @@
 #' @examples
 #'
 #' ##SPDE Approach
-#' \dontrun{
+#' \donttest{
 #' ##Make a grid
 #' MyGrid <- make_grid(res = c(10,10))
 #' ##Make a mesh based off it
@@ -205,7 +205,7 @@ sim_ays_covar_spde <- function(sd = 2.8,range = 300,model = "barrier",phi_age = 
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #' basic_mesh <- make_mesh()
 #' plot(basic_mesh)
 #' }

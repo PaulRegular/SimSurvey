@@ -17,7 +17,7 @@ Assumes the working directory is the project directory
 }
 \examples{
 
-\dontrun{
+\donttest{
 
 pop <- sim_abundance(ages = 1:20, years = 1:20)
 vis_sim(pop)

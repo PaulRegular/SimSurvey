@@ -277,7 +277,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #' ## This call runs a total of 100 simulations of the same survey over
 #' ## the same population
 #' sim <- sim_abundance(ages = 1:20, years = 1:5) %>%

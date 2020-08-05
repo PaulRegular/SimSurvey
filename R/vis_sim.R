@@ -8,7 +8,7 @@
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #'
 #' pop <- sim_abundance(ages = 1:20, years = 1:20)
 #' vis_sim(pop)
@@ -42,16 +42,7 @@ vis_sim <- function(sim, ...) {
     }
   }
   if (utils::packageVersion("plotly") > "4.8") {
-    message("Warning: plots will not render correctly in the dashboard using a version of plotly > 4.8.")
-    ans <- readline(prompt = "Press [enter] to revert to version 4.8 or [esc] to abort. ")
-    ans <- readline(prompt = "are you sure you want to revert to plotly version 4.8? ")
-    if (substr(ans, 1, 1) == "y") {
-      utils::remove.packages("plotly")
-      pkg_url <- "https://cran.r-project.org/src/contrib/Archive/plotly/plotly_4.8.0.tar.gz"
-      utils::install.packages(pkg_url, repos = NULL, type = "source")
-    } else {
-      stop("plotly version 4.8 is required.")
-    }
+    stop('Plots will not render correctly in the dashboard using a version of plotly > 4.8. Plotly 4.8.0 can be instaled using the following line: install.packages("https://cran.r-project.org/src/contrib/Archive/plotly/plotly_4.8.0.tar.gz", repos = NULL, type = "source")')
   }
 
   ## save this object to load in vis_sim.Rmd

@@ -71,7 +71,7 @@ alternate approaches to a stratified analysis for obtaining survey indices.
 }
 \examples{
 
-\dontrun{
+\donttest{
 ## This call runs a total of 100 simulations of the same survey over
 ## the same population
 sim <- sim_abundance(ages = 1:20, years = 1:5) \%>\%

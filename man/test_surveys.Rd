@@ -99,7 +99,7 @@ if the arguments added were not specified in the initial \code{test_surveys} run
 }
 \examples{
 
-\dontrun{
+\donttest{
 pop <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
            sim_distribution(grid = make_grid(res = c(10, 10)))
 

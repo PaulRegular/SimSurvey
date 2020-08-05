@@ -65,7 +65,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #' pop <- sim_abundance(ages = 1:20, years = 1:5) %>%
 #'            sim_distribution(grid = make_grid(res = c(10, 10)))
 #'
