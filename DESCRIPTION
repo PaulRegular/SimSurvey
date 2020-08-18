@@ -17,7 +17,7 @@ Description: Simulate age-structured populations that vary in space and time and
     details).
 Depends:
     R (>= 3.3.0)
-License: GPL-3 | file LICENSE
+License: GPL-3
 Additional_repositories: https://inla.r-inla-download.org/R/stable/
 LazyData: true
 ByteCompile: true

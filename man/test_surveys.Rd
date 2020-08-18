@@ -15,6 +15,7 @@ test_surveys(
   export_dir = NULL,
   length_group = "inherit",
   alk_scale = "division",
+  progress = TRUE,
   ...
 )
 
@@ -53,6 +54,8 @@ as true vs. estimated length groupings will be mismatched.}
 
 \item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
 "division" or "strat".}
+
+\item{progress}{Display progress bar and messages?}
 
 \item{...}{
   Arguments passed on to \code{\link[=sim_survey]{sim_survey}}

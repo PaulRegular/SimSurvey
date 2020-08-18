@@ -44,6 +44,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @param export_dir        Directory for exporting results as they are generated. Main use of the export
 #'                          is to allow this process to pick up where \code{test_survey} left off by
 #'                          calling \code{resume_test}. If NULL, nothing is exported.
+#' @param progress          Display progress bar and messages?
 #' @inherit                 run_strat
 #' @inheritDotParams        sim_survey -sim -n_sims -set_den -lengths_cap -ages_cap -light
 #'
@@ -112,7 +113,8 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 
 test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
                          n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,
-                         length_group = "inherit", alk_scale = "division", ...) {
+                         length_group = "inherit", alk_scale = "division",
+                         progress = TRUE, ...) {
 
   if (!is.null(export_dir)) {
     save(list = ls(all.names = TRUE),
@@ -121,7 +123,8 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
   .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
              complete = NULL, keep_details = keep_details,
-             length_group = length_group, alk_scale = alk_scale, ...)
+             length_group = length_group, alk_scale = alk_scale,
+             progress = progress, ...)
 
 }
 
@@ -130,13 +133,15 @@ test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
 #' @rdname test_surveys
 resume_test <- function(export_dir = NULL, ...) {
   sim <- surveys <- n_sims <- n_loops <- cores <-
-    complete <- keep_details <- length_group <- alk_scale <- NULL
+    complete <- keep_details <- length_group <- alk_scale <-
+    progress <- NULL
   load(file.path(export_dir, "test_inputs.RData"))
   load(file.path(export_dir, "complete.RData"))
   .test_loop(sim = sim, surveys = surveys, n_sims = n_sims,
              n_loops = n_loops, cores = cores, export_dir = export_dir,
              complete = complete, keep_details = keep_details,
-             length_group = length_group, alk_scale = alk_scale, ...)
+             length_group = length_group, alk_scale = alk_scale,
+             progress = progress, ...)
 }
 
 
@@ -145,7 +150,8 @@ resume_test <- function(export_dir = NULL, ...) {
 .test_loop <- function(sim = NULL, surveys = NULL, n_sims = NULL,
                        n_loops = NULL, cores = NULL, export_dir = NULL,
                        complete = NULL, keep_details = NULL,
-                       length_group = NULL, alk_scale = NULL, ...) {
+                       length_group = NULL, alk_scale = NULL, progress = NULL,
+                       ...) {
 
   j <- error <- NULL
 
@@ -165,11 +171,13 @@ resume_test <- function(export_dir = NULL, ...) {
 
     incomplete <- which(!complete)
 
-    cat("\nRunning simulations...\n")
-    pb <- progress::progress_bar$new(
-      format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
-      total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
-    invisible(pb$tick(min(incomplete) - 1))
+    if (progress) {
+      message("\nRunning simulations...\n")
+      pb <- progress::progress_bar$new(
+        format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
+        total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
+      invisible(pb$tick(min(incomplete) - 1))
+    }
 
     for (i in incomplete) {
 
@@ -222,18 +230,20 @@ resume_test <- function(export_dir = NULL, ...) {
         save(complete, file = file.path(export_dir, "complete.RData"))
       }
 
-      pb$tick()
+      if (progress) pb$tick()
 
     }
 
   }
 
   ## Compile results
-  cat("\nCompiling results...\n")
+  if (progress) message("\nCompiling results...\n")
   if (!is.null(export_dir)) {
-    pb <- progress::progress_bar$new(
-      format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
-      total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
+    if (progress) {
+      pb <- progress::progress_bar$new(
+        format = "Survey :current of :total [:bar] :percent in :elapsed (eta: :eta)",
+        total = nrow(surveys), clear = FALSE, show_after = 0, width = 100)
+    }
     for (i in seq(nrow(surveys))) {
       samp_totals[[i]] <- data.table::fread(file.path(export_dir, "samp_totals", paste0(i, ".csv")),
                                             verbose = FALSE, showProgress = FALSE)
@@ -243,7 +253,7 @@ resume_test <- function(export_dir = NULL, ...) {
                                                    verbose = FALSE, showProgress = FALSE)
       age_strat_error[[i]] <- data.table::fread(file.path(export_dir, "age_strat_error", paste0(i, ".csv")),
                                                 verbose = FALSE, showProgress = FALSE)
-      pb$tick()
+      if (progress) pb$tick()
     }
   }
   sim$surveys <- data.table::data.table(surveys)
