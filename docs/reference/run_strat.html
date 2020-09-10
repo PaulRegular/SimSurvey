@@ -133,11 +133,11 @@
     </div>
 
     <pre class="usage"><span class='fu'>run_strat</span>(
-  <span class='no'>sim</span>,
-  <span class='kw'>length_group</span> <span class='kw'>=</span> <span class='st'>"inherit"</span>,
-  <span class='kw'>alk_scale</span> <span class='kw'>=</span> <span class='st'>"division"</span>,
-  <span class='kw'>strat_data_fun</span> <span class='kw'>=</span> <span class='no'>strat_data</span>,
-  <span class='kw'>strat_means_fun</span> <span class='kw'>=</span> <span class='no'>strat_means</span>
+  <span class='kw'>sim</span>,
+  length_group = <span class='st'>"inherit"</span>,
+  alk_scale = <span class='st'>"division"</span>,
+  strat_data_fun = <span class='kw'>strat_data</span>,
+  strat_means_fun = <span class='kw'>strat_means</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -183,13 +183,15 @@ as true vs. estimated length groupings will be mismatched.</p></td>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples">
-<span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>,
-                     <span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'><a href='sim_R.html'>sim_R</a></span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1e+7</span>)),
-                     <span class='kw'>growth</span> <span class='kw'>=</span> <span class='fu'><a href='sim_vonB.html'>sim_vonB</a></span>(<span class='kw'>length_group</span> <span class='kw'>=</span> <span class='fl'>1</span>)) <span class='kw'>%&gt;%</span>
-           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)),
-                            <span class='kw'>ays_covar</span> <span class='kw'>=</span> <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(<span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>)) <span class='kw'>%&gt;%</span>
-           <span class='fu'><a href='sim_survey.html'>sim_survey</a></span>(<span class='kw'>n_sims</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(<span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='fl'>3</span>)) <span class='kw'>%&gt;%</span>
-           <span class='fu'>run_strat</span>()</pre>
+<span class='kw'>sim</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>, years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>,
+                     R = <span class='fu'><a href='sim_R.html'>sim_R</a></span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1e+7</span>)),
+                     growth = <span class='fu'><a href='sim_vonB.html'>sim_vonB</a></span>(length_group = <span class='fl'>1</span>)) <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(grid = <span class='fu'><a href='make_grid.html'>make_grid</a></span>(res = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)),
+                            ays_covar = <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(sd = <span class='fl'>1</span>)) <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='sim_survey.html'>sim_survey</a></span>(n_sims = <span class='fl'>1</span>, q = <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(k = <span class='fl'>2</span>, x0 = <span class='fl'>3</span>)) <span class='op'>%&gt;%</span>
+           <span class='fu'>run_strat</span>()
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -205,7 +207,7 @@ as true vs. estimated length groupings will be mismatched.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

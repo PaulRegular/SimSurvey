@@ -134,17 +134,17 @@ Given parameters, it generates N0, R and Z values." />
 Given parameters, it generates N0, R and Z values.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sim_R</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>3e+07</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>random_walk</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+    <pre class="usage"><span class='fu'>sim_R</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>3e+07</span>), log_sd = <span class='fl'>0.5</span>, random_walk = <span class='fl'>TRUE</span>, plot = <span class='fl'>FALSE</span>)
 
 <span class='fu'>sim_Z</span>(
-  <span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>),
-  <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.2</span>,
-  <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
-  <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.5</span>,
-  <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+  log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>),
+  log_sd = <span class='fl'>0.2</span>,
+  phi_age = <span class='fl'>0.9</span>,
+  phi_year = <span class='fl'>0.5</span>,
+  plot = <span class='fl'>FALSE</span>
 )
 
-<span class='fu'>sim_N0</span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+<span class='fu'>sim_N0</span>(N0 = <span class='st'>"exp"</span>, plot = <span class='fl'>FALSE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -194,26 +194,28 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples">
-<span class='no'>R_fun</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_R</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>100000</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>random_walk</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'>R_fun</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>100</span>)
-<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'>sim_R</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>100000</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.5</span>))
-<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
-              <span class='kw'>R</span> <span class='kw'>=</span> <span class='fu'>sim_R</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>100000</span>, <span class='fl'>10</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>10000</span>, <span class='fl'>10</span>))), <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))
+<span class='kw'>R_fun</span> <span class='op'>&lt;-</span> <span class='fu'>sim_R</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>100000</span>), log_sd = <span class='fl'>0.1</span>, random_walk = <span class='fl'>TRUE</span>, plot = <span class='fl'>TRUE</span>)
+<span class='fu'>R_fun</span>(years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span>)
+<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(R = <span class='fu'>sim_R</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>100000</span>), log_sd = <span class='fl'>0.5</span>))
+<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>,
+              R = <span class='fu'>sim_R</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>100000</span>, <span class='fl'>10</span>), <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>10000</span>, <span class='fl'>10</span>))), plot = <span class='fl'>TRUE</span>))
 
-<span class='no'>Z_fun</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_Z</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'>Z_fun</span>(<span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>100</span>, <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)
-<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>Z</span> <span class='kw'>=</span> <span class='fu'>sim_Z</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))
-<span class='no'>Za_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.1</span>, <span class='fl'>0</span>, <span class='fl'>0.1</span>, <span class='fl'>0.2</span>, <span class='fl'>0.3</span>, <span class='fl'>0.3</span>, <span class='fl'>0.2</span>, <span class='fl'>0.1</span>, <span class='fl'>0</span>)
-<span class='no'>Zy_dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, -<span class='fl'>0.2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>)
-<span class='no'>Z_mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/outer.html'>outer</a></span>(<span class='no'>Za_dev</span>, <span class='no'>Zy_dev</span>, <span class='st'>"+"</span>) + <span class='fl'>0.5</span>
-<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
-              <span class='kw'>Z</span> <span class='kw'>=</span> <span class='fu'>sim_Z</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>Z_mat</span>), <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))
-<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>,
-              <span class='kw'>Z</span> <span class='kw'>=</span> <span class='fu'>sim_Z</span>(<span class='kw'>log_mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>Z_mat</span>), <span class='kw'>log_sd</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))
+<span class='kw'>Z_fun</span> <span class='op'>&lt;-</span> <span class='fu'>sim_Z</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), log_sd = <span class='fl'>0.1</span>, phi_age = <span class='fl'>0.9</span>, phi_year = <span class='fl'>0.9</span>, plot = <span class='fl'>TRUE</span>)
+<span class='fu'>Z_fun</span>(years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span>, ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>)
+<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(Z = <span class='fu'>sim_Z</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>0.5</span>), log_sd = <span class='fl'>0.1</span>, plot = <span class='fl'>TRUE</span>))
+<span class='kw'>Za_dev</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='op'>-</span><span class='fl'>0.2</span>, <span class='op'>-</span><span class='fl'>0.1</span>, <span class='fl'>0</span>, <span class='fl'>0.1</span>, <span class='fl'>0.2</span>, <span class='fl'>0.3</span>, <span class='fl'>0.3</span>, <span class='fl'>0.2</span>, <span class='fl'>0.1</span>, <span class='fl'>0</span>)
+<span class='kw'>Zy_dev</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='op'>-</span><span class='fl'>0.2</span>, <span class='op'>-</span><span class='fl'>0.2</span>, <span class='op'>-</span><span class='fl'>0.2</span>, <span class='op'>-</span><span class='fl'>0.2</span>, <span class='op'>-</span><span class='fl'>0.2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0.2</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>, <span class='fl'>0</span>)
+<span class='kw'>Z_mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/outer.html'>outer</a></span>(<span class='kw'>Za_dev</span>, <span class='kw'>Zy_dev</span>, <span class='st'>"+"</span>) <span class='op'>+</span> <span class='fl'>0.5</span>
+<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>, years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>,
+              Z = <span class='fu'>sim_Z</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='kw'>Z_mat</span>), plot = <span class='fl'>TRUE</span>))
+<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>, years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>,
+              Z = <span class='fu'>sim_Z</span>(log_mean = <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='kw'>Z_mat</span>), log_sd = <span class='fl'>0</span>, phi_age = <span class='fl'>0</span>, phi_year = <span class='fl'>0</span>, plot = <span class='fl'>TRUE</span>))
 
-<span class='no'>N0_fun</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_N0</span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'>N0_fun</span>(<span class='kw'>R0</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>Z0</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.5</span>, <span class='fl'>20</span>), <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>20</span>)
-<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='fu'>sim_N0</span>(<span class='kw'>N0</span> <span class='kw'>=</span> <span class='st'>"exp"</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))</pre>
+<span class='kw'>N0_fun</span> <span class='op'>&lt;-</span> <span class='fu'>sim_N0</span>(N0 = <span class='st'>"exp"</span>, plot = <span class='fl'>TRUE</span>)
+<span class='fu'>N0_fun</span>(R0 = <span class='fl'>1000</span>, Z0 = <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.5</span>, <span class='fl'>20</span>), ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>)
+<span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(N0 = <span class='fu'>sim_N0</span>(N0 = <span class='st'>"exp"</span>, plot = <span class='fl'>TRUE</span>))
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -229,7 +231,7 @@ Fisheries and Aquatic Sciences 73 (2): 296-308.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

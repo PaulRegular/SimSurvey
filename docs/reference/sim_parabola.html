@@ -132,7 +132,7 @@
     <p>Closure to be used in <code><a href='sim_distribution.html'>sim_distribution</a></code></p>
     </div>
 
-    <pre class="usage"><span class='fu'>sim_parabola</span>(<span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>sigma</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>sim_parabola</span>(alpha = <span class='fl'>0</span>, mu = <span class='fl'>200</span>, sigma = <span class='fl'>70</span>, plot = <span class='fl'>FALSE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,8 +150,10 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples">
-<span class='no'>parabola_fun</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_parabola</span>(<span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>25</span>, <span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>50</span>, <span class='kw'>sigma</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'>parabola_fun</span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='fl'>0</span>:<span class='fl'>100</span>)</pre>
+<span class='kw'>parabola_fun</span> <span class='op'>&lt;-</span> <span class='fu'>sim_parabola</span>(alpha = <span class='fl'>25</span>, mu = <span class='fl'>50</span>, sigma = <span class='fl'>5</span>, plot = <span class='fl'>TRUE</span>)
+<span class='fu'>parabola_fun</span>(x = <span class='fl'>0</span><span class='op'>:</span><span class='fl'>100</span>)
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -167,7 +169,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

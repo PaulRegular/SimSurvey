@@ -1,6 +1,6 @@
 
 
-#' Simulate startinig abundance, random recruitment and total mortality
+#' Simulate starting abundance, random recruitment and total mortality
 #'
 #' @description These functions return a function to use inside \code{\link{sim_abundance}}.
 #' Given parameters, it generates N0, R and Z values.

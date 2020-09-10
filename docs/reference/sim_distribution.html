@@ -137,10 +137,10 @@ of the population. The ability to simulate distributions by length is yet to be 
     </div>
 
     <pre class="usage"><span class='fu'>sim_distribution</span>(
-  <span class='no'>sim</span>,
-  <span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(),
-  <span class='kw'>ays_covar</span> <span class='kw'>=</span> <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(),
-  <span class='kw'>depth_par</span> <span class='kw'>=</span> <span class='fu'><a href='sim_parabola.html'>sim_parabola</a></span>()
+  <span class='kw'>sim</span>,
+  grid = <span class='fu'><a href='make_grid.html'>make_grid</a></span>(),
+  ays_covar = <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(),
+  depth_par = <span class='fu'><a href='sim_parabola.html'>sim_parabola</a></span>()
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -185,14 +185,16 @@ abundance in a large grid across many ages and years - start small first.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples">
-<span class='no'>sim</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(<span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>, <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>) <span class='kw'>%&gt;%</span>
-           <span class='fu'>sim_distribution</span>(<span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)),
-                            <span class='kw'>ays_covar</span> <span class='kw'>=</span> <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(<span class='kw'>phi_age</span> <span class='kw'>=</span> <span class='fl'>0.8</span>,
-                                                      <span class='kw'>phi_year</span> <span class='kw'>=</span> <span class='fl'>0.1</span>),
-                            <span class='kw'>depth_par</span> <span class='kw'>=</span> <span class='fu'><a href='sim_parabola.html'>sim_parabola</a></span>(<span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>200</span>,
-                                                     <span class='kw'>sigma</span> <span class='kw'>=</span> <span class='fl'>50</span>))
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sim</span>$<span class='no'>sp_N</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sim</span>$<span class='no'>grid_xy</span>)</pre>
+<span class='kw'>sim</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>, years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>) <span class='op'>%&gt;%</span>
+           <span class='fu'>sim_distribution</span>(grid = <span class='fu'><a href='make_grid.html'>make_grid</a></span>(res = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)),
+                            ays_covar = <span class='fu'><a href='sim_ays_covar.html'>sim_ays_covar</a></span>(phi_age = <span class='fl'>0.8</span>,
+                                                      phi_year = <span class='fl'>0.1</span>),
+                            depth_par = <span class='fu'><a href='sim_parabola.html'>sim_parabola</a></span>(mu = <span class='fl'>200</span>,
+                                                     sigma = <span class='fl'>50</span>))
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='kw'>sim</span><span class='op'>$</span><span class='kw'>sp_N</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='kw'>sim</span><span class='op'>$</span><span class='kw'>grid_xy</span>)
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -208,7 +210,7 @@ abundance in a large grid across many ages and years - start small first.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

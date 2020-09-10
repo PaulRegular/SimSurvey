@@ -136,48 +136,48 @@ visuals of values produced by <code><a href='sim_abundance.html'>sim_abundance</
 <code><a href='sim_distribution.html'>sim_distribution</a></code>, etc.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_trend</span>(<span class='no'>sim</span>, <span class='kw'>sum_ages</span> <span class='kw'>=</span> <span class='no'>sim</span>$<span class='no'>ages</span>, <span class='kw'>col</span> <span class='kw'>=</span> <span class='kw pkg'>viridis</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/viridis/man/reexports.html'>viridis</a></span>(<span class='fl'>1</span>), <span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>plot_trend</span>(<span class='kw'>sim</span>, sum_ages = <span class='kw'>sim</span><span class='op'>$</span><span class='kw'>ages</span>, col = <span class='kw'>viridis</span>::<span class='fu'><a href='https://rdrr.io/pkg/viridisLite/man/viridis.html'>viridis</a></span>(<span class='fl'>1</span>), <span class='kw'>...</span>)
 
-<span class='fu'>plot_surface</span>(<span class='no'>sim</span>, <span class='kw'>mat</span> <span class='kw'>=</span> <span class='st'>"N"</span>, <span class='kw'>xlab</span> <span class='kw'>=</span> <span class='st'>"Age"</span>, <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"Year"</span>, <span class='kw'>zlab</span> <span class='kw'>=</span> <span class='no'>mat</span>, <span class='no'>...</span>)
+<span class='fu'>plot_surface</span>(<span class='kw'>sim</span>, mat = <span class='st'>"N"</span>, xlab = <span class='st'>"Age"</span>, ylab = <span class='st'>"Year"</span>, zlab = <span class='kw'>mat</span>, <span class='kw'>...</span>)
 
-<span class='fu'>plot_grid</span>(<span class='no'>grid</span>, <span class='no'>...</span>)
+<span class='fu'>plot_grid</span>(<span class='kw'>grid</span>, <span class='kw'>...</span>)
 
 <span class='fu'>plot_distribution</span>(
-  <span class='no'>sim</span>,
-  <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>,
-  <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>,
-  <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"contour"</span>,
-  <span class='kw'>scale</span> <span class='kw'>=</span> <span class='st'>"natural"</span>,
-  <span class='no'>...</span>
+  <span class='kw'>sim</span>,
+  ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,
+  years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,
+  type = <span class='st'>"contour"</span>,
+  scale = <span class='st'>"natural"</span>,
+  <span class='kw'>...</span>
 )
 
-<span class='fu'>plot_survey</span>(<span class='no'>sim</span>, <span class='kw'>which_year</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>which_sim</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+<span class='fu'>plot_survey</span>(<span class='kw'>sim</span>, which_year = <span class='fl'>1</span>, which_sim = <span class='fl'>1</span>)
 
-<span class='fu'>plot_total_strat_fan</span>(<span class='no'>sim</span>, <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>quants</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>90</span>, <span class='fl'>10</span>, <span class='kw'>by</span> <span class='kw'>=</span> -<span class='fl'>10</span>), <span class='no'>...</span>)
+<span class='fu'>plot_total_strat_fan</span>(<span class='kw'>sim</span>, surveys = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>, quants = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>90</span>, <span class='fl'>10</span>, by = <span class='op'>-</span><span class='fl'>10</span>), <span class='kw'>...</span>)
 
 <span class='fu'>plot_length_strat_fan</span>(
-  <span class='no'>sim</span>,
-  <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>,
-  <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>,
-  <span class='kw'>lengths</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>50</span>,
-  <span class='kw'>select_by</span> <span class='kw'>=</span> <span class='st'>"year"</span>,
-  <span class='kw'>quants</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>90</span>, <span class='fl'>10</span>, <span class='kw'>by</span> <span class='kw'>=</span> -<span class='fl'>10</span>),
-  <span class='no'>...</span>
+  <span class='kw'>sim</span>,
+  surveys = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>,
+  years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,
+  lengths = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>50</span>,
+  select_by = <span class='st'>"year"</span>,
+  quants = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>90</span>, <span class='fl'>10</span>, by = <span class='op'>-</span><span class='fl'>10</span>),
+  <span class='kw'>...</span>
 )
 
 <span class='fu'>plot_age_strat_fan</span>(
-  <span class='no'>sim</span>,
-  <span class='kw'>surveys</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>5</span>,
-  <span class='kw'>years</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>,
-  <span class='kw'>ages</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>,
-  <span class='kw'>select_by</span> <span class='kw'>=</span> <span class='st'>"year"</span>,
-  <span class='kw'>quants</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>90</span>, <span class='fl'>10</span>, <span class='kw'>by</span> <span class='kw'>=</span> -<span class='fl'>10</span>),
-  <span class='no'>...</span>
+  <span class='kw'>sim</span>,
+  surveys = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>,
+  years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,
+  ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,
+  select_by = <span class='st'>"year"</span>,
+  quants = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>90</span>, <span class='fl'>10</span>, by = <span class='op'>-</span><span class='fl'>10</span>),
+  <span class='kw'>...</span>
 )
 
-<span class='fu'>plot_error_surface</span>(<span class='no'>sim</span>, <span class='kw'>plot_by</span> <span class='kw'>=</span> <span class='st'>"rule"</span>)
+<span class='fu'>plot_error_surface</span>(<span class='kw'>sim</span>, plot_by = <span class='st'>"rule"</span>)
 
-<span class='fu'>plot_survey_rank</span>(<span class='no'>sim</span>, <span class='kw'>which_strat</span> <span class='kw'>=</span> <span class='st'>"age"</span>)</pre>
+<span class='fu'>plot_survey_rank</span>(<span class='kw'>sim</span>, which_strat = <span class='st'>"age"</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -277,7 +277,7 @@ visuals of values produced by <code><a href='sim_abundance.html'>sim_abundance</
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

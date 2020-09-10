@@ -139,12 +139,12 @@ are designed for the default grid. Just a basic interface between the grid and i
     </div>
 
     <pre class="usage"><span class='fu'>make_mesh</span>(
-  <span class='kw'>grid</span> <span class='kw'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span>(),
-  <span class='kw'>max.edge</span> <span class='kw'>=</span> <span class='fl'>50</span>,
-  <span class='kw'>bound.outer</span> <span class='kw'>=</span> <span class='fl'>150</span>,
-  <span class='kw'>cutoff</span> <span class='kw'>=</span> <span class='fl'>10</span>,
-  <span class='kw'>offset</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>max.edge</span>, <span class='no'>bound.outer</span>),
-  <span class='no'>...</span>
+  grid = <span class='fu'><a href='make_grid.html'>make_grid</a></span>(),
+  max.edge = <span class='fl'>50</span>,
+  bound.outer = <span class='fl'>150</span>,
+  cutoff = <span class='fl'>10</span>,
+  offset = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='kw'>max.edge</span>, <span class='kw'>bound.outer</span>),
+  <span class='kw'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -180,9 +180,11 @@ are designed for the default grid. Just a basic interface between the grid and i
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples">
 <span class='co'># \donttest{</span>
-<span class='no'>basic_mesh</span> <span class='kw'>&lt;-</span> <span class='fu'>make_mesh</span>()
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>basic_mesh</span>)
-<span class='co'># }</span></pre>
+<span class='kw'>basic_mesh</span> <span class='op'>&lt;-</span> <span class='fu'>make_mesh</span>()
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span>(<span class='kw'>basic_mesh</span>)
+<span class='co'># }</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -198,7 +200,7 @@ are designed for the default grid. Just a basic interface between the grid and i
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

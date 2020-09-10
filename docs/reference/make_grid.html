@@ -137,16 +137,16 @@ deep portion. Adding covariance to the depth simulation is an option.</p>
     </div>
 
     <pre class="usage"><span class='fu'>make_grid</span>(
-  <span class='kw'>x_range</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>140</span>, <span class='fl'>140</span>),
-  <span class='kw'>y_range</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(-<span class='fl'>140</span>, <span class='fl'>140</span>),
-  <span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3.5</span>, <span class='fl'>3.5</span>),
-  <span class='kw'>shelf_depth</span> <span class='kw'>=</span> <span class='fl'>200</span>,
-  <span class='kw'>shelf_width</span> <span class='kw'>=</span> <span class='fl'>100</span>,
-  <span class='kw'>depth_range</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0</span>, <span class='fl'>1000</span>),
-  <span class='kw'>n_div</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>strat_breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0</span>, <span class='fl'>1000</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>40</span>),
-  <span class='kw'>strat_splits</span> <span class='kw'>=</span> <span class='fl'>2</span>,
-  <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spline"</span>
+  x_range = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='op'>-</span><span class='fl'>140</span>, <span class='fl'>140</span>),
+  y_range = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='op'>-</span><span class='fl'>140</span>, <span class='fl'>140</span>),
+  res = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>3.5</span>, <span class='fl'>3.5</span>),
+  shelf_depth = <span class='fl'>200</span>,
+  shelf_width = <span class='fl'>100</span>,
+  depth_range = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0</span>, <span class='fl'>1000</span>),
+  n_div = <span class='fl'>1</span>,
+  strat_breaks = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0</span>, <span class='fl'>1000</span>, by = <span class='fl'>40</span>),
+  strat_splits = <span class='fl'>2</span>,
+  method = <span class='st'>"spline"</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -200,11 +200,13 @@ deep portion. Adding covariance to the depth simulation is an option.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples">
-<span class='no'>r</span> <span class='kw'>&lt;-</span> <span class='fu'>make_grid</span>(<span class='kw'>res</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>))
-<span class='kw pkg'>raster</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/raster/man/plot.html'>plot</a></span>(<span class='no'>r</span>)
+<span class='kw'>r</span> <span class='op'>&lt;-</span> <span class='fu'>make_grid</span>(res = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>))
+<span class='kw'>raster</span>::<span class='fu'><a href='https://rdrr.io/pkg/raster/man/plot.html'>plot</a></span>(<span class='kw'>r</span>)
 
-<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>raster</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/raster/man/rasterToPolygons.html'>rasterToPolygons</a></span>(<span class='no'>r</span>$<span class='no'>strat</span>, <span class='kw'>dissolve</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='kw pkg'>sp</span><span class='kw ns'>::</span><span class='fu'>plot</span>(<span class='no'>p</span>)</pre>
+<span class='kw'>p</span> <span class='op'>&lt;-</span> <span class='kw'>raster</span>::<span class='fu'><a href='https://rdrr.io/pkg/raster/man/rasterToPolygons.html'>rasterToPolygons</a></span>(<span class='kw'>r</span><span class='op'>$</span><span class='kw'>strat</span>, dissolve = <span class='fl'>TRUE</span>)
+<span class='kw'>sp</span>::<span class='fu'>plot</span>(<span class='kw'>p</span>)
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -220,7 +222,7 @@ deep portion. Adding covariance to the depth simulation is an option.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>
