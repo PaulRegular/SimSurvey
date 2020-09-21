@@ -7,6 +7,7 @@
 library(sf)
 library(raster)
 library(SimSurvey)
+library(dplyr)
 
 ## UTM projection for Newfoundland
 utm_proj <- "+proj=utm +zone=21 +ellps=WGS84 +datum=WGS84 +units=km +no_defs"
@@ -28,12 +29,17 @@ range(strat_bathy[], na.rm = TRUE)
 
 ## Number of strata
 length(unique(strat_polys$STRAT))
-# 104
+# 140
 
 ## Area of the strata
-range(sf::st_area(strat_polys_utm))
+strat_sums <- strat_polys_utm %>%
+  mutate(area = sf::st_area(strat_polys_utm)) %>%
+  group_by(STRAT) %>%
+  summarize(strat_area = sum(area))
+range(strat_sums$strat_area)
+# range(sf::st_area(strat_polys_utm))
 # Units: [km^2]
-# 22.44367 10359.00564
+# 207.7644 10359.0056
 
 ## Survey area
 sum(sf::st_area(strat_polys_utm))
@@ -45,15 +51,15 @@ sum(sf::st_area(strat_polys_utm))
 
 
 
-grid <- make_grid(x_range = c(-140, 140),
-                  y_range = c(-140, 140),
-                  res = c(3.5, 3.5),
+grid <- make_grid(x_range = c(-275, 275),
+                  y_range = c(-275, 275),
+                  res = c(4, 4),
                   shelf_depth = 200,
                   shelf_width = 100,
-                  depth_range = c(0, 1000),
-                  n_div = 1,
-                  strat_breaks = seq(0, 1000, by = 40),
-                  strat_splits = 2)
+                  depth_range = c(0, 2000),
+                  n_div = 3,
+                  strat_breaks = seq(0, 2000, by = 60),
+                  strat_splits = 6)
 prod(res(grid)) * ncell(grid)
 # 78400
 length(unique(grid$strat))
@@ -67,7 +73,7 @@ plot(grid$depth)
 plot(grid$strat)
 plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
-
+plot_grid(grid)
 
 
 
