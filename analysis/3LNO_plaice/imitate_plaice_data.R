@@ -1,5 +1,5 @@
 
-## Explore plaice sampling data from the RV survey and try and imitate
+## Explore plaice sampling data in 3LNO from the RV survey and try to imitate
 ## the data using SimSurvey
 
 ## Survey grid -----------------------------------------------------------------
@@ -12,7 +12,7 @@ library(dplyr)
 ## UTM projection for Newfoundland
 utm_proj <- "+proj=utm +zone=21 +ellps=WGS84 +datum=WGS84 +units=km +no_defs"
 
-## Import 3Ps strata shapefile
+## Import 3LNO strata shapefile
 strat_polys <- st_read("data-raw/DFO_NL_survey_strat/2HJ3KLNOP_Strata_Polygons_WGS84.shp",
                        layer = "2HJ3KLNOP_Strata_Polygons_WGS84")
 strat_polys <- strat_polys[strat_polys$DIV %in% c("3L", "3N", "3O"), ] # subset to 3LNO
@@ -57,6 +57,7 @@ range(strat_bathy[], na.rm = TRUE)
 length(unique(strat_polys$STRAT))
 # 140
 
+<<<<<<< HEAD
 ## Area of the strata
 strat_sums <- strat_polys_utm %>%
   mutate(area = sf::st_area(strat_polys_utm)) %>%
@@ -64,18 +65,37 @@ strat_sums <- strat_polys_utm %>%
   summarize(strat_area = sum(area))
 range(strat_sums$strat_area)
 # range(sf::st_area(strat_polys_utm))
+=======
+## Area of the strata NEEDS TO BE FIXED
+range(sf::st_area(strat_polys_utm))
+>>>>>>> Revisions to make_grid
 # Units: [km^2]
 # 207.7644 10359.0056
 
 ## Survey area
-sum(sf::st_area(strat_polys_utm))
+survey_area <- sum(sf::st_area(strat_polys_utm))
+survey_area
 # 301146.6 [km^2]
 
+## For make_grid arguments
 
+<<<<<<< HEAD
 library(plotly)
 
 plot_ly(z = as.matrix(strat_bathy)) %>% add_heatmap()
 
+=======
+#x_y_range
+sqrt(survey_area)/2
+# 275
+
+## Mean area
+# mean(sf::st_area(strat_polys_utm)) ## doesn't work because it includes STRATA with same names
+survey_area/140 ##unique STRATA
+# 2151.047 [km^2]
+
+mean(table(values(strat_bathy$strat)) * res(strat_polys_utm))
+>>>>>>> Revisions to make_grid
 
 ## TODO: Modify make_grid arguments to create a similar survey area
 
@@ -83,6 +103,7 @@ plot_ly(z = as.matrix(strat_bathy)) %>% add_heatmap()
 
 grid <- make_grid(x_range = c(-275, 275),
                   y_range = c(-275, 275),
+<<<<<<< HEAD
                   res = c(4, 4),
                   shelf_depth = 200,
                   shelf_width = 100,
@@ -90,14 +111,23 @@ grid <- make_grid(x_range = c(-275, 275),
                   n_div = 3,
                   strat_breaks = seq(0, 2000, by = 60),
                   strat_splits = 6)
+=======
+                  res = c(3.5, 3.5),
+                  shelf_depth = 200,
+                  shelf_width = 100,
+                  depth_range = c(0, 2100),
+                  n_div = 3,
+                  strat_breaks = seq(0, 1000, by = 40),
+                  strat_splits = 3)
+>>>>>>> Revisions to make_grid
 prod(res(grid)) * ncell(grid)
-# 78400
+# 301950.2
 length(unique(grid$strat))
-# 44
+# 140
 mean(table(values(grid$strat)) * res(grid))
-# 509.0909
+# 557.35
 range(values(grid$depth), na.rm = TRUE)
-# 15 940
+# 5 2041
 plot(grid)
 plot(grid$depth)
 plot(grid$strat)
