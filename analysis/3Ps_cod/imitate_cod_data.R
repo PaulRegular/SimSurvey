@@ -12,12 +12,12 @@ prod(res(survey_grid)) * sum(!is.na(values(survey_grid$cell)))
 # 69147.59
 length(unique(survey_grid$strat))
 # 44
-mean(table(values(survey_grid$strat)) * res(survey_grid))
-# 449.4992
+mean(table(values(survey_grid$strat)) * prod(res(survey_grid)))
+# 1567.925
 range(values(survey_grid$depth), na.rm = TRUE)
 # -7.372526 920.745896
 
-grid <- sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5, 3.5),
+grid <- make_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5, 3.5),
                  shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
                  n_div = 1, strat_breaks = seq(0, 1000, by = 40), strat_splits = 2,
                  method = "spline")
@@ -25,8 +25,8 @@ prod(res(grid)) * ncell(grid)
 # 78400
 length(unique(grid$strat))
 # 44
-mean(table(values(grid$strat)) * res(grid))
-# 509.0909
+mean(table(values(grid$strat)) * prod(res(grid)))
+# 1781.818
 range(values(grid$depth), na.rm = TRUE)
 # 15 940
 plot(grid)
