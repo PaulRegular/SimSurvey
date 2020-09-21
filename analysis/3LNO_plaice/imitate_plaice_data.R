@@ -23,6 +23,32 @@ strat_bathy <- raster("data-raw/GEBCO_derived_bathy/2HJ3KLNOP_GEBCO_bathy.nc")
 strat_bathy <- raster::mask(strat_bathy, strat_polys) # cells within strata
 # strat_bathy_utm <- raster::projectRaster(strat_bathy, crs = utm_proj)
 
+## Strata-by-strata depths
+strat_no <- unique(strat_polys$STRAT)
+means <- numeric(length(strat_no))
+mins <- numeric(length(strat_no))
+maxs <- numeric(length(strat_no))
+names(means) <- names(mins) <- names(maxs) <- strat_no
+
+for (s in strat_no) {
+
+  temp <- raster::mask(strat_bathy, strat_polys[strat_polys$STRAT == s, ])
+
+  cat(s, "\n")
+  cat("mean:", mean(temp[], na.rm = TRUE), "\n")
+  cat("min:", min(temp[], na.rm = TRUE), "\n")
+  cat("max:", max(temp[], na.rm = TRUE), "\n")
+
+  means[as.character(s)] <- mean(temp[], na.rm = TRUE)
+  mins[as.character(s)] <- min(temp[], na.rm = TRUE)
+  maxs[as.character(s)] <- max(temp[], na.rm = TRUE)
+
+}
+
+depth_by_strata <- data.frame(strat = strat_no,
+                              mean = means,
+                              min = mins, maxs = maxs)
+
 ## Depth range in the survey area
 range(strat_bathy[], na.rm = TRUE)
 # -2102    19
@@ -45,6 +71,10 @@ range(strat_sums$strat_area)
 sum(sf::st_area(strat_polys_utm))
 # 301146.6 [km^2]
 
+
+library(plotly)
+
+plot_ly(z = as.matrix(strat_bathy)) %>% add_heatmap()
 
 
 ## TODO: Modify make_grid arguments to create a similar survey area
@@ -75,6 +105,14 @@ plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
 plot_grid(grid)
 
+
+grid_dat <- data.frame(raster::rasterToPoints(grid))
+
+strat_depths <- grid_dat %>%
+  group_by(strat) %>%
+  summarize(mean_depth = mean(depth), min_depth = min(depth), max_depth = max(depth))
+
+data.frame(strat_depths)
 
 
 ## TODO: Modify below to get real 3LNO American Plaice data and modify simulation
