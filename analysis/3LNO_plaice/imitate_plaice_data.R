@@ -54,10 +54,14 @@ range(strat_bathy[], na.rm = TRUE)
 # -2102    19
 
 ## Number of strata
-length(unique(strat_polys$STRAT))
+l_strata <- length(unique(strat_polys$STRAT))
+l_strata
 # 140
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Fixing conflicts
 ## Area of the strata
 strat_sums <- strat_polys_utm %>%
   mutate(area = sf::st_area(strat_polys_utm)) %>%
@@ -65,10 +69,13 @@ strat_sums <- strat_polys_utm %>%
   summarize(strat_area = sum(area))
 range(strat_sums$strat_area)
 # range(sf::st_area(strat_polys_utm))
+<<<<<<< HEAD
 =======
 ## Area of the strata NEEDS TO BE FIXED
 range(sf::st_area(strat_polys_utm))
 >>>>>>> Revisions to make_grid
+=======
+>>>>>>> Fixing conflicts
 # Units: [km^2]
 # 207.7644 10359.0056
 
@@ -77,7 +84,9 @@ survey_area <- sum(sf::st_area(strat_polys_utm))
 survey_area
 # 301146.6 [km^2]
 
-## For make_grid arguments
+## Mean area
+mean(strat_sums$strat_area)
+# 2151.047 [km^2]
 
 <<<<<<< HEAD
 library(plotly)
@@ -89,6 +98,7 @@ plot_ly(z = as.matrix(strat_bathy)) %>% add_heatmap()
 sqrt(survey_area)/2
 # 275
 
+<<<<<<< HEAD
 ## Mean area
 # mean(sf::st_area(strat_polys_utm)) ## doesn't work because it includes STRATA with same names
 survey_area/140 ##unique STRATA
@@ -97,6 +107,8 @@ survey_area/140 ##unique STRATA
 mean(table(values(strat_bathy$strat)) * res(strat_polys_utm))
 >>>>>>> Revisions to make_grid
 
+=======
+>>>>>>> Fixing conflicts
 ## TODO: Modify make_grid arguments to create a similar survey area
 
 
@@ -124,8 +136,8 @@ prod(res(grid)) * ncell(grid)
 # 301950.2
 length(unique(grid$strat))
 # 140
-mean(table(values(grid$strat)) * res(grid))
-# 557.35
+mean(table(values(grid$strat)) * prod(res(grid)))
+# 1950.725
 range(values(grid$depth), na.rm = TRUE)
 # 5 2041
 plot(grid)
@@ -134,6 +146,7 @@ plot(grid$strat)
 plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
 plot_grid(grid)
+<<<<<<< HEAD
 
 
 grid_dat <- data.frame(raster::rasterToPoints(grid))
@@ -144,6 +157,11 @@ strat_depths <- grid_dat %>%
 
 data.frame(strat_depths)
 
+=======
+
+grid_dat <- data.frame(raster::rasterToPoints(grid))
+grid_dat
+>>>>>>> Fixing conflicts
 
 ## TODO: Modify below to get real 3LNO American Plaice data and modify simulation
 ##       settings to make similar looking simulated data
