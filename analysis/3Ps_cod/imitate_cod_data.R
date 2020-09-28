@@ -45,9 +45,9 @@ library(plotly)
 ## REAL DATA
 
 ## Load survey data compiled for Rstrap
-load("analysis/rv_data/converted_set_details_2019-10-03.Rdata")
-load("analysis/rv_data/converted_length-frequency_data_2019-10-03.Rdata")
-load("analysis/rv_data/age-growth_data_2019-10-03.Rdata")
+##load("analysis/rv_data/converted_set_details_2019-10-03.Rdata")
+##load("analysis/rv_data/converted_length-frequency_data_2019-10-03.Rdata")
+##load("analysis/rv_data/age-growth_data_2019-10-03.Rdata")
 
 ## Subset data to cod
 con.setdet <- con.setdet[(con.setdet$rec == 5 | (con.setdet$rec == 6 & con.setdet$spec == 438)), ]
