@@ -140,4 +140,5 @@ all_depths %>%
   ggplot(aes(x=mean, color=grid, fill=grid)) +
   geom_histogram(position="dodge", bins=10, alpha = 1)
 
+plot_grid(grid)
 
