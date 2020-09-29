@@ -41,6 +41,7 @@ plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
 library(Rstrap)
 library(plotly)
+library(data.table)
 
 ## REAL DATA
 
@@ -101,14 +102,16 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 30000000,
+                     R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(mean = 0.5,
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
-                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
+                     #N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
+                                       length_group = 3, digits = 0)) %>%
   sim_distribution(grid = make_grid(x_range = c(-140, 140),
                                    y_range = c(-140, 140),
                                    res = c(3.5, 3.5),
