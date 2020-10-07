@@ -142,3 +142,54 @@ all_depths %>%
 
 plot_grid(grid)
 
+
+## Abundance and distribution --------------------------------------------------
+
+library(Rstrap)
+library(plotly)
+library(data.table)
+
+## REAL DATA
+
+## Subset data to plaice
+con.setdet <- con.setdet[(con.setdet$rec == 5 | (con.setdet$rec == 6 & con.setdet$spec == 889)), ]
+con.lf <- con.lf[con.lf$spec == 889, ]
+ag <- ag[ag$spec == 889, ]
+rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
+
+## Save Rstrap output
+out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
+                 data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
+                 species = 889, survey.year = 1996:2013, 2015:2019, season = "fall",
+                 NAFOdiv = c("3L", "3N", "3O"), strat = NULL,
+                 sex = c("male","female","unsexed"), sep.sex = FALSE,
+                 length.group = 3, length.weight = NULL,
+                 group.by = "length & age",
+                 export = NULL, plot.results = FALSE)
+
+## Convert lat and lon to UTM
+setdet <- data.table(out$raw.data$set.details)
+xy <- cbind(-setdet$long.start, setdet$lat.start) %>%
+  rgdal::project(., proj = proj4string(survey_grid)) %>%
+  data.frame(.)
+names(xy) <- c("easting", "northing")
+setdet <- cbind(setdet, xy)
+
+## Set density
+den <- setdet[rec == 5, list(n = .N), by = c("survey.year", "strat", "strat.area")]
+den <- den[, list(strat_area_nm = sum(strat.area),
+                  strat_area_km = sum(strat.area * 3.4299),
+                  den_km = sum(n) / sum(strat.area * 3.4299),
+                  den_nm = sum(n) / sum(strat.area / 200)), by = c("survey.year")]
+den
+## ~ 0.003 sets per km^2
+## ~ 2 sets per 200 sq. NM
+
+## Melt age frequency data
+af <- data.table::melt(setdet,
+                       id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing"),
+                       measure.vars = names(setdet)[grepl("^af", names(setdet))],
+                       variable.name = "age", value.name = "freq")
+af <- af[af$age != "afNA", ]
+af$age <- as.integer(gsub("af", "", af$age))
+
