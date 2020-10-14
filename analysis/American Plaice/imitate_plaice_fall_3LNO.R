@@ -65,7 +65,7 @@ range(strat_sums$strat_area)
 # 207.7644 10359.0056
 
 ## Number of strata
-strata <- length(unique(strat_polys$STRAT))
+strata <- length(unique(strat_polys_utm$STRAT))
 strata
 # 140
 
@@ -160,17 +160,19 @@ rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 ## Save Rstrap output
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
-                 species = 889, survey.year = 1996:2013, 2015:2019, season = "fall",
+                 species = 889, survey.year = c(1995:2003, 2005:2013, 2015:2017),
+                 season = "fall",  # incomplete coverage of 3L in 2004, 2014; no age-growth 2018, 2019
                  NAFOdiv = c("3L", "3N", "3O"), strat = NULL,
-                 sex = c("male","female","unsexed"), sep.sex = FALSE,
-                 length.group = 3, length.weight = NULL,
+                 sex = c("male","female","unsexed"), sep.sex = TRUE, # sexually dimorphic growth
+                 indi.alk = c(TRUE,TRUE,FALSE),
+                 length.group = 2, length.weight = NULL,
                  group.by = "length & age",
                  export = NULL, plot.results = FALSE)
 
 ## Convert lat and lon to UTM
 setdet <- data.table(out$raw.data$set.details)
 xy <- cbind(-setdet$long.start, setdet$lat.start) %>%
-  rgdal::project(., proj = proj4string(survey_grid)) %>%
+  rgdal::project(., proj = crs(strat_polys_utm)) %>%
   data.frame(.)
 names(xy) <- c("easting", "northing")
 setdet <- cbind(setdet, xy)
