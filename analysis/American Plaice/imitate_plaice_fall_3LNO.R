@@ -195,3 +195,61 @@ af <- data.table::melt(setdet,
 af <- af[af$age != "afNA", ]
 af$age <- as.integer(gsub("af", "", af$age))
 
+
+## SIMULATED DATA
+
+## Simulate data for comparison
+## - Abundance parameters and catchability curve roughly based on NCAM estimates
+## - Distribution parameters manually tweaked until results roughly corresponded to
+##   observations from 3Ps cod
+set.seed(889)
+pop <- sim_abundance(ages = 1:20,
+                     years = 1:20,
+                     R = sim_R(log_mean = log(30000000),
+                               log_sd = 0.5,
+                               random_walk = TRUE),
+                     Z = sim_Z(log_mean = log(0.5),
+                               log_sd = 0.2,
+                               phi_age = 0.9,
+                               phi_year = 0.5),
+                     #N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
+                                       length_group = 3, digits = 0)) %>%
+  sim_distribution(grid = make_grid(x_range = c(-140, 140),
+                                    y_range = c(-140, 140),
+                                    res = c(3.5, 3.5),
+                                    shelf_depth = 200,
+                                    shelf_width = 100,
+                                    depth_range = c(0, 1000),
+                                    n_div = 1,
+                                    strat_breaks = seq(0, 1000, by = 40),
+                                    strat_splits = 2,
+                                    method = "spline"),
+                   ays_covar = sim_ays_covar(sd = 2.8,
+                                             range = 300,
+                                             phi_age = 0.5,
+                                             phi_year = 0.9,
+                                             group_ages = 5:20),
+                   depth_par = sim_parabola(mu = 200,
+                                            sigma = 70))
+
+## Quick look at distribution
+sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
+for (j in rev(pop$ages)) {
+  z <- xtabs(N ~ x + y, subset = age == j & year == 1, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("age", j))
+}
+for (i in rev(pop$years)) {
+  z <- xtabs(N ~ x + y, subset = age == 1 & year == i, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
+}
+
+
+survey <- sim_survey(pop,
+                     n_sims = 1,
+                     light = FALSE,
+                     set_den = 3 / 1000,
+                     lengths_cap = 400,
+                     ages_cap = 10,
+                     q = sim_logistic(k = 2, x0 = 3))
+
