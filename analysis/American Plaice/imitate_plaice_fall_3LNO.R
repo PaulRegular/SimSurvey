@@ -171,21 +171,23 @@ out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
 
 ## Convert lat and lon to UTM
 setdet <- data.table(out$raw.data$set.details)
-xy <- cbind(-setdet$long.start, setdet$lat.start) %>%
-  rgdal::project(., proj = crs(strat_polys_utm)) %>%
-  data.frame(.)
-names(xy) <- c("easting", "northing")
-setdet <- cbind(setdet, xy)
+st_xy <- st_as_sf(data.frame(long = -setdet$long.start, lat = setdet$lat.start),
+                  coords = c("long", "lat"), crs = 4326) %>%
+  st_transform(crs(strat_polys_utm)) %>%
+  st_coordinates() %>% data.frame(.)
+names(st_xy) <- c("easting", "northing")
+setdet <- cbind(setdet, st_xy)
 
 ## Set density
-den <- setdet[rec == 5, list(n = .N), by = c("survey.year", "strat", "strat.area")]
+den <- setdet[rec == 5, list(n = .N), by = c("survey.year", "NAFOdiv", "strat", "strat.area")]
 den <- den[, list(strat_area_nm = sum(strat.area),
                   strat_area_km = sum(strat.area * 3.4299),
                   den_km = sum(n) / sum(strat.area * 3.4299),
                   den_nm = sum(n) / sum(strat.area / 200)), by = c("survey.year")]
 den
-## ~ 0.003 sets per km^2
-## ~ 2 sets per 200 sq. NM
+
+## ~ 0.005 sets per km^2
+## ~ 3 sets per 200 sq. NM
 
 ## Melt age frequency data
 af <- data.table::melt(setdet,
@@ -208,12 +210,13 @@ pop <- sim_abundance(ages = 1:20,
                      R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(log_mean = log(0.5),
+                     Z = sim_Z(log_mean = log(0.5),   # natural (M:0.30) and fishing (F:0.20) mortality
                                log_sd = 0.2,
-                               phi_age = 0.9,
-                               phi_year = 0.5),
-                     #N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
+                               phi_age = 0.9,         # M decreases with age, F increases with age
+                               phi_year = 0.5),       # inverted u-shape graph ages 9-14 between 1996-2017)
+                     N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     growth = sim_vonB(Linf = 50, L0 = 3,       # Fitted for female growth
+                                       K = 0.18, log_sd = 0.1,
                                        length_group = 3, digits = 0)) %>%
   sim_distribution(grid = make_grid(x_range = c(-140, 140),
                                     y_range = c(-140, 140),
