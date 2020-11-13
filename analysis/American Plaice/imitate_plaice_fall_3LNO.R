@@ -138,7 +138,7 @@ all_depths <- all_depths %>% mutate(grid = factor(ifelse(strat > 300, "real", "s
 all_depths %>%
   filter(!is.na(grid)) %>%
   ggplot(aes(x=mean, color=grid, fill=grid)) +
-  geom_histogram(position="dodge", bins=10, alpha = 1)
+  geom_histogram(position="dodge", bins=10, alpha = 1)+ theme_bw()
 
 plot_grid(grid)
 
@@ -256,3 +256,131 @@ survey <- sim_survey(pop,
                      ages_cap = 10,
                      q = sim_logistic(k = 2, x0 = 3))
 
+
+## COMPS
+
+## Compare set catch
+hist(setdet$number, breaks = 100, xlab = "set catch", main = "real data")
+hist(survey$setdet$n, breaks = 100, xlab = "set catch", main = "simulated data")
+
+## Compare annual index
+data_I <- out$strat2$abundance$summary$total[survey$years]
+names(data_I) <- survey$years
+sim_I <- colSums(survey$I)
+barplot(data_I, names.arg = names(data_I), xlab = "age", main = "annual index - real data")
+barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "annual - index - simulated data")
+
+## Compare index at age
+data_I <- out$strat1$age$abundance$annual.totals
+data_I <- rowMeans(data_I[data_I$age %in% survey$ages, grepl("y", names(data_I))])
+sim_I <- rowMeans(survey$I)
+barplot(data_I, names.arg = names(data_I), xlab = "age", main = "real data")
+barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "simulated data")
+
+## Compare age growth data
+data_I <- out$raw.data$age.growth
+sim_I <- survey$samp[aged == TRUE, ]
+nrow(data_I)
+nrow(sim_I)
+hist(data_I$length, xlab = "length", main = "real data", breaks = 100)
+hist(sim_I$length, xlab = "length", main = "simulated data", breaks = 100)
+plot(length ~ age, data = data_I, main = "real data",
+     xlim = range(survey$ages))
+plot(length ~ age, data = sim_I, main = "simulated data",
+     xlim = range(survey$ages))
+# points(length ~ age, pch = ".", data = survey$samp)
+## Fish are caught based on age, not length...that's why there is a distinction
+## between the two. If the catchability simulation were length based, a scattered
+## older individual would be in the mix along the tail of the length distribution
+
+## Compare relationship between catch and depth
+## (could use to improve the accuracy of depth in the real data, but the pattern is clear)
+data_I <- setdet
+sim_I <- survey$setdet
+plot(as.numeric(data_I$set.depth.min), data_I$number, xlab = "depth",
+     ylab = "number", main = "real data", xlim = c(0, 1000))
+plot(sim_I$depth, sim_I$n, xlab = "depth",
+     ylab = "number", main = "simulated data", xlim = c(0, 1000))
+
+## Compare intra-haul correlation
+idvar <- c("vessel", "trip", "set", "year")
+sub_lf <- merge(out$raw.data$set.details[, idvar], con.lf, by = idvar)
+sub_lf$set <- as.numeric(as.factor(with(sub_lf, paste(vessel, trip, set, year))))
+ind <- grep("^bin|^set$", names(con.lf)) # get length frequencies and expand to samples
+lf <- sub_lf[, ind]
+len_samp <- data.table::melt(lf, id.vars = "set")
+len_samp <- len_samp[len_samp$value > 0, ]
+len_samp$value <- round(len_samp$value)
+len_samp$length <- as.numeric(gsub("bin", "", len_samp$variable))
+len_samp <- len_samp[rep(row.names(len_samp), len_samp$value), c("set", "length")]
+len_samp <- data.table(len_samp)
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "real data")
+icc(len_samp$length, len_samp$set)
+
+len_samp <- survey$samp[survey$samp$measured, ]
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "simulated data")
+icc(len_samp$length, len_samp$set)
+
+
+
+## Now size up the distribution
+
+symbols(setdet$long.start, setdet$lat.start,
+        circles = sqrt(setdet$number / pi),
+        inches = 0.1, main = "real data",
+        xlab = "x", ylab = "y")
+symbols(survey$setdet$x, survey$setdet$y,
+        circles = sqrt(survey$setdet$n / pi),
+        inches = 0.1, main = "simulated data",
+        xlab = "x", ylab = "y")
+
+
+## Real data (hold age or year and animate the other)
+plot_ly(data = af[af$age == 5, ]) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 5)
+plot_ly(data = af[af$survey.year == 2013, ]) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+## Younger ages (< 4) are somewhat random (because of distribution or catchability?),
+## hoever, correlation is strong across age. Less strong through time.
+
+
+## Hold age or year and animate the other
+# sim_af <- data.frame(survey$full_setdet)
+# for (a in rev(survey$ages)) {
+#   d <- sim_af[sim_af$year == 1 & sim_af$age == a, ]
+#   radius <- sqrt( d$n / pi )
+#   symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("age", a),
+#           xlab = "x", ylab = "y")
+# }
+# for (y in rev(survey$years)) {
+#   d <- sim_af[sim_af$year == y & sim_af$age == 1, ]
+#   radius <- sqrt( d$n / pi )
+#   symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("year", y),
+#           xlab = "x", ylab = "y")
+# }
+
+sim_af <- data.frame(survey$full_setdet)
+sim_af %>%
+  filter(age == 5) %>%
+  group_by(year) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
+          sizes = c(5, 1000), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 5)
+sim_af %>%
+  filter(year == 5) %>%
+  group_by(age) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
+          sizes = c(5, 1000), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 500)
