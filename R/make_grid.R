@@ -72,40 +72,30 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   ## add cell number
   xy$cell <- seq(nrow(xy))
 
-  ## define divisions and strata
-  r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km")
-  if (n_div == 1) {
-    r$division <- r$cell
-    r$division[] <- 1
-  } else {
-    r$division <- raster::cut(r$cell, breaks = n_div)
+  ## define divisions and/or splits
+  xy$division <- xy$split <- 1
+  if (n_div > 1) {
+    xy$division <- as.numeric(cut(xy$y, n_div))
   }
-  r$strat <- raster::cut(r$depth, breaks = strat_breaks)
-
-  ## identify isolated clumps, and split into independent strata
-  rstrat <- r$strat
-  max_id <- 0
-  for (s in sort(unique(rstrat))) {
-    rc <- suppressMessages(raster::clump(rstrat == s))
-    new_ids <- rc[!is.na(rc[])] + max_id
-    r$strat[!is.na(rc)] <- new_ids
-    max_id <- max(new_ids)
-  }
-
-  ## split strat
-  xy <- data.table::data.table(raster::rasterToPoints(r))
   if (strat_splits > 1) {
-    xy[, split := as.numeric(cut(cell, breaks = strat_splits)), by = "strat"]
-    xy$strat <- (xy$split * 10000) + xy$strat
-    xy$strat <- as.numeric(as.factor(xy$strat))
-    xy$split <- NULL
+    xy$split <- as.numeric(cut(xy$y, strat_splits))
   }
 
-  ## make strata unique by division
-  xy$strat <- (xy$division * 100000) + xy$strat
-  xy$strat <- as.numeric(as.factor(xy$strat))
+  ## define strata and use unique labels along the x-axis
+  ## (i.e. don't duplicate strat labels for areas with the same depth
+  ## that are not adjacent to each other)
+  xy$strat <- as.numeric(cut(xy$depth, strat_breaks))
+  xy <- xy[order(xy$x), ]
+  rl <- rle(xy$strat)$length
+  xy$strat <- rep(seq_along(rl), rl)
 
-  ## convert to raster
+  ## ensure strata within a division or a split have different numbers
+  div_id <- xy$division * 10 ^ (max(nchar(xy$split)) + max(nchar(xy$strat)))
+  split_id <- xy$split * 10 ^ max(nchar(xy$strat))
+  xy$strat <- as.numeric(factor(div_id + split_id + xy$strat))
+
+  ## convert xyz data to a raster
+  xy$split <- NULL # drop - was useful for defining strata
   r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km")
   r
 

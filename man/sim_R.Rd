@@ -4,7 +4,7 @@
 \alias{sim_R}
 \alias{sim_Z}
 \alias{sim_N0}
-\title{Simulate startinig abundance, random recruitment and total mortality}
+\title{Simulate starting abundance, random recruitment and total mortality}
 \usage{
 sim_R(log_mean = log(3e+07), log_sd = 0.5, random_walk = TRUE, plot = FALSE)
 
