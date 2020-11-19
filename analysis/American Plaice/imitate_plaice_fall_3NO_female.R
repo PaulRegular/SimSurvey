@@ -243,7 +243,7 @@ for (i in rev(pop$years)) {
   image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
 }
 
-
+set.seed(889)
 survey <- sim_survey(pop,
                      n_sims = 1,
                      q = sim_logistic(),
