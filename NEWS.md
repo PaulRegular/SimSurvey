@@ -5,3 +5,8 @@
 # SimSurvey 0.1.2
 
 * Initial release to CRAN
+
+# SimSurvey 0.1.2.009
+
+* Simplify make_grid to minimize conflicts between strat splits and divisions
+* Allow a vector of age-specific parameters to be supplied to sim_parabola

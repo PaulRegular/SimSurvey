@@ -7,7 +7,9 @@
 sim_parabola(alpha = 0, mu = 200, sigma = 70, plot = FALSE)
 }
 \arguments{
-\item{alpha, mu, sigma}{Parameters that control the shape of the parabola}
+\item{alpha, mu, sigma}{Parameters that control the shape of the parabola. Can be one value or
+a vector of equal length to the number of ages in the simulation
+(e.g. age-specific depth associations can be specified).}
 
 \item{plot}{Produce a simple plot of the simulated values?}
 }
@@ -18,5 +20,8 @@ Closure to be used in \code{\link{sim_distribution}}
 
 parabola_fun <- sim_parabola(alpha = 25, mu = 50, sigma = 5, plot = TRUE)
 parabola_fun(x = 0:100)
+
+parabola_fun <- sim_parabola(mu = c(50, 120), sigma = c(5, 3), plot = TRUE)
+parabola_fun(x = rep(1:200, 2), age = rep(c(1, 2), each = 200))
 
 }
