@@ -142,7 +142,7 @@ all_depths <- all_depths %>% mutate(grid = factor(ifelse(strat > 300, "real", "s
 all_depths %>%
   filter(!is.na(grid)) %>%
   ggplot(aes(x=mean, color=grid, fill=grid)) +
-  geom_histogram(position="dodge", bins=10, alpha = 1)+ theme_bw()
+  geom_histogram(position="dodge", bins=10, alpha = 1) + theme_bw()
 
 plot_grid(grid)
 
@@ -196,7 +196,7 @@ den
 
 ## Melt age frequency data
 af <- data.table::melt(setdet,
-                       id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing"),
+                       id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
                        measure.vars = names(setdet)[grepl("^af", names(setdet))],
                        variable.name = "age", value.name = "freq")
 af <- af[af$age != "afNA", ]
@@ -215,7 +215,7 @@ pop <- sim_abundance(ages = 1:20,
                      R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(log_mean = log(0.5),   # natural (M:0.30) and fishing (F:0.20) mortality
+                     Z = sim_Z(log_mean = log(0.3),   # natural (M:0.30) and fishing (F:0.20) mortality
                                log_sd = 0.2,
                                phi_age = 0.9,         # M decreases with age, F increases with age
                                phi_year = 0.5),       # inverted u-shape graph ages 9-14 between 1996-2017)
@@ -226,10 +226,10 @@ pop <- sim_abundance(ages = 1:20,
   sim_distribution(grid,
                    ays_covar = sim_ays_covar(sd = 4.0,
                                              range = 700,
-                                             phi_age = 0.7,
-                                             phi_year = 0.7,
-                                             group_ages = c(1:5, 6:13, 14:20)),
-                   depth_par = sim_parabola(mu = 75,
+                                             phi_age = 0.3,
+                                             phi_year = 0.1,
+                                             group_ages = c(1:13, 14:20)),
+                   depth_par = sim_parabola(mu = c(rep(75,13), rep(100,7)),
                                             sigma = 50))
 
 ## Quick look at distribution
@@ -305,9 +305,24 @@ plot(as.numeric(data_I$set.depth.min), data_I$number, xlab = "depth",
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
 
-sim_a <- data.frame(survey$full_setdet)
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:5 ~ "age 1-5",
-                                     age %in% 6:13 ~ "age 6-13",
+## Relationship of catch and depth by age
+
+real_a <- data.frame(af[af$freq>0])
+real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:13 ~ "age 1-13",
+                                               age %in% 14:20 ~ "age 14-20"))
+real_a$agegroup <- as.factor(real_a$agegroup)
+
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=age))+
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+real_a %>% filter(!is.na(agegroup)) %>%
+          ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
+          geom_point() + scale_color_brewer(palette="Dark2")
+
+## Simulated
+sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:13 ~ "age 1-13",
                                      age %in% 14:20 ~ "age 14-20"))
 sim_a$agegroup <- as.factor(sim_a$agegroup)
 
