@@ -271,8 +271,8 @@ hist(survey$setdet$n, breaks = 100, xlab = "set catch", main = "set catch - simu
 data_I <- out$strat2$abundance$summary$total[survey$years]
 names(data_I) <- survey$years
 sim_I <- colSums(survey$I)
-barplot(data_I, names.arg = names(data_I), xlab = "age", main = "annual index - real data")
-barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "annual index - simulated data")
+barplot(data_I, names.arg = names(data_I), xlab = "year", main = "annual index - real data")
+barplot(sim_I, names.arg = names(sim_I), xlab = "year", main = "annual index - simulated data")
 
 ## Compare index at age
 data_I <- out$strat1$age$abundance$annual.totals
