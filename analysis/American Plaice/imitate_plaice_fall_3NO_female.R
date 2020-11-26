@@ -230,7 +230,8 @@ pop <- sim_abundance(ages = 1:20,
                                              phi_year = 0.1),
                                              #group_ages = 1:6),
                    depth_par = sim_parabola(mu = log(75),
-                                            sigma = 0.8, log_space = TRUE))
+                                            sigma = 0.1,
+                                            sigma_right = 0.6, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
