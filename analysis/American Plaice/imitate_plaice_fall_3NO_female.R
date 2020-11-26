@@ -1,4 +1,4 @@
-# Plaice 3NO
+# Plaice 3NO Fall Female
 
 ## Make grid function for each Division
 
@@ -98,11 +98,11 @@ sqrt(survey_area)/2
 grid <- make_grid(x_range = c(-184, 184),
                   y_range = c(-184, 184),
                   res = c(3.5, 3.5),
-                  shelf_depth = 175,
+                  shelf_depth = 150,
                   shelf_width = 150,
-                  depth_range = c(0, 1800),
+                  depth_range = c(30, 1800),
                   n_div = 2,
-                  strat_breaks = seq(0, 1800, by = 100),
+                  strat_breaks = seq(0, 1800, by = 80),
                   strat_splits = 4,
                   method = "spline")
 
@@ -115,9 +115,9 @@ length(unique(grid$strat))
 mean(table(values(grid$strat)) * prod(res(grid)))
 # 1986.121
 range(values(grid$depth), na.rm = TRUE)
-# 1 1662
+# 31 1636
 mean(values(grid$depth), na.rm = TRUE)
-# 205.1333
+# 196.8095
 
 plot(grid)
 plot(grid$depth)
@@ -224,13 +224,13 @@ pop <- sim_abundance(ages = 1:20,
                                        K = 0.07, log_sd = 0.1,
                                        length_group = 3, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 4.0,
+                   ays_covar = sim_ays_covar(sd = 9.5,
                                              range = 700,
                                              phi_age = 0.3,
-                                             phi_year = 0.1,
-                                             group_ages = c(1:13, 14:20)),
-                   depth_par = sim_parabola(mu = c(rep(75,13), rep(100,7)),
-                                            sigma = 50))
+                                             phi_year = 0.1),
+                                             #group_ages = 1:6),
+                   depth_par = sim_parabola(mu = log(75),
+                                            sigma = 0.8, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -243,7 +243,7 @@ for (i in rev(pop$years)) {
   image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
 }
 
-set.seed(889)
+
 survey <- sim_survey(pop,
                      n_sims = 1,
                      q = sim_logistic(),
@@ -307,27 +307,40 @@ plot(sim_I$depth, sim_I$n, xlab = "depth",
 
 ## Relationship of catch and depth by age
 
+## Real by age
 real_a <- data.frame(af[af$freq>0])
-real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:13 ~ "age 1-13",
-                                               age %in% 14:20 ~ "age 14-20"))
-real_a$agegroup <- as.factor(real_a$agegroup)
-
 real_a  %>%
   ggplot(aes(x=set.depth.mean, y=freq, col=age))+
   geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
 
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq)) +
+  geom_point() + facet_wrap(~age)
+
+## Real by agegroup
+real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:5 ~ "age 1-5",
+                                                 age %in% 6:10 ~ "age 6-10",
+                                                 age %in% 11:25 ~ "age 11-25"))
+real_a$agegroup <- as.factor(real_a$agegroup)
 real_a %>% filter(!is.na(agegroup)) %>%
+            filter(agegroup == "age 11-25") %>%
           ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
-          geom_point() + scale_color_brewer(palette="Dark2")
+          geom_point() + scale_color_brewer(palette="Spectral")
+
 
 ## Simulated
 sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:13 ~ "age 1-13",
-                                     age %in% 14:20 ~ "age 14-20"))
-sim_a$agegroup <- as.factor(sim_a$agegroup)
+sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
 
-ggplot(sim_a,aes(x=depth, y=n,col=agegroup))+
-  geom_point()
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:5 ~ "age 1-5",
+                                               age %in% 6:10 ~ "age 6-10",
+                                               age %in% 11:20 ~ "age 11-20"))
+sim_a$agegroup <- as.factor(sim_a$agegroup)
+sim_a %>% filter(!is.na(agegroup)) %>%
+  filter(agegroup == "age 11-20") %>%
+  ggplot(aes(x=depth, y=n,col=agegroup)) +
+  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
 
 ## Compare intra-haul correlation
 idvar <- c("vessel", "trip", "set", "year")
