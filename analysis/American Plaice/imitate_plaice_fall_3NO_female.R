@@ -253,10 +253,10 @@ survey <- sim_survey(pop,
                      binom_error = TRUE,
                      min_sets = 2,
                      set_den = 1/1000,
-                     lengths_cap = 500,
-                     ages_cap = 10,
+                     lengths_cap = 300,
+                     ages_cap = 20,
                      age_sampling = "stratified",
-                     age_length_group = 3,
+                     age_length_group = 2,
                      age_space_group = "division",
                      light = FALSE)
 
