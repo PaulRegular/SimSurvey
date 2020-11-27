@@ -301,7 +301,7 @@ plot(length ~ age, data = sim_I, main = "age growth data - simulated data",
 ## (could use to improve the accuracy of depth in the real data, but the pattern is clear)
 data_I <- setdet[setdet$number>0,]
 sim_I <- survey$setdet[survey$setdet$n>0,]
-plot(as.numeric(data_I$set.depth.min), data_I$number, xlab = "depth",
+plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
      ylab = "number", main = "real data", xlim = c(0, 1000))
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
