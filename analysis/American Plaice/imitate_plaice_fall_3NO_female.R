@@ -264,8 +264,14 @@ survey <- sim_survey(pop,
 ## COMPS
 
 ## Compare set catch
-hist(setdet$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
-hist(survey$setdet$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
+data_Z <- setdet[setdet$number==0,]
+data_I <- setdet[setdet$number>0,]
+sim_Z <- survey$setdet[survey$setdet$n==0,]
+sim_I <- survey$setdet[survey$setdet$n>0,]
+hist(data_Z$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
+hist(sim_Z$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
+hist(data_I$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
+hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
 
 ## Compare annual index
 data_I <- out$strat2$abundance$summary$total[survey$years]
