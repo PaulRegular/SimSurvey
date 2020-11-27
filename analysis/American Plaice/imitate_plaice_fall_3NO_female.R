@@ -212,9 +212,9 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(889)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(log_mean = log(30000000),
-                               log_sd = 0.5,
-                               random_walk = TRUE),
+                     R = sim_R(log_mean = log(100000000),
+                               log_sd = 0.7,
+                               random_walk = FALSE),
                      Z = sim_Z(log_mean = log(0.3),   # natural (M:0.30) and fishing (F:0.20) mortality
                                log_sd = 0.2,
                                phi_age = 0.9,         # M decreases with age, F increases with age
@@ -222,10 +222,10 @@ pop <- sim_abundance(ages = 1:20,
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 69.63, L0 = 3,       # Fitted for female growth
                                        K = 0.07, log_sd = 0.1,
-                                       length_group = 3, digits = 0)) %>%
+                                       length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 9.5,
-                                             range = 700,
+                   ays_covar = sim_ays_covar(sd = 6,
+                                             range = 2000,
                                              phi_age = 0.3,
                                              phi_year = 0.1),
                                              #group_ages = 1:6),
@@ -247,7 +247,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(),
+                     q = sim_logistic(k = 2, x0 = 2),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
@@ -273,6 +273,12 @@ hist(sim_Z$n, breaks = 100, xlab = "set catch", main = "set catch - simulated da
 hist(data_I$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
 hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
 
+plot_ly() %>%
+  add_histogram(x = setdet$number, name = "real") %>%
+  add_histogram(x = survey$setdet$n, name = "simulated") %>%
+  layout(title = "Set catch")
+
+
 ## Compare annual index
 data_I <- out$strat2$abundance$summary$total[survey$years]
 names(data_I) <- survey$years
@@ -280,12 +286,26 @@ sim_I <- colSums(survey$I)
 barplot(data_I, names.arg = names(data_I), xlab = "year", main = "annual index - real data")
 barplot(sim_I, names.arg = names(sim_I), xlab = "year", main = "annual index - simulated data")
 
+plot_ly() %>%
+  add_lines(data = out$strat2$abundance$summary,
+            x = ~seq_along(survey.year), y = ~total, name = "real") %>%
+  add_lines(x = seq(survey$years), y = colSums(survey$I), name = "simulated") %>%
+  layout(title = "Annual index", xaxis = list(title = "Year"))
+
+
 ## Compare index at age
 data_I <- out$strat1$age$abundance$annual.totals
 data_I <- rowMeans(data_I[data_I$age %in% survey$ages, grepl("y", names(data_I))])
 sim_I <- rowMeans(survey$I)
 barplot(data_I, names.arg = names(data_I), xlab = "age", main = "index at age - real data")
 barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "index at age - simulated data")
+
+plot_ly() %>%
+  add_lines(x = seq_along(data_I), y = data_I, name = "real") %>%
+  add_lines(x = seq_along(sim_I), y = sim_I, name = "simulated") %>%
+  layout(title = "Average index at age", xaxis = list(title = "Age"))
+
+
 
 ## Compare age growth data
 data_I <- out$raw.data$age.growth
@@ -395,7 +415,7 @@ plot_ly(data = af[af$age == 7, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af[af$survey.year == 2005,]) %>%
+plot_ly(data = af[af$survey.year == 2008,]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
