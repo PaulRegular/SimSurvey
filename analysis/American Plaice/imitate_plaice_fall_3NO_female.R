@@ -314,6 +314,12 @@ nrow(data_I)
 nrow(sim_I)
 hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
 hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+
+plot_ly() %>%
+  add_histogram(x = data_I$length, name = "real") %>%
+  add_histogram(x = sim_I$length, name = "simulated") %>%
+  layout(title = "Age Growth")
+
 plot(length ~ age, data = data_I, main = "age growth data - real data",
      xlim = range(survey$ages))
 plot(length ~ age, data = sim_I, main = "age growth data - simulated data",
@@ -331,6 +337,13 @@ plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
      ylab = "number", main = "real data", xlim = c(0, 1000))
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
+
+plot_ly() %>%
+  add_markers(x = data_I$set.depth.mean, y = data_I$number, name = "real") %>%
+  add_markers(x = sim_I$depth, sim_I$n, name = "simulated") %>%
+  layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
+                                                     yaxis = list(title = "Number"))
+
 
 ## Relationship of catch and depth by age
 
