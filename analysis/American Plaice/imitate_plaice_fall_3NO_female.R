@@ -264,6 +264,7 @@ survey <- sim_survey(pop,
 ## COMPS
 
 ## Compare set catch
+## FREQUENCY OF SIM DATA SHOULD BE HALF
 data_Z <- setdet[setdet$number==0,]
 data_I <- setdet[setdet$number>0,]
 sim_Z <- survey$setdet[survey$setdet$n==0,]
@@ -280,6 +281,7 @@ plot_ly() %>%
 
 
 ## Compare annual index
+## FREQUENCY OF SIM DATA SHOULD BE HALF
 data_I <- out$strat2$abundance$summary$total[survey$years]
 names(data_I) <- survey$years
 sim_I <- colSums(survey$I)
@@ -306,7 +308,6 @@ plot_ly() %>%
   layout(title = "Average index at age", xaxis = list(title = "Age"))
 
 
-
 ## Compare age growth data
 data_I <- out$raw.data$age.growth
 sim_I <- survey$samp[aged == TRUE, ]
@@ -331,6 +332,7 @@ plot(length ~ age, data = sim_I, main = "age growth data - simulated data",
 
 ## Compare relationship between catch and depth
 ## (could use to improve the accuracy of depth in the real data, but the pattern is clear)
+## FREQUENCY OF SIM DATA SHOULD BE HALF
 data_I <- setdet[setdet$number>0,]
 sim_I <- survey$setdet[survey$setdet$n>0,]
 plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
