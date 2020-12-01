@@ -360,12 +360,12 @@ real_a  %>%
   geom_point() + facet_wrap(~age)
 
 ## Real by agegroup
-real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:5 ~ "age 1-5",
-                                                 age %in% 6:10 ~ "age 6-10",
-                                                 age %in% 11:25 ~ "age 11-25"))
+real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:12 ~ "age 1-12",
+                                                 age %in% 13:25 ~ "age 13-25"))
+
 real_a$agegroup <- as.factor(real_a$agegroup)
 real_a %>% filter(!is.na(agegroup)) %>%
-            filter(agegroup == "age 11-25") %>%
+            filter(agegroup == "age 13-25") %>%
           ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
           geom_point() + scale_color_brewer(palette="Spectral")
 
@@ -375,12 +375,11 @@ sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
 sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
   geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
 
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:5 ~ "age 1-5",
-                                               age %in% 6:10 ~ "age 6-10",
-                                               age %in% 11:20 ~ "age 11-20"))
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:12 ~ "age 1-12",
+                                               age %in% 13:20 ~ "age 13-20"))
 sim_a$agegroup <- as.factor(sim_a$agegroup)
 sim_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 11-20") %>%
+  filter(agegroup == "age 13-20") %>%
   ggplot(aes(x=depth, y=n,col=agegroup)) +
   geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
 
@@ -434,6 +433,7 @@ plot_ly(data = af[af$survey.year == 2008,]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
+
 ## Real data all ages and years
 plot_ly(data = af) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
@@ -443,6 +443,7 @@ plot_ly(data = af) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
+
 ## Younger ages (< 4) are somewhat random (because of distribution or catchability?),
 ## hoever, correlation is strong across age. Less strong through time.
 
