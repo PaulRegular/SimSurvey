@@ -212,23 +212,23 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(889)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(log_mean = log(100000000),
-                               log_sd = 0.7,
+                     R = sim_R(log_mean = log(65000000),
+                               log_sd = 1,
                                random_walk = FALSE),
                      Z = sim_Z(log_mean = log(0.3),   # natural (M:0.30) and fishing (F:0.20) mortality
                                log_sd = 0.2,
-                               phi_age = 0.9,         # M decreases with age, F increases with age
-                               phi_year = 0.5),       # inverted u-shape graph ages 9-14 between 1996-2017)
+                               phi_age = 0.2,         # M decreases with age, F increases with age
+                               phi_year = 0.3),       # inverted u-shape graph ages 9-14 between 1996-2017)
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 69.63, L0 = 3,       # Fitted for female growth
                                        K = 0.07, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
                    ays_covar = sim_ays_covar(sd = 6,
-                                             range = 2000,
-                                             phi_age = 0.3,
-                                             phi_year = 0.1),
-                                             #group_ages = 1:6),
+                                             range = 1500,
+                                             phi_age = 0.5,
+                                             phi_year = 0.2,
+                                             group_ages = c(1:12, 13:20)),
                    depth_par = sim_parabola(mu = log(75),
                                             sigma = 0.1,
                                             sigma_right = 0.6, log_space = TRUE))
