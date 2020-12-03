@@ -220,12 +220,12 @@ af$age <- as.integer(gsub("af", "", af$age))
 ## - Distribution parameters manually tweaked until results roughly corresponded to
 ##   observations from 3NO plaice
 set.seed(889)
-pop <- sim_abundance(ages = 1:25,
+pop <- sim_abundance(ages = 1:30,
                      years = 1:20,
-                     R = sim_R(log_mean = log(120000000),
+                     R = sim_R(log_mean = log(140000000),
                                log_sd = 0.7,
                                random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.2),
+                     Z = sim_Z(log_mean = log(0.15),
                                log_sd = 0.5,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -234,11 +234,12 @@ pop <- sim_abundance(ages = 1:25,
                                        K = 0.07, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 3,
-                                             range = 3000,
-                                             phi_age = 0.5,
-                                             phi_year = 0.9),
-                   depth_par = sim_parabola(mu = log(65),
+                   ays_covar = sim_ays_covar(sd = 1.6,
+                                             range = 800,
+                                             phi_age = 0.9,
+                                             phi_year = 0.9,
+                                             group_ages = 20:30),
+                   depth_par = sim_parabola(mu = log(70),
                                             sigma = 0.1,
                                             sigma_right = 0.6, log_space = TRUE))
 
