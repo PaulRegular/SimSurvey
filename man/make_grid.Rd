@@ -36,7 +36,7 @@ make_grid(
 
 \item{strat_splits}{Number of times to horizontally split strat (i.e. easy way to increase the number of strata)}
 
-\item{method}{Use a "spline" or "loess" to generate a smooth gradient or simply use "linear" interpolation?}
+\item{method}{Use a "spline", "loess" or "bezier" to generate a smooth gradient or simply use "linear" interpolation?}
 }
 \value{
 Returns RasterBrick of the same structure as \code{\link{survey_grid}}

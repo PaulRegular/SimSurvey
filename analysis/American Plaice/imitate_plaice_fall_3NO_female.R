@@ -9,6 +9,7 @@ library(raster)
 library(SimSurvey)
 library(dplyr)
 library(ggplot2)
+library(plotly)
 
 ## UTM projection for Newfoundland
 utm_proj <- "+proj=utm +zone=21 +ellps=WGS84 +datum=WGS84 +units=km +no_defs"
@@ -88,6 +89,11 @@ depth_mean <- mean(strat_bathy[], na.rm = TRUE)
 depth_mean
 # Units: [km^2]
 # -206.2931
+depth_median <- median(strat_bathy[], na.rm = TRUE)
+depth_median
+# Units: [km^2]
+# -78
+
 
 #x_y_range
 sqrt(survey_area)/2
@@ -98,15 +104,15 @@ sqrt(survey_area)/2
 grid <- make_grid(x_range = c(-184, 184),
                   y_range = c(-184, 184),
                   res = c(3.5, 3.5),
-                  shelf_depth = 150,
+                  shelf_depth = 80,
                   shelf_width = 150,
-                  depth_range = c(30, 1800),
+                  depth_range = c(0, 1600),
                   n_div = 2,
-                  strat_breaks = seq(0, 1800, by = 80),
+                  strat_breaks = seq(0, 1600, by = 80),
                   strat_splits = 4,
-                  method = "spline")
+                  method = "bezier")
 
-tibble::lst(survey_area, strata, mean_area, depth_range, depth_mean)
+tibble::lst(survey_area, strata, mean_area, depth_range, depth_mean, depth_median)
 
 prod(res(grid)) * ncell(grid)
 # 135056.2
@@ -118,6 +124,10 @@ range(values(grid$depth), na.rm = TRUE)
 # 31 1636
 mean(values(grid$depth), na.rm = TRUE)
 # 196.8095
+median(values(grid$depth), na.rm = TRUE)
+
+xyz <- data.frame(rasterToPoints(grid$depth))
+plot_ly(data = xyz, x = ~x, y = ~-depth) %>% add_lines()
 
 plot(grid)
 plot(grid$depth)
@@ -212,7 +222,7 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(889)
 pop <- sim_abundance(ages = 1:25,
                      years = 1:20,
-                     R = sim_R(log_mean = log(85000000),
+                     R = sim_R(log_mean = log(120000000),
                                log_sd = 0.7,
                                random_walk = FALSE),
                      Z = sim_Z(log_mean = log(0.2),
@@ -228,9 +238,9 @@ pop <- sim_abundance(ages = 1:25,
                                              range = 3000,
                                              phi_age = 0.5,
                                              phi_year = 0.9),
-                   depth_par = sim_parabola(mu = log(70),
+                   depth_par = sim_parabola(mu = log(65),
                                             sigma = 0.1,
-                                            sigma_right = 0.5, log_space = TRUE))
+                                            sigma_right = 0.6, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
