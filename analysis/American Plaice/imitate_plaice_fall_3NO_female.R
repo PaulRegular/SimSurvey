@@ -89,6 +89,7 @@ depth_mean <- mean(strat_bathy[], na.rm = TRUE)
 depth_mean
 # Units: [km^2]
 # -206.2931
+
 depth_median <- median(strat_bathy[], na.rm = TRUE)
 depth_median
 # Units: [km^2]
@@ -104,27 +105,29 @@ sqrt(survey_area)/2
 grid <- make_grid(x_range = c(-184, 184),
                   y_range = c(-184, 184),
                   res = c(3.5, 3.5),
-                  shelf_depth = 80,
-                  shelf_width = 150,
+                  shelf_depth = 60,
+                  shelf_width = 170,
                   depth_range = c(0, 1600),
                   n_div = 2,
-                  strat_breaks = seq(0, 1600, by = 80),
+                  strat_breaks = seq(0, 1600, by = 65),
                   strat_splits = 4,
                   method = "bezier")
+
 
 tibble::lst(survey_area, strata, mean_area, depth_range, depth_mean, depth_median)
 
 prod(res(grid)) * ncell(grid)
 # 135056.2
 length(unique(grid$strat))
-# 68
+# 72
 mean(table(values(grid$strat)) * prod(res(grid)))
-# 1986.121
+# 1875.781
 range(values(grid$depth), na.rm = TRUE)
-# 31 1636
+# 6 1415
 mean(values(grid$depth), na.rm = TRUE)
-# 196.8095
+# 208.0762
 median(values(grid$depth), na.rm = TRUE)
+# 83
 
 xyz <- data.frame(rasterToPoints(grid$depth))
 plot_ly(data = xyz, x = ~x, y = ~-depth) %>% add_lines()
@@ -155,6 +158,8 @@ all_depths %>%
   geom_histogram(position="dodge", bins=10, alpha = 1) + theme_bw()
 
 plot_grid(grid)
+
+
 
 
 ## Abundance and distribution --------------------------------------------------
