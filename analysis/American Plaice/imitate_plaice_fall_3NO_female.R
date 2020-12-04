@@ -36,24 +36,24 @@ mins <- numeric(length(strat_no))
 maxs <- numeric(length(strat_no))
 names(means) <- names(mins) <- names(maxs) <- strat_no
 
-# for (s in strat_no) {
-#
-#   temp <- raster::mask(strat_bathy, strat_polys_div[strat_polys_div$STRAT == s, ])
-#
-#   cat(s, "\n")
-#   cat("mean:", mean(temp[], na.rm = TRUE), "\n")
-#   cat("min:", min(temp[], na.rm = TRUE), "\n")
-#   cat("max:", max(temp[], na.rm = TRUE), "\n")
-#
-#   means[as.character(s)] <- mean(temp[], na.rm = TRUE)
-#   mins[as.character(s)] <- min(temp[], na.rm = TRUE)
-#   maxs[as.character(s)] <- max(temp[], na.rm = TRUE)
-#
-# }
-#
-# depth_by_strata <- data.frame(strat = strat_no,
-#                               mean = means,
-#                               min = mins, max = maxs)
+for (s in strat_no) {
+
+   temp <- raster::mask(strat_bathy, strat_polys_div[strat_polys_div$STRAT == s, ])
+
+   cat(s, "\n")
+   cat("mean:", mean(temp[], na.rm = TRUE), "\n")
+   cat("min:", min(temp[], na.rm = TRUE), "\n")
+   cat("max:", max(temp[], na.rm = TRUE), "\n")
+
+   means[as.character(s)] <- mean(temp[], na.rm = TRUE)
+   mins[as.character(s)] <- min(temp[], na.rm = TRUE)
+   maxs[as.character(s)] <- max(temp[], na.rm = TRUE)
+
+ }
+
+ depth_by_strata <- data.frame(strat = strat_no,
+                               mean = means,
+                               min = mins, max = maxs)
 
 ## Survey area
 survey_area <- sum(sf::st_area(strat_polys_div_utm))
