@@ -289,11 +289,14 @@ hist(sim_Z$n, breaks = 100, xlab = "set catch", main = "set catch - simulated da
 hist(data_I$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
 hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
 
+median(data_I$number * 0.5)
+median(sim_I$n)
+
 ## Note adjustment for sex ratio - current simulation is focused on females
 ## while the set details 'number' from the survey includes both male and females
 plot_ly() %>%
-  add_histogram(x = setdet$number * 0.5, name = "real") %>%
-  add_histogram(x = survey$setdet$n, name = "simulated") %>%
+  add_histogram(x = data_I$number * 0.5, name = "real") %>%
+  add_histogram(x = sim_I$n, name = "simulated") %>%
   layout(title = "Set catch")
 
 
@@ -304,6 +307,9 @@ names(data_I) <- survey$years
 sim_I <- colSums(survey$I)
 barplot(data_I, names.arg = names(data_I), xlab = "year", main = "annual index - real data")
 barplot(sim_I, names.arg = names(sim_I), xlab = "year", main = "annual index - simulated data")
+
+mean(data_I*.05)
+mean(sim_I)
 
 ## Again, note the 50% adjustment of the 'strat2' totals since they are based
 ## on set-level numbers that include male and females
@@ -321,6 +327,9 @@ sim_I <- rowMeans(survey$I)
 barplot(data_I, names.arg = names(data_I), xlab = "age", main = "index at age - real data")
 barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "index at age - simulated data")
 
+mean(data_I)
+mean(sim_I)
+
 ## These values, in contrast to the 'strat2' values, are limited to females
 ## given the strat.fun call used above
 plot_ly() %>%
@@ -336,6 +345,9 @@ nrow(data_I)
 nrow(sim_I)
 hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
 hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+
+mean(data_I$length)
+mean(sim_I$length)
 
 plot_ly() %>%
   add_histogram(x = data_I$length, name = "real") %>%
@@ -370,6 +382,9 @@ plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
 
+mean(data_I$set.depth.mean)
+mean(sim_I$depth)
+
 ## Again, note 0.5 adjustment for the set-level number
 plot_ly() %>%
   add_markers(x = data_I$set.depth.mean, y = data_I$number * 0.5, name = "real") %>%
@@ -391,12 +406,12 @@ real_a  %>%
   geom_point() + facet_wrap(~age)
 
 ## Real by agegroup
-real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:12 ~ "age 1-12",
-                                                 age %in% 13:25 ~ "age 13-25"))
+real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
+                                                 age %in% 20:25 ~ "age 20-25"))
 
 real_a$agegroup <- as.factor(real_a$agegroup)
 real_a %>% filter(!is.na(agegroup)) %>%
-            filter(agegroup == "age 13-25") %>%
+            filter(agegroup == "age 1-19") %>%
           ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
           geom_point() + scale_color_brewer(palette="Spectral")
 
@@ -406,11 +421,11 @@ sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
 sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
   geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
 
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:12 ~ "age 1-12",
-                                               age %in% 13:20 ~ "age 13-20"))
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
+                                               age %in% 20:26 ~ "age 20-26"))
 sim_a$agegroup <- as.factor(sim_a$agegroup)
 sim_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 13-20") %>%
+  filter(agegroup == "age 1-19") %>%
   ggplot(aes(x=depth, y=n,col=agegroup)) +
   geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
 
