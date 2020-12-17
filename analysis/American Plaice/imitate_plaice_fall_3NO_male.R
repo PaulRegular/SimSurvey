@@ -282,31 +282,32 @@ af$age <- as.integer(gsub("af", "", af$age))
 
 ## Simulate data for comparison
 ## - Abundance parameters and catchability curve roughly based on NCAM estimates
-## - Distribution parameters manually tweaked until results roughly corresponded to
-##   observations from 3NO plaice
+## - Distribution parameters manually tweaked until results roughly corresponded
+##   to observations from 3NO plaice
 set.seed(889)
-pop <- sim_abundance(ages = 1:26,
+pop <- sim_abundance(ages = 1:19,
                      years = 1:20,
-                     R = sim_R(log_mean = log(100000000),
-                               log_sd = 0.7,
+                     R = sim_R(log_mean = log(410000000),
+                               log_sd = 0.9,
                                random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.15),
-                               log_sd = 0.5,
-                               phi_age = 0.9,
+                     Z = sim_Z(log_mean = log(0.44),
+                               log_sd = 0.6,
+                               phi_age = 0.5,
                                phi_year = 0.5),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 69.63, L0 = 3,  # Fitted for female growth
-                                       K = 0.09, log_sd = 0.1,
+                     growth = sim_vonB(Linf = 50.58, L0 = 3,  # Fitted for male growth
+                                       K = 0.12, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 1,
-                                             range = 800,
+                   ays_covar = sim_ays_covar(sd = 2.7,
+                                             range = 900,
                                              phi_age = 0.9,
-                                             phi_year = 0.9,
-                                             group_ages = 20:26),
+                                             phi_year = 0.5,
+                                             group_ages = 16:19),
                    depth_par = sim_parabola(mu = log(75),
-                                            sigma = 0.1,
-                                            sigma_right = 0.6, log_space = TRUE))
+                                            sigma = 0.15,
+                                            sigma_right = 0.5, log_space = TRUE))
+
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
