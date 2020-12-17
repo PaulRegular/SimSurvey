@@ -160,13 +160,12 @@ all_depths %>%
 plot_grid(grid)
 
 
-
-
 ## Abundance and distribution --------------------------------------------------
 
 library(Rstrap)
 library(plotly)
 library(data.table)
+library(tidyr)
 
 ## REAL DATA
 
@@ -176,14 +175,76 @@ con.lf <- con.lf[con.lf$spec == 889, ]
 ag <- ag[ag$spec == 889, ]
 rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 
-## Save Rstrap output
+## Investigate Rstrap output for both males and females as plaice
+## have sexually dimorphic growth
+out_all <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
+                     data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
+                     species = 889, survey.year = c(1995:2013, 2015:2017),
+                     season = "fall",  # no age-growth 2014, 2018, 2019
+                     NAFOdiv = c("3N", "3O"), strat = NULL,
+                     sex = c("female", "male", "unsexed"), sep.sex = TRUE, # sexually dimorphic growth
+                     indi.alk = c(TRUE,TRUE,FALSE),
+                     length.group = 2, length.weight = NULL,
+                     group.by = "length & age",
+                     export = NULL, plot.results = FALSE)
+
+## Examines sex ratio by AGE
+out_all$strat1$age$abundance$summary %>%
+  filter(sex %in% c("male", "female")) %>%
+  group_by(age, sex) %>%
+  summarise(total = sum(total)) %>%
+  ungroup() %>%
+  plot_ly(x = ~age, y = ~total, color = ~sex) %>%
+  add_lines()
+
+out_all$strat1$age$abundance$summary %>%
+  filter(age == 16, sex %in% c("male", "female")) %>%
+  plot_ly(x = ~survey.year, y = ~total, color = ~sex) %>%
+  add_lines()
+
+## Examines sex ratio by YEAR
+out_all$strat1$age$abundance$summary %>%
+  filter(sex %in% c("male", "female")) %>%
+  group_by(survey.year, sex) %>%
+  summarise(total = sum(total)) %>%
+  ungroup() %>%
+  plot_ly(x = ~survey.year, y = ~total, color = ~sex) %>%
+  add_lines()
+
+out_all$strat1$age$abundance$summary %>%
+  filter(survey.year == 2016, sex %in% c("male", "female")) %>%
+  plot_ly(x = ~age, y = ~total, color = ~sex) %>%
+  add_lines()
+
+## Examines sex ratio above or below 50%
+out_all$strat1$age$abundance$summary %>%
+  filter(sex %in% c("male", "female")) %>%
+  select(survey.year, age, sex, total) %>%
+  pivot_wider(names_from = sex, values_from = total) %>%
+  mutate(ratio = male / (male + female)) %>%
+  group_by(age) %>%
+  summarise(mean_ratio = mean(ratio, na.rm = TRUE))
+
+out_all$strat1$age$abundance$summary %>%
+  filter(sex %in% c("male", "female")) %>%
+  select(survey.year, age, sex, total) %>%
+  pivot_wider(names_from = sex, values_from = total) %>%
+  mutate(ratio = male / (male + female)) %>%
+  filter(age < 10) %>%
+  plot_ly(x = ~survey.year, y = ~ratio - 0.5, color = ~factor(age)) %>%
+  add_lines()
+
+# Males are greater than 50% abundance in the population before age 7,
+# females are greater than 50% at age 8 and older
+# Lower female recruitment and mortality than males needed in simulated survey
+
+## Save Rstrap output by extracting only female data
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
                  species = 889, survey.year = c(1995:2013, 2015:2017),
                  season = "fall",  # no age-growth 2014, 2018, 2019
                  NAFOdiv = c("3N", "3O"), strat = NULL,
-                 sex = ("female"), sep.sex = FALSE, # sexually dimorphic growth
-                 #indi.alk = c(TRUE,TRUE,FALSE),
+                 sex = ("female"), sep.sex = FALSE,
                  length.group = 2, length.weight = NULL,
                  group.by = "length & age",
                  export = NULL, plot.results = FALSE)
