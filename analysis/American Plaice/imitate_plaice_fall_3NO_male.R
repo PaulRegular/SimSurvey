@@ -467,12 +467,12 @@ real_a  %>%
   geom_point() + facet_wrap(~age)
 
 ## Real by agegroup
-real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
-                                                 age %in% 20:25 ~ "age 20-25"))
+real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:15 ~ "age 1-15",
+                                                 age %in% 16:19 ~ "age 16-19"))
 
 real_a$agegroup <- as.factor(real_a$agegroup)
 real_a %>% filter(!is.na(agegroup)) %>%
-            filter(agegroup == "age 1-19") %>%
+            filter(agegroup == "age 16-19") %>%
           ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
           geom_point() + scale_color_brewer(palette="Spectral")
 
@@ -482,11 +482,11 @@ sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
 sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
   geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
 
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
-                                               age %in% 20:26 ~ "age 20-26"))
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:15 ~ "age 1-15",
+                                               age %in% 16:19 ~ "age 16-19"))
 sim_a$agegroup <- as.factor(sim_a$agegroup)
 sim_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 1-19") %>%
+  filter(agegroup == "age 16-19") %>%
   ggplot(aes(x=depth, y=n,col=agegroup)) +
   geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
 
@@ -532,7 +532,7 @@ symbols(survey$setdet$x, survey$setdet$y,
 
 
 ## Real data (hold age or year and animate the other)
-plot_ly(data = af[af$age == 7, ]) %>%
+plot_ly(data = af[af$age == 5, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
