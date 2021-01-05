@@ -18,8 +18,7 @@ utm_proj <- "+proj=utm +zone=21 +ellps=WGS84 +datum=WGS84 +units=km +no_defs"
 strat_polys <- st_read("data-raw/DFO_NL_survey_strat/2HJ3KLNOP_Strata_Polygons_WGS84.shp",
                        layer = "2HJ3KLNOP_Strata_Polygons_WGS84")
 
-# SUBSET TO DIVISION
-
+## Subset to Division
 strat_polys_div <- strat_polys %>%
                    filter (DIV == "3N" | DIV == "3O")
 
@@ -95,11 +94,13 @@ depth_median
 # Units: [km^2]
 # -78
 
-#x_y_range
+## Determine x_y_range
 sqrt(survey_area)/2
 # 183.842 [km]
 
 ## TO DO: Modify make_grid arguments to create a similar survey area
+## shelf depth/width modifies mean grid depth, start breaks/splits modifies
+## strata (length), method determines slope of shelf
 
 grid <- make_grid(x_range = c(-184, 184),
                   y_range = c(-184, 184),
@@ -111,7 +112,6 @@ grid <- make_grid(x_range = c(-184, 184),
                   strat_breaks = seq(0, 1600, by = 65),
                   strat_splits = 4,
                   method = "bezier")
-
 
 tibble::lst(survey_area, strata, mean_area, depth_range, depth_mean, depth_median)
 
@@ -216,7 +216,6 @@ out_all$strat1$age$abundance$summary %>%
   add_lines()
 
 ## Examines sex ratio above or below 50%
-
 out_all$strat1$age$abundance$summary %>%
   filter(sex %in% c("male", "female")) %>%
   select(survey.year, age, sex, total) %>%
@@ -281,9 +280,10 @@ af$age <- as.integer(gsub("af", "", af$age))
 ## SIMULATED DATA
 
 ## Simulate data for comparison
-## - Abundance parameters and catchability curve roughly based on NCAM estimates
-## - Distribution parameters manually tweaked until results roughly corresponded
-##   to observations from 3NO plaice
+
+## Abundance parameters and catchability curve roughly based on NCAM estimates
+## Distribution parameters manually tweaked until results roughly corresponded
+## to observations from 3NO plaice
 set.seed(889)
 pop <- sim_abundance(ages = 1:19,
                      years = 1:20,
@@ -308,7 +308,6 @@ pop <- sim_abundance(ages = 1:19,
                                             sigma = 0.15,
                                             sigma_right = 0.5, log_space = TRUE))
 
-
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
 for (j in rev(pop$ages)) {
@@ -320,6 +319,11 @@ for (i in rev(pop$years)) {
   image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
 }
 
+# Min sets per strata for all surveys are 2, set density is 1 for plaice,
+# size of length bins for stratified age sampling is 2 for plaice,
+# max number of lengths per set are 300 (so 150 for each males and females)
+# and the max number of ages to sample per sex per
+# age group is 20. All other values are default values.
 
 survey <- sim_survey(pop,
                      n_sims = 1,
@@ -337,10 +341,14 @@ survey <- sim_survey(pop,
                      light = FALSE)
 
 
-## COMPS
+## COMPARISONS BETWEEN REAL AND SIMUALTED DATA
 
 ## Compare set catch
-## FREQUENCY OF SIM DATA SHOULD BE HALF
+
+# Adjustment is made (divide real data by half) for sex ratio - current simulation
+# is focused on females while the set details 'number' from the survey includes
+# both male and females. Modified through sim_distribution arguments.
+
 data_Z <- setdet[setdet$number==0,]
 data_I <- setdet[setdet$number>0,]
 sim_Z <- survey$setdet[survey$setdet$n==0,]
@@ -353,16 +361,16 @@ hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated da
 median(data_I$number * 0.5)
 median(sim_I$n)
 
-## Note adjustment for sex ratio - current simulation is focused on females
-## while the set details 'number' from the survey includes both male and females
 plot_ly() %>%
   add_histogram(x = data_I$number * 0.5, name = "real") %>%
   add_histogram(x = sim_I$n, name = "simulated") %>%
   layout(title = "Set catch")
 
-
 ## Compare annual index
-## FREQUENCY OF SIM DATA SHOULD BE HALF
+
+# Adjustment is made (divide real data by half) for the 'strat2' totals as they
+# are based on set-level numbers that include both male and females
+
 data_I <- out$strat2$abundance$summary$total[survey$years]
 names(data_I) <- survey$years
 sim_I <- colSums(survey$I)
@@ -372,8 +380,6 @@ barplot(sim_I, names.arg = names(sim_I), xlab = "year", main = "annual index - s
 mean(data_I*.05)
 mean(sim_I)
 
-## Again, note the 50% adjustment of the 'strat2' totals since they are based
-## on set-level numbers that include male and females
 plot_ly() %>%
   add_lines(data = out$strat2$abundance$summary,
             x = ~seq_along(survey.year), y = ~total * 0.5, name = "real") %>%
@@ -382,6 +388,10 @@ plot_ly() %>%
 
 
 ## Compare index at age
+
+# No adjustments made as real data from 'strat1' is based on female data only
+# Modify with sim_logistic arguments in sim_survey
+
 data_I <- out$strat1$age$abundance$annual.totals
 data_I <- rowMeans(data_I[data_I$age %in% survey$ages, grepl("y", names(data_I))])
 sim_I <- rowMeans(survey$I)
@@ -391,15 +401,16 @@ barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "index at age - si
 mean(data_I)
 mean(sim_I)
 
-## These values, in contrast to the 'strat2' values, are limited to females
-## given the strat.fun call used above
 plot_ly() %>%
   add_lines(x = seq_along(data_I), y = data_I, name = "real") %>%
   add_lines(x = seq_along(sim_I), y = sim_I, name = "simulated") %>%
   layout(title = "Average index at age", xaxis = list(title = "Age"))
 
-
 ## Compare age growth data
+
+# No adjustments made as real data for age growth is based on females only
+# Modify with sim_vonB (K) argument
+
 data_I <- out$raw.data$age.growth
 sim_I <- survey$samp[aged == TRUE, ]
 nrow(data_I)
@@ -415,11 +426,6 @@ plot_ly() %>%
   add_histogram(x = sim_I$length, name = "simulated") %>%
   layout(title = "Age Growth")
 
-plot(length ~ age, data = data_I, main = "age growth data - real data",
-     xlim = range(survey$ages))
-plot(length ~ age, data = sim_I, main = "age growth data - simulated data",
-     xlim = range(survey$ages))
-# points(length ~ age, pch = ".", data = survey$samp)
 ## Fish are caught based on age, not length...that's why there is a distinction
 ## between the two. If the catchability simulation were length based, a scattered
 ## older individual would be in the mix along the tail of the length distribution
@@ -431,11 +437,11 @@ plot_ly() %>%
          xaxis = list(title = "Age"),
          yaxis = list(title = "Length"))
 
-
-
 ## Compare relationship between catch and depth
-## (could use to improve the accuracy of depth in the real data, but the pattern is clear)
-## FREQUENCY OF SIM DATA SHOULD BE HALF
+
+# Again, adjustment is made (divide real data by half) as set details includes
+# both male and female data
+
 data_I <- setdet[setdet$number>0,]
 sim_I <- survey$setdet[survey$setdet$n>0,]
 plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
@@ -446,13 +452,11 @@ plot(sim_I$depth, sim_I$n, xlab = "depth",
 mean(data_I$set.depth.mean)
 mean(sim_I$depth)
 
-## Again, note 0.5 adjustment for the set-level number
 plot_ly() %>%
   add_markers(x = data_I$set.depth.mean, y = data_I$number * 0.5, name = "real") %>%
   add_markers(x = sim_I$depth, sim_I$n, name = "simulated") %>%
   layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
                                                      yaxis = list(title = "Number"))
-
 
 ## Relationship of catch and depth by age
 
@@ -476,12 +480,12 @@ real_a %>% filter(!is.na(agegroup)) %>%
           ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
           geom_point() + scale_color_brewer(palette="Spectral")
 
-
-## Simulated
+## Simulated by age
 sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
 sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
   geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
 
+## Simulated by age group
 sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:15 ~ "age 1-15",
                                                age %in% 16:19 ~ "age 16-19"))
 sim_a$agegroup <- as.factor(sim_a$agegroup)
@@ -517,8 +521,6 @@ stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
            main = "simulated data")
 icc(len_samp$length, len_samp$set)
 
-
-
 ## Now size up the distribution
 
 symbols(setdet$long.start, setdet$lat.start,
@@ -530,7 +532,6 @@ symbols(survey$setdet$x, survey$setdet$y,
         inches = 0.1, main = "size of distribution - simulated data",
         xlab = "x", ylab = "y")
 
-
 ## Real data (hold age or year and animate the other)
 plot_ly(data = af[af$age == 5, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
@@ -541,8 +542,8 @@ plot_ly(data = af[af$survey.year == 1999,]) %>%
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
-## Have a look at the age dimension, with freq scaled by age to allow dist
-## shifts at older ages to be visible
+# Examine at the age dimension, with frequency scaled by age to allow for
+# distribution shifts at older ages to be visible
 af[af$survey.year == 2011, ] %>%
   group_by(age) %>%
   mutate(scaled_freq = scale(freq)) %>%
@@ -550,7 +551,6 @@ af[af$survey.year == 2011, ] %>%
   add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
-
 
 ## Real data all ages and years
 plot_ly(data = af) %>%
@@ -562,7 +562,6 @@ plot_ly(data = af) %>%
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
-
 ## Again, scale within age
 af %>%
   group_by(age) %>%
@@ -572,22 +571,7 @@ af %>%
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
-
-
-## Hold age or year and animate the other
-# sim_af <- data.frame(survey$full_setdet)
-# for (a in rev(survey$ages)) {
-#   d <- sim_af[sim_af$year == 1 & sim_af$age == a, ]
-#   radius <- sqrt( d$n / pi )
-#   symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("age", a),
-#           xlab = "x", ylab = "y")
-# }
-# for (y in rev(survey$years)) {
-#   d <- sim_af[sim_af$year == y & sim_af$age == 1, ]
-#   radius <- sqrt( d$n / pi )
-#   symbols(d$x, d$y, circles = radius, inches = 0.1, main = paste("year", y),
-#           xlab = "x", ylab = "y")
-# }
+## Simulated data
 
 sim_af <- data.frame(survey$full_setdet)
 sim_af %>%
@@ -597,6 +581,7 @@ sim_af %>%
           sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
   animation_opts(frame = 5)
+
 sim_af %>%
   filter(year == 5) %>%
   group_by(age) %>%
