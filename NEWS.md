@@ -5,3 +5,8 @@
 # SimSurvey 0.1.2
 
 * Initial release to CRAN
+
+# SimSurvey 0.1.3
+
+* Simplify make_grid function to improve the splits of the divisions and strata
+* CRAN request: change doi in DESCRIPTION to prefered format

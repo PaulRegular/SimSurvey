@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SimSurvey</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.3</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -106,7 +106,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -132,7 +132,7 @@
     <p>Assumes the working directory is the project directory</p>
     </div>
 
-    <pre class="usage"><span class='fu'>vis_sim</span>(<span class='kw'>sim</span>, <span class='kw'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>vis_sim</span><span class='op'>(</span><span class='va'>sim</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -153,23 +153,23 @@
     <pre class="examples">
 <span class='co'># \donttest{</span>
 
-<span class='kw'>pop</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>, years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>)
-<span class='fu'>vis_sim</span>(<span class='kw'>pop</span>)
+<span class='va'>pop</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span><span class='op'>(</span>ages <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>, years <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span><span class='op'>)</span>
+<span class='fu'>vis_sim</span><span class='op'>(</span><span class='va'>pop</span><span class='op'>)</span>
 
-<span class='kw'>dist</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(<span class='kw'>pop</span>, grid = <span class='fu'><a href='make_grid.html'>make_grid</a></span>(res = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>)))
-<span class='fu'>vis_sim</span>(<span class='kw'>dist</span>)
+<span class='va'>dist</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span><span class='op'>(</span><span class='va'>pop</span>, grid <span class='op'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span><span class='op'>(</span>res <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='fu'>vis_sim</span><span class='op'>(</span><span class='va'>dist</span><span class='op'>)</span>
 
 <span class='co'>## Run one survey design</span>
-<span class='kw'>survey</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_survey.html'>sim_survey</a></span>(<span class='kw'>dist</span>, n_sims = <span class='fl'>5</span>)
-<span class='fu'>vis_sim</span>(<span class='kw'>survey</span>)
+<span class='va'>survey</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_survey.html'>sim_survey</a></span><span class='op'>(</span><span class='va'>dist</span>, n_sims <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
+<span class='fu'>vis_sim</span><span class='op'>(</span><span class='va'>survey</span><span class='op'>)</span>
 
 <span class='co'>## Run several survey designs and assess stratified estimates</span>
-<span class='kw'>surveys</span> <span class='op'>&lt;-</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span>(set_den = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>2</span>) <span class='op'>/</span> <span class='fl'>1000</span>,
-                          lengths_cap = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>100</span>, <span class='fl'>500</span>),
-                          ages_cap = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>5</span>, <span class='fl'>20</span>))
-<span class='kw'>tests</span> <span class='op'>&lt;-</span> <span class='fu'><a href='test_surveys.html'>test_surveys</a></span>(<span class='kw'>dist</span>, surveys = <span class='kw'>surveys</span>, keep_details = <span class='fl'>1</span>,
-                      n_sims = <span class='fl'>10</span>, n_loops = <span class='fl'>50</span>, cores = <span class='fl'>1</span>)
-<span class='fu'>vis_sim</span>(<span class='kw'>tests</span>)
+<span class='va'>surveys</span> <span class='op'>&lt;-</span> <span class='fu'><a href='expand_surveys.html'>expand_surveys</a></span><span class='op'>(</span>set_den <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>1000</span>,
+                          lengths_cap <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>100</span>, <span class='fl'>500</span><span class='op'>)</span>,
+                          ages_cap <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>20</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>tests</span> <span class='op'>&lt;-</span> <span class='fu'><a href='test_surveys.html'>test_surveys</a></span><span class='op'>(</span><span class='va'>dist</span>, surveys <span class='op'>=</span> <span class='va'>surveys</span>, keep_details <span class='op'>=</span> <span class='fl'>1</span>,
+                      n_sims <span class='op'>=</span> <span class='fl'>10</span>, n_loops <span class='op'>=</span> <span class='fl'>50</span>, cores <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='fu'>vis_sim</span><span class='op'>(</span><span class='va'>tests</span><span class='op'>)</span>
 
 <span class='co'># }</span>
 
@@ -189,7 +189,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
