@@ -1,0 +1,446 @@
+#################################### Witch flounder #####################################################   
+####################################### 3NO Fall #################################################
+##line 8,  Make grid function for each Division
+###line 168,  Abundance and distribution
+####line 216, SIMULATED DATA 
+#####line 307, Compare annual index
+######line 329, simulated index at age
+####### line 353, Compare relationship between catch and depth
+
+## Survey grid -----------------------------------------------------------------
+setwd("~/Github/SimSurvey")
+library(sf)
+library(sp)
+library(raster)
+library(SimSurvey)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+## UTM projection for Newfoundland
+utm_proj <- "+proj=utm +zone=21 +ellps=WGS84 +datum=WGS84 +units=km +no_defs"
+
+## Import strata shape file
+
+strat_polys <- st_read("~/Github/SimSurvey/data-raw/DFO_NL_survey_strat/2HJ3KLNOP_Strata_Polygons_WGS84.shp",
+                       layer = "2HJ3KLNOP_Strata_Polygons_WGS84")
+
+## Subset to Division
+strat_polys_div <- strat_polys %>%
+                   filter (DIV == "3N" | DIV == "3O")
+
+strat_polys_div_utm <- strat_polys_div %>% st_transform(utm_proj)
+
+## Import bathy data
+library(ncdf4)
+strat_bathy <- raster("~/SimSurvey-doc/2HJ3KLNOP_GEBCO_bathy.nc")
+strat_bathy <- raster::mask(strat_bathy, strat_polys_div) 
+
+## Strata-by-strata depths
+strat_no <- unique(strat_polys_div$STRAT)
+means <- numeric(length(strat_no))
+mins <- numeric(length(strat_no))
+maxs <- numeric(length(strat_no))
+names(means) <- names(mins) <- names(maxs) <- strat_no
+
+for (s in strat_no) {
+
+   temp <- raster::mask(strat_bathy, strat_polys_div[strat_polys_div$STRAT == s, ])
+
+   cat(s, "\n")
+   cat("mean:", mean(temp[], na.rm = TRUE), "\n")
+   cat("min:", min(temp[], na.rm = TRUE), "\n")
+   cat("max:", max(temp[], na.rm = TRUE), "\n")
+
+   means[as.character(s)] <- mean(temp[], na.rm = TRUE)
+   mins[as.character(s)] <- min(temp[], na.rm = TRUE)
+   maxs[as.character(s)] <- max(temp[], na.rm = TRUE)
+
+ }
+
+ depth_by_strata <- data.frame(strat = strat_no,
+                               mean = means,
+                               min = mins, max = maxs)
+
+## Survey area
+survey_area <- sum(sf::st_area(strat_polys_div_utm))
+survey_area
+# 135191.5 [km^2]
+
+## Area of the strata
+strat_sums <- strat_polys_div_utm %>%
+  mutate(area = sf::st_area(strat_polys_div_utm)) %>%
+  group_by(STRAT) %>%
+  summarize(strat_area = sum(area))
+range(strat_sums$strat_area)
+# Units: [km^2]
+# 207.7644 10359.0056
+
+## Number of strata
+strata <- length(unique(strat_polys_div_utm$STRAT))
+strata
+# 71
+
+## Mean area
+mean_area <- mean(strat_sums$strat_area)
+mean_area
+# 1904.106 [km^2]
+
+## Range depth in the survey area
+depth_range <- range(strat_bathy[], na.rm = TRUE)
+depth_range
+# -2102    -2
+
+## Mean depth in the survey area
+depth_mean <- mean(strat_bathy[], na.rm = TRUE)
+depth_mean
+# Units: [km^2]
+# -206.2931
+
+depth_median <- median(strat_bathy[], na.rm = TRUE)
+depth_median
+# Units: [km^2]
+# -78
+
+## Determines x_y_range
+sqrt(survey_area)/2
+# 183.842 [km]
+
+## TO DO: Modify make_grid arguments to create a similar survey area
+## shelf depth/width modifies mean grid depth, start breaks/splits modifies
+## strata (length), method determines slope of shelf
+
+grid <- make_grid(x_range = c(-184, 184),
+                  y_range = c(-184, 184),
+                  res = c(3.5, 3.5),
+                  shelf_depth = 60,   #?
+                  shelf_width = 170,     #?
+                  depth_range = c(0, 1600),  #?2100
+                  n_div = 2,
+                  strat_breaks = seq(0, 1600, by = 65),   #?seq(0, 1000, by = 30),
+                  strat_splits = 4,    #?
+                  method ="spline" )  #?  why used bezier method, 
+
+tibble::lst(survey_area, strata, mean_area, depth_range, depth_mean, depth_median)
+
+prod(res(grid)) * ncell(grid)
+# 135056.2
+length(unique(grid$strat))     
+# 72
+mean(table(values(grid$strat)) * prod(res(grid)))
+# 1875.781
+range(values(grid$depth), na.rm = TRUE)
+# 6 1415
+mean(values(grid$depth), na.rm = TRUE)
+# 208.0762
+median(values(grid$depth), na.rm = TRUE)
+# 83
+
+xyz <- data.frame(rasterToPoints(grid$depth))
+plot_ly(data = xyz, x = ~x, y = ~-depth) %>% add_lines()
+
+plot(grid)
+plot(grid$depth)
+plot(grid$strat)
+plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
+
+grid_dat <- data.frame(raster::rasterToPoints(grid))  #11025 grid
+
+strat_depths <- grid_dat %>%
+  group_by(strat) %>%
+  summarize(mean = mean(depth), min = min(depth), max = max(depth))
+
+## Compare real vs simulated depths
+
+real_depths <- data.frame(depth_by_strata)  #71 strata
+real_depths <- abs(real_depths)
+sim_depths <- data.frame(strat_depths)  #68 strata
+all_depths <- rbind(real_depths, sim_depths)
+
+all_depths <- all_depths %>% mutate(grid = factor(ifelse(strat > 300, "real", "sim")))
+
+all_depths %>%
+  filter(!is.na(grid)) %>%
+  ggplot(aes(x=mean, color=grid, fill=grid)) +
+  geom_histogram(position="dodge", bins=10, alpha = 1) + theme_bw()
+
+plot_grid(grid)    
+
+
+### Abundance and distribution --------------------------------------------------
+
+library(Rstrap)
+library(plotly)
+library(data.table)
+library(tidyr)
+
+### REAL DATA
+# Subset data to Witch
+con.setdet <- con.setdet[(con.setdet$rec == 5 |(con.setdet$rec == 6 & con.setdet$spec == 890)), ]
+con.lf <- con.lf[con.lf$spec == 890, ]
+ag <- ag[ag$spec == 890, ]
+rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
+
+####### no investigation Rstrap output for both males and females
+
+## Save Rstrap output by extracting data
+out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
+                 data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
+                 species = 890, survey.year = c(1995:2013, 2015:2017),
+                 season = "fall",  # no age-growth 2014, 2018, 2019
+                 NAFOdiv = c("3N", "3O"), strat = NULL,
+                 sex = c("male","female","unsexed"),
+                 length.group = 2, length.weight = NULL,
+                 group.by = "length",        #got error for both/No age-growth data 
+                 export = NULL, plot.results = FALSE)
+
+## Convert lat and lon to UTM
+setdet <- data.table(out$raw.data$set.details)
+st_xy <- st_as_sf(data.frame(long = -setdet$long.start, lat = setdet$lat.start),
+                  coords = c("long", "lat"), crs = 4326) %>%
+  st_transform(crs(strat_polys_div_utm)) %>%
+  st_coordinates() %>% data.frame(.)
+names(st_xy) <- c("easting", "northing")
+setdet <- cbind(setdet, st_xy)
+
+## Set density
+den <- setdet[rec == 5, list(n = .N), by = c("survey.year", "NAFOdiv", "strat", "strat.area")]
+den <- den[, list(strat_area_nm = sum(strat.area),
+                  strat_area_km = sum(strat.area * 3.4299),
+                  den_km = sum(n) / sum(strat.area * 3.4299),
+                  den_nm = sum(n) / sum(strat.area / 200)), by = c("survey.year")]
+den
+
+## ~ 0.001 sets per km^2
+## ~ 1 sets per 200 sq. NM
+
+
+#### SIMULATED DATA ---------------------------------------------------------------------------
+
+## Simulate data for comparison
+
+# Abundance parameters and catchability curve roughly based on NCAM estimates
+# Distribution parameters manually tweaked until results roughly corresponded
+# to observations from 3NO witch 
+set.seed(890)
+system.time(pop <- sim_abundance(ages = 1:20,  #26
+                     years = 1:20,
+                     R = sim_R(log_mean = log(100000000),
+                               log_sd = 0.7,
+                               random_walk = FALSE),
+                     Z = sim_Z(log_mean = log(0.15),
+                               log_sd = 0.5,
+                               phi_age = 0.9,
+                               phi_year = 0.5),
+                     N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     growth = sim_vonB(Linf = 73, L0 =5,  # Fitted for female growth69,63,L0=3
+                                       K = 0.09, log_sd = 0.1,
+                                       length_group = 2, digits = 0)) %>%
+  sim_distribution(grid,
+                   ays_covar = sim_ays_covar(sd = 1,
+                                             range = 800,
+                                             phi_age = 0.9,
+                                             phi_year = 0.9,
+                                             group_ages = 20:26),
+                   depth_par = sim_parabola(mu = log(75),
+                                            sigma = 0.1
+                                             )))
+
+## Quick look at distribution
+sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))    #sp_N, abundance (N) split by age,year and cell
+for (j in rev(pop$ages)) {
+  z <- xtabs(N ~ x + y, subset = age == j & year == 1, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("age", j))
+}
+for (i in rev(pop$years)) {
+  z <- xtabs(N ~ x + y, subset = age == 1 & year == i, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
+}
+
+# Min sets per strata for all surveys are 2, set density is ?1 for witch,
+# size of length bins for stratified age sampling is 2 for witch,
+# max number of lengths per set are 300 (so 150 for each males and females)
+# and the max number of ages to sample per sex per
+# age group is 20. All other values are default values.
+
+system.time(survey <- sim_survey(pop,
+                     n_sims = 1,
+                     q = sim_logistic(k = 2, x0 = 2),
+                     trawl_dim = c(1.5, 0.02),
+                     resample_cells = FALSE,
+                     binom_error = TRUE,
+                     min_sets = 2,
+                     set_den = 1/1000,
+                     lengths_cap = 150,
+                     ages_cap = 20,
+                     age_sampling = "stratified",
+                     age_length_group = 2,
+                     age_space_group = "division",
+                     light = FALSE)
+)
+
+##############################################???????????????
+## COMPARISONS BETWEEN REAL AND SIMUALTED DATA
+
+## Compare set catch
+
+# Adjustment is made (divide real data by half) for sex ratio - current simulation
+# is focused on females while the set details 'number' from the survey includes
+# both male and females. Modified through sim_distribution arguments.
+
+data_Z <- setdet[setdet$number==0,]  #?
+data_I <- setdet[setdet$number>0,]
+sim_Z <- survey$setdet[survey$setdet$n==0,]
+sim_I <- survey$setdet[survey$setdet$n>0,]
+hist(data_Z$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
+hist(sim_Z$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
+hist(data_I$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
+hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
+
+median(data_I$number * 0.5)
+median(sim_I$n)
+
+plot_ly() %>%
+  add_histogram(x = data_I$number * 0.5, name = "real") %>%
+  add_histogram(x = sim_I$n, name = "simulated") %>%
+  layout(title = "Set catch")
+###########################################################
+
+##### Compare annual index----------------------------------------------------------
+
+# Adjustment is made (divide real data by half) for the 'strat2' totals as they
+# are based on set-level numbers that include both male and females
+
+data_I <- out$strat2$abundance$summary$total[survey$years]
+names(data_I) <- survey$years
+sim_I <- colSums(survey$I)
+barplot(data_I, names.arg = names(data_I), xlab = "year", main = "annual index - real data")
+barplot(sim_I, names.arg = names(sim_I), xlab = "year", main = "annual index - simulated data")
+
+mean(data_I*.05)
+mean(sim_I)
+
+plot_ly() %>%
+  add_lines(data = out$strat2$abundance$summary,
+            x = ~seq_along(survey.year), y = ~total * 0.5, name = "real") %>%
+  add_lines(x = seq(survey$years), y = colSums(survey$I), name = "simulated") %>%
+  layout(title = "Annual index", xaxis = list(title = "Year"))
+
+
+## simulated index at age----------------------------------------------
+
+barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "index at age - simulated data")
+mean(sim_I)
+
+
+## age growth simulated data
+
+# No adjustments made as real data for age growth is based on females only
+# Modify with sim_vonB (K) argument
+
+
+sim_I <- survey$samp[aged == TRUE, ]
+
+nrow(sim_I)
+
+hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+
+
+mean(sim_I$length)
+
+
+
+####### Compare relationship between catch and depth----------------------------
+
+# Again, adjustment is made (divide real data by half) as set details includes
+# both male and female data
+
+data_I <- setdet[setdet$number>0,]
+sim_I <- survey$setdet[survey$setdet$n>0,]
+plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
+     ylab = "number", main = "real data", xlim = c(0, 1000))
+plot(sim_I$depth, sim_I$n, xlab = "depth",
+     ylab = "number", main = "simulated data", xlim = c(0, 1000))
+
+median(data_I$set.depth.mean)
+median(sim_I$depth)
+
+plot_ly() %>%
+  add_markers(x = data_I$set.depth.mean, y = data_I$number * 0.5, name = "real") %>%
+  add_markers(x = sim_I$depth, sim_I$n, name = "simulated") %>%
+  layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
+                                                     yaxis = list(title = "Number"))
+
+## Relationship of catch and depth by age,s
+
+
+## Simulated by age
+sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
+sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+## Simulated by age group
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
+                                               age %in% 20:26 ~ "age 20-26"))
+sim_a$agegroup <- as.factor(sim_a$agegroup)
+sim_a %>% filter(!is.na(agegroup)) %>%
+  filter(agegroup == "age 1-19") %>%
+  ggplot(aes(x=depth, y=n,col=agegroup)) +
+  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
+
+## Compare intra-haul correlation
+idvar <- c("vessel", "trip", "set", "year")
+sub_lf <- merge(out$raw.data$set.details[, idvar], con.lf, by = idvar)
+sub_lf$set <- as.numeric(as.factor(with(sub_lf, paste(vessel, trip, set, year))))
+ind <- grep("^bin|^set$", names(con.lf)) # get length frequencies and expand to samples
+lf <- sub_lf[, ind]
+lf <- as.data.table(lf)
+len_samp <- data.table::melt(lf, id.vars = "set")
+len_samp <- len_samp[len_samp$value > 0, ]
+len_samp$value <- round(len_samp$value)
+len_samp$length <- as.numeric(gsub("bin", "", len_samp$variable))
+len_samp <- as.data.frame(len_samp)
+len_samp <- len_samp[rep(row.names(len_samp), len_samp$value), c("set", "length")]
+len_samp <- data.table(len_samp)
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "real data")
+icc(len_samp$length, len_samp$set)
+
+len_samp <- survey$samp[survey$samp$measured, ]
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "simulated data")
+icc(len_samp$length, len_samp$set)
+
+## Now size up the distribution
+
+symbols(setdet$long.start, setdet$lat.start,
+        circles = sqrt(setdet$number / pi),
+        inches = 0.1, main = "size of distribution - real data",
+        xlab = "x", ylab = "y")
+symbols(survey$setdet$x, survey$setdet$y,
+        circles = sqrt(survey$setdet$n / pi),
+        inches = 0.1, main = "size of distribution - simulated data",
+        xlab = "x", ylab = "y")
+
+## Simulated data
+
+sim_af <- data.frame(survey$full_setdet)
+sim_af %>%
+  filter(age == 5) %>%
+  group_by(year) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
+          sizes = c(5, 1000), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 5)
+
+sim_af %>%
+  filter(year == 5) %>%
+  group_by(age) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
+          sizes = c(5, 1000), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 500)
