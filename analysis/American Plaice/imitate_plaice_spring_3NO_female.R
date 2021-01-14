@@ -285,12 +285,12 @@ af$age <- as.integer(gsub("af", "", af$age))
 # Distribution parameters manually tweaked until results roughly corresponded
 # to observations from 3NO plaice
 set.seed(889)
-pop <- sim_abundance(ages = 1:26,
+pop <- sim_abundance(ages = 1:24,
                      years = 1:20,
-                     R = sim_R(log_mean = log(50000000),
+                     R = sim_R(log_mean = log(60000000),
                                log_sd = 0.7,
                                random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.15),
+                     Z = sim_Z(log_mean = log(0.10),
                                log_sd = 0.5,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -300,13 +300,13 @@ pop <- sim_abundance(ages = 1:26,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
                    ays_covar = sim_ays_covar(sd = 1,
-                                             range = 800,
+                                             range = 900,
                                              phi_age = 0.9,
                                              phi_year = 0.9,
-                                             group_ages = 20:26),
+                                             group_ages = 20:24),
                    depth_par = sim_parabola(mu = log(75),
-                                            sigma = 0.1,
-                                            sigma_right = 0.55, log_space = TRUE))
+                                            sigma = 0.13,
+                                            sigma_right = 0.4, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -327,7 +327,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 2, x0 = 2),
+                     q = sim_logistic(k = 6, x0 = 2),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
@@ -456,7 +456,7 @@ plot_ly() %>%
   add_markers(x = data_I$set.depth.mean, y = data_I$number * 0.5, name = "real") %>%
   add_markers(x = sim_I$depth, sim_I$n, name = "simulated") %>%
   layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
-                                                     yaxis = list(title = "Number"))
+         yaxis = list(title = "Number"))
 
 ## Relationship of catch and depth by age
 
@@ -476,9 +476,9 @@ real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
 
 real_a$agegroup <- as.factor(real_a$agegroup)
 real_a %>% filter(!is.na(agegroup)) %>%
-            filter(agegroup == "age 1-19") %>%
-          ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
-          geom_point() + scale_color_brewer(palette="Spectral")
+  filter(agegroup == "age 1-19") %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
+  geom_point() + scale_color_brewer(palette="Spectral")
 
 ## Simulated by age
 sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
