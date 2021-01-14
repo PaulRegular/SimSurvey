@@ -54,6 +54,7 @@ sim <- test_surveys(pop,
                     cores = 7,
                     q = sim_logistic(k = 2, x0 = 2),
                     export_dir = "C:/Users/FITZSIMMONSM/Documents/SimSurvey/SimSurvey/analysis/plaice_female_sim_exports/2021-01-11_age_clust_test")
+
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
 
 
@@ -61,12 +62,45 @@ sim <- test_surveys(pop,
 load("C:/Users/FITZSIMMONSM/Documents/SimSurvey/SimSurvey/analysis/plaice_female_sim_exports/2021-01-11_age_clust_test/test_output.RData")
 
 plot_total_strat_fan(sim)
-plot_length_strat_fan(sim, surveys = 1:175, years = 1:20, lengths = 0.5:144.5)
-plot_age_strat_fan(sim, surveys = 1:175, years = 10, ages = 1:26)
+plot_length_strat_fan(sim, surveys = 1:75, years = 1:20, lengths = 0.5:144.5)
+plot_age_strat_fan(sim, surveys = 1:75, years = 10, ages = 1:26)
 
 plot_error_surface(sim)
-
 plot_survey_rank(sim)
+
+
+## Test alternate survey with strat specific age sampling and age-length-keys
+surveys <- expand_surveys(set_den = c(1, 1.2) / 1000,
+                          lengths_cap = c(75, 120, 150, 180, 225),
+                          ages_cap = c(10, 20, 30))
+sim <- test_surveys(pop,
+                    surveys = surveys,
+                    keep_details = 1,
+                    n_sims = 5,
+                    n_loops = 200,
+                    cores = 7,
+                    q = sim_logistic(k = 2, x0 = 2),
+                    export_dir = "C:/Users/FITZSIMMONSM/Documents/SimSurvey/SimSurvey/analysis/plaice_female_sim_exports/2021-01-14_set_alk",
+                    age_length_group = 2,
+                    age_space_group = "set",
+                    alk_scale = "set")
+
+
+# sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-10_set_alk")
+
+## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
+
+## Visualize Results
+load("C:/Users/FITZSIMMONSM/Documents/SimSurvey/SimSurvey/analysis/plaice_female_sim_exports/2021-01-14_set_alk/test_output.RData")
+
+
+plot_age_strat_fan(sim, surveys = 2, ages = 1:10, years = 3)
+
+plot_survey_rank(sim, which_strat = "length")
+
+
+
+
 
 ## Simulate same distribution across ages --------------------------------------
 
@@ -134,29 +168,5 @@ set.seed(889)
 pop <- sim_abundance() %>%
   sim_distribution()
 
-## Test alternate survey with strat specific age sampling and age-length-keys
-surveys <- expand_surveys(set_den = 1 / 1000,
-                          lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
-                          ages_cap = c(1, 2, 3, 5, 10))
-sim <- test_surveys(pop,
-                    surveys = surveys,
-                    keep_details = 1,
-                    n_sims = 5,
-                    n_loops = 200,
-                    cores = 7,
-                    export_dir = "analysis/cod_sim_exports/2020-02-10_set_alk",
-                    age_length_group = 2,
-                    age_space_group = "set",
-                    alk_scale = "set")
-# sim <- resume_test(export_dir = "analysis/cod_sim_exports/2020-02-10_set_alk")
 
-## TODO: perhaps run sim_survey_parallel and get fan plots working for that ouptut?
-
-vis_sim(sim)
-
-sim$surveys
-
-plot_age_strat_fan(sim, surveys = 5, ages = 1:10, years = 7)
-
-plot_survey_rank(sim, which_strat = "length")
 
