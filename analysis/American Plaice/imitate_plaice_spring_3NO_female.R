@@ -288,9 +288,9 @@ set.seed(889)
 pop <- sim_abundance(ages = 1:24,
                      years = 1:20,
                      R = sim_R(log_mean = log(60000000),
-                               log_sd = 0.7,
+                               log_sd = 0.5,
                                random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.10),
+                     Z = sim_Z(log_mean = log(0.14),
                                log_sd = 0.5,
                                phi_age = 0.9,
                                phi_year = 0.5),
@@ -299,14 +299,14 @@ pop <- sim_abundance(ages = 1:24,
                                        K = 0.09, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 1,
+                   ays_covar = sim_ays_covar(sd = 2,
                                              range = 900,
                                              phi_age = 0.9,
                                              phi_year = 0.9,
                                              group_ages = 20:24),
                    depth_par = sim_parabola(mu = log(75),
                                             sigma = 0.13,
-                                            sigma_right = 0.4, log_space = TRUE))
+                                            sigma_right = 0.45, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -327,7 +327,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 6, x0 = 2),
+                     q = sim_logistic(k = 5, x0 = 2),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
