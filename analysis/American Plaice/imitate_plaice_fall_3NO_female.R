@@ -217,12 +217,13 @@ out_all$strat1$age$abundance$summary %>%
 
 ## Examines sex ratio above or below 50%
 out_all$strat1$age$abundance$summary %>%
-  filter(sex %in% c("male", "female")) %>%
+  filter(sex %in% c("female", "male")) %>%
   select(survey.year, age, sex, total) %>%
   pivot_wider(names_from = sex, values_from = total) %>%
-  mutate(ratio = male / (male + female)) %>%
+  mutate(ratio = female / (female + male)) %>%
   group_by(age) %>%
-  summarise(mean_ratio = mean(ratio, na.rm = TRUE))
+  summarise(mean_ratio = mean(ratio, na.rm = TRUE)) %>%
+  print (n=25)
 
 out_all$strat1$age$abundance$summary %>%
   filter(sex %in% c("male", "female")) %>%
