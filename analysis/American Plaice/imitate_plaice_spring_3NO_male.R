@@ -287,13 +287,13 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(889)
 pop <- sim_abundance(ages = 1:16,
                      years = 1:20,
-                     R = sim_R(log_mean = log(200000000),
+                     R = sim_R(log_mean = log(40000000),
                                log_sd = 0.5,
                                random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.50),
-                               log_sd = 0.8,
-                               phi_age = 0.8,
-                               phi_year = 0.7),
+                     Z = sim_Z(log_mean = log(0.05),
+                               log_sd = 0.5,
+                               phi_age = 0.9,
+                               phi_year = 0.9),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 50.58, L0 = 3,  # Fitted for female growth
                                        K = 0.12, log_sd = 0.1,
@@ -329,7 +329,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 3, x0 = 3),
+                     q = sim_logistic(k = 4, x0 = 2.3),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
