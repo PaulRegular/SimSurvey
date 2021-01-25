@@ -233,9 +233,8 @@ out_all$strat1$age$abundance$summary %>%
   plot_ly(x = ~survey.year, y = ~ratio - 0.5, color = ~factor(age)) %>%
   add_lines()
 
-# Males are greater than 50% abundance in the population before age 7,
-# females are greater than 50% at age 8 and older
-# Lower female recruitment and mortality than males needed in simulated survey
+# Similar male to female ratio in population to age 3, with female age gradually declining,
+# and males remaining high until age 7 and then a rapid decline.
 
 ## Save Rstrap output by extracting only female data
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
