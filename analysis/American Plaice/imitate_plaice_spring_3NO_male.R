@@ -295,20 +295,20 @@ pop <- sim_abundance(ages = 1:16,
                                phi_age = 0.9,
                                phi_year = 0.9),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 50.58, L0 = 3,  # Fitted for female growth
+                     growth = sim_vonB(Linf = 50.58, L0 = 3,  # Fitted for male growth
                                        K = 0.12, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 2.3,
-                                             range = 1000,
+                   ays_covar = sim_ays_covar(sd = 3.8,
+                                             range = 2000,
                                              lambda = .6,
                                              model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.8,
                                              group_ages = c(1,13:16)),
-                   depth_par = sim_parabola(mu = log(75),
-                                            sigma = 0.15,
-                                            sigma_right = 0.44, log_space = TRUE))
+                   depth_par = sim_parabola(mu = log(90),
+                                            sigma = 0.25,
+                                            sigma_right = 0.42, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -585,7 +585,7 @@ sim_af %>%
   animation_opts(frame = 5)
 
 sim_af %>%
-  filter(year == 5) %>%
+  filter(year == 10) %>%
   group_by(age) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
           sizes = c(5, 1000), showlegend = FALSE) %>%
