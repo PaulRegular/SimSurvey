@@ -187,8 +187,8 @@ rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 ## Save Rstrap output by extracting data
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
-                 species = 890, survey.year = c(1995:2013, 2015:2017),
-                 season = "fall",  # no age-growth 2014, 2018, 2019
+                 species = 890,
+                 season = "fall",
                  NAFOdiv = c("3N", "3O"), strat = NULL,
                  sex = c("male","female","unsexed"),
                  length.group = 2, length.weight = NULL,
@@ -226,7 +226,7 @@ den
 set.seed(890)
 system.time(pop <- sim_abundance(ages = 1:26,
                      years = 1:20,
-                     R = sim_R(log_mean = log(5000000),
+                     R = sim_R(log_mean = log(6000000),
                                log_sd = 0.7,
                                random_walk = FALSE),
                      Z = sim_Z(log_mean = log(0.15),
@@ -234,8 +234,8 @@ system.time(pop <- sim_abundance(ages = 1:26,
                                phi_age = 0.9,
                                phi_year = 0.5),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 73, L0 =5,  # max and min age data in ag data frame
-                                       K = 0.09, log_sd = 0.1,
+                     growth = sim_vonB(Linf = 60, L0 =5,  # max age and k from Bowering 1976
+                                       K = 0.2, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
                    ays_covar = sim_ays_covar(sd = 1,
@@ -243,8 +243,8 @@ system.time(pop <- sim_abundance(ages = 1:26,
                                              phi_age = 0.9,
                                              phi_year = 0.9,
                                              group_ages = 20:26),
-                   depth_par = sim_parabola(mu = log(100),
-                                            sigma = 0.5,
+                   depth_par = sim_parabola(mu = log(200),  #increase mu for catch and depth in simulated data
+                                            sigma = 0.7,
                                             log_space = TRUE )))
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))    #sp_N, abundance (N) split by age,year and cell
@@ -268,8 +268,8 @@ system.time(survey <- sim_survey(pop,
                      binom_error = TRUE,
                      min_sets = 2,
                      set_den = 1/1000,
-                     lengths_cap = 150,
-                     ages_cap = 20,
+                     lengths_cap = 300,   # survey protocol for witch
+                     ages_cap = 16,
                      age_sampling = "stratified",
                      age_length_group = 2,
                      age_space_group = "division",
