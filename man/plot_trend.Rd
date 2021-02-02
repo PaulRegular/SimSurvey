@@ -21,8 +21,8 @@ plot_grid(grid, ...)
 
 plot_distribution(
   sim,
-  ages = 1:10,
-  years = 1:10,
+  ages = sim$ages,
+  years = sim$years,
   type = "contour",
   scale = "natural",
   ...

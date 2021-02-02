@@ -92,7 +92,7 @@ plot_grid <- function(grid, ...) {
 
 #' @export
 #' @rdname plot_trend
-plot_distribution <- function(sim, ages = 1:10, years = 1:10,
+plot_distribution <- function(sim, ages = sim$ages, years = sim$years,
                               type = "contour", scale = "natural", ...) {
 
   age <- NULL
@@ -130,8 +130,11 @@ plot_distribution <- function(sim, ages = 1:10, years = 1:10,
   for (i in seq_along(split_d)) {
     vis <- rep(FALSE, length(split_d))
     vis[i] <- TRUE
+    z <- split_d[[i]]
+    attr(z, "class") <- NULL # plotly didn't like the xtabs attributes
+    attr(z, "call") <- NULL
     p <- p %>% add_trace(type = type,
-                         z = split_d[[i]],
+                         z = z,
                          visible = i == 1,
                          showscale = vis,
                          name = names(split_d)[i],
