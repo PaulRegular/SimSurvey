@@ -46,6 +46,7 @@ Suggests:
     lme4,
     ggplot2,
     INLA,
-    knitr
+    knitr,
+    bezier
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr

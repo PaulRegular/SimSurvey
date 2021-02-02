@@ -12,12 +12,12 @@ prod(res(survey_grid)) * sum(!is.na(values(survey_grid$cell)))
 # 69147.59
 length(unique(survey_grid$strat))
 # 44
-mean(table(values(survey_grid$strat)) * res(survey_grid))
-# 449.4992
+mean(table(values(survey_grid$strat)) * prod(res(survey_grid)))
+# 1567.925
 range(values(survey_grid$depth), na.rm = TRUE)
 # -7.372526 920.745896
 
-grid <- sim_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5, 3.5),
+grid <- make_grid(x_range = c(-140, 140), y_range = c(-140, 140), res = c(3.5, 3.5),
                  shelf_depth = 200, shelf_width = 100, depth_range = c(0, 1000),
                  n_div = 1, strat_breaks = seq(0, 1000, by = 40), strat_splits = 2,
                  method = "spline")
@@ -25,8 +25,8 @@ prod(res(grid)) * ncell(grid)
 # 78400
 length(unique(grid$strat))
 # 44
-mean(table(values(grid$strat)) * res(grid))
-# 509.0909
+mean(table(values(grid$strat)) * prod(res(grid)))
+# 1781.818
 range(values(grid$depth), na.rm = TRUE)
 # 15 940
 plot(grid)
@@ -41,13 +41,14 @@ plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
 library(Rstrap)
 library(plotly)
+library(data.table)
 
 ## REAL DATA
 
 ## Load survey data compiled for Rstrap
-load("analysis/rv_data/converted_set_details_2019-10-03.Rdata")
-load("analysis/rv_data/converted_length-frequency_data_2019-10-03.Rdata")
-load("analysis/rv_data/age-growth_data_2019-10-03.Rdata")
+##load("analysis/rv_data/converted_set_details_2019-10-03.Rdata")
+##load("analysis/rv_data/converted_length-frequency_data_2019-10-03.Rdata")
+##load("analysis/rv_data/age-growth_data_2019-10-03.Rdata")
 
 ## Subset data to cod
 con.setdet <- con.setdet[(con.setdet$rec == 5 | (con.setdet$rec == 6 & con.setdet$spec == 438)), ]
@@ -101,14 +102,16 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:20,
-                     R = sim_R(mean = 30000000,
+                     R = sim_R(log_mean = log(30000000),
                                log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(mean = 0.5,
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
-                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, digits = 0)) %>%
+                     #N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     growth = sim_vonB(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
+                                       length_group = 3, digits = 0)) %>%
   sim_distribution(grid = make_grid(x_range = c(-140, 140),
                                    y_range = c(-140, 140),
                                    res = c(3.5, 3.5),

@@ -14,7 +14,7 @@
 #' @param n_div        Number of divisions to include
 #' @param strat_breaks Define strata given these depth breaks
 #' @param strat_splits Number of times to horizontally split strat (i.e. easy way to increase the number of strata)
-#' @param method       Use a "spline" or "loess" to generate a smooth gradient or simply use "linear" interpolation?
+#' @param method       Use a "spline", "loess" or "bezier" to generate a smooth gradient or simply use "linear" interpolation?
 #'
 #' @return Returns RasterBrick of the same structure as \code{\link{survey_grid}}
 #'
@@ -53,17 +53,27 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   if (method == "loess") {
     lo <- stats::loess(sy ~ sx)
     px <- seq(min(sx), max(sx), length.out = 100)
-    py <- predict(lo, data.frame(sx = px))
-    s <- list(x = px, y = py)
+    py <- predict(lo, data.frame(sx = xy$x))
+    s <- list(x = xy$x, y = py)
   }
   if (method == "spline") {
-    s <- stats::spline(sx, sy, n = nrow(xy))
+    s <- stats::spline(sx, sy, xout = xy$x)
   }
   if (method == "linear") {
-    s <- stats::approx(sx, sy, n = nrow(xy))
+    s <- stats::approx(sx, sy, xout = xy$x)
+  }
+  if (method == "bezier") {
+    if (requireNamespace("bezier", quietly = TRUE)) {
+      t <- seq(0, 1, length = 100)
+      p <- cbind(sx, sy)
+      s <- bezier::bezier(t = t, p = p)
+      s <- stats::approx(s[, 1], s[, 2], xout = xy$x)
+    } else {
+      stop("The bezier package is needed for to use the bezier method in make_grid. Please install it.", call. = FALSE)
+    }
   }
 
-  depth <- s$y[findInterval(xy$x, s$x)]
+  depth <- s$y
   depth[depth < depth_range[1]] <- depth_range[1] + 1 # impose depth range
   depth[depth > depth_range[2]] <- depth_range[2] - 1
   depth <- round(depth) # 1 m res ought to be good

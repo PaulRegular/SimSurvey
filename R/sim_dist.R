@@ -156,25 +156,70 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 
 #' Define relationships with covariates
 #'
-#' @description  Closure to be used in \code{\link{sim_distribution}}
+#' @description  Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-gaussian function described here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/.
 #'
-#' @param alpha,mu,sigma  Parameters that control the shape of the parabola
+#' @param alpha,mu,sigma  Parameters that control the shape of the parabola. Can be one value or
+#'                        a vector of equal length to the number of ages in the simulation
+#'                        (e.g. age-specific depth associations can be specified).
+#' @param sigma_right     Optional parameter to impose asymmetry by supplying a sigma parameter for the right side.
+#'                        If used, `sigma` will be used to define the width of the left side. Ignored if `NULL`.
+#' @param log_space       Should shape of the parabola be defined in log space? If `TRUE`, logged parameters are
+#'                        assumed to be supplied and x values used in the parabola equation are log transformed.
+#'                        This allows a more lognormal curve to be defined and, hence, allows a heavier tail and it
+#'                        forces very low values near zero.
 #' @param plot            Produce a simple plot of the simulated values?
 #'
 #' @examples
 #'
-#' parabola_fun <- sim_parabola(alpha = 25, mu = 50, sigma = 5, plot = TRUE)
+#' parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
 #' parabola_fun(x = 0:100)
+#'
+#' parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = TRUE, plot = TRUE)
+#' parabola_fun(x = 1:1000)
+#'
+#' parabola_fun <- sim_parabola(mu = c(50, 120), sigma = c(5, 3), plot = TRUE)
+#' parabola_fun(x = rep(1:200, 2), age = rep(c(1, 2), each = 200))
 #'
 #' @rdname sim_parabola
 #' @export
 
-sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, plot = FALSE) {
-  function(x = NULL) {
-    y <- alpha - (((x - mu)^2) / (2 * sigma ^ 2))
-    if (plot) { plot(x, y, main = "sim_parabola", type = "l") }
+sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
+                         log_space = FALSE, plot = FALSE) {
+
+  function(x = NULL, age = NULL) {
+
+    nages <- length(unique(age))
+    npar <- c(length(alpha), length(mu), length(sigma))
+    if (any(npar > 1) && max(npar) != nages) {
+      stop("The number alpha, mu, or sigma values != number of ages.")
+    }
+    if (length(unique(npar[npar!=1])) > 1) {
+      stop("Inconsistent number of alpha, mu, or sigma values were supplied. One value should be supplied or a vector equal to the number of ages in the simulation.")
+    }
+    if (any(npar > 1)) {
+      if (npar[1] == 1) alpha <- rep(alpha, nages)
+      if (npar[2] == 1) mu <- rep(mu, nages)
+      if (npar[3] == 1) sigma <- rep(sigma, nages)
+      i <- age - min(age) + 1 # convert to index (address cases where start age may be 0 or 4, etc.)
+    } else {
+      i <- rep(1, length(x))
+    }
+
+    if (is.null(sigma_right)) sigma_right <- sigma
+    if (log_space) mx <- log(x) else mx <- x
+
+    y <- ifelse(mx < mu[i], alpha[i] - (((mx - mu[i])^2) / (2 * sigma[i] ^ 2)),
+                            alpha[i] - (((mx - mu[i])^2) / (2 * sigma_right[i] ^ 2)))
+
+    if (plot) {
+      plot(x, y, main = "sim_parabola", col = i)
+    }
+
+    plot_ly(x = x, y = exp(y)) %>% add_lines()
     y
+
   }
+
 }
 
 
@@ -233,11 +278,19 @@ sim_distribution <- function(sim,
   xy <- grid_dat[, c("x", "y")]
   error <- ays_covar(x = xy, ages = sim$ages, years = sim$years, cells = grid_dat$cell)
 
-  ## Relationship with depth
-  depth <- depth_par(grid_dat$depth)
-  depth <- replicate(length(sim$years), replicate(length(sim$ages), depth))
-  depth <- aperm(depth, c(2, 3, 1))
-  dimnames(depth) <- dimnames(error)
+  ## Relationship with depth (expand grid_dat to include age and year)
+  grid_edat <- grid_dat
+  i <- rep(seq(nrow(grid_edat)), times = length(sim$ages))
+  a <- rep(sim$ages, each = nrow(grid_edat))
+  grid_edat <- grid_edat[i]
+  grid_edat$age <- a
+  i <- rep(seq(nrow(grid_edat)), times = length(sim$years))
+  y <- rep(sim$years, each = nrow(grid_edat))
+  grid_edat <- grid_edat[i]
+  grid_edat$year <- y
+  grid_edat <- grid_edat[order(grid_edat$cell, grid_edat$year, grid_edat$age), ] # sort to align with error array
+  depth <- depth_par(x = grid_edat$depth, age = grid_edat$age)
+  depth <- array(depth, dim = dim(error), dimnames = dimnames(error))
 
   ## Define probability of inhabiting each cell
   ## Note the normalization; forcing the values to sum to one ensures that the final

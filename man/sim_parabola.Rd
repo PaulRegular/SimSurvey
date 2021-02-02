@@ -4,19 +4,42 @@
 \alias{sim_parabola}
 \title{Define relationships with covariates}
 \usage{
-sim_parabola(alpha = 0, mu = 200, sigma = 70, plot = FALSE)
+sim_parabola(
+  alpha = 0,
+  mu = 200,
+  sigma = 70,
+  sigma_right = NULL,
+  log_space = FALSE,
+  plot = FALSE
+)
 }
 \arguments{
-\item{alpha, mu, sigma}{Parameters that control the shape of the parabola}
+\item{alpha, mu, sigma}{Parameters that control the shape of the parabola. Can be one value or
+a vector of equal length to the number of ages in the simulation
+(e.g. age-specific depth associations can be specified).}
+
+\item{sigma_right}{Optional parameter to impose asymmetry by supplying a sigma parameter for the right side.
+If used, `sigma` will be used to define the width of the left side. Ignored if `NULL`.}
+
+\item{log_space}{Should shape of the parabola be defined in log space? If `TRUE`, logged parameters are
+assumed to be supplied and x values used in the parabola equation are log transformed.
+This allows a more lognormal curve to be defined and, hence, allows a heavier tail and it
+forces very low values near zero.}
 
 \item{plot}{Produce a simple plot of the simulated values?}
 }
 \description{
-Closure to be used in \code{\link{sim_distribution}}
+Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-gaussian function described here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/.
 }
 \examples{
 
-parabola_fun <- sim_parabola(alpha = 25, mu = 50, sigma = 5, plot = TRUE)
+parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
 parabola_fun(x = 0:100)
+
+parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = TRUE, plot = TRUE)
+parabola_fun(x = 1:1000)
+
+parabola_fun <- sim_parabola(mu = c(50, 120), sigma = c(5, 3), plot = TRUE)
+parabola_fun(x = rep(1:200, 2), age = rep(c(1, 2), each = 200))
 
 }
