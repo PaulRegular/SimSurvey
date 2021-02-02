@@ -76,7 +76,7 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SimSurvey</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.3</span>
       </span>
     </div>
 
@@ -84,7 +84,7 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -110,7 +110,7 @@ alternate approaches to a stratified analysis for obtaining survey indices." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/PaulRegular/SimSurvey/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -140,14 +140,14 @@ the full details of the survey and it may therefore be more useful for testing
 alternate approaches to a stratified analysis for obtaining survey indices.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sim_survey_parallel</span>(
-  <span class='kw'>sim</span>,
-  n_sims = <span class='fl'>1</span>,
-  n_loops = <span class='fl'>100</span>,
-  cores = <span class='fl'>1</span>,
-  quiet = <span class='fl'>FALSE</span>,
-  <span class='kw'>...</span>
-)</pre>
+    <pre class="usage"><span class='fu'>sim_survey_parallel</span><span class='op'>(</span>
+  <span class='va'>sim</span>,
+  n_sims <span class='op'>=</span> <span class='fl'>1</span>,
+  n_loops <span class='op'>=</span> <span class='fl'>100</span>,
+  cores <span class='op'>=</span> <span class='fl'>1</span>,
+  quiet <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -219,11 +219,11 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
 <span class='co'># \donttest{</span>
 <span class='co'>## This call runs a total of 100 simulations of the same survey over</span>
 <span class='co'>## the same population</span>
-<span class='kw'>sim</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span>(ages = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>, years = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span>) <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span>(grid = <span class='fu'><a href='make_grid.html'>make_grid</a></span>(res = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>10</span>, <span class='fl'>10</span>))) <span class='op'>%&gt;%</span>
-           <span class='fu'>sim_survey_parallel</span>(n_sims = <span class='fl'>10</span>, n_loops = <span class='fl'>10</span>, cores = <span class='fl'>2</span>,
-                               q = <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span>(k = <span class='fl'>2</span>, x0 = <span class='fl'>3</span>),
-                               quiet = <span class='fl'>FALSE</span>)
+<span class='va'>sim</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sim_abundance.html'>sim_abundance</a></span><span class='op'>(</span>ages <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>20</span>, years <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='sim_distribution.html'>sim_distribution</a></span><span class='op'>(</span>grid <span class='op'>=</span> <span class='fu'><a href='make_grid.html'>make_grid</a></span><span class='op'>(</span>res <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'>sim_survey_parallel</span><span class='op'>(</span>n_sims <span class='op'>=</span> <span class='fl'>10</span>, n_loops <span class='op'>=</span> <span class='fl'>10</span>, cores <span class='op'>=</span> <span class='fl'>2</span>,
+                               q <span class='op'>=</span> <span class='fu'><a href='sim_logistic.html'>sim_logistic</a></span><span class='op'>(</span>k <span class='op'>=</span> <span class='fl'>2</span>, x0 <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>,
+                               quiet <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
 <span class='co'># }</span>
 
 
@@ -243,7 +243,7 @@ the <code>age_cap</code> argument). Ignored if <code>age_sampling = "random"</co
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
