@@ -30,8 +30,8 @@ plot_ly(data = lf[lf$survey.year == 2003,]) %>%
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
-# Examine at the age dimension, with frequency scaled by age to allow for
-# distribution shifts at older ages to be visible
+# Examine at the length dimension, with frequency scaled by length to allow for
+# distribution shifts at bigger fish to be visible
 lf[lf$survey.year == 2011, ] %>%
   group_by(length) %>%
   mutate(scaled_freq = scale(freq)) %>%
