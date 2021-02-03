@@ -287,28 +287,28 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(889)
 pop <- sim_abundance(ages = 1:16,
                      years = 1:20,
-                     R = sim_R(log_mean = log(250000000),
-                               log_sd = 0.9,
+                     R = sim_R(log_mean = log(170000000),
+                               log_sd = 0.7,
                                random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.44),
-                               log_sd = 0.6,
-                               phi_age = 0.5,
-                               phi_year = 0.5),
+                     Z = sim_Z(log_mean = log(0.28),
+                               log_sd = 0.7,
+                               phi_age = 0.7,
+                               phi_year = 0.7),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 50.58, L0 = 3,  # Fitted for male growth
-                                       K = 0.12, log_sd = 0.1,
+                                       K = 0.13, log_sd = 0.07,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 3.8,
+                   ays_covar = sim_ays_covar(sd = 3.0,
                                              range = 2000,
                                              lambda = .6,
                                              model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.8,
                                              group_ages = c(1,13:16)),
-                   depth_par = sim_parabola(mu = log(90),
+                   depth_par = sim_parabola(mu = log(100),
                                             sigma = 0.25,
-                                            sigma_right = 0.42, log_space = TRUE))
+                                            sigma_right = 0.39, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -329,7 +329,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 1.9, x0 = 4.1),
+                     q = sim_logistic(k = 1.4, x0 = 4),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
