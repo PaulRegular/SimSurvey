@@ -228,12 +228,12 @@ system.time(pop <- sim_abundance(ages = 1:26,
                      years = 1:20,
                      R = sim_R(log_mean = log(6000000),
                                log_sd = 0.7,
-                               random_walk = FALSE),
+                               random_walk = FALSE,plot=T),
                      Z = sim_Z(log_mean = log(0.15),
                                log_sd = 0.5,
                                phi_age = 0.9,
                                phi_year = 0.5),
-                     N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     N0 = sim_N0(N0 = "exp", plot = T),
                      growth = sim_vonB(Linf = 60, L0 =5,  # max age and k from Bowering 1976
                                        K = 0.2, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
@@ -352,23 +352,6 @@ plot_ly() %>%
   layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
          yaxis = list(title = "Number"))
 
-
-####### Relationship of catch and depth by age
-
-## Simulated by age
-sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
-sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
-  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
-
-## Simulated by age group
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
-                                               age %in% 20:26 ~ "age 20-26"))
-sim_a$agegroup <- as.factor(sim_a$agegroup)
-sim_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 1-19") %>%
-  ggplot(aes(x=depth, y=n,col=agegroup)) +
-  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
-
 ##### Compare intra-haul correlation
 idvar <- c("vessel", "trip", "set", "year")
 sub_lf <- merge(out$raw.data$set.details[, idvar], con.lf, by = idvar)
@@ -408,6 +391,22 @@ symbols(survey$setdet$x, survey$setdet$y,
         xlab = "x", ylab = "y")
 
 ## Simulated data
+####### Relationship of catch and depth by age
+
+## Simulated by age
+sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
+sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+## Simulated by age group
+sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
+                                               age %in% 20:26 ~ "age 20-26"))
+sim_a$agegroup <- as.factor(sim_a$agegroup)
+sim_a %>% filter(!is.na(agegroup)) %>%
+  filter(agegroup == "age 1-19") %>%
+  ggplot(aes(x=depth, y=n,col=agegroup)) +
+  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
+##
 
 sim_af <- data.frame(survey$full_setdet)
 sim_af %>%

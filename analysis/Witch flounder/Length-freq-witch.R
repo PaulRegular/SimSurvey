@@ -1,5 +1,5 @@
 
-#####################Length frequency for Witch flounder as we lack of age data############# 
+#####################Length frequency for Witch flounder as we lack of age data#############
 #first run imitate_witch_fall_3NO
 
 ## Melt length frequency data
@@ -20,26 +20,6 @@ real_l  %>%
   ggplot(aes(x=set.depth.mean, y=freq)) +
   geom_point() + facet_wrap(~length)
 
-## Real data (hold length or year and animate the other)
-plot_ly(data = lf[lf$length == 30, ]) %>%
-  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
-              sizes = c(5, 1000), showlegend = FALSE) %>%
-  animation_opts(frame = 5)
-plot_ly(data = lf[lf$survey.year == 2003,]) %>%
-  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~length,
-              sizes = c(5, 1000), showlegend = FALSE) %>%
-  animation_opts(frame = 500)
-
-# Examine at the length dimension, with frequency scaled by length to allow for
-# distribution shifts at bigger fish to be visible
-lf[lf$survey.year == 2011, ] %>%
-  group_by(length) %>%
-  mutate(scaled_freq = scale(freq)) %>%
-  plot_ly() %>%
-  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~length,
-              sizes = c(5, 1000), showlegend = FALSE) %>%
-  animation_opts(frame = 500)
-
 ## Real data all length and years
 plot_ly(data = lf) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
@@ -58,6 +38,28 @@ lf %>%
   add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~length,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
+
+
+## Real data (hold length or year and animate the other)
+plot_ly(data = lf[lf$length ==30, ]) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 5)
+plot_ly(data = lf[lf$survey.year == 2003,]) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~length,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+
+# Examine at the length dimension, with frequency scaled by length to allow for
+# distribution shifts at bigger fish to be visible
+lf[lf$survey.year == 2011, ] %>%
+  group_by(length) %>%
+  mutate(scaled_freq = scale(freq)) %>%
+  plot_ly() %>%
+  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~length,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+
 
 ###############Bubble plot: length at survey.year/set/set.depth.mean
 
