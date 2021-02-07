@@ -296,7 +296,7 @@ pop <- sim_abundance(ages = 1:16,
                                phi_year = 0.7),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 50.58, L0 = 3,  # Fitted for male growth
-                                       K = 0.13, log_sd = 0.07,
+                                       K = 0.12, log_sd = 0.09,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
                    ays_covar = sim_ays_covar(sd = 3.0,
