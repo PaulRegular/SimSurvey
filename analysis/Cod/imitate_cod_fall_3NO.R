@@ -194,27 +194,29 @@ af$age <- as.integer(gsub("af", "", af$age))
 # to observations from 3NO plaice
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
-                     years = 1:20,
-                     R = sim_R(log_mean = log(100000000),
-                               log_sd = 0.7,
-                               random_walk = FALSE),
-                     Z = sim_Z(log_mean = log(0.15),
+                     years = 1:24,
+                     R = sim_R(log_mean = log(75000000),
                                log_sd = 0.5,
+                               random_walk = TRUE),
+                     Z = sim_Z(log_mean = log(0.63),
+                               log_sd = 0.3,
                                phi_age = 0.9,
                                phi_year = 0.5),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 120, L0 = 5,  # Fitted for female growth
-                                       K = 0.1, log_sd = 0.1,
+                     growth = sim_vonB(Linf = 120, L0 = 5,
+                                       K = 0.11, log_sd = 0.15,
                                        length_group = 3, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 1,
-                                             range = 800,
-                                             phi_age = 0.9,
+                   ays_covar = sim_ays_covar(sd = 2.5,
+                                             range = 1700,
+                                             lambda = .5,
+                                             model = "matern",
+                                             phi_age = 0.5,
                                              phi_year = 0.9,
-                                             group_ages = 20:26),
-                   depth_par = sim_parabola(mu = log(75),
-                                            sigma = 0.1,
-                                            sigma_right = 0.55, log_space = TRUE))
+                                             group_ages = 12:20),
+                   depth_par = sim_parabola(mu = log(80),
+                                            sigma = 0.25,
+                                            sigma_right = 0.44, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -234,16 +236,16 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 2, x0 = 2),
+                     q = sim_logistic(k = 1.6, x0 = 1.7),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
                      min_sets = 2,
-                     set_den = 3/1000,
-                     lengths_cap = 400,
+                     set_den = 1/1000,
+                     lengths_cap = 500,
                      ages_cap = 10,
                      age_sampling = "stratified",
-                     age_length_group = 1,
+                     age_length_group = 2,
                      age_space_group = "division",
                      light = FALSE)
 
@@ -263,8 +265,8 @@ hist(sim_Z$n, breaks = 100, xlab = "set catch", main = "set catch - simulated da
 hist(data_I$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
 hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
 
-median(data_I$number)
-median(sim_I$n)
+mean(data_I$number)
+mean(sim_I$n)
 
 plot_ly() %>%
   add_histogram(x = data_I$number, name = "real") %>%
@@ -288,9 +290,7 @@ plot_ly() %>%
   add_lines(x = seq(survey$years), y = colSums(survey$I), name = "simulated") %>%
   layout(title = "Annual index", xaxis = list(title = "Year"))
 
-
 ## Compare index at age
-
 
 data_I <- out$strat1$age$abundance$annual.totals
 data_I <- rowMeans(data_I[data_I$age %in% survey$ages, grepl("y", names(data_I))])
@@ -307,7 +307,6 @@ plot_ly() %>%
   layout(title = "Average index at age", xaxis = list(title = "Age"))
 
 ## Compare age growth data
-
 # Modify with sim_vonB (K) argument
 
 data_I <- out$raw.data$age.growth
@@ -433,7 +432,7 @@ plot_ly(data = af[af$age == 7, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af[af$survey.year == 1999,]) %>%
+plot_ly(data = af[af$survey.year == 2013,]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
