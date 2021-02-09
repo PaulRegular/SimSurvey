@@ -109,14 +109,6 @@ plot(grid$depth)
 plot(grid$strat)
 plot(rasterToPolygons(grid$strat, dissolve = TRUE), col = "grey")
 
-grid_dat <- data.frame(raster::rasterToPoints(grid))
-
-strat_depths <- grid_dat %>%
-  group_by(strat) %>%
-  summarize(mean = mean(depth), min = min(depth), max = max(depth))
-
-plot_grid(grid)
-
 
 ## Abundance and distribution --------------------------------------------------
 
