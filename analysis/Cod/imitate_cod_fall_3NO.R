@@ -172,10 +172,9 @@ den <- den[, list(strat_area_nm = sum(strat.area),
                   den_km = sum(n) / sum(strat.area * 3.4299),
                   den_nm = sum(n) / sum(strat.area / 200)), by = c("survey.year")]
 den
-mean(den$den_nm)
 
-## ~ 0.005 sets per km^2
-## ~ 3 sets per 200 sq. NM
+## ~ 0.001 sets per km^2
+## ~ 1 sets per 200 sq. NM
 
 ## Melt age frequency data
 af <- data.table::melt(setdet,
