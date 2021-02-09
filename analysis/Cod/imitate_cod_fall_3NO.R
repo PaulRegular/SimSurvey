@@ -131,9 +131,8 @@ out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                      species = 438, survey.year = c(1995:2013, 2015:2019),
                      season = "fall",  # no age-growth 2014
                      NAFOdiv = c("3N", "3O"), strat = NULL,
-                     sex = c("female", "male", "unsexed"), sep.sex = TRUE,
-                     indi.alk = c(TRUE,TRUE,FALSE),
-                     length.group = 1, length.weight = NULL,
+                     sex = c("female", "male", "unsexed"),
+                     length.group = 3, length.weight = NULL,
                      group.by = "length & age",
                      export = NULL, plot.results = FALSE)
 
