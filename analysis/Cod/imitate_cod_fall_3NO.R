@@ -136,26 +136,6 @@ out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                      group.by = "length & age",
                      export = NULL, plot.results = FALSE)
 
-## Examines sex ratio by AGE
-out$strat1$age$abundance$summary %>%
-  filter(sex %in% c("male", "female")) %>%
-  group_by(age, sex) %>%
-  summarise(total = sum(total)) %>%
-  ungroup() %>%
-  plot_ly(x = ~age, y = ~total, color = ~sex) %>%
-  add_lines()
-
-## Examines sex ratio by YEAR
-out$strat1$age$abundance$summary %>%
-  filter(sex %in% c("male", "female")) %>%
-  group_by(survey.year, sex) %>%
-  summarise(total = sum(total)) %>%
-  ungroup() %>%
-  plot_ly(x = ~survey.year, y = ~total, color = ~sex) %>%
-  add_lines()
-
-## No sex difference across ages or sex
-
 ## Convert lat and lon to UTM
 setdet <- data.table(out$raw.data$set.details)
 st_xy <- st_as_sf(data.frame(long = -setdet$long.start, lat = setdet$lat.start),
