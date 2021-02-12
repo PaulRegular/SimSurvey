@@ -225,12 +225,12 @@ den
 # to observations from 3NO witch
 set.seed(890)
 system.time(pop <- sim_abundance(ages = 1:26,
-                     years = 1:20,
+                     years = 1:24,
                      R = sim_R(log_mean = log(6000000),
-                               log_sd = 0.7,
-                               random_walk = FALSE,plot=T),
-                     Z = sim_Z(log_mean = log(0.15),
                                log_sd = 0.5,
+                               random_walk = FALSE,plot=T),
+                     Z = sim_Z(log_mean = log(0.14),
+                               log_sd = 0.3,
                                phi_age = 0.9,
                                phi_year = 0.5),
                      N0 = sim_N0(N0 = "exp", plot = T),
@@ -238,11 +238,11 @@ system.time(pop <- sim_abundance(ages = 1:26,
                                        K = 0.2, log_sd = 0.1,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 1,
+                   ays_covar = sim_ays_covar(sd = 3,
                                              range = 800,
                                              phi_age = 0.9,
                                              phi_year = 0.9,
-                                             group_ages = 20:26),
+                                             group_ages = 8:26),
                    depth_par = sim_parabola(mu = log(200),  #increase mu for catch and depth in simulated data
                                             sigma = 0.7,
                                             log_space = TRUE )))
@@ -321,18 +321,10 @@ barplot(data_I_l, names.arg = data_I$length , xlab = "length", main = "Index @ l
 sim_I_l <- rowMeans(survey$I_at_length)
 barplot(sim_I_l, names.arg = names(sim_I_l), xlab = "length", main = " Index @ length- simulated data")
 
-##### age growth simulated data
-sim_I <- survey$samp[measured == TRUE, ]
-hist(sim_I$length, xlab = "length", main = "length growth data - simulated data", breaks = 100)
-
-sim_I <- survey$samp[aged == TRUE, ]
-nrow(sim_I)
-
-hist(sim_I$age, xlab = "age", main = "age growth data - simulated data", breaks = 100)
-
-
-mean(sim_I$length)
-
+plot_ly() %>%
+  add_lines(x = seq_along(data_I_l), y = data_I_l, name = "real") %>%
+  add_lines(x = seq_along(sim_I_l), y = sim_I_l, name = "simulated") %>%
+  layout(title = "Average index at length", xaxis = list(title = "Length"))
 
 ###### Compare relationship between catch and depth
 
@@ -390,37 +382,3 @@ symbols(survey$setdet$x, survey$setdet$y,
         inches = 0.1, main = "size of distribution - simulated data",
         xlab = "x", ylab = "y")
 
-## Simulated data
-####### Relationship of catch and depth by age
-
-## Simulated by age
-sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
-sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
-  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
-
-## Simulated by age group
-sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
-                                               age %in% 20:26 ~ "age 20-26"))
-sim_a$agegroup <- as.factor(sim_a$agegroup)
-sim_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 1-19") %>%
-  ggplot(aes(x=depth, y=n,col=agegroup)) +
-  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
-##
-
-sim_af <- data.frame(survey$full_setdet)
-sim_af %>%
-  filter(age == 5) %>%
-  group_by(year) %>%
-  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
-          sizes = c(5, 1000), showlegend = FALSE) %>%
-  add_markers() %>%
-  animation_opts(frame = 5)
-
-sim_af %>%
-  filter(year == 5) %>%
-  group_by(age) %>%
-  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
-          sizes = c(5, 1000), showlegend = FALSE) %>%
-  add_markers() %>%
-  animation_opts(frame = 500)
