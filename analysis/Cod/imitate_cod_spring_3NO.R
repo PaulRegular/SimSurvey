@@ -128,33 +128,13 @@ rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 ## Investigate Rstrap output
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
-                 species = 438, survey.year = c(1995:2013, 2015:2019),
-                 season = "fall",  # no age-growth 2014
+                 species = 438, survey.year = c(1995:1996, 1998:2005, 2007:2019),
+                 season = "spring",  # no age-growth 1997, 2006
                  NAFOdiv = c("3N", "3O"), strat = NULL,
                  sex = c("female", "male", "unsexed"),
                  length.group = 3, length.weight = NULL,
                  group.by = "length & age",
                  export = NULL, plot.results = FALSE)
-
-## Examines sex ratio by AGE
-out$strat1$age$abundance$summary %>%
-  filter(sex %in% c("male", "female")) %>%
-  group_by(age, sex) %>%
-  summarise(total = sum(total)) %>%
-  ungroup() %>%
-  plot_ly(x = ~age, y = ~total, color = ~sex) %>%
-  add_lines()
-
-## Examines sex ratio by YEAR
-out$strat1$age$abundance$summary %>%
-  filter(sex %in% c("male", "female")) %>%
-  group_by(survey.year, sex) %>%
-  summarise(total = sum(total)) %>%
-  ungroup() %>%
-  plot_ly(x = ~survey.year, y = ~total, color = ~sex) %>%
-  add_lines()
-
-## No sex difference across ages or sex
 
 ## Convert lat and lon to UTM
 setdet <- data.table(out$raw.data$set.details)
@@ -194,12 +174,12 @@ af$age <- as.integer(gsub("af", "", af$age))
 # to observations from 3NO plaice
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
-                     years = 1:24,
-                     R = sim_R(log_mean = log(75000000),
-                               log_sd = 0.5,
+                     years = 1:22,
+                     R = sim_R(log_mean = log(115000000),
+                               log_sd = 0.4,
                                random_walk = TRUE),
-                     Z = sim_Z(log_mean = log(0.63),
-                               log_sd = 0.3,
+                     Z = sim_Z(log_mean = log(0.85),
+                               log_sd = 0.2,
                                phi_age = 0.9,
                                phi_year = 0.5),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
@@ -236,7 +216,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 1.6, x0 = 1.7),
+                     q = sim_logistic(k = 1.8, x0 = 2.5),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
