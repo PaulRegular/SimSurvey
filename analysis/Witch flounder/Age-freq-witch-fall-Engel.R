@@ -29,7 +29,10 @@ strat_polys_div_utm <- strat_polys_div %>% st_transform(utm_proj)
 con.setdet <- con.setdet[(con.setdet$rec == 5 |(con.setdet$rec == 6 & con.setdet$spec == 890)), ]
 con.lf <- con.lf[con.lf$spec == 890, ]
 ag <- ag[ag$spec == 890, ]
-sort(unique(ag$age))    # range of witch age
+ag_fall<-subset(ag, ag$season=="fall")
+sort(unique(ag_fall$age))    # range of witch age in the fall
+ag_spring<-subset(ag, ag$season=="spring")
+sort(unique(ag_spring$age))    # range of witch age in the spring
 rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 
 out <- strat.fun(setdet = rv_data$setdet,lf = rv_data$lf, ag = rv_data$ag,
