@@ -180,6 +180,8 @@ library(tidyr)
 con.setdet <- con.setdet[(con.setdet$rec == 5 |(con.setdet$rec == 6 & con.setdet$spec == 890)), ]
 con.lf <- con.lf[con.lf$spec == 890, ]
 ag <- ag[ag$spec == 890, ]
+ag_fall<-subset(ag, ag$season=="fall")
+sort(unique(ag_fall$age))    # range of witch age in the fall
 rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 
 ####### no investigation Rstrap output for both males and females
@@ -215,6 +217,24 @@ den
 ## ~ 0.001 sets per km^2
 ## ~ 1 sets per 200 sq. NM
 
+### Melt length frequency data
+lf <- data.table::melt(setdet,
+                       id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
+                       measure.vars = names(setdet)[grepl("^lf", names(setdet))],
+                       variable.name = "length", value.name = "freq")
+lf <- lf[lf$length != "lfNA", ]
+lf$length <- as.integer(gsub("lf", "", lf$length))
+## Real by length
+real_l <- data.frame(lf[lf$freq>0])
+real_l  %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=length))+
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+real_l  %>%
+  ggplot(aes(x=set.depth.mean, y=freq)) +
+  geom_point() + facet_wrap(~length)
+
+
 
 #### Simulated Data ---------------------------------------------------------------------------
 
@@ -224,28 +244,32 @@ den
 # Distribution parameters manually tweaked until results roughly corresponded
 # to observations from 3NO witch
 set.seed(890)
-system.time(pop <- sim_abundance(ages = 1:26,
-                     years = 1:24,
-                     R = sim_R(log_mean = log(6000000),
-                               log_sd = 0.5,
-                               random_walk = FALSE,plot=T),
-                     Z = sim_Z(log_mean = log(0.14),
-                               log_sd = 0.3,
-                               phi_age = 0.9,
-                               phi_year = 0.5),
-                     N0 = sim_N0(N0 = "exp", plot = T),
-                     growth = sim_vonB(Linf = 60, L0 =5,  # max age and k from Bowering 1976
-                                       K = 0.2, log_sd = 0.1,
-                                       length_group = 2, digits = 0)) %>%
-  sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 3,
-                                             range = 800,
-                                             phi_age = 0.9,
-                                             phi_year = 0.9,
-                                             group_ages = 8:26),
-                   depth_par = sim_parabola(mu = log(200),  #increase mu for catch and depth in simulated data
-                                            sigma = 0.7,
-                                            log_space = TRUE )))
+system.time(pop <- sim_abundance(ages = 1:16,
+                                 years = 1:24,
+                                 R = sim_R(log_mean = log(c(1500000,800000,2000000,4000000,
+                                                            2000000,1000000,3000000,3000000,5000000,
+                                                            5000000,5000000,5000000,18000000,22000000,
+                                                            8500000,5000000,8000000,5000000,3500000,
+                                                            2200000,3500000,3500000,6500000,10000000)),
+                                           log_sd = 0.7,
+                                           random_walk = T),
+                                 Z = sim_Z(log_mean = log(0.08),
+                                           log_sd = 0.75,
+                                           phi_age = 0.8,
+                                           phi_year = 0.9),
+                                 N0 = sim_N0(N0 = "exp", plot = F),
+                                 growth = sim_vonB(Linf = 60, L0 =5,  # max age and k from Bowering 1976
+                                                   K = 0.2, log_sd = 0.1,
+                                                   length_group = 2, digits = 0)) %>%
+              sim_distribution(grid,
+                               ays_covar = sim_ays_covar(sd = 1.5,
+                                                         range = 800,
+                                                         phi_age = 0.9,
+                                                         phi_year = 0.9,
+                                                         group_ages = 8:16),
+                               depth_par = sim_parabola(mu = log(200),  #increase mu for catch and depth in simulated data
+                                                        sigma = 0.7,
+                                                        log_space = TRUE )))
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))    #sp_N, abundance (N) split by age,year and cell
 
@@ -325,6 +349,21 @@ plot_ly() %>%
   add_lines(x = seq_along(data_I_l), y = data_I_l, name = "real") %>%
   add_lines(x = seq_along(sim_I_l), y = sim_I_l, name = "simulated") %>%
   layout(title = "Average index at length", xaxis = list(title = "Length"))
+#
+data_I <- out$strat1$length$abundance$details
+sim_I <- survey$samp[aged == TRUE, ]
+nrow(data_I)
+nrow(sim_I)
+hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
+hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+
+mean(data_I$length)
+mean(sim_I$length)
+
+plot_ly(alpha = 0.6, nbinsx = 30) %>%
+  add_histogram(x = data_I$length, name = "real") %>%
+  add_histogram(x = sim_I$length, name = "simulated") %>%
+  layout(title = "Average Index at Length", xaxis = list(title = "Length"))
 
 ###### Compare relationship between catch and depth
 
