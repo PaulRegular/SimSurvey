@@ -1,5 +1,5 @@
-# Simulate Fall 3NO female plaice population
-## See "imitate_plaice_fall_3NO_female.R" file for details on parameter choices
+# Simulate Fall 3NO male plaice population
+## See "imitate_plaice_fall_3NO_male.R" file for details on parameter choices
 
 library(SimSurvey)
 
@@ -53,13 +53,13 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 1.4, x0 = 3.3),
-                    export_dir = "analysis/plaice_male_sim_exports/2021-01-14_age_clust_test")
+                    export_dir = "analysis/sim_exports/plaice_male_sim_exports/2021-01-14_age_clust_test")
 
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
 
 
 ## Visualize Results
-load("analysis/plaice_male_sim_exports/2021-01-14_age_clust_test/test_output.RData")
+load("analysis/sim_exports/plaice_male_sim_exports/2021-01-14_age_clust_test/test_output.RData")
 
 plot_total_strat_fan(sim)
 plot_length_strat_fan(sim, surveys = 1, years = 1:20, lengths = 0.5:144.5)
@@ -84,7 +84,7 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 1.4, x0 = 3.3),
-                    export_dir = "analysis/plaice_male_sim_exports/2021-01-15_set_alk",
+                    export_dir = "analysis/sim_exports/plaice_male_sim_exports/2021-01-15_set_alk",
                     age_length_group = 2,
                     age_space_group = "set",
                     alk_scale = "set")
