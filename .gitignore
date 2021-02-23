@@ -27,6 +27,7 @@ cod_sim_exports/
 plaice_female_sim_exports/
 plaice_male_sim_exports/
 analysis/paper/drafting
+sim_exports/
 !docs/**
 
 ## temp file from word
