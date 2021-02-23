@@ -206,7 +206,7 @@ den
 ## ~ 0.001 sets per km^2
 ## ~ 1 sets per 200 sq. NM
 range(setdet$set.depth.mean)
-# 35 726  for real data 
+# 35 726  for real data
 ### Melt length frequency data
 lf <- data.table::melt(setdet,
                        id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
@@ -248,13 +248,13 @@ system.time(pop <- sim_abundance(ages = 1:26,
                                                    K = 0.2, log_sd = 0.1,
                                                    length_group = 2, digits = 0)) %>%
               sim_distribution(grid,
-                               ays_covar = sim_ays_covar(sd = 2.3,
+                               ays_covar = sim_ays_covar(sd = 4,
                                                          range = 800,
                                                          phi_age = 0.8,
-                                                         phi_year = 0.9,
+                                                         phi_year = 0.8,
                                                          #group_ages = 20:26
                                ),
-                               depth_par = sim_parabola(mu = log(140),  
+                               depth_par = sim_parabola(mu = log(150),
                                                         sigma = 0.4,
                                                         log_space = TRUE )))
 ## Quick look at distribution
