@@ -43,14 +43,14 @@ pop <- sim_abundance(ages = 1:20,
 ## Simulate surveys and compare stratified estimates to the true index
 ## Include baseline, increase and decrease of 80% and 50%; except for age, only 50%
 surveys <- expand_surveys(set_den = c(0.5, 0.8, 1, 1.2, 1.5) / 1000,
-                          lengths_cap = c(250, 400, 500, 600, 750),
+                          lengths_cap = c(400, 500, 600),
                           ages_cap = c(5, 10, 15))
 surveys[surveys$set_den == 0.001 &
           surveys$lengths_cap == 500 &
           surveys$ages_cap == 10, ]    ## survey 38 ~current protocol
 sim <- test_surveys(pop,
                     surveys = surveys,
-                    keep_details = 38,
+                    keep_details = 23,
                     n_sims = 5,
                     n_loops = 200,
                     cores = 7,
