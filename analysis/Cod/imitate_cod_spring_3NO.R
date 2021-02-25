@@ -175,28 +175,28 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(438)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:22,
-                     R = sim_R(log_mean = log(40000000),
-                               log_sd = 0.9,
+                     R = sim_R(log_mean = log(78000000),
+                               log_sd = 0.5,
                                random_walk = TRUE),
-                     Z = sim_Z(log_mean = log(0.52),
-                               log_sd = 0.7,
+                     Z = sim_Z(log_mean = log(0.62),
+                               log_sd = 0.3,
                                phi_age = 0.2,
                                phi_year = 0.2),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 120, L0 = 5,
-                                       K = 0.11, log_sd = 0.20,
+                                       K = 0.10, log_sd = 0.20,
                                        length_group = 3, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 3.2,
+                   ays_covar = sim_ays_covar(sd = 3.4,
                                              range = 1000,
-                                             lambda = .6,
+                                             lambda = .5,
                                              model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.9,
                                              group_ages = 16:20),
                    depth_par = sim_parabola(mu = log(100),
                                             sigma = 0.25,
-                                            sigma_right = 0.39, log_space = TRUE))
+                                            sigma_right = 0.36, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -216,7 +216,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 1.7, x0 = 2.5),
+                     q = sim_logistic(k = 1.8, x0 = 2.4),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
@@ -225,7 +225,7 @@ survey <- sim_survey(pop,
                      lengths_cap = 500,
                      ages_cap = 10,
                      age_sampling = "stratified",
-                     age_length_group = 1,
+                     age_length_group = 2,
                      age_space_group = "division",
                      light = FALSE)
 
