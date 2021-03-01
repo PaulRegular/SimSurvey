@@ -82,7 +82,7 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 1.4, x0 = 4),
-                    export_dir = "analysis/sim_exports/plaice_male_sim_exports/2021-02-21_set_alk",
+                    export_dir = "analysis/sim_exports/plaice_male_sim_exports/2021-02-28_set_alk",
                     age_length_group = 2,
                     age_space_group = "set",
                     alk_scale = "set")
