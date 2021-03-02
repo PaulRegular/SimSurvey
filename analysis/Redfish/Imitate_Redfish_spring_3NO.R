@@ -236,29 +236,29 @@ real_l  %>%
 set.seed(794)
 pop <- sim_abundance(ages = 1:50,
                      years = 1:24,
-                     R = sim_R(log_mean = log(9500000),
+                     R = sim_R(log_mean = log(7500000),
                                log_sd = 0.7,
                                random_walk = T),
-                     Z = sim_Z(log_mean = log(0.55),
+                     Z = sim_Z(log_mean = log(0.5),
                                log_sd = 0.08,
                                phi_age = 0.85,
-                               phi_year = 0.9),
+                               phi_year = 0.90),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 30, L0 = 3,   #roughly based on Cadigan & Compana 2016 
-                                       K = 0.4, log_sd = 0.1,
+                     growth = sim_vonB(Linf = 30, L0 = 3,   #roughly based on Cadigan & Compana 2016
+                                       K = 0.3, log_sd = 0.12,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 2.3,
-                                             range = 1000,
-                                             #lambda = .6,
-                                             #model = "matern",
+                   ays_covar = sim_ays_covar(sd = 4.5,
+                                             range = 800,
+                                             lambda = .45,
+                                             model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.8,
                                              #group_ages = c(1,20:24)
                                              ),
-                   depth_par = sim_parabola(mu = log(150),
-                                            sigma = 0.4,
-                                            #sigma_right = 0.44, 
+                   depth_par = sim_parabola(mu = log(200),
+                                            sigma = 0.8,
+                                            #sigma_right = 0.44,
                                             log_space = TRUE))
 
 ## Quick look at distribution
@@ -274,7 +274,7 @@ for (i in rev(pop$years)) {
 
 # Min sets per strata for all surveys are 2, set density is 1,
 # size of length bins for stratified age sampling is 1 for redfish,
-# max number of lengths per set are 250 
+# max number of lengths per set are 250
 
 survey <- sim_survey(pop,
                      n_sims = 1,
@@ -331,7 +331,7 @@ plot_ly() %>%
 ##real_data
 data_I<-out$strat1$length$abundance$annual.totals
 data_I_l <- rowMeans(data_I[data_I$length %in% survey$lengths, grepl("y", names(data_I))])
-barplot(data_I_l, names.arg = data_I$length[-51], xlab = "length", main = "Index @ length - real data") ##???
+barplot(data_I_l, names.arg = data_I$length[-51], xlab = "length", main = "Index @ length - real data")    ##???
 #sim data
 sim_I_l <- rowMeans(survey$I_at_length)
 barplot(sim_I_l, names.arg = names(sim_I_l), xlab = "length", main = " Index @ length- simulated data")
