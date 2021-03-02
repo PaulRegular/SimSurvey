@@ -1,14 +1,14 @@
-# Simulate Fall 3NO witch flounder population
-## See "imitate_witch_fall_3NO.R" file for details on parameter choices
+# Simulate Spring 3NO witch flounder population
+## See "imitate_witch_spring_3NO.R" file for details on parameter choices
 # #-------------------------------------------------
 # # R code for automatically loading and installing required packages.
-# 
+#
 # # Set repository options:
 # local({r <- getOption("repos")
 # r["CRAN"] <- "http://cran.stat.sfu.ca/"
 # options(repos=r)})
-# 
-# 
+#
+#
 # pkg_list2 = c("iterators","tidyr","crayon","data.table","foreach","doParallel","magrittr","dplyr",
 #               "withr","ggplot2","plotly","progress")
 # for (pkg2 in pkg_list2)
@@ -23,7 +23,7 @@
 # }
 # # Set a vector of strings: package names to use (and install, if necessary)
 # pkg_list = c("SimSurvey")
-# 
+#
 # for (pkg in pkg_list)
 # {
 #   library(pkg, logical.return=TRUE, character.only=TRUE,lib.loc = "Rlibs")
@@ -74,7 +74,7 @@ surveys <- expand_surveys(set_den = c(0.5, 0.8, 1, 1.2, 1.5) / 1000,
                           ages_cap = c(8, 16, 24))
 surveys[surveys$set_den == 0.001 &
           surveys$lengths_cap == 300 &
-          surveys$ages_cap == 16, ]    
+          surveys$ages_cap == 16, ]
 sim <- test_surveys(pop,
                     surveys = surveys,
                     keep_details = 38,   ## survey 38 ~current protocol
@@ -87,7 +87,7 @@ sim <- test_surveys(pop,
 
 # ## Visualize Results
 # load("C:/Users/fhate/Documents/SimSurvey-doc/Jan21/Sim-output/test_output.RData")
-# 
+#
 plot_total_strat_fan(sim)
 plot_length_strat_fan(sim, surveys = 1:75, years = 1:20, lengths = 0.5:144.5)
 plot_age_strat_fan(sim, surveys = 1:75, years = 10, ages = 1:26)
