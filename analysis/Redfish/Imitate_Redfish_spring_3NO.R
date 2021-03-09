@@ -245,19 +245,19 @@ pop <- sim_abundance(ages = 1:50,
                                phi_year = 0.90),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 30, L0 = 3,   #roughly based on Cadigan & Compana 2016
-                                       K = 0.3, log_sd = 0.12,
+                                       K = 0.3, log_sd = 0.1,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 4.5,
-                                             range = 800,
-                                             lambda = .45,
+                   ays_covar = sim_ays_covar(sd = 5,
+                                             range = 550,
+                                             lambda = .5,
                                              model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.8,
                                              #group_ages = c(1,20:24)
                                              ),
                    depth_par = sim_parabola(mu = log(200),
-                                            sigma = 0.8,
+                                            sigma = 0.7,
                                             #sigma_right = 0.44,
                                             log_space = TRUE))
 
