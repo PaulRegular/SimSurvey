@@ -1,4 +1,4 @@
-# Yellowtail 3NO Spring
+# Yellowtail 3NO Fall
 
 ## Survey grid -----------------------------------------------------------------
 
@@ -188,7 +188,7 @@ out_all$strat1$age$abundance$summary %>%
 ## Investigate Rstrap output combined sexes
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
-                 species = 891, survey.year = c(1996:2019),
+                 species = 891, survey.year = c(1996:2001),
                  season = "fall",  # no age-growth 2002-2019, no data for 1995
                  NAFOdiv = c("3N", "3O"), strat = NULL,
                  sex = c("female", "male", "unsexed"),
@@ -223,3 +223,305 @@ af <- data.table::melt(setdet,
                        variable.name = "age", value.name = "freq")
 af <- af[af$age != "afNA", ]
 af$age <- as.integer(gsub("af", "", af$age))
+
+
+
+## SIMULATED DATA
+
+## Simulate data for comparison
+
+# Abundance parameters and catchability curve roughly based on NCAM estimates
+# Distribution parameters manually tweaked until results roughly corresponded
+# to observations from 3NO plaice
+set.seed(891)
+pop <- sim_abundance(ages = 1:10,
+                     years = 1:6,
+                     R = sim_R(log_mean = log(12000000000),
+                               log_sd = 0.6,
+                               random_walk = TRUE),
+                     Z = sim_Z(log_mean = log(0.64),
+                               log_sd = 0.1,
+                               phi_age = 0.2,
+                               phi_year = 0.4),
+                     N0 = sim_N0(N0 = "exp", plot = FALSE),
+                     growth = sim_vonB(Linf = 56, L0 = 0,
+                                       K = 0.13, log_sd = 0.12,
+                                       length_group = 2, digits = 0)) %>%
+  sim_distribution(grid,
+                   ays_covar = sim_ays_covar(sd = 1.4,
+                                             range = 190,
+                                             phi_age = 0.8,
+                                             phi_year = 0.7),
+                                             #group_ages = 5:9),
+                   depth_par = sim_parabola(mu = log(65),
+                                            sigma = 0.15,
+                                            sigma_right = 0.14, log_space = TRUE))
+
+
+## Quick look at distribution
+sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
+for (j in rev(pop$ages)) {
+  z <- xtabs(N ~ x + y, subset = age == j & year == 1, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("age", j))
+}
+for (i in rev(pop$years)) {
+  z <- xtabs(N ~ x + y, subset = age == 1 & year == i, data = sp_N)
+  image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
+}
+
+# Min sets per strata for all surveys are 2, set density is 2 for Yellowtail in 3NO,
+# size of length bins for stratified age sampling is 2,
+# max number of lengths per set are 300 and age group is 25
+# All other values are default values (except q, which is modified based on annual index)
+
+survey <- sim_survey(pop,
+                     n_sims = 1,
+                     q = sim_logistic(k = 1.6, x0 = 5.5),
+                     trawl_dim = c(1.5, 0.02),
+                     resample_cells = FALSE,
+                     binom_error = TRUE,
+                     min_sets = 2,
+                     set_den = 1/1000,
+                     lengths_cap = 300,
+                     ages_cap = 25,
+                     age_sampling = "stratified",
+                     age_length_group = 2,
+                     age_space_group = "division",
+                     light = FALSE)
+
+## COMPARISONS BETWEEN REAL AND SIMUALTED DATA
+
+## Compare set catch
+
+# Modified through sim_distribution arguments.
+
+data_Z <- setdet[setdet$number==0,]
+data_I <- setdet[setdet$number>0,]
+sim_Z <- survey$setdet[survey$setdet$n==0,]
+sim_I <- survey$setdet[survey$setdet$n>0,]
+hist(data_Z$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
+hist(sim_Z$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
+hist(data_I$number, breaks = 100, xlab = "set catch", main = "set catch - real data")
+hist(sim_I$n, breaks = 100, xlab = "set catch", main = "set catch - simulated data")
+
+mean(data_I$number)
+mean(sim_I$n)
+
+plot_ly() %>%
+  add_histogram(x = data_I$number, name = "real") %>%
+  add_histogram(x = sim_I$n, name = "simulated") %>%
+  layout(title = "Set catch")
+
+## Compare annual index
+
+data_I <- out$strat2$abundance$summary$total[survey$years]
+names(data_I) <- survey$years
+sim_I <- colSums(survey$I)
+barplot(data_I, names.arg = names(data_I), xlab = "year", main = "annual index - real data")
+barplot(sim_I, names.arg = names(sim_I), xlab = "year", main = "annual index - simulated data")
+
+median(data_I)
+mean(sim_I)
+
+plot_ly() %>%
+  add_lines(data = out$strat2$abundance$summary,
+            x = ~seq_along(survey.year), y = ~total, name = "real") %>%
+  add_lines(x = seq(survey$years), y = colSums(survey$I), name = "simulated") %>%
+  layout(title = "Annual index", xaxis = list(title = "Year"))
+
+## Compare index at age
+
+data_I <- out$strat1$age$abundance$annual.totals
+data_I <- rowMeans(data_I[data_I$age %in% survey$ages, grepl("y", names(data_I))])
+sim_I <- rowMeans(survey$I)
+barplot(data_I, names.arg = names(data_I), xlab = "age", main = "index at age - real data")
+barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "index at age - simulated data")
+
+mean(data_I)
+mean(sim_I)
+
+plot_ly() %>%
+  add_lines(x = seq_along(data_I), y = data_I, name = "real") %>%
+  add_lines(x = seq_along(sim_I), y = sim_I, name = "simulated") %>%
+  layout(title = "Average index at age", xaxis = list(title = "Age"))
+
+## Compare age growth data
+# Modify with sim_vonB (K) argument
+
+data_I <- out$raw.data$age.growth
+sim_I <- survey$samp[aged == TRUE, ]
+nrow(data_I)
+nrow(sim_I)
+hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
+hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+
+mean(data_I$length)
+mean(sim_I$length)
+
+plot_ly() %>%
+  add_histogram(x = data_I$length, name = "real") %>%
+  add_histogram(x = sim_I$length, name = "simulated") %>%
+  layout(title = "Age Growth")
+
+# Fish are caught based on age, not length...that's why there is a distinction
+# between the two. If the catchability simulation were length based, a scattered
+# older individual would be in the mix along the tail of the length distribution
+
+plot_ly() %>%
+  add_markers(x = data_I$age - 0.25, y = data_I$length, name = "real") %>%
+  add_markers(x = sim_I$age + 0.25, y = sim_I$length, name = "simulated") %>%
+  layout(title = "Age Growth",
+         xaxis = list(title = "Age"),
+         yaxis = list(title = "Length"))
+
+## Compare relationship between catch and depth
+
+data_I <- setdet[setdet$number>0,]
+sim_I <- survey$setdet[survey$setdet$n>0,]
+plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
+     ylab = "number", main = "real data", xlim = c(0, 1000))
+plot(sim_I$depth, sim_I$n, xlab = "depth",
+     ylab = "number", main = "simulated data", xlim = c(0, 1000))
+
+median(data_I$set.depth.mean)
+median(sim_I$depth)
+
+plot_ly() %>%
+  add_markers(x = data_I$set.depth.mean, y = data_I$number, name = "real") %>%
+  add_markers(x = sim_I$depth, sim_I$n, name = "simulated") %>%
+  layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
+         yaxis = list(title = "Number"))
+
+## Relationship of catch and depth by age
+
+## Real by age
+real_a <- data.frame(af[af$freq>0])
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=age))+
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq)) +
+  geom_point() + facet_wrap(~age)
+
+## Real by age group
+#real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
+#                                                 age %in% 20:25 ~ "age 20-25"))
+
+real_a$agegroup <- as.factor(real_a$agegroup)
+real_a %>% filter(!is.na(agegroup)) %>%
+  filter(agegroup == "age 1-19") %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
+  geom_point() + scale_color_brewer(palette="Spectral")
+
+## Simulated by age
+sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
+sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+## Simulated by age group
+#sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
+#                                              age %in% 20:26 ~ "age 20-26"))
+sim_a$agegroup <- as.factor(sim_a$agegroup)
+sim_a %>% filter(!is.na(agegroup)) %>%
+  filter(agegroup == "age 1-19") %>%
+  ggplot(aes(x=depth, y=n,col=agegroup)) +
+  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
+
+## Compare intra-haul correlation
+idvar <- c("vessel", "trip", "set", "year")
+sub_lf <- merge(out$raw.data$set.details[, idvar], con.lf, by = idvar)
+sub_lf$set <- as.numeric(as.factor(with(sub_lf, paste(vessel, trip, set, year))))
+ind <- grep("^bin|^set$", names(con.lf)) # get length frequencies and expand to samples
+lf <- sub_lf[, ind]
+lf <- as.data.table(lf)
+len_samp <- data.table::melt(lf, id.vars = "set")
+len_samp <- len_samp[len_samp$value > 0, ]
+len_samp$value <- round(len_samp$value)
+len_samp$length <- as.numeric(gsub("bin", "", len_samp$variable))
+len_samp <- as.data.frame(len_samp)
+len_samp <- len_samp[rep(row.names(len_samp), len_samp$value), c("set", "length")]
+len_samp <- data.table(len_samp)
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "real data")
+icc(len_samp$length, len_samp$set)
+
+len_samp <- survey$samp[survey$samp$measured, ]
+sub_sets <- sample(len_samp$set, size = 10)
+stripchart(length ~ set, data = len_samp[set %in% sub_sets, ],
+           vertical = TRUE, pch = 1, cex = 0.5, method = "jitter", jitter = 0.2,
+           main = "simulated data")
+icc(len_samp$length, len_samp$set)
+
+## Now size up the distribution
+
+symbols(setdet$long.start, setdet$lat.start,
+        circles = sqrt(setdet$number / pi),
+        inches = 0.1, main = "size of distribution - real data",
+        xlab = "x", ylab = "y")
+symbols(survey$setdet$x, survey$setdet$y,
+        circles = sqrt(survey$setdet$n / pi),
+        inches = 0.1, main = "size of distribution - simulated data",
+        xlab = "x", ylab = "y")
+
+## Real data (hold age or year and animate the other)
+plot_ly(data = af[af$age == 7, ]) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 5)
+plot_ly(data = af[af$survey.year == 2000,]) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+
+# Examine at the age dimension, with frequency scaled by age to allow for
+# distribution shifts at older ages to be visible
+af[af$survey.year == 1998, ] %>%
+  group_by(age) %>%
+  mutate(scaled_freq = scale(freq)) %>%
+  plot_ly() %>%
+  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~age,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+
+## Real data all ages and years
+plot_ly(data = af) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 5)
+plot_ly(data = af) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+
+## Again, scale within age
+af %>%
+  group_by(age) %>%
+  mutate(scaled_freq = scale(freq)) %>%
+  plot_ly() %>%
+  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~age,
+              sizes = c(5, 1000), showlegend = FALSE) %>%
+  animation_opts(frame = 500)
+
+## Simulated data
+
+sim_af <- data.frame(survey$full_setdet)
+sim_af %>%
+  filter(age == 5) %>%
+  group_by(year) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
+          sizes = c(5, 1000), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 5)
+
+sim_af %>%
+  filter(year == 5) %>%
+  group_by(age) %>%
+  plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
+          sizes = c(5, 1000), showlegend = FALSE) %>%
+  add_markers() %>%
+  animation_opts(frame = 500)
+
+
