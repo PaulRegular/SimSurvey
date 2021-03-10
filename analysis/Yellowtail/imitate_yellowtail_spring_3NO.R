@@ -269,14 +269,14 @@ for (i in rev(pop$years)) {
   image(z = z, axes = FALSE, col = viridis::viridis(100), main = paste("year", i))
 }
 
-# Min sets per strata for all surveys are 2, set density is 3 for cod in 3NO,
-# size of length bins for stratified age sampling is 3 for cod,
-# max number of lengths per set are 400-500 and age group is 10
+# Min sets per strata for all surveys are 2, set density is 2 for Yellowtail in 3NO,
+# size of length bins for stratified age sampling is 2,
+# max number of lengths per set are 300 and age group is 25
 # All other values are default values (except q, which is modified based on annual index)
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 1.8, x0 = 2.4),
+                     q = sim_logistic(k = 1.3, x0 = 5.4),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
@@ -471,14 +471,14 @@ plot_ly(data = af[af$age == 7, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af[af$survey.year == 2013,]) %>%
+plot_ly(data = af[af$survey.year == 2000,]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
 # Examine at the age dimension, with frequency scaled by age to allow for
 # distribution shifts at older ages to be visible
-af[af$survey.year == 2011, ] %>%
+af[af$survey.year == 1998, ] %>%
   group_by(age) %>%
   mutate(scaled_freq = scale(freq)) %>%
   plot_ly() %>%
