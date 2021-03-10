@@ -235,28 +235,27 @@ af$age <- as.integer(gsub("af", "", af$age))
 set.seed(891)
 pop <- sim_abundance(ages = 1:10,
                      years = 1:6,
-                     R = sim_R(log_mean = log(78000000),
-                               log_sd = 0.5,
+                     R = sim_R(log_mean = log(10000000000),
+                               log_sd = 0.6,
                                random_walk = TRUE),
-                     Z = sim_Z(log_mean = log(0.62),
-                               log_sd = 0.3,
+                     Z = sim_Z(log_mean = log(0.64),
+                               log_sd = 0.1,
                                phi_age = 0.2,
-                               phi_year = 0.2),
+                               phi_year = 0.4),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 56, L0 = 0,
-                                       K = 0.16, log_sd = 0.20,
+                                       K = 0.13, log_sd = 0.12,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 3.4,
-                                             range = 1000,
-                                             lambda = .5,
-                                             model = "matern",
-                                             phi_age = 0.5,
-                                             phi_year = 0.9,
-                                             group_ages = 16:20),
-                   depth_par = sim_parabola(mu = log(100),
-                                            sigma = 0.25,
-                                            sigma_right = 0.36, log_space = TRUE))
+                   ays_covar = sim_ays_covar(sd = 1.3,
+                                             range = 140,
+                                             phi_age = 0.8,
+                                             phi_year = 0.7,
+                                             group_ages = 5:9),
+                   depth_par = sim_parabola(mu = log(60),
+                                            sigma = 0.15,
+                                            sigma_right = 0.44, log_space = TRUE))
+
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
