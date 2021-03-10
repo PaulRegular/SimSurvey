@@ -1,4 +1,4 @@
-# Yellowtail 3NO Fall
+# Yellowtail 3NO Spring
 
 ## Survey grid -----------------------------------------------------------------
 
