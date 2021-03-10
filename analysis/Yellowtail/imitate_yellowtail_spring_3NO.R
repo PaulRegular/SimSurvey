@@ -1,4 +1,4 @@
-# Yellowtail 3NO Spring
+# Yellowtail 3NO Fall
 
 ## Survey grid -----------------------------------------------------------------
 
@@ -129,7 +129,7 @@ rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 out_all <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                      data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
                      species = 891, survey.year = c(1995:2001),
-                     season = "fall",  # no age-growth 2002-2019
+                     season = "spring",  # no age-growth 2002-2019
                      NAFOdiv = c("3N", "3O"), strat = NULL,
                      sex = c("female", "male", "unsexed"), sep.sex = TRUE, # if sexually dimorphic growth
                      indi.alk = c(TRUE,TRUE,FALSE),
