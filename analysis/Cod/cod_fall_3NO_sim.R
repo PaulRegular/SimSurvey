@@ -75,7 +75,7 @@ plot_survey_rank(sim)
 library(SimSurvey)
 
 ## Test alternate survey with strat specific age sampling and age-length-keys
-set.seed(889)
+set.seed(438)
 surveys <- expand_surveys(set_den = c(1, 1.2) / 1000,
                           lengths_cap = c(400, 500),
                           ages_cap = c(5, 10, 15))
@@ -86,7 +86,7 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 1.6, x0 = 1.7),
-                    export_dir = "analysis/sim_exports/cod_sim_exports/2021-03_08_set_alk",
+                    export_dir = "analysis/sim_exports/cod_sim_exports/2021-03-10_set_alk",
                     age_length_group = 2,
                     age_space_group = "set",
                     alk_scale = "set")
