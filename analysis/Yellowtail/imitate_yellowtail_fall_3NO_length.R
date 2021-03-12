@@ -282,18 +282,43 @@ plot_ly() %>%
 
 ## Compare index at length
 
+data_I <- out$strat1$length$abundance$details
+sim_I <- survey$samp[aged == TRUE, ]
+nrow(data_I)
+nrow(sim_I)
+hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
+hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+
+mean(data_I$length)
+mean(sim_I$length)
+
+plot_ly(alpha = 0.6, nbinsx = 100) %>%
+  add_histogram(x = data_I$length, name = "real") %>%
+  add_histogram(x = sim_I$length, name = "simulated") %>%
+  layout(title = "Average Index at Length", xaxis = list(title = "Length"))
+
+##
+
 data_I<-out$strat1$length$abundance$annual.totals
 data_I_l <- rowMeans(data_I[data_I$length %in% survey$lengths, grepl("y", names(data_I))])
 barplot(data_I_l, names.arg = data_I$length , xlab = "length", main = "Index @ length - real data")
-#sim data
+
 sim_I_l <- rowMeans(survey$I_at_length)
 barplot(sim_I_l, names.arg = names(sim_I_l), xlab = "length", main = " Index @ length- simulated data")
+
+
+mean(data_I$length)
+mean(sim_I$length)
 
 plot_ly() %>%
   add_lines(x = seq_along(data_I_l), y = data_I_l, name = "real") %>%
   add_lines(x = seq_along(sim_I_l), y = sim_I_l, name = "simulated") %>%
   layout(title = "Average index at length", xaxis = list(title = "Length"))
-#
+
+
+## Compare age growth data
+# Modify with sim_vonB (K) argument
+
 data_I <- out$strat1$length$abundance$details
 sim_I <- survey$samp[aged == TRUE, ]
 nrow(data_I)
@@ -309,50 +334,6 @@ plot_ly(alpha = 0.6, nbinsx = 30) %>%
   add_histogram(x = sim_I$length, name = "simulated") %>%
   layout(title = "Average Index at Length", xaxis = list(title = "Length"))
 
-## Compare index at age
-
-data_I <- out$strat1$age$abundance$annual.totals
-data_I <- rowMeans(data_I[data_I$age %in% survey$ages, grepl("y", names(data_I))])
-sim_I <- rowMeans(survey$I)
-barplot(data_I, names.arg = names(data_I), xlab = "age", main = "index at age - real data")
-barplot(sim_I, names.arg = names(sim_I), xlab = "age", main = "index at age - simulated data")
-
-mean(data_I)
-mean(sim_I)
-
-plot_ly() %>%
-  add_lines(x = seq_along(data_I), y = data_I, name = "real") %>%
-  add_lines(x = seq_along(sim_I), y = sim_I, name = "simulated") %>%
-  layout(title = "Average index at age", xaxis = list(title = "Age"))
-
-## Compare age growth data
-# Modify with sim_vonB (K) argument
-
-data_I <- out$raw.data$age.growth
-sim_I <- survey$samp[aged == TRUE, ]
-nrow(data_I)
-nrow(sim_I)
-hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
-hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
-
-mean(data_I$length)
-mean(sim_I$length)
-
-plot_ly() %>%
-  add_histogram(x = data_I$length, name = "real") %>%
-  add_histogram(x = sim_I$length, name = "simulated") %>%
-  layout(title = "Age Growth")
-
-# Fish are caught based on age, not length...that's why there is a distinction
-# between the two. If the catchability simulation were length based, a scattered
-# older individual would be in the mix along the tail of the length distribution
-
-plot_ly() %>%
-  add_markers(x = data_I$age - 0.25, y = data_I$length, name = "real") %>%
-  add_markers(x = sim_I$age + 0.25, y = sim_I$length, name = "simulated") %>%
-  layout(title = "Age Growth",
-         xaxis = list(title = "Age"),
-         yaxis = list(title = "Length"))
 
 ## Compare relationship between catch and depth
 
