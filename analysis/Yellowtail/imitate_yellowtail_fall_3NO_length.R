@@ -353,41 +353,6 @@ plot_ly() %>%
   layout(title = "Compare Catch Depth", xaxis = list(title = "Depth"),
          yaxis = list(title = "Number"))
 
-## Relationship of catch and depth by age
-
-## Real by age
-real_a <- data.frame(af[af$freq>0])
-real_a  %>%
-  ggplot(aes(x=set.depth.mean, y=freq, col=age))+
-  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
-
-real_a  %>%
-  ggplot(aes(x=set.depth.mean, y=freq)) +
-  geom_point() + facet_wrap(~age)
-
-## Real by age group
-#real_a <- real_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
-#                                                 age %in% 20:25 ~ "age 20-25"))
-
-real_a$agegroup <- as.factor(real_a$agegroup)
-real_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 1-19") %>%
-  ggplot(aes(x=set.depth.mean, y=freq, col=agegroup))+
-  geom_point() + scale_color_brewer(palette="Spectral")
-
-## Simulated by age
-sim_a <- data.frame(survey$full_setdet[survey$full_setdet$n>0])
-sim_a %>% ggplot(aes(x=depth, y=n,col=age)) +
-  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
-
-## Simulated by age group
-#sim_a <- sim_a %>% mutate(agegroup = case_when(age %in% 1:19 ~ "age 1-19",
-#                                              age %in% 20:26 ~ "age 20-26"))
-sim_a$agegroup <- as.factor(sim_a$agegroup)
-sim_a %>% filter(!is.na(agegroup)) %>%
-  filter(agegroup == "age 1-19") %>%
-  ggplot(aes(x=depth, y=n,col=agegroup)) +
-  geom_point() +scale_color_brewer(palette="Spectral") + theme_bw()
 
 ## Compare intra-haul correlation
 idvar <- c("vessel", "trip", "set", "year")
@@ -426,6 +391,8 @@ symbols(survey$setdet$x, survey$setdet$y,
         circles = sqrt(survey$setdet$n / pi),
         inches = 0.1, main = "size of distribution - simulated data",
         xlab = "x", ylab = "y")
+
+
 
 ## Real data (hold age or year and animate the other)
 plot_ly(data = af[af$age == 7, ]) %>%
