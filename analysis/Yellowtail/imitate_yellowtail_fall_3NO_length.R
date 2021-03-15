@@ -187,9 +187,9 @@ real_l  %>%
 set.seed(891)
 pop <- sim_abundance(ages = 1:10,
                      years = 1:23,
-                     R = sim_R(log_mean = log(12000000000),
+                     R = sim_R(log_mean = log(7000000000),
                                log_sd = 0.6,
-                               random_walk = TRUE),
+                               random_walk = FALSE),
                      Z = sim_Z(log_mean = log(0.64),
                                log_sd = 0.1,
                                phi_age = 0.2,
@@ -236,7 +236,7 @@ survey <- sim_survey(pop,
                      lengths_cap = 300,
                      ages_cap = 25,
                      age_sampling = "stratified",
-                     age_length_group = 2,
+                     age_length_group = 3,
                      age_space_group = "division",
                      light = FALSE)
 
