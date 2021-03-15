@@ -286,20 +286,20 @@ data_I <- out$strat1$length$abundance$details
 sim_I <- survey$samp[aged == TRUE, ]
 nrow(data_I)
 nrow(sim_I)
-hist(data_I$length, xlab = "length", main = "age growth data - real data", breaks = 100)
-hist(sim_I$length, xlab = "length", main = "age growth data - simulated data", breaks = 100)
+hist(data_I$length, xlab = "length", main = "real data", breaks = 200)
+hist(sim_I$length, xlab = "length", main = "simulated data", breaks = 200)
 
 mean(data_I$length)
 mean(sim_I$length)
 
-plot_ly(alpha = 0.6, nbinsx = 100) %>%
+plot_ly(alpha = 0.9, nbinsx = 100) %>%
   add_histogram(x = data_I$length, name = "real") %>%
   add_histogram(x = sim_I$length, name = "simulated") %>%
   layout(title = "Average Index at Length", xaxis = list(title = "Length"))
 
 ##
 
-data_I<-out$strat1$length$abundance$annual.totals
+data_I <- out$strat1$length$abundance$annual.totals
 data_I_l <- rowMeans(data_I[data_I$length %in% survey$lengths, grepl("y", names(data_I))])
 barplot(data_I_l, names.arg = data_I$length , xlab = "length", main = "Index @ length - real data")
 
