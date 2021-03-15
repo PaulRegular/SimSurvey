@@ -52,7 +52,7 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 1.3, x0 = 5.4),
-                    export_dir = "analysis/sim_exports/yellowtail_sim_exports/2021-03-_age_clust_test")
+                    export_dir = "analysis/sim_exports/yellowtail_sim_exports/2021-03-13_age_clust_test")
 
 # sim <- resume_test(export_dir = "analysis/cod_sim_exports/2018-10-26_age_clust_test")
 
@@ -83,7 +83,7 @@ sim <- test_surveys(pop,
                     n_loops = 200,
                     cores = 7,
                     q = sim_logistic(k = 1.3, x0 = 5.4),
-                    export_dir = "analysis/sim_exports/yellowtail_sim_exports/2021-03-_set_alk",
+                    export_dir = "analysis/sim_exports/yellowtail_sim_exports/2021-03-14_set_alk",
                     age_length_group = 2,
                     age_space_group = "set",
                     alk_scale = "set")
