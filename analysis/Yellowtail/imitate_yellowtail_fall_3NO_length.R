@@ -157,6 +157,9 @@ den
 ## ~ 0.001 sets per km^2
 ## ~ 1 sets per 200 sq. NM
 
+mean(setdet$set.depth.mean)
+
+
 ### Melt length frequency data
 lf <- data.table::melt(setdet,
                        id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
