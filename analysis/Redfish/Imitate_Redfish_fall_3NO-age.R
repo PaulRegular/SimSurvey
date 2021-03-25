@@ -170,7 +170,7 @@ library(tidyr)
 
 ## REAL DATA
 
-## Subset data to plaice
+## Subset data to Redfish
 con.setdet <- con.setdet[(con.setdet$rec == 5 | (con.setdet$rec == 6 & con.setdet$spec == 794)), ]
 con.lf <- con.lf[con.lf$spec == 794, ]
 ag <- ag[ag$spec == 794, ]
@@ -296,20 +296,20 @@ real_ag  %>%
 set.seed(794)
 pop <- sim_abundance(ages = 1:30,
                      years = 1:5,
-                     R = sim_R(log_mean = log(700000000),
+                     R = sim_R(log_mean = log(2000000000),
                                log_sd = 0.6,
                                random_walk = T),
                      Z = sim_Z(log_mean = log(0.4),
-                               log_sd = 0.1,
+                               log_sd = 0.2,
                                phi_age = 0.4,
                                phi_year = 0.4),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 30, L0 = 0,   #roughly based on Cadigan & Compana 2016
-                                       K = 0.16, log_sd = 0.15,
+                                       K = 0.14, log_sd = 0.15,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 5,
-                                             range = 200,
+                   ays_covar = sim_ays_covar(sd = 7,
+                                             range = 300,
                                              #lambda = .2,
                                              #model = "matern",
                                              phi_age = 0.5,
@@ -317,7 +317,7 @@ pop <- sim_abundance(ages = 1:30,
                                              group_ages = 20:30
                                              ),
                    depth_par = sim_parabola(mu = log(190),
-                                            sigma = 0.4,
+                                            sigma = 0.6,
                                             #sigma_right = 0.44,
                                             log_space = TRUE))
 
@@ -338,7 +338,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 2, x0 = 3),
+                     q = sim_logistic(k = 1.3, x0 = 6.5),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
