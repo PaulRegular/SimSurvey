@@ -230,7 +230,6 @@ real_l  %>%
 
 ## Simulate data for comparison
 
-# Abundance parameters and catchability curve roughly based on NCAM estimates
 # Distribution parameters manually tweaked until results roughly corresponded
 # to observations from 3NO redfish
 set.seed(794)
@@ -244,20 +243,20 @@ pop <- sim_abundance(ages = 1:50,
                                phi_age = 0.85,
                                phi_year = 0.90),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 30, L0 = 3,   #roughly based on Cadigan & Compana 2016
-                                       K = 0.3, log_sd = 0.1,
+                     growth = sim_vonB(Linf = 30, L0 = 0,   #roughly based on Cadigan & Compana 2016
+                                       K = 0.1, log_sd = 0.15,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 5,
-                                             range = 550,
-                                             lambda = .5,
-                                             model = "matern",
+                   ays_covar = sim_ays_covar(sd = 3,
+                                             range = 250,
+                                             #lambda = .5,
+                                             #model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.8,
                                              #group_ages = c(1,20:24)
                                              ),
-                   depth_par = sim_parabola(mu = log(200),
-                                            sigma = 0.7,
+                   depth_par = sim_parabola(mu = log(150),
+                                            sigma = 0.6,
                                             #sigma_right = 0.44,
                                             log_space = TRUE))
 
@@ -278,7 +277,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 2, x0 = 2),
+                     q = sim_logistic(k = 1.6, x0 = 2.7),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
@@ -331,7 +330,7 @@ plot_ly() %>%
 ##real_data
 data_I<-out$strat1$length$abundance$annual.totals
 data_I_l <- rowMeans(data_I[data_I$length %in% survey$lengths, grepl("y", names(data_I))])
-barplot(data_I_l, names.arg = data_I$length[-51], xlab = "length", main = "Index @ length - real data")    ##???
+barplot(data_I_l, names.arg = data_I$length, xlab = "length", main = "Index @ length - real data")    ##???
 #sim data
 sim_I_l <- rowMeans(survey$I_at_length)
 barplot(sim_I_l, names.arg = names(sim_I_l), xlab = "length", main = " Index @ length- simulated data")
