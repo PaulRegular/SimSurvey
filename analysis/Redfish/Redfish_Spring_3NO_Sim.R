@@ -35,7 +35,7 @@ library(SimSurvey)
 set.seed(794)
 pop <- sim_abundance(ages = 1:50,
                      years = 1:24,
-                     R = sim_R(log_mean = log(7500000),
+                     R = sim_R(log_mean = log(75000000),
                                log_sd = 0.7,
                                random_walk = T),
                      Z = sim_Z(log_mean = log(0.5),
@@ -44,7 +44,7 @@ pop <- sim_abundance(ages = 1:50,
                                phi_year = 0.90),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 30, L0 = 3,      #roughly based on Cadigan & Compana 2016
-                                       K = 0.3, log_sd = 0.1,
+                                       K = 0.15, log_sd = 0.15,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid = make_grid(x_range = c(-184, 184),
                                     y_range = c(-184, 184),
@@ -56,16 +56,16 @@ pop <- sim_abundance(ages = 1:50,
                                     strat_breaks = seq(0, 1600, by = 65),
                                     strat_splits = 4,
                                     method = "bezier"),
-                   ays_covar = sim_ays_covar(sd = 5,
-                                             range = 550,
-                                             lambda = 0.5,
-                                             model = "matern",
+                   ays_covar = sim_ays_covar(sd = 3,
+                                             range = 250,
+                                             #lambda = 0.5,
+                                             #model = "matern",
                                              phi_age = 0.5,
                                              phi_year = 0.8,
                                              #group_ages = c(1,20:24)
                                              ),
-                   depth_par = sim_parabola(mu = log(200),
-                                            sigma = 0.7,
+                   depth_par = sim_parabola(mu = log(150),
+                                            sigma = 0.6,
                                            log_space = TRUE))
 save.image("pop-output.RData")
 ## Test a series of surveys
@@ -83,7 +83,7 @@ sim <- test_surveys(pop,
                     n_sims = 5,
                     n_loops = 200,
                     cores = 6,
-                    q = sim_logistic(k = 2, x0 = 2),
+                    q = sim_logistic(k = 1.6, x0 = 6.5),
                     export_dir = "C:/Users/fhate/Documents/SimSurvey-doc/Jan21/Sim-export/Redfish/Spring/2021-03-11-test")
 # ## Visualize Results
 # load("C:/Users/fhate/Documents/SimSurvey-doc/Jan21/Sim-export/Redfish/Spring/2021-03-11-test")
