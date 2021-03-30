@@ -61,12 +61,14 @@ pop <- sim_abundance(ages = 1:16,
                                     method = "bezier"),
                    ays_covar = sim_ays_covar(sd = 1.5,
                                              range = 800,
-                                             phi_age = 0.9,
+                                             lambda = .55,
+                                             model = "matern",
+                                             phi_age = 0.8,
                                              phi_year = 0.9,
-                                             group_ages = 8:16
+                                             #group_ages = 8:16
                                              ),
-                   depth_par = sim_parabola(mu = log(200),
-                                            sigma = 0.7,
+                   depth_par = sim_parabola(mu = log(180),
+                                            sigma = 0.8,
                                              log_space = TRUE))
 
 
