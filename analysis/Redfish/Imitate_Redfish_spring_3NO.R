@@ -235,7 +235,7 @@ real_l  %>%
 set.seed(794)
 pop <- sim_abundance(ages = 1:50,
                      years = 1:24,
-                     R = sim_R(log_mean = log(7500000),
+                     R = sim_R(log_mean = log(75000000),
                                log_sd = 0.7,
                                random_walk = T),
                      Z = sim_Z(log_mean = log(0.5),
@@ -244,7 +244,7 @@ pop <- sim_abundance(ages = 1:50,
                                phi_year = 0.90),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
                      growth = sim_vonB(Linf = 30, L0 = 0,   #roughly based on Cadigan & Compana 2016
-                                       K = 0.1, log_sd = 0.15,
+                                       K = 0.15, log_sd = 0.15,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid,
                    ays_covar = sim_ays_covar(sd = 3,
@@ -277,7 +277,7 @@ for (i in rev(pop$years)) {
 
 survey <- sim_survey(pop,
                      n_sims = 1,
-                     q = sim_logistic(k = 1.6, x0 = 2.7),
+                     q = sim_logistic(k = 1.6, x0 = 6.5),
                      trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE,
                      binom_error = TRUE,
