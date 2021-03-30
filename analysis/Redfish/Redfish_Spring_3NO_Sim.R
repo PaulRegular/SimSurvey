@@ -43,7 +43,7 @@ pop <- sim_abundance(ages = 1:50,
                                phi_age = 0.85,
                                phi_year = 0.90),
                      N0 = sim_N0(N0 = "exp", plot = FALSE),
-                     growth = sim_vonB(Linf = 30, L0 = 3,      #roughly based on Cadigan & Compana 2016
+                     growth = sim_vonB(Linf = 30, L0 = 0,      #roughly based on Cadigan & Compana 2016
                                        K = 0.15, log_sd = 0.15,
                                        length_group = 1, digits = 0)) %>%
   sim_distribution(grid = make_grid(x_range = c(-184, 184),
