@@ -2,6 +2,10 @@ library(FSA)
 library(FSAdata)
 library(nlstools)
 
+## Attempt to follow:
+## http://derekogle.com/fishR/examples/oldFishRVignettes/VonBertalanffy.pdf
+## http://derekogle.com/NCNRS349/modules/Growth/BKG
+
 ##Test
 crm <- data(Croaker2)
 
@@ -23,5 +27,17 @@ plot_ly() %>%
          xaxis = list(title = "Age"),
          yaxis = list(title = "Length"))
 
-svOriginal <- vbStarts(length~age,data=dat,type="original", methLinf="oldAge", plot = TRUE)
+vbO <- vbFuns("Original")
+
+svOriginal <- vbStarts(length~age,data=dat,type="Original", methLinf="oldAge", plot = TRUE)
 unlist(svOriginal)
+#       Linf           K          L0
+# 50.00000000  0.01811917  7.74968669
+
+
+nlsO <- nls(length~vbO(age,Linf,L0,K),data=dat,start=svOriginal)
+
+
+
+#nlsO <- nls(length~vbO(age,Linf,L0,K),data=dat,start=svOriginal)
+#cbind(Ests=coef(nlsO),confint(nlsO))
