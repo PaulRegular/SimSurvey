@@ -239,7 +239,7 @@ survey <- sim_survey(pop,
                      lengths_cap = 300,
                      ages_cap = 25,
                      age_sampling = "stratified",
-                     age_length_group = 3,
+                     age_length_group = 2,
                      age_space_group = "division",
                      light = FALSE)
 
@@ -397,59 +397,59 @@ symbols(survey$setdet$x, survey$setdet$y,
 
 
 
-## Real data (hold age or year and animate the other)
-plot_ly(data = af[af$age == 7, ]) %>%
+## Real data (hold length or year and animate the other)
+plot_ly(data = lf[lf$length == 30, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af[af$survey.year == 2000,]) %>%
+plot_ly(data = lf[lf$survey.year == 2000,]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
 # Examine at the age dimension, with frequency scaled by age to allow for
 # distribution shifts at older ages to be visible
-af[af$survey.year == 1998, ] %>%
-  group_by(age) %>%
+lf[lf$survey.year == 1998, ] %>%
+  group_by(length) %>%
   mutate(scaled_freq = scale(freq)) %>%
   plot_ly() %>%
-  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~age,
+  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~length,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
-## Real data all ages and years
-plot_ly(data = af) %>%
+## Real data all lengths and years
+plot_ly(data = lf) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af) %>%
-  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
+plot_ly(data = lf) %>%
+  add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~length,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
 ## Again, scale within age
-af %>%
-  group_by(age) %>%
+lf %>%
+  group_by(length) %>%
   mutate(scaled_freq = scale(freq)) %>%
   plot_ly() %>%
-  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~age,
+  add_markers(x = ~easting, y = ~northing, size = ~scaled_freq, frame = ~length,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
 ## Simulated data
 
-sim_af <- data.frame(survey$full_setdet)
-sim_af %>%
-  filter(age == 5) %>%
+sim_lf <- data.frame(survey$full_setdet)
+sim_lf %>%
+  filter(length == 20) %>%
   group_by(year) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
           sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
   animation_opts(frame = 5)
 
-sim_af %>%
+sim_lf %>%
   filter(year == 5) %>%
-  group_by(age) %>%
+  group_by(length) %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~age,
           sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
