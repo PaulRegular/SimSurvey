@@ -216,6 +216,7 @@ den
 ## ~ 0.001 sets per km^2
 ## ~ 1 sets per 200 sq. NM
 
+
 ## Melt age frequency data
 af <- data.table::melt(setdet,
                        id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
@@ -224,6 +225,34 @@ af <- data.table::melt(setdet,
 af <- af[af$age != "afNA", ]
 af$age <- as.integer(gsub("af", "", af$age))
 
+## Real by age
+real_a <- data.frame(af[af$freq>0])
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=age))+
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq)) +
+  geom_point() + facet_wrap(~age)
+
+
+### Melt length frequency data
+lf <- data.table::melt(setdet,
+                       id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
+                       measure.vars = names(setdet)[grepl("^lf", names(setdet))],
+                       variable.name = "length", value.name = "freq")
+lf <- lf[lf$length != "lfNA", ]
+lf$length <- as.integer(gsub("lf", "", lf$length))
+
+## Real by length
+real_l <- data.frame(lf[lf$freq>0])
+real_l  %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=length))+
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+real_l  %>%
+  ggplot(aes(x=set.depth.mean, y=freq)) +
+  geom_point() + facet_wrap(~length)
 
 
 ## SIMULATED DATA
