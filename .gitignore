@@ -10,6 +10,7 @@
 *.shp.xml
 *.shx
 *.png
+!man/figures/logo.png
 *.jpg
 *.svg
 *.pdf
