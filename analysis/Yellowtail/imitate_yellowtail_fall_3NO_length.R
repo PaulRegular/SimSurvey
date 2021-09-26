@@ -123,31 +123,31 @@ library(tidyr)
 ## Subset data to plaice
 con.setdet <- con.setdet[(con.setdet$rec == 5 | (con.setdet$rec == 6 & con.setdet$spec == 891)), ]
 con.lf <- con.lf[con.lf$spec == 891, ]
-rv_data <- list(setdet = con.setdet, lf = con.lf)
+ag <- ag[ag$spec == 891, ]
+rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 
-
-## Investigate Rstrap output combined sexes
-out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = NULL,
+## Investigate Rstrap output with both AGE AND LENGTH
+out_al <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = rv_data$ag,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
-                 species = 891, survey.year = c(1996:2019),
+                 species = 891, survey.year = c(1996:2001),
                  season = "fall",  # no age-growth 2002-2019, no data for 1995
                  NAFOdiv = c("3N", "3O"), strat = NULL,
                  sex = c("female", "male", "unsexed"),
                  length.group = 2, length.weight = NULL,
-                 group.by = "length",
+                 group.by = "length & age",
                  export = NULL, plot.results = FALSE)
 
 ## Convert lat and lon to UTM
-setdet <- data.table(out$raw.data$set.details)
-st_xy <- st_as_sf(data.frame(long = -setdet$long.start, lat = setdet$lat.start),
+setdet_al <- data.table(out_al$raw.data$set.details)
+st_xy <- st_as_sf(data.frame(long = -setdet_al$long.start, lat = setdet_al$lat.start),
                   coords = c("long", "lat"), crs = 4326) %>%
   st_transform(crs(strat_polys_div_utm)) %>%
   st_coordinates() %>% data.frame(.)
 names(st_xy) <- c("easting", "northing")
-setdet <- cbind(setdet, st_xy)
+setdet_al <- cbind(setdet_al, st_xy)
 
 ## Set density
-den <- setdet[rec == 5, list(n = .N), by = c("survey.year", "NAFOdiv", "strat", "strat.area")]
+den <- setdet_al[rec == 5, list(n = .N), by = c("survey.year", "NAFOdiv", "strat", "strat.area")]
 den <- den[, list(strat_area_nm = sum(strat.area),
                   strat_area_km = sum(strat.area * 3.4299),
                   den_km = sum(n) / sum(strat.area * 3.4299),
@@ -157,13 +157,64 @@ den
 ## ~ 0.001 sets per km^2
 ## ~ 1 sets per 200 sq. NM
 
-mean(setdet$set.depth.mean)
+mean(setdet_al$set.depth.mean)
 
+## Melt age frequency data
+af <- data.table::melt(setdet_al,
+                       id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
+                       measure.vars = names(setdet_al)[grepl("^af", names(setdet_al))],
+                       variable.name = "age", value.name = "freq")
+af <- af[af$age != "afNA", ]
+af$age <- as.integer(gsub("af", "", af$age))
+
+## Real by age
+real_a <- data.frame(af[af$freq>0])
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq, col=age))+
+  geom_point() + scale_color_gradientn(colours = rainbow(5)) + theme_bw()
+
+real_a  %>%
+  ggplot(aes(x=set.depth.mean, y=freq)) +
+  geom_point() + facet_wrap(~age)
+
+
+## Investigate Rstrap output with ONLY LENGTH
+out_l <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = NULL,
+                   data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
+                   species = 891, survey.year = c(1996:2019),
+                   season = "fall",  # no age-growth 2002-2019, no data for 1995
+                   NAFOdiv = c("3N", "3O"), strat = NULL,
+                   sex = c("female", "male", "unsexed"),
+                   length.group = 2, length.weight = NULL,
+                   group.by = "length",
+                   export = NULL, plot.results = FALSE)
+
+## Convert lat and lon to UTM
+setdet_l <- data.table(out_l$raw.data$set.details)
+st_xy <- st_as_sf(data.frame(long = -setdet_l$long.start, lat = setdet_l$lat.start),
+                  coords = c("long", "lat"), crs = 4326) %>%
+  st_transform(crs(strat_polys_div_utm)) %>%
+  st_coordinates() %>% data.frame(.)
+names(st_xy) <- c("easting", "northing")
+setdet_l <- cbind(setdet_l, st_xy)
+
+## Set density
+den <- setdet_l[rec == 5, list(n = .N), by = c("survey.year", "NAFOdiv", "strat", "strat.area")]
+den <- den[, list(strat_area_nm = sum(strat.area),
+                  strat_area_km = sum(strat.area * 3.4299),
+                  den_km = sum(n) / sum(strat.area * 3.4299),
+                  den_nm = sum(n) / sum(strat.area / 200)), by = c("survey.year")]
+den
+
+## ~ 0.001 sets per km^2
+## ~ 1 sets per 200 sq. NM
+
+mean(setdet_l$set.depth.mean)
 
 ### Melt length frequency data
-lf <- data.table::melt(setdet,
+lf <- data.table::melt(setdet_l,
                        id.vars = c("survey.year", "vessel", "trip", "set", "easting", "northing", "set.depth.mean"),
-                       measure.vars = names(setdet)[grepl("^lf", names(setdet))],
+                       measure.vars = names(setdet_l)[grepl("^lf", names(setdet_l))],
                        variable.name = "length", value.name = "freq")
 lf <- lf[lf$length != "lfNA", ]
 lf$length <- as.integer(gsub("lf", "", lf$length))
@@ -285,7 +336,7 @@ plot_ly() %>%
 
 ## Compare index at length
 
-data_I <- out$strat1$length$abundance$details
+data_O <- out$strat1$length$abundance$details
 sim_I <- survey$samp[aged == TRUE, ]
 nrow(data_I)
 nrow(sim_I)

@@ -129,7 +129,7 @@ rv_data <- list(setdet = con.setdet, lf = con.lf, ag = ag)
 ## Investigate Rstrap output for both males and females
 out <- strat.fun(setdet = rv_data$setdet, lf = rv_data$lf, ag = NULL,
                  data.series = "Campelen", program = "strat2 & strat1", which.survey = "multispecies",
-                 species = 891, survey.year = c(1996:2013, 2015:2019),
+                 species = 891, survey.year = c(1996:2013, 2015:2019),  # missing 2014 data
                  season = "fall",
                  NAFOdiv = c("3N", "3O"), strat = NULL,
                  sex = c("female", "male", "unsexed"),
@@ -228,7 +228,7 @@ lf_age$spec <- 891
 set.seed(891)
 pop <- sim_abundance(ages = 1:20,
                      years = 1:23,
-                     R = sim_R(log_mean = log(10000000000),
+                     R = sim_R(log_mean = log(8000000000),
                                log_sd = 0.6,
                                random_walk = FALSE),
                      Z = sim_Z(log_mean = log(0.64),
@@ -240,14 +240,13 @@ pop <- sim_abundance(ages = 1:20,
                                        K = 0.13, log_sd = 0.12,
                                        length_group = 2, digits = 0)) %>%
   sim_distribution(grid,
-                   ays_covar = sim_ays_covar(sd = 1.4,
-                                             range = 190,
-                                             phi_age = 0.8,
-                                             phi_year = 0.7),
-                   #group_ages = 5:9),
-                   depth_par = sim_parabola(mu = log(65),
+                   ays_covar = sim_ays_covar(sd = 1.8,
+                                             range = 700,
+                                             phi_age = 0.9,
+                                             phi_year = 0.8),
+                   depth_par = sim_parabola(mu = log(60),
                                             sigma = 0.15,
-                                            sigma_right = 0.14, log_space = TRUE))
+                                            sigma_right = 0.20, log_space = TRUE))
 
 ## Quick look at distribution
 sp_N <- data.frame(merge(pop$sp_N, pop$grid_xy, by = "cell"))
@@ -375,8 +374,8 @@ plot(as.numeric(data_I$set.depth.mean), data_I$number, xlab = "depth",
 plot(sim_I$depth, sim_I$n, xlab = "depth",
      ylab = "number", main = "simulated data", xlim = c(0, 1000))
 
-median(data_I$set.depth.mean)
-median(sim_I$depth)
+mean(data_I$set.depth.mean)
+mean(sim_I$depth)
 
 plot_ly() %>%
   add_markers(x = data_I$set.depth.mean, y = data_I$number, name = "real") %>%
@@ -459,18 +458,18 @@ symbols(survey$setdet$x, survey$setdet$y,
         xlab = "x", ylab = "y")
 
 ## Real data (hold age or year and animate the other)
-plot_ly(data = af[af$age == 7, ]) %>%
+plot_ly(data = lf_age[lf_age$age == 7, ]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
-  animation_opts(frame = 5)
-plot_ly(data = af[af$survey.year == 2000,]) %>%
+  animation_opts(frame = 500)
+plot_ly(data = lf_age[lf_age$survey.year == 2000,]) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
 # Examine at the age dimension, with frequency scaled by age to allow for
 # distribution shifts at older ages to be visible
-af[af$survey.year == 1998, ] %>%
+lf_age[lf_age$survey.year == 1998, ] %>%
   group_by(age) %>%
   mutate(scaled_freq = scale(freq)) %>%
   plot_ly() %>%
@@ -479,17 +478,17 @@ af[af$survey.year == 1998, ] %>%
   animation_opts(frame = 500)
 
 ## Real data all ages and years
-plot_ly(data = af) %>%
+plot_ly(data = lf_age) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~survey.year,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 5)
-plot_ly(data = af) %>%
+plot_ly(data = lf_age) %>%
   add_markers(x = ~easting, y = ~northing, size = ~freq, frame = ~age,
               sizes = c(5, 1000), showlegend = FALSE) %>%
   animation_opts(frame = 500)
 
 ## Again, scale within age
-af %>%
+lf_age %>%
   group_by(age) %>%
   mutate(scaled_freq = scale(freq)) %>%
   plot_ly() %>%
@@ -506,7 +505,7 @@ sim_af %>%
   plot_ly(x = ~x, y = ~y, size = ~n, frame = ~year,
           sizes = c(5, 1000), showlegend = FALSE) %>%
   add_markers() %>%
-  animation_opts(frame = 5)
+  animation_opts(frame = 500)
 
 sim_af %>%
   filter(year == 5) %>%
