@@ -3,6 +3,7 @@
 ^packrat/
 ^\.Rprofile$
 ^analysis$
+^tutorial$
 ^tests$
 ^data-raw$
 ^\.travis\.yml$

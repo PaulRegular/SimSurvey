@@ -1,0 +1,57 @@
+---
+title: "SimSurvey demo"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(SimSurvey)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Introduction
+
+### Fisheries-independent surveys
+
+<div style="float: left; width: 50%;">
+
+- Conducted by many RFMOs
+- Becoming increasingly important in stock assessment
+- Associated with difficult questions:
+    - How many fish are in the sea?
+    - Where are they located?
+    - How should we sample the population?
+    - How should we analyze these data?
+
+</div>
+
+<div style="float: right; width: 50%;">
+
+
+<img src="https://pbs.twimg.com/media/DDRLGEmXUAAXhGf?format=jpg&name=large" width="400"/>
+<br>
+&nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">Canadian Coast Guard | Twitter</a>
+</font>
+
+</div>
+
+
+## Core functions
+
+### `sim_abundance`
+
+```{r sim-abundance, exercise = TRUE, exercise.eval = FALSE}
+set.seed(438)
+long <- sim_abundance(ages = 1:20,
+                      R = sim_R(log_mean = log(3e+07)),
+                      Z = sim_Z(log_mean = log(0.2)))
+short <- sim_abundance(ages = 1:6,
+                       R = sim_R(log_mean = log(1e+10)),
+                       Z = sim_Z(log_mean = log(0.8)))
+```
+
