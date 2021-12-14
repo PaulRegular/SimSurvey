@@ -33,19 +33,82 @@ knitr::opts_chunk$set(echo = FALSE)
 <div style="float: right; width: 50%;">
 
 
-<img src="https://pbs.twimg.com/media/DDRLGEmXUAAXhGf?format=jpg&name=large" width="400"/>
+<img src="https://pbs.twimg.com/media/DDRLGEmXUAAXhGf?format=jpg&name=large" width="350"/>
 <br>
 &nbsp; <a href="https://twitter.com/coastguardcan/status/879410397790515201">Canadian Coast Guard | Twitter</a>
 </font>
 
 </div>
 
+<br>
 
-## Core functions
+<div style="float: left; width: 100%;">
 
-### `sim_abundance`
+### How can [SimSurvey](https://github.com/PaulRegular/SimSurvey) help? 
 
-```{r sim-abundance, exercise = TRUE, exercise.eval = FALSE}
+- A sandbox for simulating of fisheries-independent trawl surveys
+  - **Survey:** random or stratified-random
+  - **Population:** age-structured and spatially-correlated
+- Facilitates tests of the design and analysis of survey data
+  - How many sets, lengths, ages are enough?
+  - Should the analysis be design or model based?
+  - Can models be used to stitch surveys or fill gaps?
+
+
+</div>
+
+
+## Simulation steps
+
+1. **Simulate abundance** - `sim_abundance()`
+    - Common cohort model
+
+2. **Simulate spatial aggregation** - `sim_distribution()`
+    - Includes depth associations and noise correlated across space, years and ages
+
+3. **Simulate survey data** - `sim_survey()`
+    - Sample population using stratified random survey
+    - These data can be analyzed using `run_strat()` (design-based analysis), or using a package like [sdmTMB](https://github.com/pbs-assess/sdmTMB)
+
+
+
+## Simulate abundance
+
+### `sim_abundance()`
+
+- Abundance at age and length is simulated using `sim_abundance()`
+- Key arguments:
+  - `ages`, `years` - supply vectors of ages and years to simulate across
+  - `R`, `Z`, `growth` - supply closures such as `sim_R()`, `sim_Z()`, and `sim_vonB()`
+
+### Closure
+
+- Functions that retain argument values and return functions
+
+```{r closure, exercise = TRUE, exercise.eval = FALSE}
+R_fun <- sim_R(log_mean = log(500), log_sd = 0.5)
+R_fun
+```
+
+### Usage
+
+- Closures minimize the repeated specification of arguments such as ages and years
+  - Specify once in `sim_abundance` and the values are used by the functions returned by the closures
+
+```{r usage, exercise = TRUE, exercise.eval = FALSE}
+pop <- sim_abundance(ages = 1:6, years = 1:4,
+                     R = sim_R(log_mean = log(1000)),
+                     Z = sim_Z(log_mean = log(0.8)))
+round(pop$N)
+```
+
+
+### Tinker and plot
+
+- For instance, a relatively short and long lived species are simulated below
+- Results can be visualized using `plot_surface()`
+
+```{r tinker, exercise = TRUE, exercise.eval = FALSE}
 set.seed(438)
 long <- sim_abundance(ages = 1:20,
                       R = sim_R(log_mean = log(3e+07)),
@@ -53,5 +116,12 @@ long <- sim_abundance(ages = 1:20,
 short <- sim_abundance(ages = 1:6,
                        R = sim_R(log_mean = log(1e+10)),
                        Z = sim_Z(log_mean = log(0.8)))
+plot_surface(short, mat = "N")
 ```
+
+
+## Simulate spatial aggregation
+
+### `sim_distribution()`
+
 
