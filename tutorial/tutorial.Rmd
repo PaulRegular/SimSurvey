@@ -239,11 +239,13 @@ sim$age_strat_error_stats
 
 ### `sdmTMB::sdmTMB()`
 
+- Fit a geostatistical using [sdmTMB](https://github.com/pbs-assess/sdmTMB) using survey data simulated using [SimSurvey](https://github.com/PaulRegular/SimSurvey)
+
 ```{r sdmTMB, exercise = TRUE, exercise.eval = TRUE}
 
 ## Simulate population
-set.seed(271)
-pop <- sim_abundance(ages = seq(1, 10), years = seq(1, 20)) %>%
+set.seed(17)
+pop <- sim_abundance(ages = seq(1, 10), years = seq(1, 15)) %>%
   sim_distribution(grid = make_grid(res = c(10, 10), depth_range = c(10, 500)),
                    ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.2),
                    depth_par = sim_parabola(mu = 200, sigma = 30))
@@ -266,7 +268,7 @@ fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
               include_spatial = TRUE, time = "year")
 
 ## Expand grid data for predictions
-grid_dat <- as_tibble(select(pop$grid_xy, x, y, depth)) %>% distinct()
+grid_dat <- as_tibble(select(survey$grid_xy, x, y, depth)) %>% distinct()
 grid_dat <- purrr::map_dfr(sort(unique(dat$year)), ~ bind_cols(grid_dat, year = .))
 grid_dat$offset <- mean(dat$offset)
 
@@ -293,5 +295,80 @@ index %>%
   add_lines(y = ~N)
 
 ```
+
+
+## What if?
+
+- With these tools we can test whether a model can fill in holes in a survey caused by problems (e.g., vessel issues) or changing protocol (e.g., restricted areas)
+- In the example below, strata 5 and 6 are excluded following year 10 and the analyses run in the previous section are re-run using the affected survey data
+
+```{r what-if, exercise = TRUE, exercise.eval = TRUE}
+
+## Simulate population
+set.seed(17)
+pop <- sim_abundance(ages = seq(1, 10), years = seq(1, 15)) %>%
+  sim_distribution(grid = make_grid(res = c(10, 10), depth_range = c(10, 500)),
+                   ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.2),
+                   depth_par = sim_parabola(mu = 200, sigma = 30))
+
+## Simulate survey data
+survey <- sim_survey(pop, n_sims = 1)
+
+## DROP DATA FROM STRATA 5 AND 6 FOLLOWING YEAR 10
+survey$setdet <- filter(survey$setdet, !(year > 10 & strat %in% 5:6))
+
+## Run stratified analysis with missing areas
+survey <- survey %>% run_strat()
+
+## Add coordinates to set details
+xy <- as_tibble(survey$grid_xy)
+dat <- as_tibble(survey$setdet) %>%
+  select(x, y, set, year, N = n, tow_area) %>%
+  left_join(., xy, by = c("x", "y")) %>%
+  mutate(offset = log(tow_area))
+
+## Make mesh and fit geostatistical model to survey data
+mesh <- sdmTMB::make_mesh(dat, xy_cols = c("x", "y"), cutoff = 20)
+fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
+              data = dat,
+              family = nbinom2(link = "log"), spde = mesh,
+              include_spatial = TRUE, time = "year")
+
+## Expand grid data for predictions
+grid_dat <- as_tibble(select(survey$grid_xy, x, y, depth)) %>% distinct()
+grid_dat <- purrr::map_dfr(sort(unique(dat$year)), ~ bind_cols(grid_dat, year = .))
+grid_dat$offset <- mean(dat$offset)
+
+## Predict across full grid and get index
+tow_area <- survey$setdet$tow_area[1] # cell and tow area is consistent in the simulation
+cell_area <- survey$setdet$cell_area[1]
+pred <- predict(fit, newdata = grid_dat, return_tmb_object = TRUE, area = cell_area / tow_area)
+index <- get_index(pred)
+
+## Combine indices
+true_abund <- tibble(year = unique(dat$year), N = as.numeric(colSums(survey$I))) %>% mutate(type = "True")
+strat_abund <- tibble::as_tibble(survey$total_strat) %>%
+  mutate(N = total, type = "Design-based") %>%
+  select(year, N, type)
+index <- index %>%
+  mutate(type = "Model-based", N = est) %>%
+  bind_rows(strat_abund) %>%
+  bind_rows(true_abund)
+
+## Visualize result
+index %>% 
+  plot_ly(x = ~year, color = ~type, legendgroup = ~type) %>% 
+  add_ribbons(ymin = ~lwr, ymax = ~upr, line = list(width = 0), showlegend = FALSE) %>% 
+  add_lines(y = ~N)
+
+```
+
+## Conclusion
+
+- Surveys are expensive and complex and we want to make the most of the data we obtain
+- [SimSurvey](https://github.com/PaulRegular/SimSurvey) offers a means of simulating some of the complexities
+- Design-based analyses are elegant and efficient and work best when everything is standard
+- Problem is that surveys change and this is where model-based approaches may be more powerful
+- [sdmTMB](https://github.com/pbs-assess/sdmTMB) facilitates fast fitting of powerful geostatistical models
 
 
