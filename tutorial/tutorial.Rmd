@@ -10,7 +10,11 @@ runtime: shiny_prerendered
 ```{r setup, include=FALSE}
 library(learnr)
 library(SimSurvey)
-knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(sdmTMB)
+library(plotly)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, 
+                      out.width = "100%", out.height = "450px")
 ```
 
 
@@ -78,8 +82,8 @@ knitr::opts_chunk$set(echo = FALSE)
 
 - Abundance at age and length is simulated using `sim_abundance()`
 - Key arguments:
-  - `ages`, `years` - supply vectors of ages and years to simulate across
-  - `R`, `Z`, `growth` - supply closures such as `sim_R()`, `sim_Z()`, and `sim_vonB()`
+  - `ages`, `years` -- supply vectors of ages and years to simulate across
+  - `R`, `Z`, `growth` -- supply closures such as `sim_R()`, `sim_Z()`, and `sim_vonB()`
 
 ### Closure
 
@@ -123,5 +127,171 @@ plot_surface(short, mat = "N")
 ## Simulate spatial aggregation
 
 ### `sim_distribution()`
+
+- `sim_distribution()` is used to distribute a population simulated using `sim_abundance()` throughout a grid
+- Key arguments:
+  - `sim` -- A list with abundance details like produced by `sim_abundance()`
+  - `grid` -- A raster object defining the survey grid, like the one produced by `make_grid()`
+  - `ays_covar` -- Closure for simulating age-year-space covariance, like `sim_ays_covar()`
+  - `depth_par` -- Closure for defining relationship between abundance and depth, like `sim_parabola()`
+  
+  
+### Make a grid
+
+- `make_grid()` sets up a depth stratified survey grid
+  - Returns a raster object with four layers: `depth`, `cell`, `division`, and `strat`
+  - Number of strata are affected by the number of divisions (`n_div`), horizontal splits (`strat_splits`), the depth gradient (`shelf_depth`, `shelf_width`, `depth_range`), and depth breaks (`strat_breaks`)
+
+```{r grid, exercise = TRUE, exercise.eval = FALSE}
+g <- make_grid(res = c(10, 19), n_div = 4, strat_splits = 1, 
+               shelf_depth = 500, shelf_width = 0, depth_range = c(0, 1000))
+plot_grid(g)
+```
+
+### Populating the grid
+
+- The degree of spatial clustering across ages and years can be controled using `sim_ays_covar()` by adjusting the decorrelation range (`range`), and the degree of correlation across age (`phi_year`) and year (`phi_age`) dimensions
+- A parabolic depth preference can be controled using `sim_parabola()` where `mu` defines centran tendency and `sigma` the spread
+  
+```{r populate-grid, exercise = TRUE, exercise.eval = FALSE}
+pop <- sim_abundance(ages = 1:10, years = 1:10) %>%
+           sim_distribution(grid = make_grid(res = c(10, 10)),
+                            ays_covar = sim_ays_covar(range = 300,
+                                                      phi_age = 0.8,
+                                                      phi_year = 0.1),
+                            depth_par = sim_parabola(mu = 200,
+                                                     sigma = 50))
+plot_distribution(pop, ages = 1:3, years = 1:3, type = "heatmap")
+```
+
+
+## Simulate survey data
+
+### `sim_survey()`
+
+- Samples from a survey are generated using `sim_survey()`
+- Key arguments:
+  - `n_sims` -- Number of surveys to simulate over the same population
+  - `q` -- Closure, such as `sim_logistic()`, for simulating catchability at age
+  - `trawl_dim` -- Trawl width and distance
+  - `set_den`, `lengths_cap`, and `ages_cap` -- Sampling protocol for sets, length measurement, and age sampling
+
+### Collect samples
+
+- Conduct a survey with a relatively low and high set density:
+
+```{r survey, exercise = TRUE, exercise.eval = FALSE}
+set.seed(438)
+pop <- sim_abundance(ages = 1:10, years = 1:5) %>%
+  sim_distribution(grid = make_grid(res = c(10, 10)))
+
+a <- pop %>%
+  sim_survey(set_den = 1 / 1000)
+b <- pop %>% 
+  sim_survey(set_den = 5 / 1000)
+
+plot_survey(a, which_year = 2, which_sim = 1)
+```
+
+
+## Analyze
+
+### Design or model-based? That is the question
+
+- Simulated data returned from `sim_survey()` can be analyzed using 
+  - a design-based approach (e.g., stratified analysis; built-in `run_strat()` function), or
+  - a model-based approach (e.g., geostatistical model; [sdmTMB](https://github.com/pbs-assess/sdmTMB))
+
+### Design-based -- stratified analysis
+
+- `run_strat()` runs a basic stratified analysis and `strat_error()` computes error statistics
+
+```{r strat, exercise = TRUE, exercise.eval = FALSE}
+sim <- sim_abundance(ages = 1:5, years = 1:5,
+              R = sim_R(log_mean = log(1e+7)),
+              growth = sim_vonB(length_group = 1)) %>%
+  sim_distribution(grid = make_grid(res = c(10, 10)),
+                   ays_covar = sim_ays_covar(sd = 1)) %>%
+  sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
+  run_strat() %>%
+  strat_error()
+
+sim$total_strat_error_stats
+sim$length_strat_error_stats
+sim$age_strat_error_stats
+```
+
+
+### Model-based -- [sdmTMB](https://github.com/pbs-assess/sdmTMB)
+
+- sdmTMB is an R package for fast and flexible fitting of spatiotemporal species distribution GLMMs with [TMB](https://github.com/kaskr/adcomp)
+
+- Modeling steps:
+
+  1. **Make an R-INLA "mesh" representing spatial "knots"** - `make_mesh()`
+  2. **Fit a spatiotemporal GLMM** - `sdmTMB()`
+      - Implements a geostatistical model using TMB, R-INLA, and Gaussian Markov random fields
+      - Function is set up similarly to `glm()`, `lmer()`, or `glmmTMB()`
+  3. **Inspect the model** - `print()`, `tidy()`, `predict()`, `residuals()`, `sdmTMB_cv()`, `sdmTMB_sim()`, `AIC()`
+  4. **Predict on a grid that represents the survey domain** - `predict()`
+  5. **Calculate the survey index** - `get_index()`
+      - Use `get_index()` to sum the expected density or abundance across the grid and calculate standard errors
+
+### `sdmTMB::sdmTMB()`
+
+```{r sdmTMB, exercise = TRUE, exercise.eval = TRUE}
+
+## Simulate population
+set.seed(271)
+pop <- sim_abundance(ages = seq(1, 10), years = seq(1, 20)) %>%
+  sim_distribution(grid = make_grid(res = c(10, 10), depth_range = c(10, 500)),
+                   ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.2),
+                   depth_par = sim_parabola(mu = 200, sigma = 30))
+
+## Simulate survey data
+survey <- sim_survey(pop, n_sims = 1) %>% run_strat()
+
+## Add coordinates to set details
+xy <- as_tibble(survey$grid_xy)
+dat <- as_tibble(survey$setdet) %>%
+  select(x, y, set, year, N = n, tow_area) %>%
+  left_join(., xy, by = c("x", "y")) %>%
+  mutate(offset = log(tow_area))
+
+## Make mesh and fit geostatistical model to survey data
+mesh <- sdmTMB::make_mesh(dat, xy_cols = c("x", "y"), cutoff = 20)
+fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
+              data = dat,
+              family = nbinom2(link = "log"), spde = mesh,
+              include_spatial = TRUE, time = "year")
+
+## Expand grid data for predictions
+grid_dat <- as_tibble(select(pop$grid_xy, x, y, depth)) %>% distinct()
+grid_dat <- purrr::map_dfr(sort(unique(dat$year)), ~ bind_cols(grid_dat, year = .))
+grid_dat$offset <- mean(dat$offset)
+
+## Predict across full grid and get index
+tow_area <- survey$setdet$tow_area[1] # cell and tow area is consistent in the simulation
+cell_area <- survey$setdet$cell_area[1]
+pred <- predict(fit, newdata = grid_dat, return_tmb_object = TRUE, area = cell_area / tow_area)
+index <- get_index(pred)
+
+## Combine indices
+true_abund <- tibble(year = unique(dat$year), N = as.numeric(colSums(survey$I))) %>% mutate(type = "True")
+strat_abund <- tibble::as_tibble(survey$total_strat) %>%
+  mutate(N = total, type = "Design-based") %>%
+  select(year, N, type)
+index <- index %>%
+  mutate(type = "Model-based", N = est) %>%
+  bind_rows(strat_abund) %>%
+  bind_rows(true_abund)
+
+## Visualize result
+index %>% 
+  plot_ly(x = ~year, color = ~type, legendgroup = ~type) %>% 
+  add_ribbons(ymin = ~lwr, ymax = ~upr, line = list(width = 0), showlegend = FALSE) %>% 
+  add_lines(y = ~N)
+
+```
 
 
