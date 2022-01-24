@@ -42,7 +42,7 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   ## set-up raster
   r <- raster::raster(xmn = x_range[1], xmx = x_range[2],
                       ymn = y_range[1], ymx = y_range[2],
-                      res = res, crs = "+proj=utm +units=km")
+                      res = res, crs = "+proj=utm +units=km +zone=20")
   xy <- as.data.frame(raster::rasterToPoints(r))
 
   ## simulate depth
@@ -106,7 +106,7 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
 
   ## convert xyz data to a raster
   xy$split <- NULL # drop - was useful for defining strata
-  r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km")
+  r <- raster::rasterFromXYZ(xy, crs = "+proj=utm +units=km +zone=20")
   r
 
 }
