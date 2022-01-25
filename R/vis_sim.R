@@ -41,18 +41,11 @@ vis_sim <- function(sim, ...) {
       stop(paste(p, "is needed for vis_fit to work. Please install it."), call. = FALSE)
     }
   }
-  if (utils::packageVersion("plotly") > "4.8") {
-    stop('Plots will not render correctly in the dashboard using a version of plotly > 4.8. Plotly 4.8.0 can be instaled using the following line: install.packages("https://cran.r-project.org/src/contrib/Archive/plotly/plotly_4.8.0.tar.gz", repos = NULL, type = "source")')
-  }
 
-  ## save this object to load in vis_sim.Rmd
-  ## (I cannot get rmarkdown::run to work on objects supplied to a function)
-  save(sim, file = file.path(tempdir(), "sim.rda"))
-
-  ## keep most objects created in the rmd file local (i.e. not in the global)
-  local({
-    rmarkdown::run(file = "inst/rmd/vis_sim.Rmd", ...)
-  })
+  rmd_env <- new.env()
+  rmd_env$sim <- sim
+  rmarkdown::run(file = "inst/rmd/vis_sim.Rmd",
+                 render_args = list(envir = rmd_env), ...)
 
 }
 

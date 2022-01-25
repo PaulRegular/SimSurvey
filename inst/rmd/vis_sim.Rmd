@@ -10,10 +10,6 @@ library(viridis)
 knitr::opts_chunk$set(echo = FALSE, fig.height = 7, fig.width = 8, cache = FALSE)
 ```
 
-```{r data, include=FALSE}
-load(file.path(tempdir(), "sim.rda")) # sim object saved by vis_sim.R
-```
-
 
 Abundance
 ================================================================================
