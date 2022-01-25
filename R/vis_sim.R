@@ -44,7 +44,7 @@ vis_sim <- function(sim, ...) {
 
   rmd_env <- new.env()
   rmd_env$sim <- sim
-  rmarkdown::run(file = "inst/rmd/vis_sim.Rmd",
+  rmarkdown::run(file = system.file("rmd", "vis_sim.Rmd", package = "SimSurvey"),
                  render_args = list(envir = rmd_env), ...)
 
 }
