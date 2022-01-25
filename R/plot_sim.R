@@ -133,6 +133,7 @@ plot_distribution <- function(sim, ages = sim$ages, years = sim$years,
     z <- split_d[[i]]
     attr(z, "class") <- NULL # plotly didn't like the xtabs attributes
     attr(z, "call") <- NULL
+    dimnames(z) <- NULL
     p <- p %>% add_trace(type = type,
                          z = z,
                          visible = i == 1,
@@ -519,6 +520,9 @@ plot_error_surface <- function(sim, plot_by = "rule") {
     vis[[i]] <- c(FALSE, TRUE, TRUE)
     if (plot_by == "rule") {
       z <- stats::xtabs(RMSE ~ ages_cap + lengths_cap, data = split_d[[i]], subset = NULL)
+      dimnames(z) <- NULL # plotly didn't like the xtabs attributes
+      attr(z, "class") <- NULL
+      attr(z, "call") <- NULL
       p <- p %>% add_surface(z = t(z),
                              cmin = min(d$RMSE), cmax = max(d$RMSE),
                              showscale = i == 1,

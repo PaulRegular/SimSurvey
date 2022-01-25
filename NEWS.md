@@ -16,3 +16,4 @@
 * Add a "bezier" method to make_grid
 * Allow a vector of age-specific parameters to be supplied to sim_parabola plus add some options for defining a more asymetric parabola
 * Fix bug in crs string; utm zone is required
+* Fix bug in plotting scripts; plotly returns an error if supplied xtabs class data
