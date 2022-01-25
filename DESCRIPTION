@@ -46,6 +46,7 @@ Suggests:
     lme4,
     ggplot2,
     INLA,
+    rgdal,
     knitr,
     bezier
 RoxygenNote: 7.1.2
