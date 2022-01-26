@@ -26,7 +26,6 @@ BugReports: https://github.com/PaulRegular/SimSurvey/issues
 Imports:
     sp,
     raster,
-    rgeos,
     data.table,
     magrittr,
     progress,
@@ -47,6 +46,7 @@ Suggests:
     ggplot2,
     INLA,
     rgdal,
+    rgeos,
     knitr,
     bezier
 RoxygenNote: 7.1.2
