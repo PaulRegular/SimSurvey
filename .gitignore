@@ -29,6 +29,7 @@ plaice_female_sim_exports/
 plaice_male_sim_exports/
 analysis/paper/drafting
 !docs/**
+cran-build-steps.R
 
 ## temp file from word
 ~$*
