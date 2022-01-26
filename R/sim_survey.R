@@ -87,8 +87,12 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
   cells <- cells[i, ]
   cells$sim <- s
 
-  ## Simulate sets
-  sets <- cells[, .SD[sample(.N, strat_sets, replace = resample_cells)], by = c("sim", "year", "strat")]
+  browser()
+
+  ## Simulate sets; randomly sample data.table row by group
+  ind <- cells[, .I[sample(.N, size = strat_sets, replace = resample_cells)],
+               by = c("sim", "year", "strat")][[4]]
+  sets <- cells[ind, ]
   sets[, cell_sets := .N, by = c("sim", "year", "cell")] # useful for identifying cells with more than one set (when resample_units = TRUE)
   sets$set <- seq(nrow(sets))
   sets
