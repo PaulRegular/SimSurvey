@@ -270,13 +270,12 @@ fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
 ## Expand grid data for predictions
 grid_dat <- as_tibble(select(survey$grid_xy, x, y, depth)) %>% distinct()
 grid_dat <- purrr::map_dfr(sort(unique(dat$year)), ~ bind_cols(grid_dat, year = .))
-grid_dat$offset <- mean(dat$offset)
+grid_dat$offset <- 0
 
 ## Predict across full grid and get index
-tow_area <- survey$setdet$tow_area[1] # cell and tow area is consistent in the simulation
 cell_area <- survey$setdet$cell_area[1]
-pred <- predict(fit, newdata = grid_dat, return_tmb_object = TRUE, area = cell_area / tow_area)
-index <- get_index(pred)
+pred <- predict(fit, newdata = grid_dat, sims = 1000)
+index <- get_index_sims(pred, area = rep(cell_area, nrow(pred)))
 
 ## Combine indices
 true_abund <- tibble(year = unique(dat$year), N = as.numeric(colSums(survey$I))) %>% mutate(type = "True")
@@ -292,7 +291,7 @@ index <- index %>%
 index %>% 
   plot_ly(x = ~year, color = ~type, legendgroup = ~type) %>% 
   add_ribbons(ymin = ~lwr, ymax = ~upr, line = list(width = 0), showlegend = FALSE) %>% 
-  add_lines(y = ~N)
+  add_lines(y = ~N, line = list(dash = ~ifelse(type == "True", "solid", "dot")))
 
 ```
 
@@ -314,7 +313,7 @@ pop <- sim_abundance(ages = seq(1, 10), years = seq(1, 15)) %>%
 ## Simulate survey data
 survey <- sim_survey(pop, n_sims = 1)
 
-## DROP DATA FROM STRATA 5 AND 6 FOLLOWING YEAR 10
+## DROP DATA FROM STRATA 5, 6 FOLLOWING YEAR 10
 survey$setdet <- filter(survey$setdet, !(year > 10 & strat %in% 5:6))
 
 ## Run stratified analysis with missing areas
@@ -337,13 +336,12 @@ fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
 ## Expand grid data for predictions
 grid_dat <- as_tibble(select(survey$grid_xy, x, y, depth)) %>% distinct()
 grid_dat <- purrr::map_dfr(sort(unique(dat$year)), ~ bind_cols(grid_dat, year = .))
-grid_dat$offset <- mean(dat$offset)
+grid_dat$offset <- 0
 
 ## Predict across full grid and get index
-tow_area <- survey$setdet$tow_area[1] # cell and tow area is consistent in the simulation
 cell_area <- survey$setdet$cell_area[1]
-pred <- predict(fit, newdata = grid_dat, return_tmb_object = TRUE, area = cell_area / tow_area)
-index <- get_index(pred)
+pred <- predict(fit, newdata = grid_dat, sims = 1000)
+index <- get_index_sims(pred, area = rep(cell_area, nrow(pred)))
 
 ## Combine indices
 true_abund <- tibble(year = unique(dat$year), N = as.numeric(colSums(survey$I))) %>% mutate(type = "True")
@@ -359,7 +357,10 @@ index <- index %>%
 index %>% 
   plot_ly(x = ~year, color = ~type, legendgroup = ~type) %>% 
   add_ribbons(ymin = ~lwr, ymax = ~upr, line = list(width = 0), showlegend = FALSE) %>% 
-  add_lines(y = ~N)
+  add_lines(y = ~N, line = list(dash = ~ifelse(type == "True", "solid", "dot"))) %>% 
+  add_segments(x = 10, xend = 10, y = 0, yend = max(index$upr, na.rm = TRUE) * 1.05, 
+               inherit = FALSE, showlegend = FALSE, hoverinfo = "none", color = I("black"),
+               size = I(0.5), linetype = I(2))
 
 ```
 
