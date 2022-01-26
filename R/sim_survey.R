@@ -87,22 +87,10 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
   cells <- cells[i, ]
   cells$sim <- s
 
-  ## Simulate sets; randomly sample row id by group using split-apply-combine approach
-  ind <- seq(nrow(cells))
-  grp <- paste0(cells$sim, "-", cells$year, "-", cells$strat)
-  siz <- cells$strat_sets
-  split_ind <- split(ind, grp)
-  split_siz <- split(siz, grp)
-  samp_ind <- lapply(seq_along(split_ind), function(i) {
-    sample(split_ind[[i]], size = split_siz[[i]], replace = resample_cells)
-  })
-  samp_ind <- unlist(samp_ind)
-
-  # ## Alternative data.table approach; not working under R development version 2022-01-24
-  # samp_ind <- cells[, .I[sample(.N, size = strat_sets, replace = resample_cells)],
-  #                   by = c("sim", "year", "strat")][[4]]
-
-  sets <- cells[samp_ind, ]
+  ## Simulate sets; randomly sample row id by group
+  ind <- cells[, .I[sample(.N, size = unique(strat_sets), replace = resample_cells)],
+                    by = c("sim", "year", "strat")][[4]]
+  sets <- cells[ind, ]
   sets[, cell_sets := .N, by = c("sim", "year", "cell")] # useful for identifying cells with more than one set (when resample_units = TRUE)
   sets$set <- seq(nrow(sets))
   sets
