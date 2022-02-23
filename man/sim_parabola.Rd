@@ -36,7 +36,7 @@ Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-ga
 parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
 parabola_fun(x = 0:100)
 
-parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = TRUE, plot = TRUE)
+parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = FALSE, plot = TRUE)
 parabola_fun(x = 1:1000)
 
 parabola_fun <- sim_parabola(mu = c(50, 120), sigma = c(5, 3), plot = TRUE)

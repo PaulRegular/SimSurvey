@@ -174,7 +174,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 #' parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
 #' parabola_fun(x = 0:100)
 #'
-#' parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = TRUE, plot = TRUE)
+#' parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = FALSE, plot = TRUE)
 #' parabola_fun(x = 1:1000)
 #'
 #' parabola_fun <- sim_parabola(mu = c(50, 120), sigma = c(5, 3), plot = TRUE)
@@ -215,7 +215,6 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
       plot(x, y, main = "sim_parabola", col = i)
     }
 
-    plot_ly(x = x, y = exp(y)) %>% add_lines()
     y
 
   }
@@ -298,6 +297,10 @@ sim_distribution <- function(sim,
   prob <- exp(depth + error)
   prob <- apply(prob, c(1, 2), function(x) { x / sum(x) })
   prob <- aperm(prob, c(2, 3, 1))
+
+  if (any(is.nan(prob))) {
+    stop("NaN values were produced when running sim_distribution. This problem was most likely caused by the effect supplied to the depth_par agument. Please ensure that the closure supplied is not producing extremely low values that effectively translate to zero when exponentiated. This problem can arise when, for example, values in log space are used in sim_parabola, but log_space = FALSE.")
+  }
 
   ## Distribute fish through the cells
   N <- replicate(nrow(grid_dat), sim$N)

@@ -18,3 +18,9 @@
 * Speed up sim_sets and ensure sample call passes new error traps
 * Fix bug in plotting scripts; plotly returns an error if supplied xtabs class data
 * Improve vis_fit function
+
+# SimSurvey 0.1.4.9000
+
+* Add informative error if NaN values are generated using sim_distribution
+
+
