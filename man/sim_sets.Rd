@@ -10,8 +10,8 @@ sim_sets(
   trawl_dim = c(1.5, 0.02),
   min_sets = 2,
   set_den = 2/1000,
-  drop_cells = NULL,
-  resample_cells = FALSE
+  resample_cells = FALSE,
+  subset_cells
 )
 }
 \arguments{
@@ -24,8 +24,6 @@ sim_sets(
 \item{min_sets}{Minimum number of sets per strat}
 
 \item{set_den}{Set density (number of sets per [grid unit] squared)}
-
-\item{drop_cells}{Vector of cell numbers to exclude from sampling. Ignored if \code{NULL}.}
 
 \item{resample_cells}{Allow resampling of sampling units (grid cells)?
 (Note: allowing resampling may create bias because

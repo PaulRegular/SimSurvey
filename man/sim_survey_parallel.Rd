@@ -34,7 +34,6 @@ will be easier on RAM, but may be slower.}
     \item{\code{q}}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
 (returned values must be between 0 and 1)}
     \item{\code{trawl_dim}}{Trawl width and distance (same units as grid)}
-    \item{\code{drop_cells}}{Vector of cell numbers to exclude from sampling. Ignored if \code{NULL}.}
     \item{\code{resample_cells}}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
 because depletion is imposed at the cell level.}
     \item{\code{binom_error}}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates

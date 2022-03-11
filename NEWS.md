@@ -22,5 +22,5 @@
 # SimSurvey 0.1.4.9000
 
 * Add informative error if NaN values are generated using sim_distribution
-* Add argument to sim_survey called drop_cells which allows specific cells to be excluded from the sampling of survey sets
+* Add argument to sim_survey called subset_cells which allows specific cells to be excluded from the sampling of survey sets
 

@@ -10,7 +10,7 @@ sim_survey(
   q = sim_logistic(),
   trawl_dim = c(1.5, 0.02),
   resample_cells = FALSE,
-  drop_cells = NULL,
+  subset_cells = NULL,
   binom_error = TRUE,
   min_sets = 2,
   set_den = 2/1000,
@@ -36,8 +36,6 @@ a large number of simulations may max out your RAM. Use
 
 \item{resample_cells}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
 because depletion is imposed at the cell level.}
-
-\item{drop_cells}{Vector of cell numbers to exclude from sampling. Ignored if \code{NULL}.}
 
 \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.}
@@ -82,6 +80,6 @@ Simulate stratified-random survey
 sim <- sim_abundance(ages = 1:10, years = 1:5) \%>\%
            sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
            sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
-plot_survey(sim, which_year = 2, which_sim = 1)
+plot_survey(sim, which_year = 4, which_sim = 1)
 
 }
