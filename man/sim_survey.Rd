@@ -10,6 +10,7 @@ sim_survey(
   q = sim_logistic(),
   trawl_dim = c(1.5, 0.02),
   resample_cells = FALSE,
+  drop_cells = NULL,
   binom_error = TRUE,
   min_sets = 2,
   set_den = 2/1000,
@@ -35,6 +36,8 @@ a large number of simulations may max out your RAM. Use
 
 \item{resample_cells}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
 because depletion is imposed at the cell level.}
+
+\item{drop_cells}{Vector of cell numbers to exclude from sampling. Ignored if \code{NULL}.}
 
 \item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 at older ages because of more frequent rounding to zero.}
