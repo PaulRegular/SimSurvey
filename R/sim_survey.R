@@ -48,6 +48,9 @@ round_sim <- function(sim) {
 #' Simulate survey sets
 #'
 #' @param sim              Simulation object from \code{\link{sim_distribution}}
+#' @param subset_cells     Logical expression indicating the elements ((\code{x, y, depth, cell,
+#'                         division, strat, year})) of the survey grid to keep (e.g. \code{"!cell
+#'                         %in% c(1:100)"}).
 #' @param n_sims           Number of simulations to produce
 #' @param trawl_dim        Trawl width and distance (same units as grid)
 #' @param min_sets         Minimum number of sets per strat
@@ -55,30 +58,31 @@ round_sim <- function(sim) {
 #' @param resample_cells   Allow resampling of sampling units (grid cells)?
 #'                         (Note: allowing resampling may create bias because
 #'                          depletion is imposed at the cell level)
-#' @param subset_cells     Logical expression as a character string indicating the elements
-#'                         ((\code{x, y, depth, cell, division, strat, year})) of the survey grid to keep
-#'                         (e.g. \code{"!cell %in% c(1:100)"}). Ignored if \code{NULL}.
 #'
 #' @export
 #'
+#' @examples
+#'
+#' sim <- sim_abundance(ages = 1:10, years = 1:5) %>%
+#'           sim_distribution(grid = make_grid(res = c(10, 10)))
+#'
+#' ## Multiple calls can be useful for defining a custom series of sets
+#' standard_sets <- sim_sets(sim, year <= 2, set_den = 2 / 1000)
+#' reduced_sets <- sim_sets(sim, year > 2 & !cell %in% 1:100, set_den = 1 / 1000)
+#' sets <- rbind(standard_sets, reduced_sets)
+#' sets$set <- seq(nrow(sets)) # Important - make sure set has a unique ID.
+#'
+#' survey <- sim_survey(sim, custom_sets = sets)
+#' plot_survey(survey, which_year = 4, which_sim = 1)
+#'
 #'
 
-sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
+sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
                      min_sets = 2, set_den = 2 / 1000,
-                     resample_cells = FALSE,
-                     subset_cells) {
+                     resample_cells = FALSE) {
 
   strat_sets <- cell_sets <- NULL
-
-  ## Strat area and sampling effort
   cells <- data.table(rasterToPoints(sim$grid))
-  strat_det <- cells[, list(strat_cells = .N), by = "strat"]
-  strat_det$tow_area <- prod(trawl_dim)
-  strat_det$cell_area <- prod(res(sim$grid))
-  strat_det$strat_area <- strat_det$strat_cells * prod(res(sim$grid))
-  strat_det$strat_sets <- round(strat_det$strat_area * set_den) # set allocation
-  strat_det$strat_sets[strat_det$strat_sets < min_sets] <- min_sets
-  cells <- merge(cells, strat_det, by = c("strat"))
 
   ## Replicate cells data.table for each year in the simulation
   i <- rep(seq(nrow(cells)), times = length(sim$years))
@@ -93,9 +97,19 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
   cells$sim <- s
 
   ## Subset cells for sampling
-  if (!is.null(subset_cells)) {
-    cells <- subset(cells, eval(parse(text = subset_cells)))
+  if (!missing(subset_cells)) {
+    r <- eval(substitute(subset_cells), cells)
+    cells <- cells[r,]
   }
+
+  ## Strat area and sampling effort
+  strat_det <- cells[, list(strat_cells = .N), by = c("sim", "year", "strat")]
+  strat_det$tow_area <- prod(trawl_dim)
+  strat_det$cell_area <- prod(res(sim$grid))
+  strat_det$strat_area <- strat_det$strat_cells * prod(res(sim$grid))
+  strat_det$strat_sets <- round(strat_det$strat_area * set_den) # set allocation
+  strat_det$strat_sets[strat_det$strat_sets < min_sets] <- min_sets
+  cells <- merge(cells, strat_det, by = c("sim", "year", "strat"))
 
   ## Simulate sets; randomly sample row id by group
   ind <- cells[, .I[sample(.N, size = unique(strat_sets), replace = resample_cells)],
@@ -119,9 +133,6 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' @param trawl_dim           Trawl width and distance (same units as grid)
 #' @param resample_cells      Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
 #'                            because depletion is imposed at the cell level.
-#' @param subset_cells        Logical expression as a character string indicating the elements
-#'                            (\code{x, y, depth, cell, division, strat, year}) of the survey grid to keep
-#'                            (e.g. \code{"!cell %in% c(1:100)"}). Ignored if \code{NULL}.
 #' @param binom_error         Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 #'                            at older ages because of more frequent rounding to zero.
 #' @param min_sets            Minimum number of sets per strat
@@ -142,6 +153,9 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'                            That is, age sampling can be spread across each "division", "strat" or "set"
 #'                            in each year to a maximum number within each length bin (cap is defined using
 #'                            the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.
+#' @param custom_sets         Supply an object of the same structure as returned by \code{\link{sim_sets}} which
+#'                            specifies a custom series of set locations to be sampled. Set locations are
+#'                            automated if \code{custom_sets = NULL}.
 #' @param light               Drop some objects from the output to keep object size low?
 #'
 #' @return A list including rounded population simulation, set locations and details
@@ -159,11 +173,11 @@ sim_sets <- function(sim, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 
 sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
-                       resample_cells = FALSE, subset_cells = NULL, binom_error = TRUE,
+                       resample_cells = FALSE, binom_error = TRUE,
                        min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
                        ages_cap = 10, age_sampling = "stratified",
                        age_length_group = 1, age_space_group = "division",
-                       light = TRUE) {
+                       custom_sets = NULL, light = TRUE) {
 
   n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- NULL
 
@@ -185,9 +199,15 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                            lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
 
   ## Simulate sets conducted across survey grid
-  sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
-                   trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets,
-                   subset_cells = subset_cells)
+  if (is.null(custom_sets)) {
+    sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
+                     trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets)
+  } else {
+    sets <- as.data.table(custom_sets)
+    if (any(duplicated(sets$set))) {
+      stop("When supplying 'custom_sets', please make sure each set has a unique number.")
+    }
+  }
   setkeyv(sets, c("sim", "year", "cell"))
 
   ## Expand sp_N object n_sim times

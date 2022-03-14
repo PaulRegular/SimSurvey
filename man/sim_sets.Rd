@@ -6,12 +6,12 @@
 \usage{
 sim_sets(
   sim,
+  subset_cells,
   n_sims = 1,
   trawl_dim = c(1.5, 0.02),
   min_sets = 2,
   set_den = 2/1000,
-  resample_cells = FALSE,
-  subset_cells
+  resample_cells = FALSE
 )
 }
 \arguments{
@@ -31,4 +31,20 @@ sim_sets(
 }
 \description{
 Simulate survey sets
+}
+\examples{
+
+sim <- sim_abundance(ages = 1:10, years = 1:5) \%>\%
+          sim_distribution(grid = make_grid(res = c(10, 10)))
+
+## Multiple calls can be useful for defining a custom series of sets
+standard_sets <- sim_sets(sim, year <= 2, set_den = 2 / 1000)
+reduced_sets <- sim_sets(sim, year > 2 & !cell \%in\% 1:100, set_den = 1 / 1000)
+sets <- rbind(standard_sets, reduced_sets)
+sets$set <- seq(nrow(sets)) # Important - make sure set has a unique ID.
+
+survey <- sim_survey(sim, custom_sets = sets)
+plot_survey(survey, which_year = 4, which_sim = 1)
+
+
 }

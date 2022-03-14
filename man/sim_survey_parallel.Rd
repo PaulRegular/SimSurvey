@@ -56,6 +56,9 @@ age sampling. Ignored if \code{age_sampling = "random"}.}
 That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
+    \item{\code{custom_sets}}{Supply an object of the same structure as returned by \code{\link{sim_sets}} which
+specifies a custom series of set locations to be sampled. Set locations are
+automated if \code{custom_sets = NULL}.}
     \item{\code{light}}{Drop some objects from the output to keep object size low?}
   }}
 }

@@ -10,7 +10,6 @@ sim_survey(
   q = sim_logistic(),
   trawl_dim = c(1.5, 0.02),
   resample_cells = FALSE,
-  subset_cells = NULL,
   binom_error = TRUE,
   min_sets = 2,
   set_den = 2/1000,
@@ -19,6 +18,7 @@ sim_survey(
   age_sampling = "stratified",
   age_length_group = 1,
   age_space_group = "division",
+  custom_sets = NULL,
   light = TRUE
 )
 }
@@ -64,6 +64,10 @@ age sampling. Ignored if \code{age_sampling = "random"}.}
 That is, age sampling can be spread across each "division", "strat" or "set"
 in each year to a maximum number within each length bin (cap is defined using
 the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
+
+\item{custom_sets}{Supply an object of the same structure as returned by \code{\link{sim_sets}} which
+specifies a custom series of set locations to be sampled. Set locations are
+automated if \code{custom_sets = NULL}.}
 
 \item{light}{Drop some objects from the output to keep object size low?}
 }
