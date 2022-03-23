@@ -197,6 +197,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   I <- sim$N * q(replicate(length(sim$years), sim$ages))
   I_at_length <- convert_N(N_at_age = I,
                            lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
+  sim$sp_N$I <- sim$sp_N$N * q(sim$sp_N$age)
 
   ## Simulate sets conducted across survey grid
   if (is.null(custom_sets)) {
