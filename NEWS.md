@@ -19,9 +19,10 @@
 * Fix bug in plotting scripts; plotly returns an error if supplied xtabs class data
 * Improve vis_fit function
 
-# SimSurvey 0.1.4.9000
+# SimSurvey 0.1.5
 
 * Add informative error if NaN values are generated using sim_distribution
+* Fix showscale problem in sim_distribution; was supplying a logical vector when length should have been 1
 * Allow for more flexible simulation of sets by adding an argument to sim_sets called subset_cells and a custom_sets argument to sim_survey
 * Add number of fish available to the survey (I = N * q) to the sp_N object when running sim_survey
 

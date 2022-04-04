@@ -123,25 +123,20 @@ plot_distribution <- function(sim, ages = sim$ages, years = sim$years,
   split_d <- split_d[ay_combos$ay]
 
   p <- plot_ly(x = ~x, y = ~y, ...)
-  visible <- rep(TRUE, length(split_d))
-  showscale <- rep(FALSE, length(split_d))
-  showscale[1] <- TRUE
   steps <- list()
   for (i in seq_along(split_d)) {
     vis <- rep(FALSE, length(split_d))
     vis[i] <- TRUE
     z <- split_d[[i]]
-    attr(z, "class") <- NULL # plotly didn't like the xtabs attributes
-    attr(z, "call") <- NULL
+    attr(z, "class") <- attr(z, "call") <- NULL # plotly didn't like the xtabs attributes
     dimnames(z) <- NULL
     p <- p %>% add_trace(type = type,
                          z = z,
                          visible = i == 1,
-                         showscale = vis,
+                         showscale = i == 1,
                          name = names(split_d)[i],
                          colorbar = list(title = "N")) %>%
       layout(xaxis = xax, yaxis = yax)
-
     steps[[i]] <- list(args = list(list(visible = vis,
                                         showscale = vis)),
                        method = "update",
@@ -149,7 +144,7 @@ plot_distribution <- function(sim, ages = sim$ages, years = sim$years,
   }
 
   if (length(ages) > 1 | length(years) > 1) {
-    p <-   p %>%
+    p <- p %>%
       layout(sliders = list(list(
         currentvalue = list(prefix = "Age-Year: "),
         steps = steps
