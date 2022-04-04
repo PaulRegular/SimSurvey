@@ -18,11 +18,14 @@ Description: Simulate age-structured populations that vary in space and time and
 Depends:
     R (>= 3.3.0)
 License: GPL-3
-Additional_repositories: https://inla.r-inla-download.org/R/stable/
+Additional_repositories: 
+    https://inla.r-inla-download.org/R/stable/
 LazyData: true
 ByteCompile: true
-URL: https://paulregular.github.io/SimSurvey/
-BugReports: https://github.com/PaulRegular/SimSurvey/issues
+URL: 
+    https://paulregular.github.io/SimSurvey/
+BugReports: 
+    https://github.com/PaulRegular/SimSurvey/issues
 Imports:
     sp,
     raster,
