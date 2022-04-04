@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![Travis-CI Build Status](https://travis-ci.org/PaulRegular/SimSurvey.svg?branch=master)](https://travis-ci.org/PaulRegular/SimSurvey)
+[![R-CMD-check](https://github.com/PaulRegular/SimSurvey/workflows/R-CMD-check/badge.svg)](https://github.com/PaulRegular/SimSurvey/actions)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![DOI:10.1371/journal.pone.0232822](https://zenodo.org/badge/DOI/10.1371/journal.pone.0232822.svg)](https://doi.org/10.1371/journal.pone.0232822)
 [![CRAN status](https://www.r-pkg.org/badges/version/SimSurvey)](https://CRAN.R-project.org/package=SimSurvey)

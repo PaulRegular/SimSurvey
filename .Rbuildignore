@@ -17,3 +17,4 @@
 ^cran-build-steps\.R$
 ^man/figures/logo\.svg$
 ^CRAN-SUBMISSION$
+^\.github$
