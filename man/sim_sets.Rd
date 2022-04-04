@@ -18,8 +18,8 @@ sim_sets(
 \item{sim}{Simulation object from \code{\link{sim_distribution}}}
 
 \item{subset_cells}{Logical expression indicating the elements (\code{x, y, depth, cell,
-division, strat, year}) of the survey grid to keep (e.g., \code{"cell
-< 100"})}
+division, strat, year}) of the survey grid to keep (e.g., \code{cell
+< 100})}
 
 \item{n_sims}{Number of simulations to produce}
 

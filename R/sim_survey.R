@@ -316,11 +316,12 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #' @examples
 #'
 #' \donttest{
-#' ## This call runs a total of 100 simulations of the same survey over
-#' ## the same population
+#' ## This call runs a total of 25 simulations of the same survey over
+#' ## the same population (Note: total number of simulations are low to
+#' ## decrease computation time for the example)
 #' sim <- sim_abundance(ages = 1:20, years = 1:5) %>%
 #'            sim_distribution(grid = make_grid(res = c(10, 10))) %>%
-#'            sim_survey_parallel(n_sims = 10, n_loops = 10, cores = 2,
+#'            sim_survey_parallel(n_sims = 5, n_loops = 5, cores = 1,
 #'                                q = sim_logistic(k = 2, x0 = 3),
 #'                                quiet = FALSE)
 #' }

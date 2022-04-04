@@ -19,23 +19,23 @@
 #'
 .Q <- function(mesh,barrier.triangles,range=50,range_fraction=0.2,
                sigma_u = 1,model="spde"){
-    Q <-  switch(model,
-                 spde = {
-                     ##Priors aren't used...
-                     ##I just used this so precision uses range...
-                     i = INLA::inla.spde2.pcmatern(mesh,prior.range=
-                                                            c(1,0.1),
-                                                   prior.sigma=c(1,0.1))
-                     INLA::inla.spde2.precision(i,theta=c(log(range),log(sigma_u)))
-                 },
-                 barrier = {
-                     ##Switch out from using inla.barrier.fem and :::, not really needed here anyways
-                     barrier.model <- INLA::inla.barrier.pcmatern(mesh,barrier.triangles=barrier.triangles)
-                     ##Yes, theta really is supposed to be the reverse of the one above...
-                     INLA::inla.rgeneric.q(barrier.model,"Q",theta=c(log(sigma_u),log(range)))
-                 },
-                 stop("wrong or no specification of covariance model"))
-    Q
+  Q <-  switch(model,
+               spde = {
+                 ##Priors aren't used...
+                 ##I just used this so precision uses range...
+                 i = INLA::inla.spde2.pcmatern(mesh,prior.range=
+                                                 c(1,0.1),
+                                               prior.sigma=c(1,0.1))
+                 INLA::inla.spde2.precision(i,theta=c(log(range),log(sigma_u)))
+               },
+               barrier = {
+                 ##Switch out from using inla.barrier.fem and :::, not really needed here anyways
+                 barrier.model <- INLA::inla.barrier.pcmatern(mesh,barrier.triangles=barrier.triangles)
+                 ##Yes, theta really is supposed to be the reverse of the one above...
+                 INLA::inla.rgeneric.q(barrier.model,"Q",theta=c(log(sigma_u),log(range)))
+               },
+               stop("wrong or no specification of covariance model"))
+  Q
 }
 
 #' Simulate age-year-space covariance using SPDE approach
@@ -61,23 +61,27 @@
 #' @examples
 #'
 #' ##SPDE Approach
+#'
 #' \donttest{
-#' ##Make a grid
-#' MyGrid <- make_grid(res = c(10,10))
-#' ##Make a mesh based off it
-#' MyMesh <- make_mesh(MyGrid)
-#' sim <- sim_abundance(ages=1:10,years = 1:10) %>%
-#'          sim_distribution(grid = MyGrid,
+#'
+#' ## Make a grid
+#' my_grid <- make_grid(res = c(10,10))
+#'
+#' ## Make a mesh based off it
+#'
+#' my_mesh <- make_mesh(my_grid)
+#' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
+#'          sim_distribution(grid = my_grid,
 #'                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
 #'                                                          phi_year = 0.1,
 #'                                                          model = "spde",
-#'                                                          mesh = MyMesh),
+#'                                                          mesh = my_mesh),
 #'                           depth_par = sim_parabola(mu = 200,
 #'                                                    sigma = 50))
-#' plot_distribution(sim,ages = 1:5, years = 1:5,type="heatmap")
+#' plot_distribution(sim,ages = 1:5, years = 1:5, type = "heatmap")
 #'
-#' ##Barrier Approach
-#' sim <- sim_abundance(ages=1:10,years=1:10) %>%
+#' ## Barrier Approach
+#' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
 #'          sim_distribution(grid = survey_grid,
 #'                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
 #'                                                          phi_year = 0.1,
@@ -86,106 +90,118 @@
 #'                                                          barrier.triangles =
 #'                                                          survey_lite_mesh$barrier_tri),
 #'                           depth_par = sim_parabola())
-#' plot_distribution(sim,ages = 1:5, years = 1:5,type="heatmap")
+#' plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+#'
 #' }
+#'
 #' @export
-sim_ays_covar_spde <- function(sd = 2.8,range = 300,model = "barrier",phi_age = 0.5,phi_year = 0.9,group_ages = 5:20, group_years = NULL,mesh,barrier.triangles){
-    function(x = NULL, ages = NULL, years = NULL, cells = NULL){
-        na <- length(ages)
-        ny <- length(years)
-        nc <- length(cells)
-        if (length(sd) == 1) {
-            sd <- rep(sd, na)
-        } else {
-            if (length(sd) != na) {
-                stop("The number of sd values supplied != number of ages.")
-            }
+#'
+
+sim_ays_covar_spde <- function(sd = 2.8,
+                               range = 300,
+                               model = "barrier",
+                               phi_age = 0.5,
+                               phi_year = 0.9,
+                               group_ages = 5:20,
+                               group_years = NULL,
+                               mesh,
+                               barrier.triangles) {
+
+  function(x = NULL, ages = NULL, years = NULL, cells = NULL){
+    na <- length(ages)
+    ny <- length(years)
+    nc <- length(cells)
+    if (length(sd) == 1) {
+      sd <- rep(sd, na)
+    } else {
+      if (length(sd) != na) {
+        stop("The number of sd values supplied != number of ages.")
+      }
+    }
+    if (length(phi_age) == 1) {
+      phi_age <- rep(phi_age, na)
+    } else {
+      if (length(phi_age) != na) {
+        stop("The number of phi_age values supplied != number of ages.")
+      }
+    }
+    if (length(phi_year) == 1) {
+      phi_year <- rep(phi_year, ny)
+    } else {
+      if (length(phi_year) != ny) {
+        stop("The number of phi_year values supplied != number of years.")
+      }
+    }
+    age_map <- as.character(ages)
+    if (!is.null(group_ages)) {
+      age_map[ages %in% group_ages] <- paste(range(group_ages), collapse = ":")
+    }
+    year_map <- as.character(years)
+    if (!is.null(group_years)) {
+      year_map[years %in% group_years] <- paste(range(group_years), collapse = ":")
+    }
+
+    pc_age <- sqrt(1 - phi_age ^ 2)
+    pc_year <- sqrt(1 - phi_year ^ 2)
+
+    Q <- .Q(mesh,barrier.triangles,range,model=model)
+    ##A matrix to relate the cell locations to the mesh locations
+    A <- INLA::inla.spde.make.A(mesh,as.matrix(x))
+    ##Draw samples from GF defined by Q and project it to the cell locs
+    u.data <- A%*%INLA::inla.qsample(na*ny,Q=Q)
+    ##Fill up the error array with the samples
+    E <- array(t(u.data),dim=c(na,ny,nc),
+               dimnames=list(age = ages,year = years,cell=cells))
+
+
+    ## Transform them to the distribution defined in Append. 1 of
+    ## the Sim Survey paper
+    for(j in seq_along(years)){
+      for(i in seq_along(ages)){
+        if((i == 1) & (j == 1)){
+          m <- 0
+          s <- sd[i]/(pc_age[i]*pc_year[j])
+          E[i,j,] = E[i,j,]*s + m
         }
-        if (length(phi_age) == 1) {
-            phi_age <- rep(phi_age, na)
-        } else {
-            if (length(phi_age) != na) {
-                stop("The number of phi_age values supplied != number of ages.")
-            }
+        if((i > 1) & (j == 1)){
+          if(age_map[i] == age_map[i-1]){
+            E[i,j,] <- E[i-1,j,]
+          } else{
+            m <- phi_age[i] * E[i-1,j,]
+            s <- sd[i]/pc_year[j]
+            E[i,j,] = E[i,j,]*s + m
+          }
+
         }
-        if (length(phi_year) == 1) {
-            phi_year <- rep(phi_year, ny)
-        } else {
-            if (length(phi_year) != ny) {
-                stop("The number of phi_year values supplied != number of years.")
-            }
+        if((i == 1) & (j > 1)){
+          if(year_map[j] == year_map[j-1]){
+            E[i,j,] <- E[i,j-1,]
+          } else{
+            m <- phi_year[j] * E[i,j-1,]
+            s <- sd[i]/pc_age[i]
+            E[i,j,] <- E[i,j,]*s +m
+
+          }
         }
-        age_map <- as.character(ages)
-        if (!is.null(group_ages)) {
-            age_map[ages %in% group_ages] <- paste(range(group_ages), collapse = ":")
+        if((i > 1) & (j > 1)){
+          if (age_map[i] == age_map[i - 1]) {
+            E[i, j, ] <- E[i - 1, j, ]
+          }
+          if (year_map[j] == year_map[j - 1]) {
+            E[i, j, ] <- E[i, j - 1, ]
+          }
+          if ((age_map[i] != age_map[i - 1]) & (year_map[j] != year_map[j - 1])) {
+            m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
+            s <- sd[i]
+            E[i,j,] <- E[i,j,]*s + m
+
+          }
         }
-        year_map <- as.character(years)
-        if (!is.null(group_years)) {
-            year_map[years %in% group_years] <- paste(range(group_years), collapse = ":")
-        }
+      }
+    }
+    E
+  }
 
-        pc_age <- sqrt(1 - phi_age ^ 2)
-        pc_year <- sqrt(1 - phi_year ^ 2)
-
-        Q <- .Q(mesh,barrier.triangles,range,model=model)
-        ##A matrix to relate the cell locations to the mesh locations
-        A <- INLA::inla.spde.make.A(mesh,as.matrix(x))
-        ##Draw samples from GF defined by Q and project it to the cell locs
-        u.data <- A%*%INLA::inla.qsample(na*ny,Q=Q)
-        ##Fill up the error array with the samples
-        E <- array(t(u.data),dim=c(na,ny,nc),
-                   dimnames=list(age = ages,year = years,cell=cells))
-
-
-        ##Transform them to the distribution defined in Append. 1 of
-        ## the Sim Survey paper
-        for(j in seq_along(years)){
-            for(i in seq_along(ages)){
-                if((i == 1) & (j == 1)){
-                    m <- 0
-                    s <- sd[i]/(pc_age[i]*pc_year[j])
-                    E[i,j,] = E[i,j,]*s + m
-                }
-                if((i > 1) & (j == 1)){
-                    if(age_map[i] == age_map[i-1]){
-                        E[i,j,] <- E[i-1,j,]
-                    } else{
-                    m <- phi_age[i] * E[i-1,j,]
-                    s <- sd[i]/pc_year[j]
-                    E[i,j,] = E[i,j,]*s + m
-                    }
-
-                }
-                if((i == 1) & (j > 1)){
-                    if(year_map[j] == year_map[j-1]){
-                        E[i,j,] <- E[i,j-1,]
-                    } else{
-                        m <- phi_year[j] * E[i,j-1,]
-                        s <- sd[i]/pc_age[i]
-                        E[i,j,] <- E[i,j,]*s +m
-
-                    }
-                }
-                if((i > 1) & (j > 1)){
-                    if (age_map[i] == age_map[i - 1]) {
-                        E[i, j, ] <- E[i - 1, j, ]
-                    }
-                    if (year_map[j] == year_map[j - 1]) {
-                        E[i, j, ] <- E[i, j - 1, ]
-                    }
-                    if ((age_map[i] != age_map[i - 1]) & (year_map[j] != year_map[j - 1])) {
-                        m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
-                        s <- sd[i]
-                        E[i,j,] <- E[i,j,]*s + m
-
-                    }
-                }
-            }
-        }
-
-
-                E
-                }
 }
 
 
@@ -206,23 +222,32 @@ sim_ays_covar_spde <- function(sd = 2.8,range = 300,model = "barrier",phi_age = 
 #' @examples
 #'
 #' \donttest{
+#'
 #' basic_mesh <- make_mesh()
 #' plot(basic_mesh)
+#'
 #' }
 #'
 #' @export
-make_mesh <- function(grid = make_grid(),max.edge=50,bound.outer=150,cutoff=10,offset=c(max.edge,bound.outer),...){
+#'
 
-    for (pkg in c("rgdal", "INLA")) {
-        if (!requireNamespace(pkg, quietly = TRUE)) {
-            stop(paste(pkg, "is needed for make_mesh to work. Please install it."), call. = FALSE)
-        }
+make_mesh <- function(grid = make_grid(),
+                      max.edge = 50,
+                      bound.outer = 150,
+                      cutoff = 10,
+                      offset = c(max.edge, bound.outer),
+                      ...) {
+
+  for (pkg in c("rgdal", "INLA")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      stop(paste(pkg, "is needed for make_mesh to work. Please install it."), call. = FALSE)
     }
+  }
 
-    gridPoints <- raster::rasterToPoints(grid)
-    locs <- as.matrix(gridPoints[,1:2])
-    mesh <- INLA::inla.mesh.2d(locs,offset=offset,max.edge=max.edge,cutoff=cutoff,...)
-    mesh
+  gridPoints <- raster::rasterToPoints(grid)
+  locs <- as.matrix(gridPoints[,1:2])
+  mesh <- INLA::inla.mesh.2d(locs, offset = offset, max.edge = max.edge, cutoff = cutoff, ...)
+  mesh
 
 }
 

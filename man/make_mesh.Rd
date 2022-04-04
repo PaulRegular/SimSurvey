@@ -35,8 +35,10 @@ are designed for the default grid. Just a basic interface between the grid and i
 \examples{
 
 \donttest{
+
 basic_mesh <- make_mesh()
 plot(basic_mesh)
+
 }
 
 }
