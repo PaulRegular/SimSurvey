@@ -45,19 +45,20 @@ round_sim <- function(sim) {
 }
 
 
+
 #' Simulate survey sets
 #'
-#' @param sim              Simulation object from \code{\link{sim_distribution}}
-#' @param subset_cells     Logical expression indicating the elements ((\code{x, y, depth, cell,
-#'                         division, strat, year})) of the survey grid to keep (e.g. \code{"!cell
-#'                         %in% c(1:100)"}).
-#' @param n_sims           Number of simulations to produce
-#' @param trawl_dim        Trawl width and distance (same units as grid)
-#' @param min_sets         Minimum number of sets per strat
-#' @param set_den          Set density (number of sets per [grid unit] squared)
-#' @param resample_cells   Allow resampling of sampling units (grid cells)?
-#'                         (Note: allowing resampling may create bias because
-#'                          depletion is imposed at the cell level)
+#' @param sim             Simulation object from \code{\link{sim_distribution}}
+#' @param subset_cells    Logical expression indicating the elements (\code{x, y, depth, cell,
+#'                        division, strat, year}) of the survey grid to keep (e.g., \code{cell
+#'                        < 100})
+#' @param n_sims          Number of simulations to produce
+#' @param trawl_dim       Trawl width and distance (same units as grid)
+#' @param min_sets        Minimum number of sets per strat
+#' @param set_den         Set density (number of sets per grid unit squared)
+#' @param resample_cells  Allow resampling of sampling units (grid cells)?
+#'                        (Note: allowing resampling may create bias because
+#'                        depletion is imposed at the cell level)
 #'
 #' @export
 #'
