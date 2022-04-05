@@ -253,7 +253,7 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #' @examples
 #'
 #' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
-#'            sim_distribution(grid = make_grid(res = c(10, 10)),
+#'            sim_distribution(grid = make_grid(res = c(12, 12)),
 #'                             ays_covar = sim_ays_covar(phi_age = 0.8,
 #'                                                       phi_year = 0.1),
 #'                             depth_par = sim_parabola(mu = 200,

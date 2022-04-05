@@ -39,7 +39,7 @@ Simulate survey sets
 \examples{
 
 sim <- sim_abundance(ages = 1:10, years = 1:5) \%>\%
-          sim_distribution(grid = make_grid(res = c(10, 10)))
+          sim_distribution(grid = make_grid(res = c(12, 12)))
 
 ## Multiple calls can be useful for defining a custom series of sets
 standard_sets <- sim_sets(sim, year <= 2, set_den = 2 / 1000)
