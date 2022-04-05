@@ -117,7 +117,7 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 #'
 #' @param data            Expects data.table with all grouping variables in stacked format (must include
 #'                        strat_area and tow_area for scaling values)
-#' @param metric          Variable in specificed data.table. e.g. "number", "mass"
+#' @param metric          Variable in specified data.table. e.g. "number", "mass"
 #' @param strat_groups    Grouping variables for calculations of the fine-scale strat-level
 #'                        means (strat and strat_area are required). e.g. c("year", "species",
 #'                        "shiptrip", "NAFOdiv", "strat", "strat_area","age")

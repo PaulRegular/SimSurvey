@@ -14,7 +14,7 @@
 # SimSurvey 0.1.4
 
 * Add a "bezier" method to make_grid
-* Allow a vector of age-specific parameters to be supplied to sim_parabola plus add some options for defining a more asymetric parabola
+* Allow a vector of age-specific parameters to be supplied to sim_parabola plus add some options for defining a more asymmetric parabola
 * Speed up sim_sets and ensure sample call passes new error traps
 * Fix bug in plotting scripts; plotly returns an error if supplied xtabs class data
 * Improve vis_fit function

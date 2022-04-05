@@ -16,7 +16,7 @@ strat_means(
 \item{data}{Expects data.table with all grouping variables in stacked format (must include
 strat_area and tow_area for scaling values)}
 
-\item{metric}{Variable in specificed data.table. e.g. "number", "mass"}
+\item{metric}{Variable in specified data.table. e.g. "number", "mass"}
 
 \item{strat_groups}{Grouping variables for calculations of the fine-scale strat-level
 means (strat and strat_area are required). e.g. c("year", "species",
