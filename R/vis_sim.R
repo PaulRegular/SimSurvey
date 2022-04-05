@@ -10,25 +10,28 @@
 #'
 #' \donttest{
 #'
-#' pop <- sim_abundance(ages = 1:20, years = 1:20)
-#' vis_sim(pop)
+#' if (interactive()) {
 #'
-#' dist <- sim_distribution(pop, grid = make_grid(res = c(10, 10)))
-#' vis_sim(dist)
+#'   pop <- sim_abundance(ages = 1:20, years = 1:20)
+#'   vis_sim(pop)
 #'
-#' ## Run one survey design
-#' survey <- sim_survey(dist, n_sims = 5)
-#' vis_sim(survey)
+#'   dist <- sim_distribution(pop, grid = make_grid(res = c(10, 10)))
+#'   vis_sim(dist)
 #'
-#' ## Run several survey designs and assess stratified estimates
-#' ## (Note: total number of simulations are low to decrease computation time for the example)
-#' surveys <- expand_surveys(set_den = c(1, 2) / 1000,
-#'                           lengths_cap = c(100, 500),
-#'                           ages_cap = c(5, 20))
-#' tests <- test_surveys(dist, surveys = surveys, keep_details = 1,
-#'                       n_sims = 5, n_loops = 5, cores = 1)
-#' vis_sim(tests)
+#'   ## Run one survey design
+#'   survey <- sim_survey(dist, n_sims = 5)
+#'   vis_sim(survey)
 #'
+#'   ## Run several survey designs and assess stratified estimates
+#'   ## (Note: total number of simulations are low to decrease computation time for the example)
+#'   surveys <- expand_surveys(set_den = c(1, 2) / 1000,
+#'                             lengths_cap = c(100, 500),
+#'                             ages_cap = c(5, 20))
+#'   tests <- test_surveys(dist, surveys = surveys, keep_details = 1,
+#'                         n_sims = 5, n_loops = 5, cores = 1)
+#'   vis_sim(tests)
+#'
+#' }
 #' }
 #'
 #' @export
