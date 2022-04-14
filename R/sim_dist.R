@@ -222,6 +222,47 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 }
 
 
+
+
+
+
+sim_nlf <- function(formula = ~ alpha + ((depth - mu) ^ 2) / (2 * sigma ^ 2),
+                    coeff = list(alpha = 0, mu = 200, sigma = 70)) {
+
+  function(depth = NULL, age = NULL, year = NULL) {
+
+    data <- data.frame(depth = depth, age = age, year = year)
+
+    vars <- all.vars(formula)
+
+    for (v in vars) {
+      if (v %in% names(data)) assign(v, data[[v]])
+      if (v %in% names(coeff)) assign(v, coeff[[v]])
+    }
+
+    eval(formula[[2]])
+
+  }
+
+
+}
+
+
+# nlf <- sim_nlf(formula = ~ alpha + ((depth - mu + beta * year) ^ 2) / (2 * sigma ^ 2),
+#                coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -10))
+#
+# data <- expand.grid(depth = 1:500, age = 1:10, year = 1:10)
+# data$y <- nlf(depth = data$depth, age = data$age, year = data$year)
+#
+# plot_ly(data = data, x = ~depth, y = ~y, split = ~age, frame = ~year) |>
+#   add_lines()
+
+
+
+
+
+
+
 #' Simulate spatial and temporal distribution
 #'
 #' @description Provided an abundance at age matrix and a survey grid to populate, this function
