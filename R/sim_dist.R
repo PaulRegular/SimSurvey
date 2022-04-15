@@ -186,8 +186,10 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
                          log_space = FALSE, plot = FALSE) {
 
-  function(x = NULL, age = NULL) {
+  function(data) {
 
+    x <- data$depth
+    age <- data$age
     nages <- length(unique(age))
     npar <- c(length(alpha), length(mu), length(sigma))
     if (any(npar > 1) && max(npar) != nages) {
@@ -354,7 +356,7 @@ sim_distribution <- function(sim,
   grid_edat <- grid_edat[i]
   grid_edat$year <- y
   grid_edat <- grid_edat[order(grid_edat$cell, grid_edat$year, grid_edat$age), ] # sort to align with error array
-  depth <- depth_par(x = grid_edat$depth, age = grid_edat$age)
+  depth <- depth_par(grid_edat)
   depth <- array(depth, dim = dim(error), dimnames = dimnames(error))
 
   ## Define probability of inhabiting each cell
