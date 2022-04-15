@@ -259,7 +259,7 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #' ## Now using sim_nlf, produce a function to apply to the expanded grid_xy data
 #' ## For this firs example, the depth effect is parabolic and the vertex is deeper by age
 #' ## (i.e. to impose ontogenetic deepening)
-#' nlf <- sim_nlf(formula = ~ alpha + ((depth - mu + beta * age) ^ 2) / (2 * sigma ^ 2),
+#' nlf <- sim_nlf(formula = ~ alpha - ((depth - mu + beta * age) ^ 2) / (2 * sigma ^ 2),
 #'                coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70))
 #' grid_xy$depth_effect <- nlf(grid_xy)
 #'
@@ -269,7 +269,7 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #'   plot_ly(x = ~depth, y = ~depth_effect, split = ~age) %>%
 #'   add_lines()
 #'
-sim_nlf <- function(formula = ~ alpha + ((depth - mu) ^ 2) / (2 * sigma ^ 2),
+sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
                     coeff = list(alpha = 0, mu = 200, sigma = 70)) {
 
   function(data) {
