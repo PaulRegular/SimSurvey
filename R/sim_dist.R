@@ -154,7 +154,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 
 
 
-#' Define relationships with covariates
+#' Define a parabolic relationship
 #'
 #' @description  Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-gaussian function described here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/.
 #'
@@ -226,12 +226,51 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 
 
 
+#' Define a non-linear relationship
+#'
+#' @description  Closure to be used in \code{\link{sim_distribution}}.
+#'
+#' @param formula  Formula describing parametric relationships between data and coefficients.
+#'                 The data used in \code{\link{sim_distribution}} are grid coordinates expanded
+#'                 across ages and years (i.e., includes columns \code{"x", "y", "depth", "cell",
+#'                 "division", "strat", "age", "year"}). Values of the coefficients must be
+#'                 included in argument \code{coeff} as a named list.
+#' @param coeff    Named list of coefficient values used in \code{formula}.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' ## Make a grid and replicate data for 5 ages and 5 years
+#' ## (This is similar to what happens inside sim_distribution)
+#' grid <- make_grid(shelf_width = 10)
+#' grid_xy <- as.data.frame(raster::rasterToPoints(grid))
+#' i <- rep(seq(nrow(grid_xy)), times = 5)
+#' a <- rep(1:5, each = nrow(grid_xy))
+#' grid_xy <- grid_xy[i, ]
+#' grid_xy$age <- a
+#' i <- rep(seq(nrow(grid_xy)), times = 5)
+#' y <- rep(1:5, each = nrow(grid_xy))
+#' grid_xy <- grid_xy[i, ]
+#' grid_xy$year <- y
+#'
+#' ## Now using sim_nlf, produce a function to apply to the expanded grid_xy data
+#' ## For this firs example, the depth effect is parabolic and the vertex is deeper by age
+#' ## (i.e. to impose ontogenetic deepening)
+#' nlf <- sim_nlf(formula = ~ alpha + ((depth - mu + beta * age) ^ 2) / (2 * sigma ^ 2),
+#'                coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70))
+#' grid_xy$depth_effect <- nlf(grid_xy)
+#'
+#' library(plotly)
+#' grid_xy %>%
+#'   filter(year == 1) %>%
+#'   plot_ly(x = ~depth, y = ~depth_effect, split = ~age) %>%
+#'   add_lines()
+#'
 sim_nlf <- function(formula = ~ alpha + ((depth - mu) ^ 2) / (2 * sigma ^ 2),
                     coeff = list(alpha = 0, mu = 200, sigma = 70)) {
 
-  function(depth = NULL, age = NULL, year = NULL) {
-
-    data <- data.frame(depth = depth, age = age, year = year)
+  function(data) {
 
     vars <- all.vars(formula)
 
@@ -246,20 +285,6 @@ sim_nlf <- function(formula = ~ alpha + ((depth - mu) ^ 2) / (2 * sigma ^ 2),
 
 
 }
-
-
-# nlf <- sim_nlf(formula = ~ alpha + ((depth - mu + beta * year) ^ 2) / (2 * sigma ^ 2),
-#                coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -10))
-#
-# data <- expand.grid(depth = 1:500, age = 1:10, year = 1:10)
-# data$y <- nlf(depth = data$depth, age = data$age, year = data$year)
-#
-# plot_ly(data = data, x = ~depth, y = ~y, split = ~age, frame = ~year) |>
-#   add_lines()
-
-
-
-
 
 
 

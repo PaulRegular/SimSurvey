@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim_dist.R
 \name{sim_parabola}
 \alias{sim_parabola}
-\title{Define relationships with covariates}
+\title{Define a parabolic relationship}
 \usage{
 sim_parabola(
   alpha = 0,
