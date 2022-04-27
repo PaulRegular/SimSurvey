@@ -13,6 +13,8 @@
 !man/figures/logo.png
 *.jpg
 *.svg
+!man/figures/*.svg
+man/figures/logo.svg
 *.pdf
 *.html
 *.zip
