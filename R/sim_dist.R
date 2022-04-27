@@ -172,13 +172,13 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 #' @examples
 #'
 #' parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
-#' parabola_fun(x = 0:100)
+#' parabola_fun(data.frame(depth = 0:100))
 #'
 #' parabola_fun <- sim_parabola(mu = log(40), sigma = 0.5, log_space = FALSE, plot = TRUE)
-#' parabola_fun(x = 1:1000)
+#' parabola_fun(data.frame(depth = 0:100))
 #'
 #' parabola_fun <- sim_parabola(mu = c(50, 120), sigma = c(5, 3), plot = TRUE)
-#' parabola_fun(x = rep(1:200, 2), age = rep(c(1, 2), each = 200))
+#' parabola_fun(expand.grid(depth = 1:200, age = 1:2))
 #'
 #' @rdname sim_parabola
 #' @export
