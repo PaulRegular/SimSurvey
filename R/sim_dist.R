@@ -230,8 +230,10 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 
 #' Define a non-linear relationship
 #'
-#' @description  Closure to be used in \code{\link{sim_distribution}}.
-#'               `r lifecycle::badge("experimental")`
+#' @description
+#' `r lifecycle::badge("experimental")`
+#'
+#' Closure to be used in \code{\link{sim_distribution}}.
 #'
 #' @param formula  Formula describing parametric relationships between data and coefficients.
 #'                 The data used in \code{\link{sim_distribution}} are grid coordinates expanded
@@ -259,7 +261,7 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #'
 #' ## Now using sim_nlf, produce a function to apply to the expanded grid_xy data
 #' ## For this firs example, the depth effect is parabolic and the vertex is deeper by age
-#' ## (i.e. to impose ontogenetic deepening)
+#' ## (i.e., to impose ontogenetic deepening)
 #' nlf <- sim_nlf(formula = ~ alpha - ((depth - mu + beta * age) ^ 2) / (2 * sigma ^ 2),
 #'                coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70))
 #' grid_xy$depth_effect <- nlf(grid_xy)
