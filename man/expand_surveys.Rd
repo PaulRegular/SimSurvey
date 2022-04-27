@@ -11,7 +11,7 @@ expand_surveys(
 )
 }
 \arguments{
-\item{set_den}{Vector of set densities (number of sets per [grid unit] squared)}
+\item{set_den}{Vector of set densities (number of sets per \link{grid unit} squared)}
 
 \item{lengths_cap}{Vector of maximum number of lengths measured per set}
 

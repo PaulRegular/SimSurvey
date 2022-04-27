@@ -231,6 +231,7 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #' Define a non-linear relationship
 #'
 #' @description  Closure to be used in \code{\link{sim_distribution}}.
+#'               `r lifecycle::badge("experimental")`
 #'
 #' @param formula  Formula describing parametric relationships between data and coefficients.
 #'                 The data used in \code{\link{sim_distribution}} are grid coordinates expanded

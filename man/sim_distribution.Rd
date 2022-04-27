@@ -27,9 +27,9 @@ like \code{\link{sim_parabola}}}
 \value{
 Appends three objects to the \code{sim} list:
 \itemize{
-  \item{\code{grid}} - RasterBrick with the grid details
-  \item{\code{grid_xy}} - Grid details as a data.table in xyz format
-  \item{\code{sp_N}} - A data.table with abundance split by age, year and cell
+\item{\code{grid}} - RasterBrick with the grid details
+\item{\code{grid_xy}} - Grid details as a data.table in xyz format
+\item{\code{sp_N}} - A data.table with abundance split by age, year and cell
 }
 }
 \description{

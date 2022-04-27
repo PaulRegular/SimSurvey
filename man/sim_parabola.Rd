@@ -19,9 +19,9 @@ a vector of equal length to the number of ages in the simulation
 (e.g. age-specific depth associations can be specified).}
 
 \item{sigma_right}{Optional parameter to impose asymmetry by supplying a sigma parameter for the right side.
-If used, `sigma` will be used to define the width of the left side. Ignored if `NULL`.}
+If used, \code{sigma} will be used to define the width of the left side. Ignored if \code{NULL}.}
 
-\item{log_space}{Should shape of the parabola be defined in log space? If `TRUE`, logged parameters are
+\item{log_space}{Should shape of the parabola be defined in log space? If \code{TRUE}, logged parameters are
 assumed to be supplied and x values used in the parabola equation are log transformed.
 This allows a more lognormal curve to be defined and, hence, allows a heavier tail and it
 forces very low values near zero.}

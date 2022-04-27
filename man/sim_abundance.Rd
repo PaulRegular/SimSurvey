@@ -35,15 +35,15 @@ lengths from survey catch at age.}
 \value{
 A \code{list} of length 9:
 \itemize{
-  \item{\code{ages}} - Vector of ages in the simulation
-  \item{\code{lengths}} - Vector of length groups (depends on growth function)
-  \item{\code{years}} - Vector of years in the simulation
-  \item{\code{R} - Vector of recruitment values}
-  \item{\code{N0} - Vector of starting abundance values}
-  \item{\code{Z} - Matrix of total mortality values}
-  \item{\code{N} - Matrix of abundance values}
-  \item{\code{N_at_length} - Abundance at length matrix}
-  \item{\code{sim_length} - Function for simulating lengths given ages}
+\item{\code{ages}} - Vector of ages in the simulation
+\item{\code{lengths}} - Vector of length groups (depends on growth function)
+\item{\code{years}} - Vector of years in the simulation
+\item{\code{R} - Vector of recruitment values}
+\item{\code{N0} - Vector of starting abundance values}
+\item{\code{Z} - Matrix of total mortality values}
+\item{\code{N} - Matrix of abundance values}
+\item{\code{N_at_length} - Abundance at length matrix}
+\item{\code{sim_length} - Function for simulating lengths given ages}
 }
 }
 \description{

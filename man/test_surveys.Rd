@@ -82,12 +82,12 @@ automated if \code{custom_sets = NULL}.}
 }
 \value{
 Adds a table of survey designs tested. Also adds details and summary
-        stats of stratified estimate error to the \code{sim} list, ending with
-        \code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
-        includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
-        mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
-        Also adds a sample size summary table (\code{"samp_totals"}) to the list.
-        Survey and stratified analysis details are not kept to minimize object size.
+stats of stratified estimate error to the \code{sim} list, ending with
+\code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
+includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
+mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
+Also adds a sample size summary table (\code{"samp_totals"}) to the list.
+Survey and stratified analysis details are not kept to minimize object size.
 }
 \description{
 This function allows a series of sampling design settings to

@@ -7,10 +7,10 @@
 \format{
 A RasterStack with 4 variables:
 \describe{
-  \item{cell}{Survey cell identifier}
-  \item{division}{NAFO division}
-  \item{strat}{Survey strata number}
-  \item{depth}{Mean depth of the waters under each cell, units = m}
+\item{cell}{Survey cell identifier}
+\item{division}{NAFO division}
+\item{strat}{Survey strata number}
+\item{depth}{Mean depth of the waters under each cell, units = m}
 }
 
 For further details on how this file was created, see the data-raw folder for
