@@ -5,7 +5,7 @@
 #' @description Function is simply a wrapper for \code{\link[base]{expand.grid}} that
 #' adds a survey number to the returned object
 #'
-#' @param set_den           Vector of set densities (number of sets per [grid unit] squared)
+#' @param set_den           Vector of set densities (number of sets per grid unit squared)
 #' @param lengths_cap       Vector of maximum number of lengths measured per set
 #' @param ages_cap          Vector of maximum number of otoliths to collect per length group
 #'                          per division per year

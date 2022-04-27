@@ -137,7 +137,7 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' @param binom_error         Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
 #'                            at older ages because of more frequent rounding to zero.
 #' @param min_sets            Minimum number of sets per strat
-#' @param set_den             Set density (number of sets per [grid unit] squared). WARNING:
+#' @param set_den             Set density (number of sets per grid unit squared). WARNING:
 #'                            may return an error if \code{set_den} is high and
 #'                            \code{resample_cells = FALSE} because the number of sets allocated may
 #'                            exceed the number of cells in a strata.
