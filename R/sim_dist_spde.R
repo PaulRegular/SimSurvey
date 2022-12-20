@@ -244,7 +244,7 @@ make_mesh <- function(grid = make_grid(),
     }
   }
 
-  gridPoints <- raster::rasterToPoints(grid)
+  gridPoints <- data.frame(grid)
   locs <- as.matrix(gridPoints[,1:2])
   mesh <- INLA::inla.mesh.2d(locs, offset = offset, max.edge = max.edge, cutoff = cutoff, ...)
   mesh
