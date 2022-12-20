@@ -12,3 +12,15 @@ add_labels <- function(p, text = NULL, x = 0, y = 1, xref = "paper", yref = "pap
   add_annotations(p, text = text, x = x, y = y, xref = xref, yref = yref,
                   font = font, showarrow = showarrow, ..., data = data)
 }
+
+
+## wrapper for layout with some different defaults for presentations
+tight_layout <- function(p,
+                         plot_bgcolor = "transparent",
+                         paper_bgcolor = "transparent",
+                         margin = list(l = 0, r = 0, t = 0, b = 0, pad = 0),
+                         font = list(size = 14, family = "'Montserrat', sans-serif"),
+                         ..., data = NULL) {
+  layout(p, plot_bgcolor = plot_bgcolor, paper_bgcolor = paper_bgcolor,
+         margin = margin, font = font, ..., data = data)
+}
