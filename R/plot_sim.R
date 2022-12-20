@@ -71,21 +71,27 @@ plot_grid <- function(grid, ...) {
   )
   yax <- c(scaleanchor = "x", xax)
 
-  sp_div <- raster::rasterToPolygons(grid$division, dissolve = TRUE)
+  sp_div <- sf::st_as_sf(grid["division"], as_points = FALSE, merge = TRUE)
+  sp_strat <- sf::st_as_sf(grid["strat"], as_points = FALSE, merge = TRUE)
+  xyz <- data.frame(grid)
+
   df_div <- suppressMessages(ggplot2::fortify(sp_div) %>% group_by(.data$group))
   sp_strat <- raster::rasterToPolygons(grid$strat, dissolve = TRUE)
   df_strat <- suppressMessages(ggplot2::fortify(sp_strat) %>% group_by(.data$group))
   xyz <- data.frame(rasterToPoints(grid))
 
-  plot_ly(...) %>%
+  # plot_ly(...) %>%
+  plot_ly() |>
     add_trace(data = xyz, x = ~x, y = ~y, z = ~depth,
-              text = ~paste("x:", x, "<br>y:", y, "<br>depth:", depth, "<br>cell:", cell,
-                            "<br>division:", division, "<br>strat:", strat),
-              hoverinfo = "text", type = "heatmap") %>%
-    add_paths(data = df_strat, x = ~long, y = ~lat, color = I("white"),
-              hoverinfo = "none", size = I(0.5), showlegend = FALSE) %>%
-    add_paths(data = df_div, x = ~long, y = ~lat, color = I("darkgrey"),
-              hoverinfo = "none", size = I(4), showlegend = FALSE) %>%
+              hoverinfo = "none", type = "heatmap") %>%
+    add_sf(data = sp_strat, color = I(NA), stroke = I("white"), span = I(1),
+           hoverinfo = "none", showlegend = FALSE) %>%
+    add_sf(data = sp_div, color = I(NA), stroke = I("darkgrey"), span = I(4),
+           hoverinfo = "none", showlegend = FALSE) %>%
+    add_markers(data = xyz, x = ~x, y = ~y, color = I("white"), size = I(0.1),
+                text = ~paste("x:", x, "<br>y:", y, "<br>depth:", depth, "<br>cell:", cell,
+                              "<br>division:", division, "<br>strat:", strat),
+                hoverinfo = "text", type = "heatmap", showlegend = FALSE) %>%
     layout(xaxis = xax, yaxis = yax)
 
 }
