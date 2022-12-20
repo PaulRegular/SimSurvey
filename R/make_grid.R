@@ -2,7 +2,7 @@
 #' Make a depth stratified survey grid
 #'
 #' This function sets up a depth stratified survey grid. A simple gradient in depth
-#' is simulated using \code{\link{spline}} with a shallow portion, shelf and
+#' is simulated using [`stats::spline`] (default) with a shallow portion, shelf and
 #' deep portion. Adding covariance to the depth simulation is an option.
 #'
 #' @param x_range      Range (min x, max x) in x dimension in km
@@ -16,19 +16,22 @@
 #' @param strat_splits Number of times to horizontally split strat (i.e. easy way to increase the number of strata)
 #' @param method       Use a "spline", "loess" or "bezier" to generate a smooth gradient or simply use "linear" interpolation?
 #'
-#' @return Returns RasterBrick of the same structure as \code{\link{survey_grid}}
+#' @return Returns a stars object with 2 dimensions (x and y) and 4 attributes (depth, cell, division, strat).
+#'
+#' @seealso [`survey_grid`]
 #'
 #' @export
 #'
 #' @examples
 #'
 #' r <- make_grid(res = c(10, 10))
-#' raster::plot(r)
+#' stars::plot(r)
 #'
-#' p <- raster::rasterToPolygons(r$strat, dissolve = TRUE)
-#' sp::plot(p)
+#' p <- sf::st_as_sf(r["strat"], as_points = FALSE, merge = TRUE)
+#' sf::plot(p)
 #'
-#' @rawNamespace import(raster, except = select)
+#' @import sf
+#' @import stars
 #'
 
 make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
@@ -40,11 +43,13 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   cell <- NULL
 
   ## set-up raster
-  utm_proj <- sp::CRS("+proj=utm +zone=21 +datum=WGS84 +units=km +no_defs")
-  r <- raster::raster(xmn = x_range[1], xmx = x_range[2],
-                      ymn = y_range[1], ymx = y_range[2],
-                      res = res, crs = utm_proj)
-  xy <- as.data.frame(raster::rasterToPoints(r))
+  utm_proj <- "+proj=utm +zone=21 +datum=WGS84 +units=km +no_defs"
+  bbox <- sf::st_bbox(c(xmin = x_range[1], ymin = y_range[1],
+                        xmax = x_range[2], ymax = y_range[2]),
+                      crs = utm_proj)
+  r <- stars::st_as_stars(bbox, dy = res[1], dx = res[2])
+  xy <- as.data.frame(r)
+  names(xy) <- c("x", "y", "depth")
 
   ## simulate depth
   sx <- c(x_range[1], -shelf_width, -shelf_width / 2,
@@ -107,7 +112,7 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
 
   ## convert xyz data to a raster
   xy$split <- NULL # drop - was useful for defining strata
-  r <- raster::rasterFromXYZ(xy, crs = utm_proj)
+  r <- stars::st_as_stars(xy, crs = utm_proj)
   r
 
 }

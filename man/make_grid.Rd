@@ -39,19 +39,22 @@ make_grid(
 \item{method}{Use a "spline", "loess" or "bezier" to generate a smooth gradient or simply use "linear" interpolation?}
 }
 \value{
-Returns RasterBrick of the same structure as \code{\link{survey_grid}}
+Returns a stars object with 2 dimensions (x and y) and 4 attributes (depth, cell, division, strat).
 }
 \description{
 This function sets up a depth stratified survey grid. A simple gradient in depth
-is simulated using \code{\link{spline}} with a shallow portion, shelf and
+is simulated using \code{\link[stats:splinefun]{stats::spline}} (default) with a shallow portion, shelf and
 deep portion. Adding covariance to the depth simulation is an option.
 }
 \examples{
 
 r <- make_grid(res = c(10, 10))
-raster::plot(r)
+stars::plot(r)
 
-p <- raster::rasterToPolygons(r$strat, dissolve = TRUE)
-sp::plot(p)
+p <- sf::st_as_sf(r["strat"], as_points = FALSE, merge = TRUE)
+sf::plot(p)
 
+}
+\seealso{
+\code{\link{survey_grid}}
 }
