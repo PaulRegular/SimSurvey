@@ -83,7 +83,7 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
                      resample_cells = FALSE) {
 
   strat_sets <- cell_sets <- NULL
-  cells <- data.table(rasterToPoints(sim$grid))
+  cells <- data.table(data.frame(sim$grid))
 
   ## Replicate cells data.table for each year in the simulation
   i <- rep(seq(nrow(cells)), times = length(sim$years))
