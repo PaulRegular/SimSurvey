@@ -15,7 +15,7 @@ sim_distribution(
 \item{sim}{A list with ages, years and an abundance at age matrix like
 produced by \code{\link{sim_abundance}}.}
 
-\item{grid}{A raster object defining the survey grid, like \code{\link{survey_grid}}
+\item{grid}{A stars object defining the survey grid, like \code{\link{survey_grid}}
 or one produced by \code{\link{make_grid}}}
 
 \item{ays_covar}{Closure for simulating age-year-space covariance,
@@ -27,7 +27,7 @@ like \code{\link{sim_parabola}}}
 \value{
 Appends three objects to the \code{sim} list:
 \itemize{
-\item{\code{grid}} - RasterBrick with the grid details
+\item{\code{grid}} - A stars object with the grid details
 \item{\code{grid_xy}} - Grid details as a data.table in xyz format
 \item{\code{sp_N}} - A data.table with abundance split by age, year and cell
 }

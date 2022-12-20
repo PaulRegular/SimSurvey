@@ -301,7 +301,7 @@ sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
 #'
 #' @param sim         A list with ages, years and an abundance at age matrix like
 #'                    produced by \code{\link{sim_abundance}}.
-#' @param grid        A raster object defining the survey grid, like \code{\link{survey_grid}}
+#' @param grid        A stars object defining the survey grid, like \code{\link{survey_grid}}
 #'                    or one produced by \code{\link{make_grid}}
 #' @param ays_covar   Closure for simulating age-year-space covariance,
 #'                    like \code{\link{sim_ays_covar}}
@@ -316,7 +316,7 @@ sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
 #' @return
 #' Appends three objects to the \code{sim} list:
 #' \itemize{
-#'   \item{\code{grid}} - RasterBrick with the grid details
+#'   \item{\code{grid}} - A stars object with the grid details
 #'   \item{\code{grid_xy}} - Grid details as a data.table in xyz format
 #'   \item{\code{sp_N}} - A data.table with abundance split by age, year and cell
 #' }
@@ -343,7 +343,7 @@ sim_distribution <- function(sim,
                              depth_par = sim_parabola()) {
 
   ## Space-age-year autoregressive process
-  grid_dat <- data.table::data.table(raster::rasterToPoints(grid))
+  grid_dat <- data.table::data.table(as.data.frame(grid))
   setkeyv(grid_dat, "cell")
   xy <- grid_dat[, c("x", "y")]
   error <- ays_covar(x = xy, ages = sim$ages, years = sim$years, cells = grid_dat$cell)
