@@ -238,7 +238,7 @@ make_mesh <- function(grid = make_grid(),
                       offset = c(max.edge, bound.outer),
                       ...) {
 
-  for (pkg in c("rgdal", "INLA")) {
+  for (pkg in c("INLA")) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
       stop(paste(pkg, "is needed for make_mesh to work. Please install it."), call. = FALSE)
     }
