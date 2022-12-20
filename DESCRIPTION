@@ -27,8 +27,8 @@ URL:
 BugReports: 
     https://github.com/PaulRegular/SimSurvey/issues
 Imports:
-    sp,
-    raster,
+    sf,
+    stars,
     data.table,
     magrittr,
     progress,
@@ -49,10 +49,8 @@ Suggests:
     lme4,
     ggplot2,
     INLA,
-    rgdal,
-    rgeos,
     knitr,
     bezier
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 VignetteBuilder: knitr
