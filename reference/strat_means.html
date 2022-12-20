@@ -63,13 +63,13 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">strat_means</span><span class="op">(</span>
-  data <span class="op">=</span> <span class="cn">NULL</span>,
-  metric <span class="op">=</span> <span class="cn">NULL</span>,
-  strat_groups <span class="op">=</span> <span class="cn">NULL</span>,
-  survey_groups <span class="op">=</span> <span class="cn">NULL</span>,
-  confidence <span class="op">=</span> <span class="fl">95</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">strat_means</span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  metric <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  strat_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  survey_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  confidence <span class="op">=</span> <span class="fl">95</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -77,16 +77,25 @@
     <dl><dt>data</dt>
 <dd><p>Expects data.table with all grouping variables in stacked format (must include
 strat_area and tow_area for scaling values)</p></dd>
+
+
 <dt>metric</dt>
 <dd><p>Variable in specified data.table. e.g. "number", "mass"</p></dd>
+
+
 <dt>strat_groups</dt>
 <dd><p>Grouping variables for calculations of the fine-scale strat-level
 means (strat and strat_area are required). e.g. c("year", "species",
 "shiptrip", "NAFOdiv", "strat", "strat_area","age")</p></dd>
+
+
 <dt>survey_groups</dt>
 <dd><p>Grouping variables for large-scale summary calculations. e.g. ("year","species")</p></dd>
+
+
 <dt>confidence</dt>
 <dd><p>Percent for confidence limits</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -106,7 +115,7 @@ It first calculates strat-level statistics and then the larger-scale statistics 
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

@@ -63,7 +63,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">strat_error</span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">strat_error</span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -71,10 +71,13 @@
     <dl><dt>sim</dt>
 <dd><p>Object from <code><a href="run_strat.html">run_strat</a></code> (includes simulated population and
 survey along with stratified analysis results)</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Adds details and summary stats of stratified estimate error to the
+    
+
+<p>Adds details and summary stats of stratified estimate error to the
 <code>sim</code> list, ending with <code>"_strat_error"</code> or
 <code>"_strat_error_stats"</code>. Error statistics includes mean absolute
 error (<code>"MAE"</code>), mean squared error (<code>"MSE"</code>), and
@@ -83,16 +86,17 @@ root mean squared error (<code>"RMSE"</code>)</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span>
-<span class="r-in">                     R <span class="op">=</span> <span class="fu"><a href="sim_R.html">sim_R</a></span><span class="op">(</span>log_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1e+7</span><span class="op">)</span><span class="op">)</span>,</span>
-<span class="r-in">                     growth <span class="op">=</span> <span class="fu"><a href="sim_vonB.html">sim_vonB</a></span><span class="op">(</span>length_group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span>
-<span class="r-in">                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu"><a href="sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">1</span>, q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x0 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu"><a href="run_strat.html">run_strat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu">strat_error</span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span></span>
+<span class="r-in"><span>                     R <span class="op">=</span> <span class="fu"><a href="sim_R.html">sim_R</a></span><span class="op">(</span>log_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1e+7</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     growth <span class="op">=</span> <span class="fu"><a href="sim_vonB.html">sim_vonB</a></span><span class="op">(</span>length_group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu"><a href="sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">1</span>, q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x0 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu"><a href="run_strat.html">run_strat</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu">strat_error</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in rasterToPoints(sim$grid):</span> could not find function "rasterToPoints"</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -107,7 +111,7 @@ root mean squared error (<code>"RMSE"</code>)</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

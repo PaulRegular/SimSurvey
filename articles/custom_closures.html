@@ -96,61 +96,91 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://paulregular.github.io/SimSurvey/" class="external-link">SimSurvey</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://paulregular.github.io/SimSurvey/" class="external-link">SimSurvey</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="built-in-closures">Built-in closures<a class="anchor" aria-label="anchor" href="#built-in-closures"></a>
 </h2>
-<p>The <strong><code>SimSurvey</code></strong> package makes frequent use of “closures”, which are functions that contain data and return functions <span class="citation">(Wickham 2014)</span>, to control how the simulations are structured. There are various closures built into the package and the data supplied to these closures tend to be parameter inputs and the closures return functions that require inputs such as ages and/or years. This was done to avoid the repeated specifications of key arguments, such as ages and years. Moreover, this approach provides an option for advanced R users to inspect and modify the closures implemented in the package to supply custom closures with alternate equations. For instance, the <code>sim_logistic</code> closure was created to control the shape of survey catchability and it requires parameter inputs that control the shape of the logistic curve and it returns a function that requires a vector of ages.</p>
+<p>The <strong><code>SimSurvey</code></strong> package makes frequent
+use of “closures”, which are functions that contain data and return
+functions <span class="citation">(Wickham 2014)</span>, to control how
+the simulations are structured. There are various closures built into
+the package and the data supplied to these closures tend to be parameter
+inputs and the closures return functions that require inputs such as
+ages and/or years. This was done to avoid the repeated specifications of
+key arguments, such as ages and years. Moreover, this approach provides
+an option for advanced R users to inspect and modify the closures
+implemented in the package to supply custom closures with alternate
+equations. For instance, the <code>sim_logistic</code> closure was
+created to control the shape of survey catchability and it requires
+parameter inputs that control the shape of the logistic curve and it
+returns a function that requires a vector of ages.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="va">sim_logistic</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">k</span> <span class="op">=</span> <span class="fl">2</span>, <span class="va">x0</span> <span class="op">=</span> <span class="fl">3</span>, <span class="va">plot</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
-  <span class="kw">function</span><span class="op">(</span><span class="va">x</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">k</span> <span class="op">*</span> <span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">x0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-    <span class="kw">if</span> <span class="op">(</span><span class="va">plot</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"b"</span><span class="op">)</span>
-    <span class="va">y</span>
-  <span class="op">}</span>
-<span class="op">}</span></code></pre></div>
-<p>Such that when this closure is run, the object returned is a function.</p>
+<code class="sourceCode R"><span></span>
+<span><span class="va">sim_logistic</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">k</span> <span class="op">=</span> <span class="fl">2</span>, <span class="va">x0</span> <span class="op">=</span> <span class="fl">3</span>, <span class="va">plot</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">x</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">k</span> <span class="op">*</span> <span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">x0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">plot</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"b"</span><span class="op">)</span></span>
+<span>    <span class="va">y</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Such that when this closure is run, the object returned is a
+function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ages</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span>
-<span class="va">logistic_fun</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">1</span>, x0 <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>
-<span class="va">logistic_curve</span> <span class="op">&lt;-</span> <span class="fu">logistic_fun</span><span class="op">(</span><span class="va">ages</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ages</span>, y <span class="op">=</span> <span class="va">logistic_curve</span>, xlab <span class="op">=</span> <span class="st">"Age"</span>, ylab <span class="op">=</span> <span class="st">"Catchability"</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ages</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span></span>
+<span><span class="va">logistic_fun</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">1</span>, x0 <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">logistic_curve</span> <span class="op">&lt;-</span> <span class="fu">logistic_fun</span><span class="op">(</span><span class="va">ages</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ages</span>, y <span class="op">=</span> <span class="va">logistic_curve</span>, xlab <span class="op">=</span> <span class="st">"Age"</span>, ylab <span class="op">=</span> <span class="st">"Catchability"</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="custom_closures_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
-<p>Notice that some simple plotting code has been included inside the <code>sim_logistic</code> closure, as it is with the other closures included with <strong><code>SimSurvey</code></strong>, such that when <code>plot = TRUE</code> a plot is automatically generated. This is useful for visual explorations of parameter settings.</p>
-<p>When these closures are supplied to the core functions of <strong><code>SimSurvey</code></strong>, the argument ends up being a function and this function is used internally to control various aspects of the simulation, such as the shape of survey catchability. The internal inputs to these functions (e.g. ages and years) can therefore be dynamic.</p>
+<p>Notice that some simple plotting code has been included inside the
+<code>sim_logistic</code> closure, as it is with the other closures
+included with <strong><code>SimSurvey</code></strong>, such that when
+<code>plot = TRUE</code> a plot is automatically generated. This is
+useful for visual explorations of parameter settings.</p>
+<p>When these closures are supplied to the core functions of
+<strong><code>SimSurvey</code></strong>, the argument ends up being a
+function and this function is used internally to control various aspects
+of the simulation, such as the shape of survey catchability. The
+internal inputs to these functions (e.g. ages and years) can therefore
+be dynamic.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">438</span><span class="op">)</span>
-<span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_abundance.html">sim_abundance</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
-  <span class="fu"><a href="../reference/sim_distribution.html">sim_distribution</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
-  <span class="fu"><a href="../reference/sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">5</span>, q <span class="op">=</span> <span class="fu"><a href="../reference/sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">1</span>, x0 <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">438</span><span class="op">)</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_abundance.html">sim_abundance</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="../reference/sim_distribution.html">sim_distribution</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="../reference/sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">5</span>, q <span class="op">=</span> <span class="fu"><a href="../reference/sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">1</span>, x0 <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="custom-closures">Custom closures<a class="anchor" aria-label="anchor" href="#custom-closures"></a>
 </h2>
-<p>Users are not restricted to the limited number of parametric relationships captured inside the closures built into the <strong><code>SimSurvey</code></strong> package. The code can be copied and modified to impose different relationships. For instance, the <code>sim_logistic</code> closure can be modified to make a <code>sim_gaussian</code> closure for use in the <code>sim_survey</code> function to impose dome-shaped survey catchability.</p>
+<p>Users are not restricted to the limited number of parametric
+relationships captured inside the closures built into the
+<strong><code>SimSurvey</code></strong> package. The code can be copied
+and modified to impose different relationships. For instance, the
+<code>sim_logistic</code> closure can be modified to make a
+<code>sim_gaussian</code> closure for use in the <code>sim_survey</code>
+function to impose dome-shaped survey catchability.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="va">sim_gaussian</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span> <span class="op">=</span> <span class="fl">1</span>, <span class="va">b</span> <span class="op">=</span> <span class="fl">10</span>, <span class="va">c</span> <span class="op">=</span> <span class="fl">5</span>, <span class="va">plot</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
-  <span class="kw">function</span><span class="op">(</span><span class="va">x</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">a</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">b</span><span class="op">)</span> <span class="op">^</span> <span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">c</span> <span class="op">^</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span>
-    <span class="kw">if</span> <span class="op">(</span><span class="va">plot</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"b"</span><span class="op">)</span>
-    <span class="va">y</span>
-  <span class="op">}</span>
-<span class="op">}</span>
-
-<span class="va">gaussian_fun</span> <span class="op">&lt;-</span> <span class="fu">sim_gaussian</span><span class="op">(</span>b <span class="op">=</span> <span class="fl">15</span>, c <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>
-<span class="va">gaussian_curve</span> <span class="op">&lt;-</span> <span class="fu">gaussian_fun</span><span class="op">(</span><span class="va">ages</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ages</span>, y <span class="op">=</span> <span class="va">gaussian_curve</span>, xlab <span class="op">=</span> <span class="st">"Age"</span>, ylab <span class="op">=</span> <span class="st">"Catchability"</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span></span>
+<span><span class="va">sim_gaussian</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span> <span class="op">=</span> <span class="fl">1</span>, <span class="va">b</span> <span class="op">=</span> <span class="fl">10</span>, <span class="va">c</span> <span class="op">=</span> <span class="fl">5</span>, <span class="va">plot</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">x</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">a</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">b</span><span class="op">)</span> <span class="op">^</span> <span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">c</span> <span class="op">^</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">plot</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"b"</span><span class="op">)</span></span>
+<span>    <span class="va">y</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">gaussian_fun</span> <span class="op">&lt;-</span> <span class="fu">sim_gaussian</span><span class="op">(</span>b <span class="op">=</span> <span class="fl">15</span>, c <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">gaussian_curve</span> <span class="op">&lt;-</span> <span class="fu">gaussian_fun</span><span class="op">(</span><span class="va">ages</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ages</span>, y <span class="op">=</span> <span class="va">gaussian_curve</span>, xlab <span class="op">=</span> <span class="st">"Age"</span>, ylab <span class="op">=</span> <span class="st">"Catchability"</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="custom_closures_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
-<p>And this closure can be used in lieu of <code>sim_logistic</code>.</p>
+<p>And this closure can be used in lieu of
+<code>sim_logistic</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">438</span><span class="op">)</span>
-<span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_abundance.html">sim_abundance</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
-  <span class="fu"><a href="../reference/sim_distribution.html">sim_distribution</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
-  <span class="fu"><a href="../reference/sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">5</span>, q <span class="op">=</span> <span class="fu">sim_gaussian</span><span class="op">(</span>b <span class="op">=</span> <span class="fl">15</span>, c <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">438</span><span class="op">)</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_abundance.html">sim_abundance</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="../reference/sim_distribution.html">sim_distribution</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="../reference/sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">5</span>, q <span class="op">=</span> <span class="fu">sim_gaussian</span><span class="op">(</span>b <span class="op">=</span> <span class="fl">15</span>, c <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -180,7 +210,7 @@ Wickham, Hadley. 2014. <em>Advanced R</em>. Chapman and Hall/CRC.
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

@@ -63,19 +63,21 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">run_strat</span><span class="op">(</span>
-  <span class="va">sim</span>,
-  length_group <span class="op">=</span> <span class="st">"inherit"</span>,
-  alk_scale <span class="op">=</span> <span class="st">"division"</span>,
-  strat_data_fun <span class="op">=</span> <span class="va">strat_data</span>,
-  strat_means_fun <span class="op">=</span> <span class="va">strat_means</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_strat</span><span class="op">(</span></span>
+<span>  <span class="va">sim</span>,</span>
+<span>  length_group <span class="op">=</span> <span class="st">"inherit"</span>,</span>
+<span>  alk_scale <span class="op">=</span> <span class="st">"division"</span>,</span>
+<span>  strat_data_fun <span class="op">=</span> <span class="va">strat_data</span>,</span>
+<span>  strat_means_fun <span class="op">=</span> <span class="va">strat_means</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>sim</dt>
 <dd><p>Simulation from <code><a href="sim_survey.html">sim_survey</a></code></p></dd>
+
+
 <dt>length_group</dt>
 <dd><p>Size of the length frequency bins for both abundance at length calculations
 and age-length-key construction. By default this value is inherited from
@@ -83,17 +85,26 @@ the value defined in <code><a href="sim_abundance.html">sim_abundance</a></code>
 <code>sim_length</code> ("inherit"). A numeric value can also be supplied, however,
 a mismatch in length groupings will cause issues with <code><a href="strat_error.html">strat_error</a></code>
 as true vs. estimated length groupings will be mismatched.</p></dd>
+
+
 <dt>alk_scale</dt>
 <dd><p>Spatial scale at which to construct and apply age-length-keys:
 "division" or "strat".</p></dd>
+
+
 <dt>strat_data_fun</dt>
 <dd><p>Function for preparing data for stratified analysis (e.g. <code><a href="strat_data.html">strat_data</a></code>)</p></dd>
+
+
 <dt>strat_means_fun</dt>
 <dd><p>Function for calculating stratified means (e.g. <code><a href="strat_means.html">strat_means</a></code>)</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Adds stratified analysis results for the total population (<code>"total_strat"</code>)
+    
+
+<p>Adds stratified analysis results for the total population (<code>"total_strat"</code>)
 and the population aggregated by length group and age (<code>"length_strat"</code> and
 <code>"age_strat"</code>, respectively) to the <code>sim</code> list.</p>
     </div>
@@ -105,15 +116,16 @@ and the population aggregated by length group and age (<code>"length_strat"</cod
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span>
-<span class="r-in">                     R <span class="op">=</span> <span class="fu"><a href="sim_R.html">sim_R</a></span><span class="op">(</span>log_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1e+7</span><span class="op">)</span><span class="op">)</span>,</span>
-<span class="r-in">                     growth <span class="op">=</span> <span class="fu"><a href="sim_vonB.html">sim_vonB</a></span><span class="op">(</span>length_group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span>
-<span class="r-in">                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu"><a href="sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">1</span>, q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x0 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu">run_strat</span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span></span>
+<span class="r-in"><span>                     R <span class="op">=</span> <span class="fu"><a href="sim_R.html">sim_R</a></span><span class="op">(</span>log_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1e+7</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     growth <span class="op">=</span> <span class="fu"><a href="sim_vonB.html">sim_vonB</a></span><span class="op">(</span>length_group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu"><a href="sim_survey.html">sim_survey</a></span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">1</span>, q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x0 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu">run_strat</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in rasterToPoints(sim$grid):</span> could not find function "rasterToPoints"</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -128,7 +140,7 @@ and the population aggregated by length group and age (<code>"length_strat"</cod
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

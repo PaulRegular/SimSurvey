@@ -67,12 +67,12 @@ of the population. The ability to simulate distributions by length is yet to be 
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">sim_distribution</span><span class="op">(</span>
-  <span class="va">sim</span>,
-  grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span><span class="op">)</span>,
-  ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span><span class="op">)</span>,
-  depth_par <span class="op">=</span> <span class="fu"><a href="sim_parabola.html">sim_parabola</a></span><span class="op">(</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sim_distribution</span><span class="op">(</span></span>
+<span>  <span class="va">sim</span>,</span>
+<span>  grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  depth_par <span class="op">=</span> <span class="fu"><a href="sim_parabola.html">sim_parabola</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -80,19 +80,28 @@ of the population. The ability to simulate distributions by length is yet to be 
     <dl><dt>sim</dt>
 <dd><p>A list with ages, years and an abundance at age matrix like
 produced by <code><a href="sim_abundance.html">sim_abundance</a></code>.</p></dd>
+
+
 <dt>grid</dt>
-<dd><p>A raster object defining the survey grid, like <code><a href="survey_grid.html">survey_grid</a></code>
+<dd><p>A stars object defining the survey grid, like <code><a href="survey_grid.html">survey_grid</a></code>
 or one produced by <code><a href="make_grid.html">make_grid</a></code></p></dd>
+
+
 <dt>ays_covar</dt>
 <dd><p>Closure for simulating age-year-space covariance,
 like <code><a href="sim_ays_covar.html">sim_ays_covar</a></code></p></dd>
+
+
 <dt>depth_par</dt>
 <dd><p>Closure for defining relationship between abundance and depth,
 like <code><a href="sim_parabola.html">sim_parabola</a></code></p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Appends three objects to the <code>sim</code> list:</p><ul><li><p><code>grid</code> - RasterBrick with the grid details</p></li>
+    
+
+<p>Appends three objects to the <code>sim</code> list:</p><ul><li><p><code>grid</code> - A stars object with the grid details</p></li>
 <li><p><code>grid_xy</code> - Grid details as a data.table in xyz format</p></li>
 <li><p><code>sp_N</code> - A data.table with abundance split by age, year and cell</p></li>
 </ul></div>
@@ -106,30 +115,30 @@ abundance in a large grid across many ages and years - start small first.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu">sim_distribution</span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span>
-<span class="r-in">                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>phi_age <span class="op">=</span> <span class="fl">0.8</span>,</span>
-<span class="r-in">                                                      phi_year <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
-<span class="r-in">                            depth_par <span class="op">=</span> <span class="fu"><a href="sim_parabola.html">sim_parabola</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">200</span>,</span>
-<span class="r-in">                                                     sigma <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">sp_N</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    age year cell         N</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:   1    1    1 3.0212305</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:   2    1    1 0.1951050</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:   3    1    1 0.1326439</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:   4    1    1 3.4104223</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:   5    1    1 0.4859601</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6:   6    1    1 0.3033688</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">grid_xy</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu">sim_distribution</span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>phi_age <span class="op">=</span> <span class="fl">0.8</span>,</span></span>
+<span class="r-in"><span>                                                      phi_year <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                            depth_par <span class="op">=</span> <span class="fu"><a href="sim_parabola.html">sim_parabola</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">200</span>,</span></span>
+<span class="r-in"><span>                                                     sigma <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">sp_N</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    age year cell          N</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:   1    1    1 0.46323753</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:   2    1    1 4.04824815</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:   3    1    1 0.22633444</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:   4    1    1 0.10560368</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:   5    1    1 0.15205402</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6:   6    1    1 0.05178324</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">grid_xy</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       x   y depth cell division strat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -134 134    49    1        1    13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2: -122 134   124    2        1    14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3: -110 134   175    3        1    15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:  -98 134   204    4        1    16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:  -86 134   215    5        1    16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6:  -74 134   215    6        1    16</span>
-<span class="r-in"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -134 134    49    1        1    14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: -122 134   124    2        1    15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3: -110 134   175    3        1    16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:  -98 134   204    4        1    17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:  -86 134   215    5        1    17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6:  -74 134   215    6        1    17</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -144,7 +153,7 @@ abundance in a large grid across many ages and years - start small first.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

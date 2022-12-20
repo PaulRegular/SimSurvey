@@ -69,35 +69,48 @@ in purpose to .sp_covar.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">.Q</span><span class="op">(</span>
-  <span class="va">mesh</span>,
-  <span class="va">barrier.triangles</span>,
-  range <span class="op">=</span> <span class="fl">50</span>,
-  range_fraction <span class="op">=</span> <span class="fl">0.2</span>,
-  sigma_u <span class="op">=</span> <span class="fl">1</span>,
-  model <span class="op">=</span> <span class="st">"spde"</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.Q</span><span class="op">(</span></span>
+<span>  <span class="va">mesh</span>,</span>
+<span>  <span class="va">barrier.triangles</span>,</span>
+<span>  range <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  range_fraction <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  sigma_u <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"spde"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>mesh</dt>
 <dd><p>The mesh created by R-INLA representing spatial area</p></dd>
+
+
 <dt>barrier.triangles</dt>
 <dd><p>the list of triangles of the mesh in the barrier, only used for barrier model</p></dd>
+
+
 <dt>range</dt>
 <dd><p>decorrelation range</p></dd>
+
+
 <dt>range_fraction</dt>
 <dd><p>the fraction that sets the range over the "land"
 parts of the barrier model. Only used with the barrier model</p></dd>
+
+
 <dt>sigma_u</dt>
 <dd><p>the overall variance of the spatial process</p></dd>
+
+
 <dt>model</dt>
 <dd><p>'spde' for the SPDE approach, 'barrier' for barrier approach</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Q a sparse precision matrix of type dgTMatrix</p>
+    
+
+<p>Q a sparse precision matrix of type dgTMatrix</p>
     </div>
 
   </div>
@@ -112,7 +125,7 @@ parts of the barrier model. Only used with the barrier model</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

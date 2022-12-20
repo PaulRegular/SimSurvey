@@ -67,48 +67,48 @@ visuals of values produced by <code><a href="sim_abundance.html">sim_abundance</
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">plot_trend</span><span class="op">(</span><span class="va">sim</span>, sum_ages <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">ages</span>, col <span class="op">=</span> <span class="fu">viridis</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">plot_surface</span><span class="op">(</span><span class="va">sim</span>, mat <span class="op">=</span> <span class="st">"N"</span>, xlab <span class="op">=</span> <span class="st">"Age"</span>, ylab <span class="op">=</span> <span class="st">"Year"</span>, zlab <span class="op">=</span> <span class="va">mat</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">plot_grid</span><span class="op">(</span><span class="va">grid</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">plot_distribution</span><span class="op">(</span>
-  <span class="va">sim</span>,
-  ages <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">ages</span>,
-  years <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">years</span>,
-  type <span class="op">=</span> <span class="st">"contour"</span>,
-  scale <span class="op">=</span> <span class="st">"natural"</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="fu">plot_survey</span><span class="op">(</span><span class="va">sim</span>, which_year <span class="op">=</span> <span class="fl">1</span>, which_sim <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
-
-<span class="fu">plot_total_strat_fan</span><span class="op">(</span><span class="va">sim</span>, surveys <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, quants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="op">-</span><span class="fl">10</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">plot_length_strat_fan</span><span class="op">(</span>
-  <span class="va">sim</span>,
-  surveys <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,
-  years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,
-  lengths <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">50</span>,
-  select_by <span class="op">=</span> <span class="st">"year"</span>,
-  quants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="op">-</span><span class="fl">10</span><span class="op">)</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="fu">plot_age_strat_fan</span><span class="op">(</span>
-  <span class="va">sim</span>,
-  surveys <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,
-  years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,
-  ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,
-  select_by <span class="op">=</span> <span class="st">"year"</span>,
-  quants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="op">-</span><span class="fl">10</span><span class="op">)</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="fu">plot_error_surface</span><span class="op">(</span><span class="va">sim</span>, plot_by <span class="op">=</span> <span class="st">"rule"</span><span class="op">)</span>
-
-<span class="fu">plot_survey_rank</span><span class="op">(</span><span class="va">sim</span>, which_strat <span class="op">=</span> <span class="st">"age"</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_trend</span><span class="op">(</span><span class="va">sim</span>, sum_ages <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">ages</span>, col <span class="op">=</span> <span class="fu">viridis</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_surface</span><span class="op">(</span><span class="va">sim</span>, mat <span class="op">=</span> <span class="st">"N"</span>, xlab <span class="op">=</span> <span class="st">"Age"</span>, ylab <span class="op">=</span> <span class="st">"Year"</span>, zlab <span class="op">=</span> <span class="va">mat</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_grid</span><span class="op">(</span><span class="va">grid</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_distribution</span><span class="op">(</span></span>
+<span>  <span class="va">sim</span>,</span>
+<span>  ages <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">ages</span>,</span>
+<span>  years <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">years</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"contour"</span>,</span>
+<span>  scale <span class="op">=</span> <span class="st">"natural"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_survey</span><span class="op">(</span><span class="va">sim</span>, which_year <span class="op">=</span> <span class="fl">1</span>, which_sim <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_total_strat_fan</span><span class="op">(</span><span class="va">sim</span>, surveys <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, quants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="op">-</span><span class="fl">10</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_length_strat_fan</span><span class="op">(</span></span>
+<span>  <span class="va">sim</span>,</span>
+<span>  surveys <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span>
+<span>  years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span>
+<span>  lengths <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">50</span>,</span>
+<span>  select_by <span class="op">=</span> <span class="st">"year"</span>,</span>
+<span>  quants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="op">-</span><span class="fl">10</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_age_strat_fan</span><span class="op">(</span></span>
+<span>  <span class="va">sim</span>,</span>
+<span>  surveys <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span>
+<span>  years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span>
+<span>  ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span>
+<span>  select_by <span class="op">=</span> <span class="st">"year"</span>,</span>
+<span>  quants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">10</span>, by <span class="op">=</span> <span class="op">-</span><span class="fl">10</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_error_surface</span><span class="op">(</span><span class="va">sim</span>, plot_by <span class="op">=</span> <span class="st">"rule"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">plot_survey_rank</span><span class="op">(</span><span class="va">sim</span>, which_strat <span class="op">=</span> <span class="st">"age"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -116,42 +116,79 @@ visuals of values produced by <code><a href="sim_abundance.html">sim_abundance</
     <dl><dt>sim</dt>
 <dd><p>Object returned by <code><a href="sim_abundance.html">sim_abundance</a></code>,
 <code><a href="sim_distribution.html">sim_distribution</a></code>, etc.</p></dd>
+
+
 <dt>sum_ages</dt>
 <dd><p>Sum across these ages</p></dd>
+
+
 <dt>col</dt>
 <dd><p>Plot color</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Additional arguments to pass to <code><a href="https://rdrr.io/pkg/plotly/man/plot_ly.html" class="external-link">plot_ly</a></code>.</p></dd>
+
+
 <dt>mat</dt>
 <dd><p>Name of matrix in <code>sim</code> list to plot.</p></dd>
+
+
 <dt>xlab, ylab, zlab</dt>
 <dd><p>Axes labels.</p></dd>
+
+
 <dt>grid</dt>
 <dd><p>Grid produced by <code><a href="make_grid.html">make_grid</a></code>.</p></dd>
+
+
 <dt>ages</dt>
 <dd><p>Subset data to one or more ages.</p></dd>
+
+
 <dt>years</dt>
 <dd><p>Subset data to one or more years.</p></dd>
+
+
 <dt>type</dt>
 <dd><p>Plot type: "contour" or "heatmap".</p></dd>
+
+
 <dt>scale</dt>
 <dd><p>Plot response on "natural" or "log" scale?</p></dd>
+
+
 <dt>which_year</dt>
 <dd><p>Subset to specific year</p></dd>
+
+
 <dt>which_sim</dt>
 <dd><p>Subset to specific sim</p></dd>
+
+
 <dt>surveys</dt>
 <dd><p>Subset data to one or more surveys.</p></dd>
+
+
 <dt>quants</dt>
 <dd><p>Quantile intervals to display on fan plot</p></dd>
+
+
 <dt>lengths</dt>
 <dd><p>Subset data to one or more length groups.</p></dd>
+
+
 <dt>select_by</dt>
 <dd><p>Select plot by "age", "length" or "year"?</p></dd>
+
+
 <dt>plot_by</dt>
 <dd><p>Plot error surface by "rule" or "samples"?</p></dd>
+
+
 <dt>which_strat</dt>
 <dd><p>Which strat values to focus on? (total, length, or age)</p></dd>
+
 </dl></div>
 
   </div>
@@ -166,7 +203,7 @@ visuals of values produced by <code><a href="sim_abundance.html">sim_abundance</
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

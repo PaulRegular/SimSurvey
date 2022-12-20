@@ -71,32 +71,42 @@ alternate approaches to a stratified analysis for obtaining survey indices.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">sim_survey_parallel</span><span class="op">(</span>
-  <span class="va">sim</span>,
-  n_sims <span class="op">=</span> <span class="fl">1</span>,
-  n_loops <span class="op">=</span> <span class="fl">100</span>,
-  cores <span class="op">=</span> <span class="fl">1</span>,
-  quiet <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sim_survey_parallel</span><span class="op">(</span></span>
+<span>  <span class="va">sim</span>,</span>
+<span>  n_sims <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  n_loops <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>sim</dt>
 <dd><p>Simulation from <code><a href="sim_distribution.html">sim_distribution</a></code></p></dd>
+
+
 <dt>n_sims</dt>
 <dd><p>Number of times to simulate a survey over the simulated population.
 Requesting a large number of simulations here may max out your RAM.</p></dd>
+
+
 <dt>n_loops</dt>
 <dd><p>Number of times to run the <code><a href="sim_survey.html">sim_survey</a></code> function. Total
 simulations run will be the product of <code>n_sims</code> and <code>n_loops</code>
 arguments. Low numbers of <code>n_sims</code> and high numbers of <code>n_loops</code>
 will be easier on RAM, but may be slower.</p></dd>
+
+
 <dt>cores</dt>
 <dd><p>Number of cores to use in parallel. More cores should speed up the process.</p></dd>
+
+
 <dt>quiet</dt>
 <dd><p>Print message on what to expect for duration?</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Arguments passed on to <code><a href="sim_survey.html">sim_survey</a></code></p><dl><dt><code>q</code></dt>
 <dd><p>Closure, such as <code><a href="sim_logistic.html">sim_logistic</a></code>, for simulating catchability at age
@@ -155,6 +165,7 @@ automated if <code>custom_sets = NULL</code>.</p></dd>
 
   
 </dl></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -163,20 +174,20 @@ automated if <code>custom_sets = NULL</code>.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="co">## This call runs a total of 25 simulations of the same survey over</span></span>
-<span class="r-in"><span class="co">## the same population (Note: total number of simulations are low to</span></span>
-<span class="r-in"><span class="co">## decrease computation time for the example)</span></span>
-<span class="r-in"><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">           <span class="fu">sim_survey_parallel</span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">5</span>, n_loops <span class="op">=</span> <span class="fl">5</span>, cores <span class="op">=</span> <span class="fl">1</span>,</span>
-<span class="r-in">                               q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x0 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
-<span class="r-in">                               quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> One run of sim_survey took ~ 1 secs to run. It may take up to 7 secs to run all simulations.</span>
-<span class="r-in"><span class="co"># }</span></span>
-<span class="r-in"></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co">## This call runs a total of 25 simulations of the same survey over</span></span></span>
+<span class="r-in"><span><span class="co">## the same population (Note: total number of simulations are low to</span></span></span>
+<span class="r-in"><span><span class="co">## decrease computation time for the example)</span></span></span>
+<span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu">sim_survey_parallel</span><span class="op">(</span>n_sims <span class="op">=</span> <span class="fl">5</span>, n_loops <span class="op">=</span> <span class="fl">5</span>, cores <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                               q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x0 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                               quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in rasterToPoints(sim$grid):</span> could not find function "rasterToPoints"</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -191,7 +202,7 @@ automated if <code>custom_sets = NULL</code>.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

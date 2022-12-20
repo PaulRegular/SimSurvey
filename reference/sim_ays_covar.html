@@ -63,38 +63,53 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">sim_ays_covar</span><span class="op">(</span>
-  sd <span class="op">=</span> <span class="fl">2.8</span>,
-  range <span class="op">=</span> <span class="fl">300</span>,
-  lambda <span class="op">=</span> <span class="fl">1</span>,
-  model <span class="op">=</span> <span class="st">"matern"</span>,
-  phi_age <span class="op">=</span> <span class="fl">0.5</span>,
-  phi_year <span class="op">=</span> <span class="fl">0.9</span>,
-  group_ages <span class="op">=</span> <span class="fl">5</span><span class="op">:</span><span class="fl">20</span>,
-  group_years <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sim_ays_covar</span><span class="op">(</span></span>
+<span>  sd <span class="op">=</span> <span class="fl">2.8</span>,</span>
+<span>  range <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>  lambda <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"matern"</span>,</span>
+<span>  phi_age <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  phi_year <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  group_ages <span class="op">=</span> <span class="fl">5</span><span class="op">:</span><span class="fl">20</span>,</span>
+<span>  group_years <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>sd</dt>
 <dd><p>Variance (can be age specific).</p></dd>
+
+
 <dt>range</dt>
 <dd><p>Decorrelation range</p></dd>
+
+
 <dt>lambda</dt>
 <dd><p>Controls the degree of smoothness of Matern covariance process</p></dd>
+
+
 <dt>model</dt>
 <dd><p>String indicating either "exponential" or "matern" as the correlation function</p></dd>
+
+
 <dt>phi_age</dt>
 <dd><p>Defines autocorrelation through ages. Can be one value or a vector of the same
 length as ages</p></dd>
+
+
 <dt>phi_year</dt>
 <dd><p>Defines autocorrelation through years. Can be one value or a vector of the same
 length as years</p></dd>
+
+
 <dt>group_ages</dt>
 <dd><p>Make space-age-year noise equal across these ages</p></dd>
+
+
 <dt>group_years</dt>
 <dd><p>Make space-age-year noise equal across these years</p></dd>
+
 </dl></div>
 
   </div>
@@ -109,7 +124,7 @@ length as years</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
