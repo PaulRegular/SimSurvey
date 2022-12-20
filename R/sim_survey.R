@@ -106,8 +106,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
   ## Strat area and sampling effort
   strat_det <- cells[, list(strat_cells = .N), by = c("sim", "year", "strat")]
   strat_det$tow_area <- prod(trawl_dim)
-  strat_det$cell_area <- prod(res(sim$grid))
-  strat_det$strat_area <- strat_det$strat_cells * prod(res(sim$grid))
+  strat_det$cell_area <- prod(stars::st_res(sim$grid))
+  strat_det$strat_area <- strat_det$strat_cells * prod(stars::st_res(sim$grid))
   strat_det$strat_sets <- round(strat_det$strat_area * set_den) # set allocation
   strat_det$strat_sets[strat_det$strat_sets < min_sets] <- min_sets
   cells <- merge(cells, strat_det, by = c("sim", "year", "strat"))
