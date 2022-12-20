@@ -25,10 +25,10 @@
 #' @examples
 #'
 #' r <- make_grid(res = c(10, 10))
-#' stars::plot(r)
+#' plot(r)
 #'
 #' p <- sf::st_as_sf(r["strat"], as_points = FALSE, merge = TRUE)
-#' sf::plot(p)
+#' plot(p)
 #'
 #' @import sf
 #' @import stars
