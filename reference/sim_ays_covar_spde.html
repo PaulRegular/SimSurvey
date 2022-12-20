@@ -139,7 +139,6 @@ for the barrier model</p></dd>
 <span class="r-in"><span><span class="co">## Make a mesh based off it</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">my_mesh</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_mesh.html">make_mesh</a></span><span class="op">(</span><span class="va">my_grid</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> rgdal is needed for make_mesh to work. Please install it.</span>
 <span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
 <span class="r-in"><span>         <span class="fu"><a href="sim_distribution.html">sim_distribution</a></span><span class="op">(</span>grid <span class="op">=</span> <span class="va">my_grid</span>,</span></span>
 <span class="r-in"><span>                          ays_covar <span class="op">=</span> <span class="fu">sim_ays_covar_spde</span><span class="op">(</span>phi_age <span class="op">=</span> <span class="fl">0.8</span>,</span></span>
@@ -148,7 +147,7 @@ for the barrier model</p></dd>
 <span class="r-in"><span>                                                         mesh <span class="op">=</span> <span class="va">my_mesh</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                          depth_par <span class="op">=</span> <span class="fu"><a href="sim_parabola.html">sim_parabola</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">200</span>,</span></span>
 <span class="r-in"><span>                                                   sigma <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in INLA::inla.spde2.pcmatern(mesh, prior.range = c(1, 0.1), prior.sigma = c(1,     0.1)):</span> object 'my_mesh' not found</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in t.default(u.data):</span> argument is not a matrix</span>
 <span class="r-in"><span><span class="fu"><a href="plot_trend.html">plot_distribution</a></span><span class="op">(</span><span class="va">sim</span>,ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, type <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in merge(sim$grid_xy, sim$sp_N[age %in% ages &amp; year %in% years,     ], by = "cell"):</span> object 'sim' not found</span>
 <span class="r-in"><span></span></span>
@@ -170,7 +169,6 @@ for the barrier model</p></dd>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'giveCsparse' has been deprecated; setting 'repr = "T"' for you</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'giveCsparse' has been deprecated; setting 'repr = "T"' for you</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'giveCsparse' has been deprecated; setting 'repr = "T"' for you</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> as(&lt;dgCMatrix&gt;, "dgTMatrix") is deprecated since Matrix 1.5-0; do as(., "TsparseMatrix") instead</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'giveCsparse' has been deprecated; setting 'repr = "T"' for you</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'giveCsparse' has been deprecated; setting 'repr = "T"' for you</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>'giveCsparse' has been deprecated; setting 'repr = "T"' for you</span>
