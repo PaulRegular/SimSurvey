@@ -249,7 +249,7 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #' ## Make a grid and replicate data for 5 ages and 5 years
 #' ## (This is similar to what happens inside sim_distribution)
 #' grid <- make_grid(shelf_width = 10)
-#' grid_xy <- as.data.frame(raster::rasterToPoints(grid))
+#' grid_xy <- data.frame(grid)
 #' i <- rep(seq(nrow(grid_xy)), times = 5)
 #' a <- rep(1:5, each = nrow(grid_xy))
 #' grid_xy <- grid_xy[i, ]
