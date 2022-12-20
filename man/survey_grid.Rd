@@ -5,7 +5,7 @@
 \alias{survey_grid}
 \title{Sample survey simulation grid.}
 \format{
-A RasterStack with 4 variables:
+A stars object with 4 attributes:
 \describe{
 \item{cell}{Survey cell identifier}
 \item{division}{NAFO division}

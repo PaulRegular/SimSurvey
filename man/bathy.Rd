@@ -5,7 +5,7 @@
 \alias{bathy}
 \title{Southern Newfoundland bathymetry}
 \format{
-A RasterLayer
+A stars object
 
 Derived from data downloaded from http://www.gebco.net/. Details provided in
 the data-raw folder for this package.

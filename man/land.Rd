@@ -5,7 +5,7 @@
 \alias{land}
 \title{Southern Newfoundland coastline}
 \format{
-A SpatialPolygons object
+A sf object (MULTIPOLYGON)
 
 Derived from global administrative boundaries data (http://gadm.org/) downloaded
 using the \code{\link{getData}} function. Details provided in the

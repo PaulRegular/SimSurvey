@@ -3,7 +3,7 @@
 #' A exemplar for the structure of a survey grid object to supply to the functions
 #' in this package.
 #'
-#' @format A RasterStack with 4 variables:
+#' @format A stars object with 4 attributes:
 #' \describe{
 #'   \item{cell}{Survey cell identifier}
 #'   \item{division}{NAFO division}
@@ -19,7 +19,7 @@
 
 #' Southern Newfoundland coastline
 #'
-#' @format A SpatialPolygons object
+#' @format A sf object (MULTIPOLYGON)
 #'
 #' Derived from global administrative boundaries data (http://gadm.org/) downloaded
 #' using the \code{\link{getData}} function. Details provided in the
@@ -30,7 +30,7 @@
 
 #' Southern Newfoundland bathymetry
 #'
-#' @format A RasterLayer
+#' @format A stars object
 #'
 #' Derived from data downloaded from http://www.gebco.net/. Details provided in
 #' the data-raw folder for this package.
