@@ -261,8 +261,8 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
   I_hat <- NULL
   ints <- lapply(quants, function(q) {
     d[, list(prob = paste0(q, "%"),
-             lower = quantile(I_hat, prob = (1 - q / 100) / 2),
-             upper = quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+             lower = stats::quantile(I_hat, prob = (1 - q / 100) / 2),
+             upper = stats::quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
       by = by]
   })
   ints <- data.table::rbindlist(ints)

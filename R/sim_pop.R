@@ -103,7 +103,7 @@ sim_Z <- function(log_mean = log(0.5), log_sd = 0.2, phi_age = 0.9, phi_year = 0
       }
     }
     Z <- log_mean + Z
-    if (plot) { image(years, ages, t(exp(Z)), main = "sim_Z", xlab = "Year", ylab = "Age") }
+    if (plot) { graphics::image(years, ages, t(exp(Z)), main = "sim_Z", xlab = "Year", ylab = "Age") }
     exp(Z)
 
   }
@@ -197,9 +197,9 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
         }
       }
       lak <- lak[rowSums(lak) > 0, ]
-      if (plot) image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
-                      xlab = "Age", ylab = "Length", main = "P(Length | Age)",
-                      col = viridis::viridis(100))
+      if (plot) graphics::image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
+                                xlab = "Age", ylab = "Length", main = "P(Length | Age)",
+                                col = viridis::viridis(100))
       return(lak)
 
     } else {

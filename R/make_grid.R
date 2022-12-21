@@ -59,7 +59,7 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   if (method == "loess") {
     lo <- stats::loess(sy ~ sx)
     px <- seq(min(sx), max(sx), length.out = 100)
-    py <- predict(lo, data.frame(sx = xy$x))
+    py <- stats::predict(lo, data.frame(sx = xy$x))
     s <- list(x = xy$x, y = py)
   }
   if (method == "spline") {
