@@ -80,18 +80,6 @@
 #'                                                    sigma = 50))
 #' plot_distribution(sim,ages = 1:5, years = 1:5, type = "heatmap")
 #'
-#' ## Barrier Approach
-#' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
-#'          sim_distribution(grid = survey_grid,
-#'                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
-#'                                                          phi_year = 0.1,
-#'                                                          model = "barrier",
-#'                                                          mesh = survey_lite_mesh$mesh,
-#'                                                          barrier.triangles =
-#'                                                          survey_lite_mesh$barrier_tri),
-#'                           depth_par = sim_parabola())
-#' plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
-#'
 #' }
 #'
 #' @export
