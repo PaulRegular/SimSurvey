@@ -175,7 +175,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
   )
   yax <- c(scaleanchor = "x", xax)
 
-  sf_strat <- sf::st_as_sf(grid["strat"], as_points = FALSE, merge = TRUE)
+  sf_strat <- sf::st_as_sf(sim$grid["strat"], as_points = FALSE, merge = TRUE)
 
   setdet <- sim$setdet
   setdet <- setdet[setdet$year == which_year & setdet$sim == which_sim, ]
