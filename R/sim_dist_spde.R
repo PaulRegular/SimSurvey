@@ -108,6 +108,7 @@ sim_ays_covar_spde <- function(sd = 2.8,
                                barrier.triangles) {
 
   function(x = NULL, ages = NULL, years = NULL, cells = NULL){
+
     na <- length(ages)
     ny <- length(years)
     nc <- length(cells)
@@ -148,7 +149,7 @@ sim_ays_covar_spde <- function(sd = 2.8,
     ##A matrix to relate the cell locations to the mesh locations
     A <- INLA::inla.spde.make.A(mesh,as.matrix(x))
     ##Draw samples from GF defined by Q and project it to the cell locs
-    u.data <- A%*%INLA::inla.qsample(na*ny,Q=Q)
+    u.data <- as.matrix(A%*%INLA::inla.qsample(na*ny,Q=Q))
     ##Fill up the error array with the samples
     E <- array(t(u.data),dim=c(na,ny,nc),
                dimnames=list(age = ages,year = years,cell=cells))
