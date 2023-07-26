@@ -1,6 +1,9 @@
 
 #' Helper function to generate precision matrix Q for simulation
 #'
+#' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' This creates the precision matrix from a mesh created by R-INLA with a
 #' specified range. This is currently set up to support the standard spde
 #' approach of precision matrices and the barrier model version. Similar
@@ -17,28 +20,36 @@
 #' @return Q a sparse precision matrix of type dgTMatrix
 #' @keywords internal
 #'
-.Q <- function(mesh,barrier.triangles,range=50,range_fraction=0.2,
-               sigma_u = 1,model="spde"){
+.Q <- function(mesh,barrier.triangles, range = 50, range_fraction = 0.2,
+               sigma_u = 1, model = "spde"){
+
   Q <-  switch(model,
                spde = {
                  ##Priors aren't used...
                  ##I just used this so precision uses range...
-                 i = INLA::inla.spde2.pcmatern(mesh,prior.range=
-                                                 c(1,0.1),
-                                               prior.sigma=c(1,0.1))
-                 INLA::inla.spde2.precision(i,theta=c(log(range),log(sigma_u)))
+                 i = INLA::inla.spde2.pcmatern(mesh, prior.range = c(1, 0.1), prior.sigma = c(1, 0.1))
+                 INLA::inla.spde2.precision(i, theta = c(log(range), log(sigma_u)))
                },
                barrier = {
-                 ##Switch out from using inla.barrier.fem and :::, not really needed here anyways
-                 barrier.model <- INLA::inla.barrier.pcmatern(mesh,barrier.triangles=barrier.triangles)
-                 ##Yes, theta really is supposed to be the reverse of the one above...
-                 INLA::inla.rgeneric.q(barrier.model,"Q",theta=c(log(sigma_u),log(range)))
+
+                 # ##Switch out from using inla.barrier.fem and :::, not really needed here anyways
+                 # barrier.model <- INLA::inla.barrier.pcmatern(mesh,barrier.triangles=barrier.triangles)
+                 # ##Yes, theta really is supposed to be the reverse of the one above...
+                 # INLA::inla.rgeneric.q(barrier.model,"Q",theta=c(log(sigma_u),log(range)))
+
+                 ## Using 'new' approach described in https://eliaskrainski.github.io/INLAspacetime/articles/web/barrierExample.html
+                 barrier.model <- INLAspacetime::mesh2fem.barrier(mesh, barrier.triangles)
+                 INLA::inla.barrier.q(barrier.model, ranges = c(range, range * range_fraction), sigma = sigma_u)
+
                },
                stop("wrong or no specification of covariance model"))
   Q
 }
 
 #' Simulate age-year-space covariance using SPDE approach
+#'
+#' @description
+#' `r lifecycle::badge("experimental")`
 #'
 #' Returns a function to use inside \code{\link{sim_distribution}} to
 #' generate the error term.
@@ -60,8 +71,6 @@
 #'
 #' @examples
 #'
-#' ##SPDE Approach
-#'
 #' \donttest{
 #'
 #' ## Make a grid
@@ -80,6 +89,7 @@
 #'                                                    sigma = 50))
 #' plot_distribution(sim,ages = 1:5, years = 1:5, type = "heatmap")
 #'
+#'
 #' }
 #'
 #' @export
@@ -87,7 +97,7 @@
 
 sim_ays_covar_spde <- function(sd = 2.8,
                                range = 300,
-                               model = "barrier",
+                               model = "spde",
                                phi_age = 0.5,
                                phi_year = 0.9,
                                group_ages = 5:20,

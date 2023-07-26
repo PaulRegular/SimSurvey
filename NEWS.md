@@ -29,3 +29,4 @@
 # SimSurvey 0.1.6.9000
 
 * Switch to dependence on the sf and stars package rather than the sp and raster package given the evolution of R spatial
+* Switch to new INLAspacetime functions for simulating from a barrier mesh

@@ -49,6 +49,7 @@ Suggests:
     lme4,
     ggplot2,
     INLA,
+    INLAspacetime,
     knitr,
     bezier
 Roxygen: list(markdown = TRUE)

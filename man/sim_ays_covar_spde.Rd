@@ -7,7 +7,7 @@
 sim_ays_covar_spde(
   sd = 2.8,
   range = 300,
-  model = "barrier",
+  model = "spde",
   phi_age = 0.5,
   phi_year = 0.9,
   group_ages = 5:20,
@@ -42,12 +42,12 @@ for the barrier model}
 Returns a function for use in \code{\link{sim_distribution}}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Returns a function to use inside \code{\link{sim_distribution}} to
 generate the error term.
 }
 \examples{
-
-##SPDE Approach
 
 \donttest{
 
@@ -66,6 +66,7 @@ sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
                           depth_par = sim_parabola(mu = 200,
                                                    sigma = 50))
 plot_distribution(sim,ages = 1:5, years = 1:5, type = "heatmap")
+
 
 }
 

@@ -31,6 +31,8 @@ parts of the barrier model. Only used with the barrier model}
 Q a sparse precision matrix of type dgTMatrix
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 This creates the precision matrix from a mesh created by R-INLA with a
 specified range. This is currently set up to support the standard spde
 approach of precision matrices and the barrier model version. Similar
