@@ -6,7 +6,6 @@
 
 - local R installation, R 4.3.0
 - Github Actions ubuntu-latest (release, devel, oldrel-1), 
-- GitHub Actions windows-latest (release)
 - win-builder (devel)
 - R-hub windows-x86_64-oldrel (r-oldrel)
 - R-hub windows-x86_64-devel (r-devel)
