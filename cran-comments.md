@@ -1,17 +1,15 @@
 ## Release summary
 
-- In addition to some minor improvements, this patch fixes an error associated with a donttest check, specifically with the use of a logical expression with length > 1. A plotly call was supplied a logical vector when a logical object of length 1 should have been provided. 
+- This patch switches to dependence on the sf and stars package rather than the sp and raster package given the evolution of R spatial. We have also switched to new INLAspacetime functions for simulating from a barrier mesh.
 
 ## Test environments
 
-- local R installation, R 4.1.2
+- local R installation, R 4.3.0
 - Github Actions ubuntu-latest (release, devel, oldrel-1), 
 - GitHub Actions windows-latest (release)
 - win-builder (devel)
 - R-hub windows-x86_64-devel (r-devel)
 - R-hub fedora-clang-devel (r-devel)
-
-## R CMD check results
 
 ## R CMD check results
 > On windows-x86_64-devel (r-devel), fedora-clang-devel (r-devel)

@@ -26,7 +26,7 @@
 * Allow for more flexible simulation of sets by adding an argument to sim_sets called subset_cells and a custom_sets argument to sim_survey
 * Add number of fish available to the survey (I = N * q) to the sp_N object when running sim_survey
 
-# SimSurvey 0.1.6.9000
+# SimSurvey 0.1.6
 
 * Switch to dependence on the sf and stars package rather than the sp and raster package given the evolution of R spatial
 * Switch to new INLAspacetime functions for simulating from a barrier mesh
