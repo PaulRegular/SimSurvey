@@ -19,7 +19,7 @@ Depends:
     R (>= 3.3.0)
 License: GPL-3
 Additional_repositories: 
-    https://inla.r-inla-download.org/R/stable/
+    https://inla.r-inla-download.org/R/testing/
 LazyData: true
 ByteCompile: true
 URL: 
