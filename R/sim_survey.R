@@ -64,8 +64,8 @@ round_sim <- function(sim) {
 #'
 #' @examples
 #'
-#' sim <- sim_abundance(ages = 1:10, years = 1:5) %>%
-#'           sim_distribution(grid = make_grid(res = c(12, 12)))
+#' sim <- sim_abundance(ages = 1:5, years = 1:5) %>%
+#'           sim_distribution(grid = make_grid(res = c(15, 15)))
 #'
 #' ## Multiple calls can be useful for defining a custom series of sets
 #' standard_sets <- sim_sets(sim, year <= 2, set_den = 2 / 1000)
@@ -165,8 +165,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 #' @examples
 #'
-#' sim <- sim_abundance(ages = 1:10, years = 1:5) %>%
-#'            sim_distribution(grid = make_grid(res = c(12, 12))) %>%
+#' sim <- sim_abundance(ages = 1:5, years = 1:5) %>%
+#'            sim_distribution(grid = make_grid(res = c(15, 15))) %>%
 #'            sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
 #' plot_survey(sim, which_year = 4, which_sim = 1)
 #'
