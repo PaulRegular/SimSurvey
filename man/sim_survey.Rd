@@ -81,8 +81,8 @@ Simulate stratified-random survey
 }
 \examples{
 
-sim <- sim_abundance(ages = 1:10, years = 1:5) \%>\%
-           sim_distribution(grid = make_grid(res = c(12, 12))) \%>\%
+sim <- sim_abundance(ages = 1:5, years = 1:5) \%>\%
+           sim_distribution(grid = make_grid(res = c(20, 20))) \%>\%
            sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
 plot_survey(sim, which_year = 4, which_sim = 1)
 
