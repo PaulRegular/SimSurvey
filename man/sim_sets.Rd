@@ -48,6 +48,8 @@ sets <- rbind(standard_sets, reduced_sets)
 sets$set <- seq(nrow(sets)) # Important - make sure set has a unique ID.
 
 survey <- sim_survey(sim, custom_sets = sets)
+\donttest{
 plot_survey(survey, which_year = 4, which_sim = 1)
+}
 
 }
