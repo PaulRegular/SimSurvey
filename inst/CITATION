@@ -1,14 +1,11 @@
-citHeader("To cite SimSurvey in publications use:")
-
-citEntry(
-  entry    = "Article",
+bibentry(
+  bibtype  = "Article",
   title    = "SimSurvey: An R package for comparing the design and analysis of surveys by simulating spatially-correlated populations",
-  author   = "Paul M. Regular, Gregory J. Robertson, Keith P. Lewis, Jonathan Babyn, Brian Healey, Fran Mowbray",
+  author   = "Regular, Paul M and Robertson, Gregory J and Lewis, Keith P and Babyn, Jonathan and Healey, Brian and Mowbray, Fran",
   journal  = "PLOS ONE",
   year     = "2020",
   volume   = "15",
   number   = "5",
   pages    = "e0232822",
-  url      = "https://doi.org/10.1371/journal.pone.0232822",
-  textVersion = paste("Regular PM, Robertson GJ, Lewis KP, Babyn J, Healey B, Mowbray, F. (2020) SimSurvey: An R package for comparing the design and analysis of surveys by simulating spatially-correlated populations. PLOS ONE 15(5): e0232822. https://doi.org/10.1371/journal.pone.0232822")
+  doi      = "10.1371/journal.pone.0232822"
 )
