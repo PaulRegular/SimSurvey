@@ -12,12 +12,28 @@
 
 ## R CMD check results
 
-❯ On windows-x86_64-oldrel (r-oldrel)
-  checking dependencies in R code ... NOTE
-    All declared Imports should be used.
-
 ❯ On windows-x86_64-devel (r-devel)
-  checking CRAN incoming feasibility ... [14s] NOTE
+  * checking CRAN incoming feasibility ... NOTE
+  Maintainer: 'Paul Regular <Paul.Regular@dfo-mpo.gc.ca>'
+  
+  New submission
+  
+  Package was archived on CRAN
+  
+  Possibly misspelled words in DESCRIPTION:
+    al (16:21)
+    et (16:18)
+  
+  CRAN repository db overrides:
+    X-CRAN-Comment: Archived on 2023-08-10 as issues were not corrected
+      in time.
+  
+  Suggests or Enhances not in mainstream repositories:
+    INLA
+  Availability using Additional_repositories specification:
+    INLA   yes   https://inla.r-inla-download.org/R/stable/
+  * checking package dependencies ... NOTE
+  Package suggested but not available for checking: 'INLA'
 
 0 errors ✔ | 0 warnings ✔ | 2 notes ✖
 
