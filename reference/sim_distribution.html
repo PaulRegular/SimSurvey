@@ -116,28 +116,28 @@ abundance in a large grid across many ages and years - start small first.</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>           <span class="fu">sim_distribution</span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_abundance.html">sim_abundance</a></span><span class="op">(</span>ages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, years <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>           <span class="fu">sim_distribution</span><span class="op">(</span>grid <span class="op">=</span> <span class="fu"><a href="make_grid.html">make_grid</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                            ays_covar <span class="op">=</span> <span class="fu"><a href="sim_ays_covar.html">sim_ays_covar</a></span><span class="op">(</span>phi_age <span class="op">=</span> <span class="fl">0.8</span>,</span></span>
 <span class="r-in"><span>                                                      phi_year <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                            depth_par <span class="op">=</span> <span class="fu"><a href="sim_parabola.html">sim_parabola</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">200</span>,</span></span>
 <span class="r-in"><span>                                                     sigma <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">sp_N</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    age year cell            N</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:   1    1    1 41.343175651</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:   2    1    1 18.816184335</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:   3    1    1  0.093631953</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:   4    1    1  0.002602449</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:   5    1    1  0.061530369</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6:   6    1    1  0.044750859</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    age year cell           N</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:   1    1    1   135.78814</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:   2    1    1   350.44164</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:   3    1    1  4966.90142</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:   4    1    1    49.92872</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:   1    2    1 32699.53049</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6:   2    2    1 75007.87386</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">grid_xy</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       x   y depth cell division strat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -134 134    49    1        1    14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2: -122 134   124    2        1    15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3: -110 134   175    3        1    16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:  -98 134   204    4        1    17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:  -86 134   215    5        1    17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6:  -74 134   215    6        1    17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -130 130    77    1        1    10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: -110 130   175    2        1    11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:  -90 130   213    3        1    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:  -70 130   214    4        1    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:  -50 130   200    5        1    13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6:  -30 130   192    6        1    13</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
