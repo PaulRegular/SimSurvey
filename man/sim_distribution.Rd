@@ -45,7 +45,7 @@ abundance in a large grid across many ages and years - start small first.
 }
 \examples{
 
-sim <- sim_abundance(ages = 1:4, years = 1:4) \%>\%
+sim <- sim_abundance(ages = 1:3, years = 1:3) \%>\%
            sim_distribution(grid = make_grid(res = c(20, 20)),
                             ays_covar = sim_ays_covar(phi_age = 0.8,
                                                       phi_year = 0.1),

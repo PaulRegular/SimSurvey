@@ -200,7 +200,7 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #'
 #' @examples
 #'
-#' sim <- sim_abundance(ages = 1:4, years = 1:4,
+#' sim <- sim_abundance(ages = 1:3, years = 1:3,
 #'                      R = sim_R(log_mean = log(1e+7)),
 #'                      growth = sim_vonB(length_group = 1)) %>%
 #'            sim_distribution(grid = make_grid(res = c(20, 20)),
@@ -272,7 +272,7 @@ run_strat <- function(sim,
 #'
 #' @examples
 #'
-#' sim <- sim_abundance(ages = 1:4, years = 1:4,
+#' sim <- sim_abundance(ages = 1:3, years = 1:3,
 #'                      R = sim_R(log_mean = log(1e+7)),
 #'                      growth = sim_vonB(length_group = 1)) %>%
 #'            sim_distribution(grid = make_grid(res = c(20, 20)),

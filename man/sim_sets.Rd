@@ -38,7 +38,7 @@ Simulate survey sets
 }
 \examples{
 
-sim <- sim_abundance(ages = 1:4, years = 1:4) \%>\%
+sim <- sim_abundance(ages = 1:3, years = 1:3) \%>\%
           sim_distribution(grid = make_grid(res = c(20, 20)))
 
 ## Multiple calls can be useful for defining a custom series of sets
