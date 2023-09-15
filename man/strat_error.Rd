@@ -22,7 +22,7 @@ Calculate error of stratified estimates
 }
 \examples{
 
-sim <- sim_abundance(ages = 1:5, years = 1:5,
+sim <- sim_abundance(ages = 1:4, years = 1:4,
                      R = sim_R(log_mean = log(1e+7)),
                      growth = sim_vonB(length_group = 1)) \%>\%
            sim_distribution(grid = make_grid(res = c(20, 20)),
