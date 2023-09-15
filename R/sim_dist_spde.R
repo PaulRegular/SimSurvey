@@ -87,7 +87,7 @@
 #'                                                          mesh = my_mesh),
 #'                           depth_par = sim_parabola(mu = 200,
 #'                                                    sigma = 50))
-#' plot_distribution(sim,ages = 1:5, years = 1:5, type = "heatmap")
+#' plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
 #'
 #'
 #' }
