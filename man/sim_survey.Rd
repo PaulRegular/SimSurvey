@@ -85,7 +85,7 @@ sim <- sim_abundance(ages = 1:3, years = 1:3) \%>\%
            sim_distribution(grid = make_grid(res = c(22, 22))) \%>\%
            sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
 \donttest{
-plot_survey(sim, which_year = 4, which_sim = 1)
+plot_survey(sim, which_year = 3, which_sim = 1)
 }
 
 }
