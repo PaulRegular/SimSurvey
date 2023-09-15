@@ -326,7 +326,7 @@ sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
 #' @examples
 #'
 #' sim <- sim_abundance(ages = 1:3, years = 1:3) %>%
-#'            sim_distribution(grid = make_grid(res = c(20, 20)),
+#'            sim_distribution(grid = make_grid(res = c(22, 22)),
 #'                             ays_covar = sim_ays_covar(phi_age = 0.8,
 #'                                                       phi_year = 0.1),
 #'                             depth_par = sim_parabola(mu = 200,
