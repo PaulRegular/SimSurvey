@@ -8,6 +8,8 @@
 #' @param x0     The x-value of the sigmoid's midpoint
 #' @param plot   Plot relationship
 #'
+#' @return Returns a function for use in \code{\link{sim_survey}}.
+#'
 #' @examples
 #' logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)
 #' logistic_fun(x = 1:10)
@@ -27,6 +29,8 @@ sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
 #' Round simulated population
 #'
 #' @param sim Simulation from \code{\link{sim_distribution}}
+#'
+#' @return Returns a rounded simulation object. Largely used as a helper in \code{\link{sim_survey}}.
 #'
 #' @export
 #'
@@ -59,6 +63,8 @@ round_sim <- function(sim) {
 #' @param resample_cells  Allow resampling of sampling units (grid cells)?
 #'                        (Note: allowing resampling may create bias because
 #'                        depletion is imposed at the cell level)
+#'
+#' @return Returns a data.table including details of each set location.
 #'
 #' @export
 #'
@@ -316,6 +322,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #' @inheritDotParams sim_survey
 #'
 #' @details \code{\link{sim_survey}} is hard-wired here to be "light" to minimize object size.
+#'
+#' @return Returns an object of the same structure as \code{\link{sim_survey}}.
 #'
 #' @examples
 #'

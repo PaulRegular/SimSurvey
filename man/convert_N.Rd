@@ -12,7 +12,7 @@ convert_N(N_at_age = NULL, lak = NULL)
 \item{lak}{Length-age-key (i.e. probability of being in a specific length group given age)}
 }
 \value{
-Returns abundance-at-length matrix
+Returns abundance-at-length matrix.
 }
 \description{
 Function for converting abundance-at-age matrix to abundance-at-length given

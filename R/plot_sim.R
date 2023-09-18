@@ -29,6 +29,8 @@
 #' @import plotly
 #' @importFrom rlang .data
 #'
+#' @return Returns a plot of class \code{plotly}.
+#'
 #' @export
 #' @rdname plot_trend
 plot_trend <- function(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...) {

@@ -12,6 +12,9 @@ vis_sim(sim, ...)
 
 \item{...}{Additional arguments to send to \link[rmarkdown]{run}}
 }
+\value{
+No value returned; function produces an interactive dashboard.
+}
 \description{
 Assumes the working directory is the project directory
 }

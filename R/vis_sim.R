@@ -6,6 +6,8 @@
 #'                       \code{\link{sim_survey}} or \code{\link{test_surveys}}.
 #' @param ...            Additional arguments to send to \link[rmarkdown]{run}
 #'
+#' @return No value returned; function produces an interactive dashboard.
+#'
 #' @examples
 #'
 #' \donttest{

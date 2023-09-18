@@ -6,6 +6,8 @@
 #'
 #' @export
 #'
+#' @return Returns a Fibonacci sequence as a vector.
+#'
 #' @examples
 #'
 #' fibonacci(2, 200)
@@ -43,6 +45,8 @@ fibonacci <- function(from, to) {
 #'
 #' @param x      an \code{R} object
 #' @param units  the units to be used in printing the size
+#'
+#' @return Returns a character with the object size followed by the unit.
 #'
 #' @export
 #'

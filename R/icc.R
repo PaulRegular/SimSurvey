@@ -9,6 +9,8 @@
 #' @param x      Response variable
 #' @param group  Group
 #'
+#' @return Returns estimate of intraclass correlation.
+#'
 #' @export
 #'
 

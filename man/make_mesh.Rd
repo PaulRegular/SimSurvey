@@ -26,6 +26,9 @@ make_mesh(
 
 \item{...}{Other options to pass to inla.mesh.2d}
 }
+\value{
+Returns an object of class \code{inla.mesh}.
+}
 \description{
 This will make a mesh based off a given grid. Ideally the mesh
 construction and validation should be done by hand, but this exists

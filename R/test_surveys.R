@@ -10,6 +10,8 @@
 #' @param ages_cap          Vector of maximum number of otoliths to collect per length group
 #'                          per division per year
 #'
+#' @return Returns a data.frame including all combinations of the supplied vectors.
+#'
 #' @export
 #'
 

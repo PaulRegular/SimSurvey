@@ -11,6 +11,9 @@ icc(x, group)
 
 \item{group}{Group}
 }
+\value{
+Returns estimate of intraclass correlation.
+}
 \description{
 This is a simple function for calculating intraclass correlation. It uses
 \code{\link[lme4]{lmer}} to run the formula described here:

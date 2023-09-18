@@ -227,6 +227,8 @@ sim_ays_covar_spde <- function(sd = 2.8,
 #' @param cutoff Minimum distance allowed between points
 #' @param ... Other options to pass to inla.mesh.2d
 #'
+#' @return Returns an object of class \code{inla.mesh}.
+#'
 #' @examples
 #'
 #' \donttest{

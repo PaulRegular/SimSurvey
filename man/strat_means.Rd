@@ -26,6 +26,9 @@ means (strat and strat_area are required). e.g. c("year", "species",
 
 \item{confidence}{Percent for confidence limits}
 }
+\value{
+Returns a data.table including stratified estimates of abundance.
+}
 \description{
 Calculate stratified means, variances and confidence intervals across groups
 }

@@ -62,6 +62,9 @@ automated if \code{custom_sets = NULL}.}
     \item{\code{light}}{Drop some objects from the output to keep object size low?}
   }}
 }
+\value{
+Returns an object of the same structure as \code{\link{sim_survey}}.
+}
 \description{
 This function is a wrapper for \code{\link{sim_survey}} except it allows for
 many more total iterations to be run than \code{\link{sim_survey}} before running

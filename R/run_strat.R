@@ -30,6 +30,9 @@ error_stats <- function(error) {
 #' @param alk_scale     Spatial scale at which to construct and apply age-length-keys:
 #'                      "division", "strat" or "set".
 #'
+#' @return Returns a list including set details (\code{setdet}), length-frequencies (\code{lf}),
+#' and age-frequencies (\code{af}).
+#'
 #' @export
 #'
 
@@ -123,6 +126,8 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 #'                        "shiptrip", "NAFOdiv", "strat", "strat_area","age")
 #' @param survey_groups   Grouping variables for large-scale summary calculations. e.g. ("year","species")
 #' @param confidence      Percent for confidence limits
+#'
+#' @return Returns a data.table including stratified estimates of abundance.
 #'
 #' @export
 #'

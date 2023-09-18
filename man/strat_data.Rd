@@ -14,6 +14,10 @@ strat_data(sim, length_group = 3, alk_scale = "division")
 \item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
 "division", "strat" or "set".}
 }
+\value{
+Returns a list including set details (\code{setdet}), length-frequencies (\code{lf}),
+and age-frequencies (\code{af}).
+}
 \description{
 Generate set details (setdet), length-frequency (lf)
 and age-frequency (af) data for stratified analysis

@@ -18,6 +18,9 @@ included in argument \code{coeff} as a named list.}
 
 \item{coeff}{Named list of coefficient values used in \code{formula}.}
 }
+\value{
+Returns a function for use inside \code{\link{sim_distribution}}.
+}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 

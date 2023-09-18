@@ -34,6 +34,9 @@ length as years}
 
 \item{group_years}{Make space-age-year noise equal across these years}
 }
+\value{
+Returns a function for use inside \code{\link{sim_distribution}}.
+}
 \description{
 These functions return a function to use inside \code{\link{sim_distribution}}.
 }

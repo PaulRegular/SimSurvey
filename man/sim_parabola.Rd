@@ -28,6 +28,9 @@ forces very low values near zero.}
 
 \item{plot}{Produce a simple plot of the simulated values?}
 }
+\value{
+Returns a function for use inside \code{\link{sim_distribution}}.
+}
 \description{
 Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-gaussian function described here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/.
 }

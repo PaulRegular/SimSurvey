@@ -32,6 +32,9 @@ stratified analysis run by \code{\link{run_strat}}.}
 
 \item{plot}{Produce a simple plot of the simulated values?}
 }
+\value{
+Returns a function for use inside \code{\link{sim_abundance}}.
+}
 \description{
 This function outputs a function which holds the parameter values supplied and
 the function either simulates lengths given ages or generates a length age key

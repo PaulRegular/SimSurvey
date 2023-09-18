@@ -19,6 +19,8 @@
 #' sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
 #' in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
 #'
+#' @return Returns a function for use inside \code{\link{sim_abundance}}.
+#'
 #' @references Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
 #' Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
 #' Fisheries and Aquatic Sciences 73 (2): 296-308.
@@ -138,6 +140,8 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #' @param length       Interval from \code{\link[base]{findInterval}}
 #' @param group        Length group used to cut the length data
 #'
+#' @return Returns a vector indicating the mid-point of the length group.
+#'
 #' @export
 #'
 
@@ -167,6 +171,8 @@ group_lengths <- function(length, group) {
 #'                      stratified analysis run by \code{\link{run_strat}}.
 #' @param digits        Integer indicating the number of decimal places to round the values to
 #' @param plot          Produce a simple plot of the simulated values?
+#'
+#' @return Returns a function for use inside \code{\link{sim_abundance}}.
 #'
 #' @examples
 #' growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
@@ -223,7 +229,7 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
 #' @param   N_at_age    Abundance-at-age matrix
 #' @param   lak         Length-age-key (i.e. probability of being in a specific length group given age)
 #'
-#' @return  Returns abundance-at-length matrix
+#' @return  Returns abundance-at-length matrix.
 #'
 #' @export
 #'

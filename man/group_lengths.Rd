@@ -11,6 +11,9 @@ group_lengths(length, group)
 
 \item{group}{Length group used to cut the length data}
 }
+\value{
+Returns a vector indicating the mid-point of the length group.
+}
 \description{
 Helper function for converting lengths to length groups
 (Note: this isn't a general function; the output midpoints defining the

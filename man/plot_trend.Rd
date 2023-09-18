@@ -96,6 +96,9 @@ plot_survey_rank(sim, which_strat = "age")
 
 \item{which_strat}{Which strat values to focus on? (total, length, or age)}
 }
+\value{
+Returns a plot of class \code{plotly}.
+}
 \description{
 These functions are simple plotting helpers to get some quick
 visuals of values produced by \code{\link{sim_abundance}},

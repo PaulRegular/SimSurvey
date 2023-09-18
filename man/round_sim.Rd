@@ -9,6 +9,9 @@ round_sim(sim)
 \arguments{
 \item{sim}{Simulation from \code{\link{sim_distribution}}}
 }
+\value{
+Returns a rounded simulation object. Largely used as a helper in \code{\link{sim_survey}}.
+}
 \description{
 Round simulated population
 }

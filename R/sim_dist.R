@@ -41,6 +41,8 @@
 #' @param group_years Make space-age-year noise equal across these years
 #' @param model       String indicating either "exponential" or "matern" as the correlation function
 #'
+#' @return Returns a function for use inside \code{\link{sim_distribution}}.
+#'
 #' @export
 
 sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
@@ -169,6 +171,8 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 #'                        forces very low values near zero.
 #' @param plot            Produce a simple plot of the simulated values?
 #'
+#' @return Returns a function for use inside \code{\link{sim_distribution}}.
+#'
 #' @examples
 #'
 #' parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
@@ -241,6 +245,8 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #'                 "division", "strat", "age", "year"}). Values of the coefficients must be
 #'                 included in argument \code{coeff} as a named list.
 #' @param coeff    Named list of coefficient values used in \code{formula}.
+#'
+#' @return Returns a function for use inside \code{\link{sim_distribution}}.
 #'
 #' @export
 #'

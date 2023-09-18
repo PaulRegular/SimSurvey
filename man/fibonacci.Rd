@@ -9,6 +9,9 @@ fibonacci(from, to)
 \arguments{
 \item{from, to}{Approximate start and end values of the sequence}
 }
+\value{
+Returns a Fibonacci sequence as a vector.
+}
 \description{
 Generate Fibonacci sequence
 }

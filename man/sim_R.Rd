@@ -35,6 +35,9 @@ rows equaling the number of ages and columns equaling the number of years for \c
 \item{N0}{Either specify "exp" or numeric vector of starting abundance excluding the first age.
 If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay.}
 }
+\value{
+Returns a function for use inside \code{\link{sim_abundance}}.
+}
 \description{
 These functions return a function to use inside \code{\link{sim_abundance}}.
 Given parameters, it generates N0, R and Z values.

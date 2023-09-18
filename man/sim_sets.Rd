@@ -33,6 +33,9 @@ division, strat, year}) of the survey grid to keep (e.g., \code{cell
 (Note: allowing resampling may create bias because
 depletion is imposed at the cell level)}
 }
+\value{
+Returns a data.table including details of each set location.
+}
 \description{
 Simulate survey sets
 }
