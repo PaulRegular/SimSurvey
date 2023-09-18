@@ -73,22 +73,25 @@
 #'
 #' \donttest{
 #'
-#' ## Make a grid
-#' my_grid <- make_grid(res = c(10,10))
+#' if (requireNamespace("INLA")) {
 #'
-#' ## Make a mesh based off it
+#'   ## Make a grid
+#'   my_grid <- make_grid(res = c(10,10))
 #'
-#' my_mesh <- make_mesh(my_grid)
-#' sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
-#'          sim_distribution(grid = my_grid,
-#'                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
-#'                                                          phi_year = 0.1,
-#'                                                          model = "spde",
-#'                                                          mesh = my_mesh),
-#'                           depth_par = sim_parabola(mu = 200,
-#'                                                    sigma = 50))
-#' plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+#'   ## Make a mesh based off it
 #'
+#'   my_mesh <- make_mesh(my_grid)
+#'   sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
+#'           sim_distribution(grid = my_grid,
+#'                            ays_covar = sim_ays_covar_spde(phi_age = 0.8,
+#'                                                           phi_year = 0.1,
+#'                                                           model = "spde",
+#'                                                           mesh = my_mesh),
+#'                            depth_par = sim_parabola(mu = 200,
+#'                                                     sigma = 50))
+#'   plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+#'
+#' }
 #'
 #' }
 #'
@@ -106,6 +109,12 @@ sim_ays_covar_spde <- function(sd = 2.8,
                                barrier.triangles) {
 
   function(x = NULL, ages = NULL, years = NULL, cells = NULL){
+
+    for (pkg in c("INLA")) {
+      if (!requireNamespace(pkg, quietly = TRUE)) {
+        stop(paste(pkg, "is needed for make_mesh to work. Please install it."), call. = FALSE)
+      }
+    }
 
     na <- length(ages)
     ny <- length(years)
@@ -222,8 +231,10 @@ sim_ays_covar_spde <- function(sd = 2.8,
 #'
 #' \donttest{
 #'
-#' basic_mesh <- make_mesh()
-#' plot(basic_mesh)
+#' if (requireNamespace("INLA")) {
+#'   basic_mesh <- make_mesh()
+#'   plot(basic_mesh)
+#' }
 #'
 #' }
 #'

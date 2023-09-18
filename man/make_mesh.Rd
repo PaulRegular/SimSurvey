@@ -36,8 +36,10 @@ are designed for the default grid. Just a basic interface between the grid and i
 
 \donttest{
 
-basic_mesh <- make_mesh()
-plot(basic_mesh)
+if (requireNamespace("INLA")) {
+  basic_mesh <- make_mesh()
+  plot(basic_mesh)
+}
 
 }
 

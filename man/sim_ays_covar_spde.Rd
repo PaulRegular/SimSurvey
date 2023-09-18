@@ -51,22 +51,25 @@ generate the error term.
 
 \donttest{
 
-## Make a grid
-my_grid <- make_grid(res = c(10,10))
+if (requireNamespace("INLA")) {
 
-## Make a mesh based off it
+  ## Make a grid
+  my_grid <- make_grid(res = c(10,10))
 
-my_mesh <- make_mesh(my_grid)
-sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
-         sim_distribution(grid = my_grid,
-                          ays_covar = sim_ays_covar_spde(phi_age = 0.8,
-                                                         phi_year = 0.1,
-                                                         model = "spde",
-                                                         mesh = my_mesh),
-                          depth_par = sim_parabola(mu = 200,
-                                                   sigma = 50))
-plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+  ## Make a mesh based off it
 
+  my_mesh <- make_mesh(my_grid)
+  sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
+          sim_distribution(grid = my_grid,
+                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
+                                                          phi_year = 0.1,
+                                                          model = "spde",
+                                                          mesh = my_mesh),
+                           depth_par = sim_parabola(mu = 200,
+                                                    sigma = 50))
+  plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
+
+}
 
 }
 
