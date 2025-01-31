@@ -262,10 +262,12 @@ dat <- as_tibble(survey$setdet) %>%
 
 ## Make mesh and fit geostatistical model to survey data
 mesh <- sdmTMB::make_mesh(dat, xy_cols = c("x", "y"), cutoff = 20)
-fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
+fit <- sdmTMB(N ~ 0 + as.factor(year),
+              offset = dat$offset,
+              mesh = mesh,
               data = dat,
-              family = nbinom2(link = "log"), spde = mesh,
-              include_spatial = TRUE, time = "year")
+              family = nbinom2(link = "log"), 
+              time = "year")
 
 ## Expand grid data for predictions
 grid_dat <- as_tibble(select(survey$grid_xy, x, y, depth)) %>% distinct()
@@ -328,10 +330,12 @@ dat <- as_tibble(survey$setdet) %>%
 
 ## Make mesh and fit geostatistical model to survey data
 mesh <- sdmTMB::make_mesh(dat, xy_cols = c("x", "y"), cutoff = 20)
-fit <- sdmTMB(N ~ 0 + as.factor(year) + offset,
+fit <- sdmTMB(N ~ 0 + as.factor(year),
+              offset = dat$offset,
+              mesh = mesh,
               data = dat,
-              family = nbinom2(link = "log"), spde = mesh,
-              include_spatial = TRUE, time = "year")
+              family = nbinom2(link = "log"),
+              time = "year")
 
 ## Expand grid data for predictions
 grid_dat <- as_tibble(select(survey$grid_xy, x, y, depth)) %>% distinct()
