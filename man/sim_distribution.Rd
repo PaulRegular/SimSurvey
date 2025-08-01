@@ -44,7 +44,7 @@ Start with smaller simulations to test your setup.
 }
 \examples{
 \donttest{
-sim <- sim_abundance(ages = 1:5, years = 1:5) \%>\%
+sim <- sim_abundance(ages = 1:5, years = 1:5) |>
   sim_distribution(
     grid = make_grid(res = c(20, 20)),
     ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.1),

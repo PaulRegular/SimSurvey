@@ -263,9 +263,9 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #' grid_xy$depth_effect <- nlf(grid_xy)
 #'
 #' library(plotly)
-#' grid_xy %>%
-#'   filter(year == 1) %>%
-#'   plot_ly(x = ~depth, y = ~depth_effect, split = ~age) %>%
+#' grid_xy |>
+#'   filter(year == 1) |>
+#'   plot_ly(x = ~depth, y = ~depth_effect, split = ~age) |>
 #'   add_lines()
 #'
 #' @importFrom lifecycle badge
@@ -320,7 +320,7 @@ sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
 #'
 #' @examples
 #' \donttest{
-#' sim <- sim_abundance(ages = 1:5, years = 1:5) %>%
+#' sim <- sim_abundance(ages = 1:5, years = 1:5) |>
 #'   sim_distribution(
 #'     grid = make_grid(res = c(20, 20)),
 #'     ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.1),

@@ -72,8 +72,8 @@ and minimize RAM usage.
 \examples{
 \donttest{
 # Run 25 total simulations (5 per loop × 5 loops) over the same population
-sim <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
-  sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
+sim <- sim_abundance(ages = 1:20, years = 1:5) |>
+  sim_distribution(grid = make_grid(res = c(10, 10))) |>
   sim_survey_parallel(
     n_sims = 5, n_loops = 5, cores = 1,
     q = sim_logistic(k = 2, x0 = 3),

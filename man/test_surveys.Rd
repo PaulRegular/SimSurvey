@@ -106,7 +106,7 @@ were not part of the original \code{test_surveys()} call, as this could change s
 }
 \examples{
 \donttest{
-pop <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
+pop <- sim_abundance(ages = 1:20, years = 1:5) |>
   sim_distribution(grid = make_grid(res = c(10, 10)))
 
 surveys <- expand_surveys(
@@ -122,12 +122,12 @@ tests <- test_surveys(
 )
 
 library(plotly)
-tests$total_strat_error \%>\%
-  filter(survey == 8, sim \%in\% 1:50) \%>\%
-  group_by(sim) \%>\%
-  plot_ly(x = ~year) \%>\%
-  add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") \%>\%
-  add_lines(y = ~I, color = I("black"), name = "true") \%>\%
+tests$total_strat_error |>
+  filter(survey == 8, sim \%in\% 1:50) |>
+  group_by(sim) |>
+  plot_ly(x = ~year) |>
+  add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") |>
+  add_lines(y = ~I, color = I("black"), name = "true") |>
   layout(xaxis = list(title = "Year"),
          yaxis = list(title = "Abundance index"))
 

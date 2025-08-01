@@ -55,7 +55,7 @@ if (requireNamespace("INLA")) {
   my_mesh <- make_mesh(my_grid)
 
   # Simulate and plot
-  sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
+  sim <- sim_abundance(ages = 1:10, years = 1:10) |>
     sim_distribution(
       grid = my_grid,
       ays_covar = sim_ays_covar_spde(

@@ -71,7 +71,7 @@ round_sim <- function(sim) {
 #'
 #' @examples
 #' \donttest{
-#' sim <- sim_abundance(ages = 1:5, years = 1:5) %>%
+#' sim <- sim_abundance(ages = 1:5, years = 1:5) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20)))
 #'
 #' # Define different sets for early and later years
@@ -172,8 +172,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 #' @examples
 #' \donttest{
-#' sim <- sim_abundance(ages = 1:5, years = 1:5) %>%
-#'   sim_distribution(grid = make_grid(res = c(20, 20))) %>%
+#' sim <- sim_abundance(ages = 1:5, years = 1:5) |>
+#'   sim_distribution(grid = make_grid(res = c(20, 20))) |>
 #'   sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
 #'
 #' plot_survey(sim, which_year = 3, which_sim = 1)
@@ -326,8 +326,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #' @examples
 #' \donttest{
 #' # Run 25 total simulations (5 per loop × 5 loops) over the same population
-#' sim <- sim_abundance(ages = 1:20, years = 1:5) %>%
-#'   sim_distribution(grid = make_grid(res = c(10, 10))) %>%
+#' sim <- sim_abundance(ages = 1:20, years = 1:5) |>
+#'   sim_distribution(grid = make_grid(res = c(10, 10))) |>
 #'   sim_survey_parallel(
 #'     n_sims = 5, n_loops = 5, cores = 1,
 #'     q = sim_logistic(k = 2, x0 = 3),

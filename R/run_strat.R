@@ -208,10 +208,10 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5,
 #'                      R = sim_R(log_mean = log(1e+7)),
-#'                      growth = sim_vonB(length_group = 1)) %>%
+#'                      growth = sim_vonB(length_group = 1)) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20)),
-#'                    ays_covar = sim_ays_covar(sd = 1)) %>%
-#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
+#'                    ays_covar = sim_ays_covar(sd = 1)) |>
+#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) |>
 #'   run_strat()
 #' }
 #'
@@ -281,11 +281,11 @@ run_strat <- function(sim,
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5,
 #'                      R = sim_R(log_mean = log(1e+7)),
-#'                      growth = sim_vonB(length_group = 1)) %>%
+#'                      growth = sim_vonB(length_group = 1)) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20)),
-#'                    ays_covar = sim_ays_covar(sd = 1)) %>%
-#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
-#'   run_strat() %>%
+#'                    ays_covar = sim_ays_covar(sd = 1)) |>
+#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) |>
+#'   run_strat() |>
 #'   strat_error()
 #' }
 #'

@@ -16,7 +16,7 @@ Description: Simulate age-structured populations that vary in space and time and
     (See Regular et al. (2020) <doi:10.1371/journal.pone.0232822> for more
     details).
 Depends:
-    R (>= 3.3.0)
+    R (>= 4.1.0)
 License: GPL-3
 Additional_repositories: 
     https://inla.r-inla-download.org/R/stable/
@@ -30,7 +30,6 @@ Imports:
     sf,
     stars,
     data.table,
-    magrittr,
     progress,
     doParallel,
     parallel,

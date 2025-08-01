@@ -34,4 +34,5 @@
 # SimSurvey 0.1.7
 
 * Minor improvements to documentation
+* Dropped dependence on **magrittr** pipe (`%>%`); now using native R pipe (`|>`)
 

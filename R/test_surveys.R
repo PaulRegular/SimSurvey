@@ -72,7 +72,7 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' @examples
 #' \donttest{
-#' pop <- sim_abundance(ages = 1:20, years = 1:5) %>%
+#' pop <- sim_abundance(ages = 1:20, years = 1:5) |>
 #'   sim_distribution(grid = make_grid(res = c(10, 10)))
 #'
 #' surveys <- expand_surveys(
@@ -88,12 +88,12 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' )
 #'
 #' library(plotly)
-#' tests$total_strat_error %>%
-#'   filter(survey == 8, sim %in% 1:50) %>%
-#'   group_by(sim) %>%
-#'   plot_ly(x = ~year) %>%
-#'   add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") %>%
-#'   add_lines(y = ~I, color = I("black"), name = "true") %>%
+#' tests$total_strat_error |>
+#'   filter(survey == 8, sim %in% 1:50) |>
+#'   group_by(sim) |>
+#'   plot_ly(x = ~year) |>
+#'   add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") |>
+#'   add_lines(y = ~I, color = I("black"), name = "true") |>
 #'   layout(xaxis = list(title = "Year"),
 #'          yaxis = list(title = "Abundance index"))
 #'
@@ -193,9 +193,9 @@ resume_test <- function(export_dir = NULL, ...) {
                                                 set_den = surveys$set_den[i],
                                                 lengths_cap = surveys$lengths_cap[i],
                                                 ages_cap = surveys$ages_cap[i],
-                                                ...) %>%
+                                                ...) |>
                                 run_strat(length_group = length_group,
-                                          alk_scale = alk_scale) %>%
+                                          alk_scale = alk_scale) |>
                                 strat_error()
                               samp_totals <- res$samp_totals
                               samp_totals$sim <- samp_totals$sim + (j * n_sims - n_sims)
@@ -279,7 +279,7 @@ resume_test <- function(export_dir = NULL, ...) {
                     lengths_cap = surveys$lengths_cap[i],
                     ages_cap = surveys$ages_cap[i],
                     light = FALSE,
-                    ...) %>% run_strat()
+                    ...) |> run_strat()
   sim$N0 <- res$N[, 1] # attach rounded results
   sim$R <- res$N[1, ]
   sim$N <- res$N

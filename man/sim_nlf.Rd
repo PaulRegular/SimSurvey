@@ -49,9 +49,9 @@ nlf <- sim_nlf(
 grid_xy$depth_effect <- nlf(grid_xy)
 
 library(plotly)
-grid_xy \%>\%
-  filter(year == 1) \%>\%
-  plot_ly(x = ~depth, y = ~depth_effect, split = ~age) \%>\%
+grid_xy |>
+  filter(year == 1) |>
+  plot_ly(x = ~depth, y = ~depth_effect, split = ~age) |>
   add_lines()
 
 }

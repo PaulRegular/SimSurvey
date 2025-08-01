@@ -41,7 +41,7 @@ Often used prior to running \code{\link[=sim_survey]{sim_survey()}}.
 }
 \examples{
 \donttest{
-sim <- sim_abundance(ages = 1:5, years = 1:5) \%>\%
+sim <- sim_abundance(ages = 1:5, years = 1:5) |>
   sim_distribution(grid = make_grid(res = c(20, 20)))
 
 # Define different sets for early and later years
