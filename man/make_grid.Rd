@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_grid.R
 \name{make_grid}
 \alias{make_grid}
-\title{Make a depth stratified survey grid}
+\title{Make a depth-stratified survey grid}
 \usage{
 make_grid(
   x_range = c(-140, 140),
@@ -18,36 +18,35 @@ make_grid(
 )
 }
 \arguments{
-\item{x_range}{Range (min x, max x) in x dimension in km}
+\item{x_range}{Range (min x, max x) in the x dimension (km).}
 
-\item{y_range}{Range (min y, max y) in y dimension in km}
+\item{y_range}{Range (min y, max y) in the y dimension (km).}
 
-\item{res}{Resolution, in km, of the grid cells}
+\item{res}{Resolution of the grid cells (km).}
 
-\item{shelf_depth}{Approximate depth of the shelf in m}
+\item{shelf_depth}{Approximate depth of the shelf (m).}
 
-\item{shelf_width}{Approximate width of the shelf in km}
+\item{shelf_width}{Approximate width of the shelf (km).}
 
-\item{depth_range}{Range (min depth, max depth) in depth in m}
+\item{depth_range}{Range (min depth, max depth) of the depth values (m).}
 
-\item{n_div}{Number of divisions to include}
+\item{n_div}{Number of divisions to include.}
 
-\item{strat_breaks}{Define strata given these depth breaks}
+\item{strat_breaks}{Depth breaks used to define strata.}
 
-\item{strat_splits}{Number of times to horizontally split strat (i.e. easy way to increase the number of strata)}
+\item{strat_splits}{Number of times to horizontally split strata (i.e., a way to increase the number of strata).}
 
-\item{method}{Use a "spline", "loess" or "bezier" to generate a smooth gradient or simply use "linear" interpolation?}
+\item{method}{Choose \code{"spline"}, \code{"loess"}, or \code{"bezier"} to generate a smooth gradient, or use \code{"linear"} for linear interpolation.}
 }
 \value{
-Returns a stars object with 2 dimensions (x and y) and 4 attributes (depth, cell, division, strat).
+A \code{stars} object with 2 dimensions (\code{x} and \code{y}) and 4 attributes (\code{depth}, \code{cell}, \code{division}, \code{strat}).
 }
 \description{
-This function sets up a depth stratified survey grid. A simple gradient in depth
-is simulated using \code{\link[stats:splinefun]{stats::spline}} (default) with a shallow portion, shelf and
-deep portion. Adding covariance to the depth simulation is an option.
+This function sets up a depth-stratified survey grid. A simple gradient in depth
+is simulated using \code{\link[stats:splinefun]{stats::spline()}} (default), with a shallow portion, shelf, and
+deep portion. Optionally, covariance can be added to the depth simulation.
 }
 \examples{
-
 r <- make_grid(res = c(10, 10))
 plot(r)
 

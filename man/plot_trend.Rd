@@ -57,50 +57,48 @@ plot_error_surface(sim, plot_by = "rule")
 plot_survey_rank(sim, which_strat = "age")
 }
 \arguments{
-\item{sim}{Object returned by \code{\link{sim_abundance}},
-\code{\link{sim_distribution}}, etc.}
+\item{sim}{Object returned by \code{\link[=sim_abundance]{sim_abundance()}}, \code{\link[=sim_distribution]{sim_distribution()}}, etc.}
 
-\item{sum_ages}{Sum across these ages}
+\item{sum_ages}{Vector of ages to sum across.}
 
-\item{col}{Plot color}
+\item{col}{Plot color.}
 
-\item{...}{Additional arguments to pass to \code{\link[plotly]{plot_ly}}.}
+\item{...}{Additional arguments passed to \code{\link[plotly:plot_ly]{plotly::plot_ly()}}.}
 
-\item{mat}{Name of matrix in \code{sim} list to plot.}
+\item{mat}{Name of the matrix in the \code{sim} list to plot.}
 
-\item{xlab, ylab, zlab}{Axes labels.}
+\item{xlab, }{ylab, zlab Axis labels.}
 
-\item{grid}{Grid produced by \code{\link{make_grid}}.}
+\item{grid}{Grid produced by \code{\link[=make_grid]{make_grid()}}.}
 
-\item{ages}{Subset data to one or more ages.}
+\item{ages}{Subset the data to one or more ages.}
 
-\item{years}{Subset data to one or more years.}
+\item{years}{Subset the data to one or more years.}
 
-\item{type}{Plot type: "contour" or "heatmap".}
+\item{type}{Plot type: \code{"contour"} or \code{"heatmap"}.}
 
-\item{scale}{Plot response on "natural" or "log" scale?}
+\item{scale}{Plot response on \code{"natural"} or \code{"log"} scale.}
 
-\item{which_year}{Subset to specific year}
+\item{which_year}{Subset to a specific year.}
 
-\item{which_sim}{Subset to specific sim}
+\item{which_sim}{Subset to a specific simulation replicate.}
 
-\item{surveys}{Subset data to one or more surveys.}
+\item{surveys}{Subset the data to one or more surveys.}
 
-\item{quants}{Quantile intervals to display on fan plot}
+\item{quants}{Quantile intervals to display on the fan plot.}
 
-\item{lengths}{Subset data to one or more length groups.}
+\item{lengths}{Subset the data to one or more length groups.}
 
-\item{select_by}{Select plot by "age", "length" or "year"?}
+\item{select_by}{Select plot by \code{"age"}, \code{"length"}, or \code{"year"}.}
 
-\item{plot_by}{Plot error surface by "rule" or "samples"?}
+\item{plot_by}{Plot error surface by \code{"rule"} or \code{"samples"}.}
 
-\item{which_strat}{Which strat values to focus on? (total, length, or age)}
+\item{which_strat}{Stratification focus: \code{"total"}, \code{"length"}, or \code{"age"}.}
 }
 \value{
-Returns a plot of class \code{plotly}.
+A plot of class \code{plotly}.
 }
 \description{
-These functions are simple plotting helpers to get some quick
-visuals of values produced by \code{\link{sim_abundance}},
-\code{\link{sim_distribution}}, etc.
+These are simple plotting helpers to quickly visualize outputs from
+\code{\link[=sim_abundance]{sim_abundance()}}, \code{\link[=sim_distribution]{sim_distribution()}}, and related simulation functions.
 }

@@ -16,27 +16,26 @@ sim_ays_covar(
 )
 }
 \arguments{
-\item{sd}{Variance (can be age specific).}
+\item{sd}{Variance (can be age-specific).}
 
-\item{range}{Decorrelation range}
+\item{range}{Decorrelation range.}
 
-\item{lambda}{Controls the degree of smoothness of Matern covariance process}
+\item{lambda}{Controls the degree of smoothness in the Matérn covariance process.}
 
-\item{model}{String indicating either "exponential" or "matern" as the correlation function}
+\item{model}{String indicating the correlation function to use: either \code{"exponential"} or \code{"matern"}.}
 
-\item{phi_age}{Defines autocorrelation through ages. Can be one value or a vector of the same
-length as ages}
+\item{phi_age}{Autocorrelation through ages. Can be a single value or a vector the same length as \code{ages}.}
 
-\item{phi_year}{Defines autocorrelation through years. Can be one value or a vector of the same
-length as years}
+\item{phi_year}{Autocorrelation through years. Can be a single value or a vector the same length as \code{years}.}
 
-\item{group_ages}{Make space-age-year noise equal across these ages}
+\item{group_ages}{A vector of ages to group together with shared space-age-year noise.}
 
-\item{group_years}{Make space-age-year noise equal across these years}
+\item{group_years}{A vector of years to group together with shared space-age-year noise.}
 }
 \value{
-Returns a function for use inside \code{\link{sim_distribution}}.
+A function to be passed to \code{\link[=sim_distribution]{sim_distribution()}} as the \code{ays_covar} argument.
 }
 \description{
-These functions return a function to use inside \code{\link{sim_distribution}}.
+These functions return a function to be used inside \code{\link[=sim_distribution]{sim_distribution()}} to simulate
+spatially and temporally autocorrelated error.
 }

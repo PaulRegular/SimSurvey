@@ -10,26 +10,25 @@ sim_nlf(
 )
 }
 \arguments{
-\item{formula}{Formula describing parametric relationships between data and coefficients.
-The data used in \code{\link{sim_distribution}} are grid coordinates expanded
-across ages and years (i.e., includes columns \code{"x", "y", "depth", "cell",
-                "division", "strat", "age", "year"}). Values of the coefficients must be
-included in argument \code{coeff} as a named list.}
+\item{formula}{A formula describing parametric relationships between the data and coefficients.
+The data used in \code{\link[=sim_distribution]{sim_distribution()}} consist of grid coordinates expanded across ages and years,
+and include columns such as \code{"x"}, \code{"y"}, \code{"depth"}, \code{"cell"}, \code{"division"}, \code{"strat"}, \code{"age"}, and \code{"year"}.
+Coefficient values referenced in the formula must be provided in the \code{coeff} argument as a named list.}
 
-\item{coeff}{Named list of coefficient values used in \code{formula}.}
+\item{coeff}{A named list of coefficient values used in \code{formula}.}
 }
 \value{
-Returns a function for use inside \code{\link{sim_distribution}}.
+A function that can be passed to \code{\link[=sim_distribution]{sim_distribution()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-
-Closure to be used in \code{\link{sim_distribution}}.
+}
+\details{
+Closure to be used in \code{\link[=sim_distribution]{sim_distribution()}}.
 }
 \examples{
-
 ## Make a grid and replicate data for 5 ages and 5 years
-## (This is similar to what happens inside sim_distribution)
+## (This mimics what happens inside sim_distribution)
 grid <- make_grid(shelf_width = 10)
 grid_xy <- data.frame(grid)
 i <- rep(seq(nrow(grid_xy)), times = 5)
@@ -41,11 +40,12 @@ y <- rep(1:5, each = nrow(grid_xy))
 grid_xy <- grid_xy[i, ]
 grid_xy$year <- y
 
-## Now using sim_nlf, produce a function to apply to the expanded grid_xy data
-## For this firs example, the depth effect is parabolic and the vertex is deeper by age
-## (i.e., to impose ontogenetic deepening)
-nlf <- sim_nlf(formula = ~ alpha - ((depth - mu + beta * age) ^ 2) / (2 * sigma ^ 2),
-               coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70))
+## Define a non-linear function to apply to the expanded grid
+## This example imposes ontogenetic deepening via a parabolic depth effect
+nlf <- sim_nlf(
+  formula = ~ alpha - ((depth - mu + beta * age)^2) / (2 * sigma^2),
+  coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70)
+)
 grid_xy$depth_effect <- nlf(grid_xy)
 
 library(plotly)

@@ -28,20 +28,19 @@
 
 #' Simulate age-year-space covariance
 #'
-#' @description These functions return a function to use inside \code{\link{sim_distribution}}.
+#' These functions return a function to be used inside [`sim_distribution()`] to simulate
+#' spatially and temporally autocorrelated error.
 #'
-#' @param range       Decorrelation range
-#' @param lambda      Controls the degree of smoothness of Matern covariance process
-#' @param sd          Variance (can be age specific).
-#' @param phi_age     Defines autocorrelation through ages. Can be one value or a vector of the same
-#'                    length as ages
-#' @param phi_year    Defines autocorrelation through years. Can be one value or a vector of the same
-#'                    length as years
-#' @param group_ages  Make space-age-year noise equal across these ages
-#' @param group_years Make space-age-year noise equal across these years
-#' @param model       String indicating either "exponential" or "matern" as the correlation function
+#' @param range Decorrelation range.
+#' @param lambda Controls the degree of smoothness in the Matérn covariance process.
+#' @param sd Variance (can be age-specific).
+#' @param phi_age Autocorrelation through ages. Can be a single value or a vector the same length as `ages`.
+#' @param phi_year Autocorrelation through years. Can be a single value or a vector the same length as `years`.
+#' @param group_ages A vector of ages to group together with shared space-age-year noise.
+#' @param group_years A vector of years to group together with shared space-age-year noise.
+#' @param model String indicating the correlation function to use: either `"exponential"` or `"matern"`.
 #'
-#' @return Returns a function for use inside \code{\link{sim_distribution}}.
+#' @return A function to be passed to [`sim_distribution()`] as the `ays_covar` argument.
 #'
 #' @export
 
@@ -158,23 +157,22 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 
 #' Define a parabolic relationship
 #'
-#' @description  Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-gaussian function described here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/.
+#' Closure to be used in [`sim_distribution()`]. The form is based on the bi-Gaussian
+#' function described [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/).
 #'
-#' @param alpha,mu,sigma  Parameters that control the shape of the parabola. Can be one value or
-#'                        a vector of equal length to the number of ages in the simulation
-#'                        (e.g. age-specific depth associations can be specified).
-#' @param sigma_right     Optional parameter to impose asymmetry by supplying a sigma parameter for the right side.
-#'                        If used, `sigma` will be used to define the width of the left side. Ignored if `NULL`.
-#' @param log_space       Should shape of the parabola be defined in log space? If `TRUE`, logged parameters are
-#'                        assumed to be supplied and x values used in the parabola equation are log transformed.
-#'                        This allows a more lognormal curve to be defined and, hence, allows a heavier tail and it
-#'                        forces very low values near zero.
-#' @param plot            Produce a simple plot of the simulated values?
+#' @param alpha, mu, sigma Parameters that control the shape of the parabola. Can be a single value or
+#' a vector of the same length as the number of ages in the simulation (e.g., allowing age-specific
+#' depth associations).
+#' @param sigma_right Optional parameter to impose asymmetry by specifying a different `sigma` for the right side.
+#' If used, `sigma` defines the width of the left side. Ignored if `NULL`.
+#' @param log_space Logical. Should the shape of the parabola be defined in log space?
+#' If `TRUE`, parameters are assumed to be logged, and input `x` values are log-transformed.
+#' This produces a lognormal-like curve with a heavier right tail and forces low values near zero.
+#' @param plot Logical. Should a simple plot of the simulated values be produced?
 #'
-#' @return Returns a function for use inside \code{\link{sim_distribution}}.
+#' @return A function that can be passed to [`sim_distribution()`].
 #'
 #' @examples
-#'
 #' parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
 #' parabola_fun(data.frame(depth = 0:100))
 #'
@@ -228,32 +226,23 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 }
 
 
-
-
-
-
 #' Define a non-linear relationship
 #'
-#' @description
 #' `r lifecycle::badge("experimental")`
 #'
-#' Closure to be used in \code{\link{sim_distribution}}.
+#' Closure to be used in [`sim_distribution()`].
 #'
-#' @param formula  Formula describing parametric relationships between data and coefficients.
-#'                 The data used in \code{\link{sim_distribution}} are grid coordinates expanded
-#'                 across ages and years (i.e., includes columns \code{"x", "y", "depth", "cell",
-#'                 "division", "strat", "age", "year"}). Values of the coefficients must be
-#'                 included in argument \code{coeff} as a named list.
-#' @param coeff    Named list of coefficient values used in \code{formula}.
+#' @param formula A formula describing parametric relationships between the data and coefficients.
+#' The data used in [`sim_distribution()`] consist of grid coordinates expanded across ages and years,
+#' and include columns such as `"x"`, `"y"`, `"depth"`, `"cell"`, `"division"`, `"strat"`, `"age"`, and `"year"`.
+#' Coefficient values referenced in the formula must be provided in the `coeff` argument as a named list.
+#' @param coeff A named list of coefficient values used in `formula`.
 #'
-#' @return Returns a function for use inside \code{\link{sim_distribution}}.
-#'
-#' @export
+#' @return A function that can be passed to [`sim_distribution()`].
 #'
 #' @examples
-#'
 #' ## Make a grid and replicate data for 5 ages and 5 years
-#' ## (This is similar to what happens inside sim_distribution)
+#' ## (This mimics what happens inside sim_distribution)
 #' grid <- make_grid(shelf_width = 10)
 #' grid_xy <- data.frame(grid)
 #' i <- rep(seq(nrow(grid_xy)), times = 5)
@@ -265,11 +254,12 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #' grid_xy <- grid_xy[i, ]
 #' grid_xy$year <- y
 #'
-#' ## Now using sim_nlf, produce a function to apply to the expanded grid_xy data
-#' ## For this firs example, the depth effect is parabolic and the vertex is deeper by age
-#' ## (i.e., to impose ontogenetic deepening)
-#' nlf <- sim_nlf(formula = ~ alpha - ((depth - mu + beta * age) ^ 2) / (2 * sigma ^ 2),
-#'                coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70))
+#' ## Define a non-linear function to apply to the expanded grid
+#' ## This example imposes ontogenetic deepening via a parabolic depth effect
+#' nlf <- sim_nlf(
+#'   formula = ~ alpha - ((depth - mu + beta * age)^2) / (2 * sigma^2),
+#'   coeff = list(alpha = 0, mu = 200, sigma = 70, beta = -70)
+#' )
 #' grid_xy$depth_effect <- nlf(grid_xy)
 #'
 #' library(plotly)
@@ -279,7 +269,8 @@ sim_parabola <- function(alpha = 0, mu = 200, sigma = 70, sigma_right = NULL,
 #'   add_lines()
 #'
 #' @importFrom lifecycle badge
-#'
+#' @export
+
 sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
                     coeff = list(alpha = 0, mu = 200, sigma = 70)) {
 
@@ -303,49 +294,45 @@ sim_nlf <- function(formula = ~ alpha - ((depth - mu) ^ 2) / (2 * sigma ^ 2),
 
 #' Simulate spatial and temporal distribution
 #'
-#' @description Provided an abundance at age matrix and a survey grid to populate, this function
-#' applies correlated space, age and year error to simulate the distribution
-#' of the population. The ability to simulate distributions by length is yet to be implemented.
+#' Provided with an abundance-at-age matrix and a survey grid, this function applies
+#' correlated space–age–year error to simulate the spatial distribution of a population.
+#' Simulation by length is not yet implemented.
 #'
-#' @param sim         A list with ages, years and an abundance at age matrix like
-#'                    produced by \code{\link{sim_abundance}}.
-#' @param grid        A stars object defining the survey grid, like \code{\link{survey_grid}}
-#'                    or one produced by \code{\link{make_grid}}
-#' @param ays_covar   Closure for simulating age-year-space covariance,
-#'                    like \code{\link{sim_ays_covar}}
-#' @param depth_par   Closure for defining relationship between abundance and depth,
-#'                    like \code{\link{sim_parabola}}
+#' @param sim A list with `ages`, `years`, and an abundance-at-age matrix,
+#' like one produced by [`sim_abundance()`].
+#' @param grid A `stars` object defining the survey grid, such as [`survey_grid`] or one created with [`make_grid()`].
+#' @param ays_covar A closure that simulates age-year-space covariance, such as [`sim_ays_covar()`].
+#' @param depth_par A closure that defines the relationship between abundance and depth,
+#' such as [`sim_parabola()`].
 #'
-#' @details This function simulates the probability of simulated fish inhabiting
-#' a cell as a function of a parabolic relationship with depth and space, age,
-#' and year autocorrelated errors. WARNING: it make take a long time to simulate
-#' abundance in a large grid across many ages and years - start small first.
+#' @details
+#' This function simulates the probability of fish inhabiting a cell based on a parabolic
+#' relationship with depth and spatially/temporally autocorrelated noise across age and year.
 #'
-#' @return
-#' Appends three objects to the \code{sim} list:
-#' \itemize{
-#'   \item{\code{grid}} - A stars object with the grid details
-#'   \item{\code{grid_xy}} - Grid details as a data.table in xyz format
-#'   \item{\code{sp_N}} - A data.table with abundance split by age, year and cell
-#' }
+#' **Warning:** Simulating a large grid across many ages and years may be computationally intensive.
+#' Start with smaller simulations to test your setup.
+#'
+#' @return Appends the following objects to the `sim` list:
+#'
+#' - `grid`: A `stars` object with grid details
+#' - `grid_xy`: A `data.table` representation of the grid in XYZ format
+#' - `sp_N`: A `data.table` of abundance split by age, year, and cell
 #'
 #' @examples
-#'
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5) %>%
-#'            sim_distribution(grid = make_grid(res = c(20, 20)),
-#'                             ays_covar = sim_ays_covar(phi_age = 0.8,
-#'                                                       phi_year = 0.1),
-#'                             depth_par = sim_parabola(mu = 200,
-#'                                                      sigma = 50))
+#'   sim_distribution(
+#'     grid = make_grid(res = c(20, 20)),
+#'     ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.1),
+#'     depth_par = sim_parabola(mu = 200, sigma = 50)
+#'   )
+#'
 #' head(sim$sp_N)
 #' head(sim$grid_xy)
 #' }
 #'
 #' @export
-#'
 #' @rawNamespace import(data.table, except = shift)
-#'
 
 sim_distribution <- function(sim,
                              grid = make_grid(),

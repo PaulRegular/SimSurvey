@@ -3,24 +3,22 @@
 \docType{data}
 \name{survey_grid}
 \alias{survey_grid}
-\title{Sample survey simulation grid.}
+\title{Sample survey simulation grid}
 \format{
-A stars object with 4 attributes:
-\describe{
-\item{cell}{Survey cell identifier}
-\item{division}{NAFO division}
-\item{strat}{Survey strata number}
-\item{depth}{Mean depth of the waters under each cell, units = m}
+A \code{stars} object with 4 attributes:
+\itemize{
+\item \strong{cell}: Survey cell identifier
+\item \strong{division}: NAFO division
+\item \strong{strat}: Survey strata number
+\item \strong{depth}: Mean depth of the waters under each cell (in meters)
 }
 
-For further details on how this file was created, see the data-raw folder for
-this package.
+For more details on how this file was created, see the \code{data-raw} folder in this package.
 }
 \usage{
 survey_grid
 }
 \description{
-A exemplar for the structure of a survey grid object to supply to the functions
-in this package.
+An exemplar of the structure of a survey grid object used by functions in this package.
 }
 \keyword{datasets}

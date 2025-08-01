@@ -1,48 +1,60 @@
 
 
-#' Simulate starting abundance, random recruitment and total mortality
+#' Simulate starting abundance, random recruitment, and total mortality
 #'
-#' @description These functions return a function to use inside \code{\link{sim_abundance}}.
-#' Given parameters, it generates N0, R and Z values.
+#' These functions return closures for use inside [`sim_abundance()`]. Given user-defined
+#' parameters, they simulate recruitment (`R`), total mortality (`Z`), or initial abundance (`N0`)
+#' as a function of age and year.
 #'
-#' @param log_mean One mean value or a vector of means, in log scale, of length equal to years for \code{sim_R} or a matrix of means with
-#' rows equaling the number of ages and columns equaling the number of years for \code{sim_Z}.
-#' @param random_walk Simulate recruitment as a random walk?
-#' @param log_sd Standard deviation of the variable in the log scale.
-#' @param phi_age Autoregressive parameter for the age dimension.
-#' @param phi_year Autoregressive parameter for the year dimension.
-#' @param N0 Either specify "exp" or numeric vector of starting abundance excluding the first age.
-#' If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay.
-#' @param plot produce a simple plot of the simulated values?
+#' @param log_mean For `sim_R`, a single mean or a vector of means (log scale) with length equal to the number of years.
+#' For `sim_Z`, a matrix of log-scale means with rows equal to the number of ages and columns equal to the number of years.
+#' @param random_walk Logical. Should recruitment be simulated as a random walk?
+#' @param log_sd Standard deviation on the log scale.
+#' @param phi_age Autoregressive parameter across the age dimension.
+#' @param phi_year Autoregressive parameter across the year dimension.
+#' @param N0 For `sim_N0`, either `"exp"` (for exponential decay) or a numeric vector of starting abundances (excluding the first age).
+#' @param plot Logical. Should a simple plot of the simulated values be displayed?
 #'
-#' @details sim_R generates uncorrelated recruitment values or random walk values from a log normal distribution.
-#' sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
-#' in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
+#' @details
+#' - `sim_R()` generates uncorrelated or random-walk recruitment values from a log-normal distribution.
+#' - `sim_Z()` behaves like `sim_R()` when both `phi_age` and `phi_year` are zero. When either is non-zero,
+#'   it introduces correlation in the age and/or year dimension, based on the covariance structure
+#'   described in Cadigan (2015).
+#' - `sim_N0()` provides starting abundance either via exponential decay or a user-defined vector.
 #'
-#' @return Returns a function for use inside \code{\link{sim_abundance}}.
+#' @return A function to be passed to [`sim_abundance()`].
 #'
-#' @references Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
-#' Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
-#' Fisheries and Aquatic Sciences 73 (2): 296-308.
+#' @references
+#' Cadigan, Noel G. (2015). A State-Space Stock Assessment Model for Northern Cod, Including
+#' Under-Reported Catches and Variable Natural Mortality Rates. *Canadian Journal of Fisheries
+#' and Aquatic Sciences*, 73(2): 296–308.
 #'
 #' @examples
-#'
 #' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 #' R_fun(years = 1:100)
+#'
 #' sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
-#' sim_abundance(years = 1:20,
-#'               R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
+#'
+#' sim_abundance(
+#'   years = 1:20,
+#'   R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE)
+#' )
 #'
 #' Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 #' Z_fun(years = 1:100, ages = 1:20)
+#'
 #' sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
+#'
 #' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 #' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 #' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-#' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
-#' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+#'
+#' sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
+#'
+#' sim_abundance(
+#'   ages = 1:10, years = 1:20,
+#'   Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE)
+#' )
 #'
 #' N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 #' N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
@@ -133,17 +145,16 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 
 #' Convert length to length group
 #'
-#' @description Helper function for converting lengths to length groups
-#' (Note: this isn't a general function; the output midpoints defining the
-#' groups aligns with DFO specific method/labeling)
+#' Helper function for converting lengths to length groups.
+#' **Note:** This is not a general-purpose function — the output midpoints defining the groups
+#' are aligned with DFO-specific methods and labeling conventions.
 #'
-#' @param length       Interval from \code{\link[base]{findInterval}}
-#' @param group        Length group used to cut the length data
+#' @param length Numeric vector of lengths to be grouped. Used with [`base::findInterval()`].
+#' @param group Numeric value specifying the width of the length group (i.e., bin size).
 #'
-#' @return Returns a vector indicating the mid-point of the length group.
+#' @return A numeric vector indicating the midpoint of the assigned length group.
 #'
 #' @export
-#'
 
 group_lengths <- function(length, group) {
   breaks <- seq(0, max(length, na.rm = TRUE) * 2, group)
@@ -157,31 +168,29 @@ group_lengths <- function(length, group) {
 
 #' Closure for simulating length given age using von Bertalanffy notation
 #'
-#' This function outputs a function which holds the parameter values supplied and
-#' the function either simulates lengths given ages or generates a length age key
-#' give a sequence of ages.
+#' This function returns a closure that holds the supplied parameter values and can be used to
+#' either simulate lengths given ages or generate a length-at-age key from a sequence of ages.
 #'
-#' @param Linf          Mean asymptotic length
-#' @param L0            Length at birth
-#' @param K             Growth rate parameter
-#' @param log_sd        Standard deviation of the relationship in log scale
-#' @param length_group  Length group for length age key. Note that labels on the matrix produced are
-#'                      midpoints using the DFO conventions; see \code{\link{group_lengths}}. Also
-#'                      note that this length group will dictate the length group used in the
-#'                      stratified analysis run by \code{\link{run_strat}}.
-#' @param digits        Integer indicating the number of decimal places to round the values to
-#' @param plot          Produce a simple plot of the simulated values?
+#' @param Linf Mean asymptotic length.
+#' @param L0 Length at birth.
+#' @param K Growth rate parameter.
+#' @param log_sd Standard deviation of the length-at-age relationship on the log scale.
+#' @param length_group Length group width for constructing the length-at-age key.
+#' Labels on the resulting matrix use midpoints according to DFO conventions; see [`group_lengths()`].
+#' This value will also determine the length groupings used in the stratified analysis via [`run_strat()`].
+#' @param digits Number of decimal places to round simulated lengths to.
+#' @param plot Logical. Should a simple plot of the simulated values be produced?
 #'
-#' @return Returns a function for use inside \code{\link{sim_abundance}}.
+#' @return A function that can be passed to [`sim_abundance()`].
 #'
 #' @examples
 #' growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
 #' growth_fun(age = rep(1:15, each = 100))
 #' growth_fun(age = 1:15, length_age_key = TRUE)
+#'
 #' sim_abundance(growth = sim_vonB(plot = TRUE))
 #'
 #' @export
-#'
 
 sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
                      length_group = 3, digits = 0, plot = FALSE) {
@@ -223,16 +232,17 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
 
 #' Convert abundance-at-age matrix to abundance-at-length
 #'
-#' Function for converting abundance-at-age matrix to abundance-at-length given
-#' a length-age-key. Expects matrices to be named.
+#' Converts an abundance-at-age matrix to an abundance-at-length matrix using
+#' a length-age key. Both input matrices must be named appropriately.
 #'
-#' @param   N_at_age    Abundance-at-age matrix
-#' @param   lak         Length-age-key (i.e. probability of being in a specific length group given age)
+#' @param N_at_age A matrix of abundance-at-age values.
+#' @param lak A length-age key matrix — i.e., the probability of being in a specific
+#' length group given age.
 #'
-#' @return  Returns abundance-at-length matrix.
+#' @return A matrix of abundance-at-length values.
 #'
 #' @export
-#'
+
 convert_N <- function(N_at_age = NULL, lak = NULL) {
   years <- colnames(N_at_age)
   N_at_length <- matrix(NA, nrow = nrow(lak), ncol = length(years),
@@ -250,65 +260,83 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 
 #' Simulate basic population dynamics model
 #'
-#' @param ages     Ages to include in the simulation.
-#' @param years    Years to include in the simulation.
-#' @param Z        Total mortality function, like \code{\link{sim_Z}}, for generating
-#'                 mortality matrix.
-#' @param R        Recruitment (i.e. abundance at \code{min(ages)}) function, like
-#'                 \code{\link{sim_R}}, for generating recruitment vector.
-#' @param N0       Starting abundance (i.e. abundance at \code{min(years)}) function, like
-#'                 \code{\link{sim_N0}}, for generating starting abundance vector.
-#' @param growth   Closure, such as \code{\link{sim_vonB}}, for simulating length given age.
-#'                 The function is used here to generate a abundance-at-age matrix and
-#'                 it is carried forward for later use in \code{\link{sim_survey}} to simulate
-#'                 lengths from survey catch at age.
+#' Simulates a basic age-structured population using recruitment (`R`),
+#' total mortality (`Z`), and initial abundance (`N0`) functions. Optionally,
+#' a growth function may be provided to simulate lengths given age and generate
+#' an abundance-at-length matrix.
 #'
-#' @return A \code{list} of length 9:
-#' \itemize{
-#'   \item{\code{ages}} - Vector of ages in the simulation
-#'   \item{\code{lengths}} - Vector of length groups (depends on growth function)
-#'   \item{\code{years}} - Vector of years in the simulation
-#'   \item{\code{R} - Vector of recruitment values}
-#'   \item{\code{N0} - Vector of starting abundance values}
-#'   \item{\code{Z} - Matrix of total mortality values}
-#'   \item{\code{N} - Matrix of abundance values}
-#'   \item{\code{N_at_length} - Abundance at length matrix}
-#'   \item{\code{sim_length} - Function for simulating lengths given ages}
-#' }
+#' @param ages A numeric vector of ages to include in the simulation.
+#' @param years A numeric vector of years to include in the simulation.
+#' @param Z A function for generating a total mortality matrix, such as [`sim_Z()`].
+#' @param R A function for generating a recruitment vector (i.e., abundance at `min(ages)`),
+#' such as [`sim_R()`].
+#' @param N0 A function for generating a starting abundance vector (i.e., abundance at `min(years)`),
+#' such as [`sim_N0()`].
+#' @param growth A closure, such as [`sim_vonB()`], for simulating length given age.
+#' This is used both to generate an abundance-at-length matrix and later for length simulation
+#' in [`sim_survey()`].
+#'
+#' @return A list with the following elements:
+#'
+#' - `ages`: Vector of ages used in the simulation
+#' - `lengths`: Vector of length groups (depends on growth function)
+#' - `years`: Vector of years used in the simulation
+#' - `R`: Vector of recruitment values
+#' - `N0`: Vector of starting abundance values
+#' - `Z`: Matrix of total mortality values
+#' - `N`: Matrix of abundance-at-age
+#' - `N_at_length`: Matrix of abundance-at-length
+#' - `sim_length`: Function for simulating lengths given ages
 #'
 #' @details
-#' Abundance from is calculated using a standard population dynamics model.
-#' An abundance-at-length matrix is generated using a growth function coded as a closure like
-#' \code{\link{sim_vonB}}. The function is retained for later use in \code{\link{sim_survey}}
-#' to simulate lengths given simulated catch at age in a simulated survey. The ability to simulate
-#' distributions by length is yet to be implemented.
+#' Abundance is simulated using a standard population dynamics model. If a growth function
+#' such as [`sim_vonB()`] is provided, it is used to create a corresponding abundance-at-length
+#' matrix. The same growth function is retained for use in [`sim_survey()`] to simulate lengths
+#' from catch-at-age survey data.
+#'
+#' Note: The ability to simulate distributions by length is not yet implemented.
 #'
 #' @examples
-#'
 #' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 #' R_fun(years = 1:100)
+#'
 #' sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
-#' sim_abundance(years = 1:20,
-#'               R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
+#'
+#' sim_abundance(
+#'   years = 1:20,
+#'   R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE)
+#' )
 #'
 #' Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 #' Z_fun(years = 1:100, ages = 1:20)
+#'
 #' sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
+#'
 #' Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
-#' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
+#' Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2,
+#'             0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 #' Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-#' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
-#' sim_abundance(ages = 1:10, years = 1:20,
-#'               Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+#'
+#' sim_abundance(
+#'   ages = 1:10, years = 1:20,
+#'   Z = sim_Z(log_mean = log(Z_mat), plot = TRUE)
+#' )
+#'
+#' sim_abundance(
+#'   ages = 1:10, years = 1:20,
+#'   Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE)
+#' )
 #'
 #' N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 #' N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
+#'
 #' sim_abundance(N0 = sim_N0(N0 = "exp", plot = TRUE))
 #'
-#' growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
+#' growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2,
+#'                        log_sd = 0.05, length_group = 1, plot = TRUE)
 #' growth_fun(age = rep(1:15, each = 100))
 #' growth_fun(age = 1:15, length_age_key = TRUE)
+#'
 #' sim_abundance(growth = sim_vonB(plot = TRUE))
 #'
 #' sim <- sim_abundance()
@@ -318,7 +346,6 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' plot_surface(sim, mat = "N_at_length", xlab = "Length", zlab = "N")
 #'
 #' @export
-#'
 
 sim_abundance <- function(ages = 1:20, years = 1:20,
                           Z = sim_Z(), R = sim_R(), N0 = sim_N0(),

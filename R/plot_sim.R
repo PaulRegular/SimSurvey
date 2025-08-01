@@ -1,35 +1,32 @@
-
 #' Simple plotting functions
 #'
-#' @description These functions are simple plotting helpers to get some quick
-#' visuals of values produced by \code{\link{sim_abundance}},
-#' \code{\link{sim_distribution}}, etc.
+#' These are simple plotting helpers to quickly visualize outputs from
+#' [`sim_abundance()`], [`sim_distribution()`], and related simulation functions.
 #'
-#' @param sim            Object returned by \code{\link{sim_abundance}},
-#'                       \code{\link{sim_distribution}}, etc.
-#' @param mat            Name of matrix in \code{sim} list to plot.
-#' @param grid           Grid produced by \code{\link{make_grid}}.
-#' @param xlab,ylab,zlab Axes labels.
-#' @param sum_ages       Sum across these ages
-#' @param ages           Subset data to one or more ages.
-#' @param lengths        Subset data to one or more length groups.
-#' @param years          Subset data to one or more years.
-#' @param type           Plot type: "contour" or "heatmap".
-#' @param scale          Plot response on "natural" or "log" scale?
-#' @param which_year     Subset to specific year
-#' @param which_sim      Subset to specific sim
-#' @param select_by      Select plot by "age", "length" or "year"?
-#' @param plot_by        Plot error surface by "rule" or "samples"?
-#' @param surveys        Subset data to one or more surveys.
-#' @param quants         Quantile intervals to display on fan plot
-#' @param col            Plot color
-#' @param which_strat    Which strat values to focus on? (total, length, or age)
-#' @param ...            Additional arguments to pass to \code{\link[plotly]{plot_ly}}.
+#' @param sim Object returned by [`sim_abundance()`], [`sim_distribution()`], etc.
+#' @param mat Name of the matrix in the `sim` list to plot.
+#' @param grid Grid produced by [`make_grid()`].
+#' @param xlab, ylab, zlab Axis labels.
+#' @param sum_ages Vector of ages to sum across.
+#' @param ages Subset the data to one or more ages.
+#' @param lengths Subset the data to one or more length groups.
+#' @param years Subset the data to one or more years.
+#' @param type Plot type: `"contour"` or `"heatmap"`.
+#' @param scale Plot response on `"natural"` or `"log"` scale.
+#' @param which_year Subset to a specific year.
+#' @param which_sim Subset to a specific simulation replicate.
+#' @param select_by Select plot by `"age"`, `"length"`, or `"year"`.
+#' @param plot_by Plot error surface by `"rule"` or `"samples"`.
+#' @param surveys Subset the data to one or more surveys.
+#' @param quants Quantile intervals to display on the fan plot.
+#' @param col Plot color.
+#' @param which_strat Stratification focus: `"total"`, `"length"`, or `"age"`.
+#' @param ... Additional arguments passed to [`plotly::plot_ly()`].
+#'
+#' @return A plot of class `plotly`.
 #'
 #' @import plotly
 #' @importFrom rlang .data
-#'
-#' @return Returns a plot of class \code{plotly}.
 #'
 #' @export
 #' @rdname plot_trend

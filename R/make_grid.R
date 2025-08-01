@@ -1,29 +1,27 @@
-
-#' Make a depth stratified survey grid
+#' Make a depth-stratified survey grid
 #'
-#' This function sets up a depth stratified survey grid. A simple gradient in depth
-#' is simulated using [`stats::spline`] (default) with a shallow portion, shelf and
-#' deep portion. Adding covariance to the depth simulation is an option.
+#' This function sets up a depth-stratified survey grid. A simple gradient in depth
+#' is simulated using [`stats::spline()`] (default), with a shallow portion, shelf, and
+#' deep portion. Optionally, covariance can be added to the depth simulation.
 #'
-#' @param x_range      Range (min x, max x) in x dimension in km
-#' @param y_range      Range (min y, max y) in y dimension in km
-#' @param res          Resolution, in km, of the grid cells
-#' @param shelf_depth  Approximate depth of the shelf in m
-#' @param shelf_width  Approximate width of the shelf in km
-#' @param depth_range  Range (min depth, max depth) in depth in m
-#' @param n_div        Number of divisions to include
-#' @param strat_breaks Define strata given these depth breaks
-#' @param strat_splits Number of times to horizontally split strat (i.e. easy way to increase the number of strata)
-#' @param method       Use a "spline", "loess" or "bezier" to generate a smooth gradient or simply use "linear" interpolation?
+#' @param x_range Range (min x, max x) in the x dimension (km).
+#' @param y_range Range (min y, max y) in the y dimension (km).
+#' @param res Resolution of the grid cells (km).
+#' @param shelf_depth Approximate depth of the shelf (m).
+#' @param shelf_width Approximate width of the shelf (km).
+#' @param depth_range Range (min depth, max depth) of the depth values (m).
+#' @param n_div Number of divisions to include.
+#' @param strat_breaks Depth breaks used to define strata.
+#' @param strat_splits Number of times to horizontally split strata (i.e., a way to increase the number of strata).
+#' @param method Choose `"spline"`, `"loess"`, or `"bezier"` to generate a smooth gradient, or use `"linear"` for linear interpolation.
 #'
-#' @return Returns a stars object with 2 dimensions (x and y) and 4 attributes (depth, cell, division, strat).
+#' @return A `stars` object with 2 dimensions (`x` and `y`) and 4 attributes (`depth`, `cell`, `division`, `strat`).
 #'
 #' @seealso [`survey_grid`]
 #'
 #' @export
 #'
 #' @examples
-#'
 #' r <- make_grid(res = c(10, 10))
 #' plot(r)
 #'
@@ -32,7 +30,6 @@
 #'
 #' @import sf
 #' @import stars
-#'
 
 make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
                       res = c(3.5, 3.5), shelf_depth = 200,

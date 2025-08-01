@@ -14,28 +14,27 @@
 )
 }
 \arguments{
-\item{mesh}{The mesh created by R-INLA representing spatial area}
+\item{mesh}{The mesh created by R-INLA representing the spatial area.}
 
-\item{barrier.triangles}{the list of triangles of the mesh in the barrier, only used for barrier model}
+\item{barrier.triangles}{A list of mesh triangles that represent the barrier (used only for the barrier model).}
 
-\item{range}{decorrelation range}
+\item{range}{The decorrelation range.}
 
-\item{range_fraction}{the fraction that sets the range over the "land"
-parts of the barrier model. Only used with the barrier model}
+\item{range_fraction}{Fraction used to adjust the range across the "land" (barrier) regions. Only used in the barrier model.}
 
-\item{sigma_u}{the overall variance of the spatial process}
+\item{sigma_u}{The overall variance of the spatial process.}
 
-\item{model}{'spde' for the SPDE approach, 'barrier' for barrier approach}
+\item{model}{Either \code{"spde"} for the standard SPDE model or \code{"barrier"} for the barrier model.}
 }
 \value{
-Q a sparse precision matrix of type dgTMatrix
+A sparse precision matrix \code{Q} of class \code{dgTMatrix}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-
-This creates the precision matrix from a mesh created by R-INLA with a
-specified range. This is currently set up to support the standard spde
-approach of precision matrices and the barrier model version. Similar
-in purpose to .sp_covar.
+}
+\details{
+Creates a precision matrix from a mesh created by \strong{R-INLA}, given a specified
+decorrelation range. This function supports both the standard SPDE approach and
+the barrier model version. It serves a similar purpose to \code{.sp_covar()}.
 }
 \keyword{internal}

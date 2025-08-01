@@ -7,18 +7,22 @@
 strat_data(sim, length_group = 3, alk_scale = "division")
 }
 \arguments{
-\item{sim}{Simulation from \code{\link{sim_survey}}}
+\item{sim}{Simulation object returned by \code{\link[=sim_survey]{sim_survey()}}.}
 
-\item{length_group}{Size of the length frequency bins}
+\item{length_group}{Size of the length frequency bins.}
 
-\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
-"division", "strat" or "set".}
+\item{alk_scale}{Spatial scale at which to construct and apply age-length keys:
+\code{"division"}, \code{"strat"}, or \code{"set"}.}
 }
 \value{
-Returns a list including set details (\code{setdet}), length-frequencies (\code{lf}),
-and age-frequencies (\code{af}).
+A list containing:
+\itemize{
+\item \code{setdet}: Set details
+\item \code{lf}: Length-frequency data
+\item \code{af}: Age-frequency data
+}
 }
 \description{
-Generate set details (setdet), length-frequency (lf)
-and age-frequency (af) data for stratified analysis
+Generate set details (\code{setdet}), length-frequency (\code{lf}), and age-frequency (\code{af})
+data for stratified analysis.
 }

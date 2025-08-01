@@ -12,46 +12,45 @@ sim_distribution(
 )
 }
 \arguments{
-\item{sim}{A list with ages, years and an abundance at age matrix like
-produced by \code{\link{sim_abundance}}.}
+\item{sim}{A list with \code{ages}, \code{years}, and an abundance-at-age matrix,
+like one produced by \code{\link[=sim_abundance]{sim_abundance()}}.}
 
-\item{grid}{A stars object defining the survey grid, like \code{\link{survey_grid}}
-or one produced by \code{\link{make_grid}}}
+\item{grid}{A \code{stars} object defining the survey grid, such as \code{\link{survey_grid}} or one created with \code{\link[=make_grid]{make_grid()}}.}
 
-\item{ays_covar}{Closure for simulating age-year-space covariance,
-like \code{\link{sim_ays_covar}}}
+\item{ays_covar}{A closure that simulates age-year-space covariance, such as \code{\link[=sim_ays_covar]{sim_ays_covar()}}.}
 
-\item{depth_par}{Closure for defining relationship between abundance and depth,
-like \code{\link{sim_parabola}}}
+\item{depth_par}{A closure that defines the relationship between abundance and depth,
+such as \code{\link[=sim_parabola]{sim_parabola()}}.}
 }
 \value{
-Appends three objects to the \code{sim} list:
+Appends the following objects to the \code{sim} list:
 \itemize{
-\item{\code{grid}} - A stars object with the grid details
-\item{\code{grid_xy}} - Grid details as a data.table in xyz format
-\item{\code{sp_N}} - A data.table with abundance split by age, year and cell
+\item \code{grid}: A \code{stars} object with grid details
+\item \code{grid_xy}: A \code{data.table} representation of the grid in XYZ format
+\item \code{sp_N}: A \code{data.table} of abundance split by age, year, and cell
 }
 }
 \description{
-Provided an abundance at age matrix and a survey grid to populate, this function
-applies correlated space, age and year error to simulate the distribution
-of the population. The ability to simulate distributions by length is yet to be implemented.
+Provided with an abundance-at-age matrix and a survey grid, this function applies
+correlated space–age–year error to simulate the spatial distribution of a population.
+Simulation by length is not yet implemented.
 }
 \details{
-This function simulates the probability of simulated fish inhabiting
-a cell as a function of a parabolic relationship with depth and space, age,
-and year autocorrelated errors. WARNING: it make take a long time to simulate
-abundance in a large grid across many ages and years - start small first.
+This function simulates the probability of fish inhabiting a cell based on a parabolic
+relationship with depth and spatially/temporally autocorrelated noise across age and year.
+
+\strong{Warning:} Simulating a large grid across many ages and years may be computationally intensive.
+Start with smaller simulations to test your setup.
 }
 \examples{
-
 \donttest{
 sim <- sim_abundance(ages = 1:5, years = 1:5) \%>\%
-           sim_distribution(grid = make_grid(res = c(20, 20)),
-                            ays_covar = sim_ays_covar(phi_age = 0.8,
-                                                      phi_year = 0.1),
-                            depth_par = sim_parabola(mu = 200,
-                                                     sigma = 50))
+  sim_distribution(
+    grid = make_grid(res = c(20, 20)),
+    ays_covar = sim_ays_covar(phi_age = 0.8, phi_year = 0.1),
+    depth_par = sim_parabola(mu = 200, sigma = 50)
+  )
+
 head(sim$sp_N)
 head(sim$grid_xy)
 }

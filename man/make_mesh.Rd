@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim_dist_spde.R
 \name{make_mesh}
 \alias{make_mesh}
-\title{Make an R-INLA mesh based off a grid}
+\title{Make an R-INLA mesh based on a grid}
 \usage{
 make_mesh(
   grid = make_grid(),
@@ -14,36 +14,35 @@ make_mesh(
 )
 }
 \arguments{
-\item{grid}{grid object to make a mesh of}
+\item{grid}{A grid object to generate a mesh from.}
 
-\item{max.edge}{The largest allowed triangle edge length. One or two values. This is passed to inla.mesh.2d}
+\item{max.edge}{The maximum allowed triangle edge length. One or two numeric values.
+Passed to \code{inla.mesh.2d}.}
 
-\item{bound.outer}{The optional outer extension value given to offset.}
+\item{bound.outer}{Optional outer extension value passed to \code{offset}.}
 
-\item{cutoff}{Minimum distance allowed between points}
+\item{cutoff}{Minimum distance allowed between mesh points.}
 
-\item{offset}{The automatic extension distance given to inla.mesh.2d}
+\item{offset}{Automatic extension distance used by \code{inla.mesh.2d}.}
 
-\item{...}{Other options to pass to inla.mesh.2d}
+\item{...}{Additional options passed to \code{inla.mesh.2d}.}
 }
 \value{
-Returns an object of class \code{inla.mesh}.
+An object of class \code{inla.mesh}.
 }
 \description{
-This will make a mesh based off a given grid. Ideally the mesh
-construction and validation should be done by hand, but this exists
-for convenience. Meshes are used for sim_ays_covar_spde. The defaults
-are designed for the default grid. Just a basic interface between the grid and inla.mesh.2d.
+This function creates a mesh based on a given grid. While mesh construction
+and validation should ideally be done manually, this function provides a
+convenient default interface between a grid and \code{inla.mesh.2d}. It is designed
+to support usage with \code{\link[=sim_ays_covar_spde]{sim_ays_covar_spde()}}, and the default parameters are
+tuned for use with the default grid setup.
 }
 \examples{
-
 \donttest{
-
 if (requireNamespace("INLA")) {
   basic_mesh <- make_mesh()
   plot(basic_mesh)
 }
-
 }
 
 }

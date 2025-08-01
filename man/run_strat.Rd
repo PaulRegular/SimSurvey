@@ -13,44 +13,45 @@ run_strat(
 )
 }
 \arguments{
-\item{sim}{Simulation from \code{\link{sim_survey}}}
+\item{sim}{Simulation object from \code{\link[=sim_survey]{sim_survey()}}.}
 
-\item{length_group}{Size of the length frequency bins for both abundance at length calculations
-and age-length-key construction. By default this value is inherited from
-the value defined in \code{\link{sim_abundance}} from the closure supplied to
-\code{sim_length} ("inherit"). A numeric value can also be supplied, however,
-a mismatch in length groupings will cause issues with \code{\link{strat_error}}
-as true vs. estimated length groupings will be mismatched.}
+\item{length_group}{Size of the length frequency bins used for both abundance-at-length
+calculations and age-length-key construction. By default, this is inherited from the
+value defined in \code{\link[=sim_abundance]{sim_abundance()}} via the closure supplied to \code{sim_length} (\code{"inherit"}).
+You may also supply a numeric value; however, mismatches in length groupings may cause
+issues with \code{\link[=strat_error]{strat_error()}} if true vs. estimated groupings are not aligned.}
 
-\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
-"division" or "strat".}
+\item{alk_scale}{Spatial scale at which to construct and apply age-length keys:
+\code{"division"} or \code{"strat"}.}
 
-\item{strat_data_fun}{Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})}
+\item{strat_data_fun}{Function used to prepare data for stratified analysis (e.g., \code{\link[=strat_data]{strat_data()}}).}
 
-\item{strat_means_fun}{Function for calculating stratified means (e.g. \code{\link{strat_means}})}
+\item{strat_means_fun}{Function used to calculate stratified means (e.g., \code{\link[=strat_means]{strat_means()}}).}
 }
 \value{
-Adds stratified analysis results for the total population (\code{"total_strat"})
-and the population aggregated by length group and age (\code{"length_strat"} and
-\code{"age_strat"}, respectively) to the \code{sim} list.
+Adds stratified analysis results to the \code{sim} list:
+\itemize{
+\item \code{"total_strat"}: Results for the total population
+\item \code{"length_strat"}: Results aggregated by length group
+\item \code{"age_strat"}: Results aggregated by age
+}
 }
 \description{
 Run stratified analysis on simulated data
 }
 \details{
-The \code{"strat_data_fun"} and \code{"strat_means_fun"} allow the use of custom
-\code{\link{strat_data}} and  \code{\link{strat_means}} functions.
+The \code{strat_data_fun} and \code{strat_means_fun} arguments allow you to use custom
+\code{\link[=strat_data]{strat_data()}} and \code{\link[=strat_means]{strat_means()}} functions.
 }
 \examples{
-
 \donttest{
 sim <- sim_abundance(ages = 1:5, years = 1:5,
                      R = sim_R(log_mean = log(1e+7)),
                      growth = sim_vonB(length_group = 1)) \%>\%
-           sim_distribution(grid = make_grid(res = c(20, 20)),
-                            ays_covar = sim_ays_covar(sd = 1)) \%>\%
-           sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) \%>\%
-           run_strat()
+  sim_distribution(grid = make_grid(res = c(20, 20)),
+                   ays_covar = sim_ays_covar(sd = 1)) \%>\%
+  sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) \%>\%
+  run_strat()
 }
 
 }

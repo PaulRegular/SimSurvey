@@ -1,28 +1,26 @@
-#' Sample survey simulation grid.
+#' Sample survey simulation grid
 #'
-#' A exemplar for the structure of a survey grid object to supply to the functions
-#' in this package.
+#' An exemplar of the structure of a survey grid object used by functions in this package.
 #'
-#' @format A stars object with 4 attributes:
-#' \describe{
-#'   \item{cell}{Survey cell identifier}
-#'   \item{division}{NAFO division}
-#'   \item{strat}{Survey strata number}
-#'   \item{depth}{Mean depth of the waters under each cell, units = m}
-#' }
+#' @format A `stars` object with 4 attributes:
 #'
-#' For further details on how this file was created, see the data-raw folder for
-#' this package.
+#' - **cell**: Survey cell identifier
+#' - **division**: NAFO division
+#' - **strat**: Survey strata number
+#' - **depth**: Mean depth of the waters under each cell (in meters)
+#'
+#' For more details on how this file was created, see the `data-raw` folder in this package.
 #'
 "survey_grid"
+
 
 
 #' Southern Newfoundland coastline
 #'
 #' @format A sf object (MULTIPOLYGON)
 #'
-#' Derived from global administrative boundaries data (http://gadm.org/) downloaded
-#' using the \code{\link{getData}} function. Details provided in the
+#' Derived from global administrative boundaries data (http://gadm.org/), which
+#' was downloaded using the [raster::getData()] function. Details provided in the
 #' data-raw folder for this package.
 #'
 "land"

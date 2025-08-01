@@ -14,74 +14,91 @@ sim_abundance(
 )
 }
 \arguments{
-\item{ages}{Ages to include in the simulation.}
+\item{ages}{A numeric vector of ages to include in the simulation.}
 
-\item{years}{Years to include in the simulation.}
+\item{years}{A numeric vector of years to include in the simulation.}
 
-\item{Z}{Total mortality function, like \code{\link{sim_Z}}, for generating
-mortality matrix.}
+\item{Z}{A function for generating a total mortality matrix, such as \code{\link[=sim_Z]{sim_Z()}}.}
 
-\item{R}{Recruitment (i.e. abundance at \code{min(ages)}) function, like
-\code{\link{sim_R}}, for generating recruitment vector.}
+\item{R}{A function for generating a recruitment vector (i.e., abundance at \code{min(ages)}),
+such as \code{\link[=sim_R]{sim_R()}}.}
 
-\item{N0}{Starting abundance (i.e. abundance at \code{min(years)}) function, like
-\code{\link{sim_N0}}, for generating starting abundance vector.}
+\item{N0}{A function for generating a starting abundance vector (i.e., abundance at \code{min(years)}),
+such as \code{\link[=sim_N0]{sim_N0()}}.}
 
-\item{growth}{Closure, such as \code{\link{sim_vonB}}, for simulating length given age.
-The function is used here to generate a abundance-at-age matrix and
-it is carried forward for later use in \code{\link{sim_survey}} to simulate
-lengths from survey catch at age.}
+\item{growth}{A closure, such as \code{\link[=sim_vonB]{sim_vonB()}}, for simulating length given age.
+This is used both to generate an abundance-at-length matrix and later for length simulation
+in \code{\link[=sim_survey]{sim_survey()}}.}
 }
 \value{
-A \code{list} of length 9:
+A list with the following elements:
 \itemize{
-\item{\code{ages}} - Vector of ages in the simulation
-\item{\code{lengths}} - Vector of length groups (depends on growth function)
-\item{\code{years}} - Vector of years in the simulation
-\item{\code{R} - Vector of recruitment values}
-\item{\code{N0} - Vector of starting abundance values}
-\item{\code{Z} - Matrix of total mortality values}
-\item{\code{N} - Matrix of abundance values}
-\item{\code{N_at_length} - Abundance at length matrix}
-\item{\code{sim_length} - Function for simulating lengths given ages}
+\item \code{ages}: Vector of ages used in the simulation
+\item \code{lengths}: Vector of length groups (depends on growth function)
+\item \code{years}: Vector of years used in the simulation
+\item \code{R}: Vector of recruitment values
+\item \code{N0}: Vector of starting abundance values
+\item \code{Z}: Matrix of total mortality values
+\item \code{N}: Matrix of abundance-at-age
+\item \code{N_at_length}: Matrix of abundance-at-length
+\item \code{sim_length}: Function for simulating lengths given ages
 }
 }
 \description{
-Simulate basic population dynamics model
+Simulates a basic age-structured population using recruitment (\code{R}),
+total mortality (\code{Z}), and initial abundance (\code{N0}) functions. Optionally,
+a growth function may be provided to simulate lengths given age and generate
+an abundance-at-length matrix.
 }
 \details{
-Abundance from is calculated using a standard population dynamics model.
-An abundance-at-length matrix is generated using a growth function coded as a closure like
-\code{\link{sim_vonB}}. The function is retained for later use in \code{\link{sim_survey}}
-to simulate lengths given simulated catch at age in a simulated survey. The ability to simulate
-distributions by length is yet to be implemented.
+Abundance is simulated using a standard population dynamics model. If a growth function
+such as \code{\link[=sim_vonB]{sim_vonB()}} is provided, it is used to create a corresponding abundance-at-length
+matrix. The same growth function is retained for use in \code{\link[=sim_survey]{sim_survey()}} to simulate lengths
+from catch-at-age survey data.
+
+Note: The ability to simulate distributions by length is not yet implemented.
 }
 \examples{
-
 R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 R_fun(years = 1:100)
+
 sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
-sim_abundance(years = 1:20,
-              R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
+
+sim_abundance(
+  years = 1:20,
+  R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE)
+)
 
 Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 Z_fun(years = 1:100, ages = 1:20)
+
 sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
+
 Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
-Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
+Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2,
+            0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-sim_abundance(ages = 1:10, years = 1:20,
-              Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
-sim_abundance(ages = 1:10, years = 1:20,
-              Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+
+sim_abundance(
+  ages = 1:10, years = 1:20,
+  Z = sim_Z(log_mean = log(Z_mat), plot = TRUE)
+)
+
+sim_abundance(
+  ages = 1:10, years = 1:20,
+  Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE)
+)
 
 N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
+
 sim_abundance(N0 = sim_N0(N0 = "exp", plot = TRUE))
 
-growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
+growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2,
+                       log_sd = 0.05, length_group = 1, plot = TRUE)
 growth_fun(age = rep(1:15, each = 100))
 growth_fun(age = 1:15, length_age_key = TRUE)
+
 sim_abundance(growth = sim_vonB(plot = TRUE))
 
 sim <- sim_abundance()

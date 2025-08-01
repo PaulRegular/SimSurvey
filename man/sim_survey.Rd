@@ -23,68 +23,72 @@ sim_survey(
 )
 }
 \arguments{
-\item{sim}{Simulation from \code{\link{sim_distribution}}}
+\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
 
-\item{n_sims}{Number of surveys to simulate over the simulated population. Note: requesting
-a large number of simulations may max out your RAM. Use
-\code{\link{sim_survey_parallel}} if many simulations are required.}
+\item{n_sims}{Number of surveys to simulate.
+Be cautious: large values may consume significant memory. Use \code{\link[=sim_survey_parallel]{sim_survey_parallel()}} if many simulations are needed.}
 
-\item{q}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
-(returned values must be between 0 and 1)}
+\item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability at age.
+Returned values must range between 0 and 1.}
 
-\item{trawl_dim}{Trawl width and distance (same units as grid)}
+\item{trawl_dim}{Trawl width and distance (same units as the grid).}
 
-\item{resample_cells}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
-because depletion is imposed at the cell level.}
+\item{resample_cells}{Logical. If \code{TRUE}, allows grid cells to be resampled.
+May introduce bias, as depletion is applied at the cell level.}
 
-\item{binom_error}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
-at older ages because of more frequent rounding to zero.}
+\item{binom_error}{Logical. Should binomial error be imposed?
+If \code{FALSE}, stratified estimates at older ages may be biased due to rounding zeros.}
 
-\item{min_sets}{Minimum number of sets per strat}
+\item{min_sets}{Minimum number of sets per stratum.}
 
-\item{set_den}{Set density (number of sets per grid unit squared). WARNING:
-may return an error if \code{set_den} is high and
-\code{resample_cells = FALSE} because the number of sets allocated may
-exceed the number of cells in a strata.}
+\item{set_den}{Set density (sets per grid unit squared).
+\strong{Warning:} May error if \code{set_den} is high and \code{resample_cells = FALSE}, because allocated sets may exceed available cells.}
 
-\item{lengths_cap}{Maximum number of lengths measured per set}
+\item{lengths_cap}{Maximum number of lengths measured per set.}
 
-\item{ages_cap}{If \code{age_sampling = "stratified"}, this cap represents the maximum
-number of ages to sample per length group (defined using the \code{age_length_group}
-argument) per division or strat (defined using the \code{age_space_group} argument)
-per year. If \code{age_sampling = "random"}, it is the maximum number of ages to sample
-from measured fish per set.}
+\item{ages_cap}{Cap on the number of ages to sample, depending on \code{age_sampling} type:
+\itemize{
+\item If \code{"stratified"}: maximum per length bin (via \code{age_length_group}) and per \code{age_space_group} (e.g., \code{"division"}, \code{"strat"}).
+\item If \code{"random"}: maximum number of fish aged per set.
+}}
 
-\item{age_sampling}{Should age sampling be "stratified" (default) or "random"?}
+\item{age_sampling}{Type of age sampling strategy: \code{"stratified"} (default) or \code{"random"}.}
 
-\item{age_length_group}{Numeric value indicating the size of the length bins for stratified
-age sampling. Ignored if \code{age_sampling = "random"}.}
+\item{age_length_group}{Width of length bins for stratified age sampling. Ignored if \code{age_sampling = "random"}.}
 
-\item{age_space_group}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
-That is, age sampling can be spread across each "division", "strat" or "set"
-in each year to a maximum number within each length bin (cap is defined using
-the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
+\item{age_space_group}{Spatial scale for stratified age sampling.
+Options: \code{"division"} (default), \code{"strat"}, or \code{"set"}. Ignored if \code{age_sampling = "random"}.}
 
-\item{custom_sets}{Supply an object of the same structure as returned by \code{\link{sim_sets}} which
-specifies a custom series of set locations to be sampled. Set locations are
-automated if \code{custom_sets = NULL}.}
+\item{custom_sets}{A \code{data.table} of set locations (same structure as returned by \code{\link[=sim_sets]{sim_sets()}}).
+If \code{NULL}, set locations are generated automatically.}
 
-\item{light}{Drop some objects from the output to keep object size low?}
+\item{light}{Logical. If \code{TRUE}, drops some objects from output to reduce memory footprint.}
 }
 \value{
-A list including rounded population simulation, set locations and details
-and sampling details. Note that that N = "true" population, I = population available
-to the survey, n = number caught by survey.
+A list including:
+\itemize{
+\item Rounded simulation results
+\item Set location details
+\item Sampling results
+}
+
+Includes:
+\itemize{
+\item \code{N}: true population
+\item \code{I}: individuals available to the survey
+\item \code{n}: individuals caught by the survey
+}
 }
 \description{
-Simulate stratified-random survey
+Simulates a stratified-random survey on a population produced by \code{\link[=sim_distribution]{sim_distribution()}}.
+Supports optional catchability functions, sampling caps, and custom set locations.
 }
 \examples{
-
 \donttest{
 sim <- sim_abundance(ages = 1:5, years = 1:5) \%>\%
-           sim_distribution(grid = make_grid(res = c(20, 20))) \%>\%
-           sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
+  sim_distribution(grid = make_grid(res = c(20, 20))) \%>\%
+  sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
+
 plot_survey(sim, which_year = 3, which_sim = 1)
 }
 

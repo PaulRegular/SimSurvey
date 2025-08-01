@@ -1,25 +1,22 @@
 
 #' Helper function to generate precision matrix Q for simulation
 #'
-#' @description
 #' `r lifecycle::badge("experimental")`
 #'
-#' This creates the precision matrix from a mesh created by R-INLA with a
-#' specified range. This is currently set up to support the standard spde
-#' approach of precision matrices and the barrier model version. Similar
-#' in purpose to .sp_covar.
+#' Creates a precision matrix from a mesh created by **R-INLA**, given a specified
+#' decorrelation range. This function supports both the standard SPDE approach and
+#' the barrier model version. It serves a similar purpose to `.sp_covar()`.
 #'
-#' @param mesh The mesh created by R-INLA representing spatial area
-#' @param barrier.triangles the list of triangles of the mesh in the barrier, only used for barrier model
-#' @param range decorrelation range
-#' @param range_fraction the fraction that sets the range over the "land"
-#' parts of the barrier model. Only used with the barrier model
-#' @param sigma_u the overall variance of the spatial process
-#' @param model 'spde' for the SPDE approach, 'barrier' for barrier approach
+#' @param mesh The mesh created by R-INLA representing the spatial area.
+#' @param barrier.triangles A list of mesh triangles that represent the barrier (used only for the barrier model).
+#' @param range The decorrelation range.
+#' @param range_fraction Fraction used to adjust the range across the "land" (barrier) regions. Only used in the barrier model.
+#' @param sigma_u The overall variance of the spatial process.
+#' @param model Either `"spde"` for the standard SPDE model or `"barrier"` for the barrier model.
 #'
-#' @return Q a sparse precision matrix of type dgTMatrix
+#' @return A sparse precision matrix `Q` of class `dgTMatrix`.
+#'
 #' @keywords internal
-#'
 .Q <- function(mesh,barrier.triangles, range = 50, range_fraction = 0.2,
                sigma_u = 1, model = "spde"){
 
@@ -48,55 +45,50 @@
 
 #' Simulate age-year-space covariance using SPDE approach
 #'
-#' @description
 #' `r lifecycle::badge("experimental")`
 #'
-#' Returns a function to use inside \code{\link{sim_distribution}} to
-#' generate the error term.
+#' Returns a function for use inside [`sim_distribution()`] to generate the error term.
 #'
-#' @param sd Variance (can be age specific)
-#' @param range Decorrelation range
-#' @param model String indicating "barrier" or "spde" to generate Q with
-#' @param phi_age Defines autocorrelation through ages. Can be one value or
-#'        a vector of the same length as ages.
-#' @param phi_year Defines autocorrelation through years. Can be one value
-#'        or a vector of the same length as years.
-#' @param group_ages Make space-age-year variance equal across these ages
-#' @param group_years Make space-age-year variance equal across these years
-#' @param mesh The mesh used to generate the precision matrix
-#' @param barrier.triangles the set of triangles in the barrier of the mesh
-#' for the barrier model
+#' @param sd Variance of the process (can be age-specific).
+#' @param range Decorrelation range.
+#' @param model Either `"barrier"` or `"spde"`; determines how the precision matrix `Q` is generated.
+#' @param phi_age Autocorrelation through ages. Can be a single value or a vector the same length as `ages`.
+#' @param phi_year Autocorrelation through years. Can be a single value or a vector the same length as `years`.
+#' @param group_ages Ages to group together for shared space-age-year variance.
+#' @param group_years Years to group together for shared space-age-year variance.
+#' @param mesh The mesh used to generate the precision matrix.
+#' @param barrier.triangles The set of mesh triangles that define the barrier (used only in the barrier model).
 #'
-#' @return Returns a function for use in \code{\link{sim_distribution}}.
+#' @return A function that can be passed to [`sim_distribution()`] as the `ays_covar` argument.
 #'
 #' @examples
-#'
 #' \donttest{
-#'
 #' if (requireNamespace("INLA")) {
 #'
-#'   ## Make a grid
-#'   my_grid <- make_grid(res = c(10,10))
+#'   # Make a grid
+#'   my_grid <- make_grid(res = c(10, 10))
 #'
-#'   ## Make a mesh based off it
-#'
+#'   # Make a mesh based on the grid
 #'   my_mesh <- make_mesh(my_grid)
+#'
+#'   # Simulate and plot
 #'   sim <- sim_abundance(ages = 1:10, years = 1:10) %>%
-#'           sim_distribution(grid = my_grid,
-#'                            ays_covar = sim_ays_covar_spde(phi_age = 0.8,
-#'                                                           phi_year = 0.1,
-#'                                                           model = "spde",
-#'                                                           mesh = my_mesh),
-#'                            depth_par = sim_parabola(mu = 200,
-#'                                                     sigma = 50))
+#'     sim_distribution(
+#'       grid = my_grid,
+#'       ays_covar = sim_ays_covar_spde(
+#'         phi_age = 0.8,
+#'         phi_year = 0.1,
+#'         model = "spde",
+#'         mesh = my_mesh
+#'       ),
+#'       depth_par = sim_parabola(mu = 200, sigma = 50)
+#'     )
+#'
 #'   plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
-#'
 #' }
-#'
 #' }
 #'
 #' @export
-#'
 
 sim_ays_covar_spde <- function(sd = 2.8,
                                range = 300,
@@ -213,35 +205,33 @@ sim_ays_covar_spde <- function(sd = 2.8,
 }
 
 
-#' Make an R-INLA mesh based off a grid
+#' Make an R-INLA mesh based on a grid
 #'
-#' This will make a mesh based off a given grid. Ideally the mesh
-#' construction and validation should be done by hand, but this exists
-#' for convenience. Meshes are used for sim_ays_covar_spde. The defaults
-#' are designed for the default grid. Just a basic interface between the grid and inla.mesh.2d.
+#' This function creates a mesh based on a given grid. While mesh construction
+#' and validation should ideally be done manually, this function provides a
+#' convenient default interface between a grid and `inla.mesh.2d`. It is designed
+#' to support usage with [`sim_ays_covar_spde()`], and the default parameters are
+#' tuned for use with the default grid setup.
 #'
-#' @param grid grid object to make a mesh of
-#' @param max.edge The largest allowed triangle edge length. One or two values. This is passed to inla.mesh.2d
-#' @param bound.outer The optional outer extension value given to offset.
-#' @param offset The automatic extension distance given to inla.mesh.2d
-#' @param cutoff Minimum distance allowed between points
-#' @param ... Other options to pass to inla.mesh.2d
+#' @param grid A grid object to generate a mesh from.
+#' @param max.edge The maximum allowed triangle edge length. One or two numeric values.
+#' Passed to `inla.mesh.2d`.
+#' @param bound.outer Optional outer extension value passed to `offset`.
+#' @param offset Automatic extension distance used by `inla.mesh.2d`.
+#' @param cutoff Minimum distance allowed between mesh points.
+#' @param ... Additional options passed to `inla.mesh.2d`.
 #'
-#' @return Returns an object of class \code{inla.mesh}.
+#' @return An object of class `inla.mesh`.
 #'
 #' @examples
-#'
 #' \donttest{
-#'
 #' if (requireNamespace("INLA")) {
 #'   basic_mesh <- make_mesh()
 #'   plot(basic_mesh)
 #' }
-#'
 #' }
 #'
 #' @export
-#'
 
 make_mesh <- function(grid = make_grid(),
                       max.edge = 50,

@@ -7,18 +7,17 @@
 sim_logistic(k = 2, x0 = 3, plot = FALSE)
 }
 \arguments{
-\item{k}{The steepness of the curve}
+\item{k}{Steepness of the curve.}
 
-\item{x0}{The x-value of the sigmoid's midpoint}
+\item{x0}{The x-value at the midpoint of the sigmoid.}
 
-\item{plot}{Plot relationship}
+\item{plot}{Logical. Should the relationship be plotted?}
 }
 \value{
-Returns a function for use in \code{\link{sim_survey}}.
+A function that can be passed to \code{\link[=sim_survey]{sim_survey()}}.
 }
 \description{
-This closure is useful for simulating q inside the
-\code{\link{sim_survey}} function
+This closure is useful for simulating catchability (\code{q}) inside the \code{\link[=sim_survey]{sim_survey()}} function.
 }
 \examples{
 logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)

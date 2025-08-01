@@ -4,7 +4,7 @@
 \alias{sim_R}
 \alias{sim_Z}
 \alias{sim_N0}
-\title{Simulate starting abundance, random recruitment and total mortality}
+\title{Simulate starting abundance, random recruitment, and total mortality}
 \usage{
 sim_R(log_mean = log(3e+07), log_sd = 0.5, random_walk = TRUE, plot = FALSE)
 
@@ -19,52 +19,64 @@ sim_Z(
 sim_N0(N0 = "exp", plot = FALSE)
 }
 \arguments{
-\item{log_mean}{One mean value or a vector of means, in log scale, of length equal to years for \code{sim_R} or a matrix of means with
-rows equaling the number of ages and columns equaling the number of years for \code{sim_Z}.}
+\item{log_mean}{For \code{sim_R}, a single mean or a vector of means (log scale) with length equal to the number of years.
+For \code{sim_Z}, a matrix of log-scale means with rows equal to the number of ages and columns equal to the number of years.}
 
-\item{log_sd}{Standard deviation of the variable in the log scale.}
+\item{log_sd}{Standard deviation on the log scale.}
 
-\item{random_walk}{Simulate recruitment as a random walk?}
+\item{random_walk}{Logical. Should recruitment be simulated as a random walk?}
 
-\item{plot}{produce a simple plot of the simulated values?}
+\item{plot}{Logical. Should a simple plot of the simulated values be displayed?}
 
-\item{phi_age}{Autoregressive parameter for the age dimension.}
+\item{phi_age}{Autoregressive parameter across the age dimension.}
 
-\item{phi_year}{Autoregressive parameter for the year dimension.}
+\item{phi_year}{Autoregressive parameter across the year dimension.}
 
-\item{N0}{Either specify "exp" or numeric vector of starting abundance excluding the first age.
-If "exp" is specified using sim_N0, then abundance at age are calculated using exponential decay.}
+\item{N0}{For \code{sim_N0}, either \code{"exp"} (for exponential decay) or a numeric vector of starting abundances (excluding the first age).}
 }
 \value{
-Returns a function for use inside \code{\link{sim_abundance}}.
+A function to be passed to \code{\link[=sim_abundance]{sim_abundance()}}.
 }
 \description{
-These functions return a function to use inside \code{\link{sim_abundance}}.
-Given parameters, it generates N0, R and Z values.
+These functions return closures for use inside \code{\link[=sim_abundance]{sim_abundance()}}. Given user-defined
+parameters, they simulate recruitment (\code{R}), total mortality (\code{Z}), or initial abundance (\code{N0})
+as a function of age and year.
 }
 \details{
-sim_R generates uncorrelated recruitment values or random walk values from a log normal distribution.
-sim_Z does the same as sim_R when phi_age and phi_year are both 0, otherwise values are correlated
-in the age and/or year dimension. The covariance structure follows that described in Cadigan (2015).
+\itemize{
+\item \code{sim_R()} generates uncorrelated or random-walk recruitment values from a log-normal distribution.
+\item \code{sim_Z()} behaves like \code{sim_R()} when both \code{phi_age} and \code{phi_year} are zero. When either is non-zero,
+it introduces correlation in the age and/or year dimension, based on the covariance structure
+described in Cadigan (2015).
+\item \code{sim_N0()} provides starting abundance either via exponential decay or a user-defined vector.
+}
 }
 \examples{
-
 R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 R_fun(years = 1:100)
+
 sim_abundance(R = sim_R(log_mean = log(100000), log_sd = 0.5))
-sim_abundance(years = 1:20,
-              R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE))
+
+sim_abundance(
+  years = 1:20,
+  R = sim_R(log_mean = log(c(rep(100000, 10), rep(10000, 10))), plot = TRUE)
+)
 
 Z_fun <- sim_Z(log_mean = log(0.5), log_sd = 0.1, phi_age = 0.9, phi_year = 0.9, plot = TRUE)
 Z_fun(years = 1:100, ages = 1:20)
+
 sim_abundance(Z = sim_Z(log_mean = log(0.5), log_sd = 0.1, plot = TRUE))
+
 Za_dev <- c(-0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.3, 0.2, 0.1, 0)
 Zy_dev <- c(-0.2, -0.2, -0.2, -0.2, -0.2, 2, 2, 2, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0, 0, 0)
 Z_mat <- outer(Za_dev, Zy_dev, "+") + 0.5
-sim_abundance(ages = 1:10, years = 1:20,
-              Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
-sim_abundance(ages = 1:10, years = 1:20,
-              Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE))
+
+sim_abundance(ages = 1:10, years = 1:20, Z = sim_Z(log_mean = log(Z_mat), plot = TRUE))
+
+sim_abundance(
+  ages = 1:10, years = 1:20,
+  Z = sim_Z(log_mean = log(Z_mat), log_sd = 0, phi_age = 0, phi_year = 0, plot = TRUE)
+)
 
 N0_fun <- sim_N0(N0 = "exp", plot = TRUE)
 N0_fun(R0 = 1000, Z0 = rep(0.5, 20), ages = 1:20)
@@ -72,7 +84,7 @@ sim_abundance(N0 = sim_N0(N0 = "exp", plot = TRUE))
 
 }
 \references{
-Cadigan, Noel G. 2015. A State-Space Stock Assessment Model for Northern Cod,
-Including Under-Reported Catches and Variable Natural Mortality Rates. Canadian Journal of
-Fisheries and Aquatic Sciences 73 (2): 296-308.
+Cadigan, Noel G. (2015). A State-Space Stock Assessment Model for Northern Cod, Including
+Under-Reported Catches and Variable Natural Mortality Rates. \emph{Canadian Journal of Fisheries
+and Aquatic Sciences}, 73(2): 296–308.
 }

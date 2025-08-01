@@ -43,7 +43,6 @@ export(strat_means)
 export(test_surveys)
 export(vis_sim)
 import(data.table, except = shift)
-
 import(doParallel)
 import(foreach)
 import(parallel)

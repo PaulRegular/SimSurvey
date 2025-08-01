@@ -7,15 +7,15 @@
 group_lengths(length, group)
 }
 \arguments{
-\item{length}{Interval from \code{\link[base]{findInterval}}}
+\item{length}{Numeric vector of lengths to be grouped. Used with \code{\link[base:findInterval]{base::findInterval()}}.}
 
-\item{group}{Length group used to cut the length data}
+\item{group}{Numeric value specifying the width of the length group (i.e., bin size).}
 }
 \value{
-Returns a vector indicating the mid-point of the length group.
+A numeric vector indicating the midpoint of the assigned length group.
 }
 \description{
-Helper function for converting lengths to length groups
-(Note: this isn't a general function; the output midpoints defining the
-groups aligns with DFO specific method/labeling)
+Helper function for converting lengths to length groups.
+\strong{Note:} This is not a general-purpose function — the output midpoints defining the groups
+are aligned with DFO-specific methods and labeling conventions.
 }

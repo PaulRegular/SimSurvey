@@ -7,11 +7,11 @@
 round_sim(sim)
 }
 \arguments{
-\item{sim}{Simulation from \code{\link{sim_distribution}}}
+\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
 }
 \value{
-Returns a rounded simulation object. Largely used as a helper in \code{\link{sim_survey}}.
+A rounded version of the simulation object.
 }
 \description{
-Round simulated population
+Rounds values in a simulation object, typically used as a helper function within \code{\link[=sim_survey]{sim_survey()}}.
 }

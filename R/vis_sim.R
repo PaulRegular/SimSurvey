@@ -1,43 +1,39 @@
 #' Make a flexdashboard for visualizing the simulation
 #'
-#' Assumes the working directory is the project directory
+#' Launches an interactive flexdashboard to visualize simulation outputs.
+#' Assumes the working directory is the root project directory.
 #'
-#' @param sim            Object produced by \code{\link{sim_abundance}}, \code{\link{sim_distribution}},
-#'                       \code{\link{sim_survey}} or \code{\link{test_surveys}}.
-#' @param ...            Additional arguments to send to \link[rmarkdown]{run}
+#' @param sim An object produced by [`sim_abundance()`], [`sim_distribution()`],
+#' [`sim_survey()`], or [`test_surveys()`].
+#' @param ... Additional arguments passed to [`rmarkdown::run()`].
 #'
-#' @return No value returned; function produces an interactive dashboard.
+#' @return No return value. This function launches an interactive dashboard in the Viewer pane or browser.
 #'
 #' @examples
-#'
 #' \donttest{
-#'
 #' if (interactive()) {
-#'
 #'   pop <- sim_abundance(ages = 1:20, years = 1:20)
 #'   vis_sim(pop)
 #'
 #'   dist <- sim_distribution(pop, grid = make_grid(res = c(10, 10)))
 #'   vis_sim(dist)
 #'
-#'   ## Run one survey design
+#'   # Single survey
 #'   survey <- sim_survey(dist, n_sims = 5)
 #'   vis_sim(survey)
 #'
-#'   ## Run several survey designs and assess stratified estimates
-#'   ## (Note: total number of simulations are low to decrease computation time for the example)
+#'   # Multiple survey designs
 #'   surveys <- expand_surveys(set_den = c(1, 2) / 1000,
 #'                             lengths_cap = c(100, 500),
 #'                             ages_cap = c(5, 20))
+#'
 #'   tests <- test_surveys(dist, surveys = surveys, keep_details = 1,
 #'                         n_sims = 5, n_loops = 5, cores = 1)
 #'   vis_sim(tests)
-#'
 #' }
 #' }
 #'
 #' @export
-#'
 
 vis_sim <- function(sim, ...) {
 

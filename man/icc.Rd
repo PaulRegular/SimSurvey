@@ -7,15 +7,14 @@
 icc(x, group)
 }
 \arguments{
-\item{x}{Response variable}
+\item{x}{Response variable.}
 
-\item{group}{Group}
+\item{group}{Grouping variable.}
 }
 \value{
-Returns estimate of intraclass correlation.
+An estimate of intraclass correlation.
 }
 \description{
-This is a simple function for calculating intraclass correlation. It uses
-\code{\link[lme4]{lmer}} to run the formula described here:
-https://en.wikipedia.org/wiki/Intraclass_correlation
+A simple function for calculating intraclass correlation using \code{\link[lme4:lmer]{lme4::lmer()}}.
+The formula follows the description provided on \href{https://en.wikipedia.org/wiki/Intraclass_correlation}{Wikipedia}.
 }

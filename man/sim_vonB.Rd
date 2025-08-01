@@ -15,35 +15,34 @@ sim_vonB(
 )
 }
 \arguments{
-\item{Linf}{Mean asymptotic length}
+\item{Linf}{Mean asymptotic length.}
 
-\item{L0}{Length at birth}
+\item{L0}{Length at birth.}
 
-\item{K}{Growth rate parameter}
+\item{K}{Growth rate parameter.}
 
-\item{log_sd}{Standard deviation of the relationship in log scale}
+\item{log_sd}{Standard deviation of the length-at-age relationship on the log scale.}
 
-\item{length_group}{Length group for length age key. Note that labels on the matrix produced are
-midpoints using the DFO conventions; see \code{\link{group_lengths}}. Also
-note that this length group will dictate the length group used in the
-stratified analysis run by \code{\link{run_strat}}.}
+\item{length_group}{Length group width for constructing the length-at-age key.
+Labels on the resulting matrix use midpoints according to DFO conventions; see \code{\link[=group_lengths]{group_lengths()}}.
+This value will also determine the length groupings used in the stratified analysis via \code{\link[=run_strat]{run_strat()}}.}
 
-\item{digits}{Integer indicating the number of decimal places to round the values to}
+\item{digits}{Number of decimal places to round simulated lengths to.}
 
-\item{plot}{Produce a simple plot of the simulated values?}
+\item{plot}{Logical. Should a simple plot of the simulated values be produced?}
 }
 \value{
-Returns a function for use inside \code{\link{sim_abundance}}.
+A function that can be passed to \code{\link[=sim_abundance]{sim_abundance()}}.
 }
 \description{
-This function outputs a function which holds the parameter values supplied and
-the function either simulates lengths given ages or generates a length age key
-give a sequence of ages.
+This function returns a closure that holds the supplied parameter values and can be used to
+either simulate lengths given ages or generate a length-at-age key from a sequence of ages.
 }
 \examples{
 growth_fun <- sim_vonB(Linf = 100, L0 = 5, K = 0.2, log_sd = 0.05, length_group = 1, plot = TRUE)
 growth_fun(age = rep(1:15, each = 100))
 growth_fun(age = 1:15, length_age_key = TRUE)
+
 sim_abundance(growth = sim_vonB(plot = TRUE))
 
 }

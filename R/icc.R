@@ -2,17 +2,15 @@
 
 #' Calculate intraclass correlation
 #'
-#' This is a simple function for calculating intraclass correlation. It uses
-#' \code{\link[lme4]{lmer}} to run the formula described here:
-#' https://en.wikipedia.org/wiki/Intraclass_correlation
+#' A simple function for calculating intraclass correlation using [`lme4::lmer()`].
+#' The formula follows the description provided on [Wikipedia](https://en.wikipedia.org/wiki/Intraclass_correlation).
 #'
-#' @param x      Response variable
-#' @param group  Group
+#' @param x Response variable.
+#' @param group Grouping variable.
 #'
-#' @return Returns estimate of intraclass correlation.
+#' @return An estimate of intraclass correlation.
 #'
 #' @export
-#'
 
 icc <- function(x, group) {
 

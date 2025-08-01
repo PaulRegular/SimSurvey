@@ -40,16 +40,14 @@ fibonacci <- function(from, to) {
 
 #' Print object size
 #'
-#' @description A wrapper for \code{\link[utils]{object.size}} that prints in Mb
-#' by default
+#' A wrapper for [`utils::object.size()`] that prints in megabytes (Mb) by default.
 #'
-#' @param x      an \code{R} object
-#' @param units  the units to be used in printing the size
+#' @param x An R object.
+#' @param units The units to be used when printing the size.
 #'
-#' @return Returns a character with the object size followed by the unit.
+#' @return A character string with the object size followed by the unit.
 #'
 #' @export
-#'
 
 object_size <- function(x, units = "Mb") {
   format(utils::object.size(x), units = units)

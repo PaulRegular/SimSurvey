@@ -1,16 +1,16 @@
 
 #' Calculate common error statistics
 #'
-#' @param error Vector of errors
+#' @param error A numeric vector of errors.
 #'
-#' @return Returns a named vector of error statistics including
-#'         mean error (\code{"ME"}),
-#'         mean absolute error (\code{"MAE"}),
-#'         mean squared error (\code{"MSE"}) and
-#'         root mean squared error (\code{"RMSE"})
+#' @return A named vector of error statistics including:
+#'
+#' - **ME**: Mean error
+#' - **MAE**: Mean absolute error
+#' - **MSE**: Mean squared error
+#' - **RMSE**: Root mean squared error
 #'
 #' @export
-#'
 
 error_stats <- function(error) {
   c(ME = mean(error),
@@ -22,19 +22,20 @@ error_stats <- function(error) {
 
 #' Prepare simulated data for stratified analysis
 #'
-#' @description Generate set details (setdet), length-frequency (lf)
-#' and age-frequency (af) data for stratified analysis
+#' Generate set details (`setdet`), length-frequency (`lf`), and age-frequency (`af`)
+#' data for stratified analysis.
 #'
-#' @param sim           Simulation from \code{\link{sim_survey}}
-#' @param length_group  Size of the length frequency bins
-#' @param alk_scale     Spatial scale at which to construct and apply age-length-keys:
-#'                      "division", "strat" or "set".
+#' @param sim Simulation object returned by [`sim_survey()`].
+#' @param length_group Size of the length frequency bins.
+#' @param alk_scale Spatial scale at which to construct and apply age-length keys:
+#' `"division"`, `"strat"`, or `"set"`.
 #'
-#' @return Returns a list including set details (\code{setdet}), length-frequencies (\code{lf}),
-#' and age-frequencies (\code{af}).
+#' @return A list containing:
+#' - `setdet`: Set details
+#' - `lf`: Length-frequency data
+#' - `af`: Age-frequency data
 #'
 #' @export
-#'
 
 strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 
@@ -113,24 +114,24 @@ strat_data <- function(sim, length_group = 3, alk_scale = "division") {
 
 
 
-#' Calculate stratified means, variances and confidence intervals across groups
+#' Calculate stratified means, variances, and confidence intervals across groups
 #'
-#' @details Function was mainly created for use in the \code{\link{run_strat}} function.
-#' It first calculates strat-level statistics and then the larger-scale statistics like total abundance
+#' This function is primarily designed for use within [`run_strat()`]. It first calculates
+#' statistics at the stratum level and then computes broader summaries like total abundance.
 #'
-#' @param data            Expects data.table with all grouping variables in stacked format (must include
-#'                        strat_area and tow_area for scaling values)
-#' @param metric          Variable in specified data.table. e.g. "number", "mass"
-#' @param strat_groups    Grouping variables for calculations of the fine-scale strat-level
-#'                        means (strat and strat_area are required). e.g. c("year", "species",
-#'                        "shiptrip", "NAFOdiv", "strat", "strat_area","age")
-#' @param survey_groups   Grouping variables for large-scale summary calculations. e.g. ("year","species")
-#' @param confidence      Percent for confidence limits
+#' @param data A `data.table` with all grouping variables in stacked format. Must include
+#' `strat_area` and `tow_area` for scaling values.
+#' @param metric Name of the variable in `data.table` to summarize (e.g., `"number"`, `"mass"`).
+#' @param strat_groups Grouping variables for fine-scale stratum-level means.
+#' Must include `"strat"` and `"strat_area"`.
+#' Example: `c("year", "species", "shiptrip", "NAFOdiv", "strat", "strat_area", "age")`
+#' @param survey_groups Grouping variables for large-scale summary calculations
+#' Example: `c("year", "species")`
+#' @param confidence Confidence limit percentage (e.g., 95 for 95% CI).
 #'
-#' @return Returns a data.table including stratified estimates of abundance.
+#' @return A `data.table` containing stratified estimates of abundance.
 #'
 #' @export
-#'
 
 strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
                         survey_groups = NULL, confidence = 95) {
@@ -184,39 +185,37 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 
 #' Run stratified analysis on simulated data
 #'
-#' @param sim               Simulation from \code{\link{sim_survey}}
-#' @param length_group      Size of the length frequency bins for both abundance at length calculations
-#'                          and age-length-key construction. By default this value is inherited from
-#'                          the value defined in \code{\link{sim_abundance}} from the closure supplied to
-#'                          \code{sim_length} ("inherit"). A numeric value can also be supplied, however,
-#'                          a mismatch in length groupings will cause issues with \code{\link{strat_error}}
-#'                          as true vs. estimated length groupings will be mismatched.
-#' @param alk_scale         Spatial scale at which to construct and apply age-length-keys:
-#'                          "division" or "strat".
-#' @param strat_data_fun    Function for preparing data for stratified analysis (e.g. \code{\link{strat_data}})
-#' @param strat_means_fun   Function for calculating stratified means (e.g. \code{\link{strat_means}})
+#' @param sim Simulation object from [`sim_survey()`].
+#' @param length_group Size of the length frequency bins used for both abundance-at-length
+#' calculations and age-length-key construction. By default, this is inherited from the
+#' value defined in [`sim_abundance()`] via the closure supplied to `sim_length` (`"inherit"`).
+#' You may also supply a numeric value; however, mismatches in length groupings may cause
+#' issues with [`strat_error()`] if true vs. estimated groupings are not aligned.
+#' @param alk_scale Spatial scale at which to construct and apply age-length keys:
+#' `"division"` or `"strat"`.
+#' @param strat_data_fun Function used to prepare data for stratified analysis (e.g., [`strat_data()`]).
+#' @param strat_means_fun Function used to calculate stratified means (e.g., [`strat_means()`]).
 #'
-#' @details The \code{"strat_data_fun"} and \code{"strat_means_fun"} allow the use of custom
-#'          \code{\link{strat_data}} and  \code{\link{strat_means}} functions.
+#' @details The `strat_data_fun` and `strat_means_fun` arguments allow you to use custom
+#' [`strat_data()`] and [`strat_means()`] functions.
 #'
-#' @return Adds stratified analysis results for the total population (\code{"total_strat"})
-#'         and the population aggregated by length group and age (\code{"length_strat"} and
-#'         \code{"age_strat"}, respectively) to the \code{sim} list.
+#' @return Adds stratified analysis results to the `sim` list:
+#' - `"total_strat"`: Results for the total population
+#' - `"length_strat"`: Results aggregated by length group
+#' - `"age_strat"`: Results aggregated by age
 #'
 #' @examples
-#'
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5,
 #'                      R = sim_R(log_mean = log(1e+7)),
 #'                      growth = sim_vonB(length_group = 1)) %>%
-#'            sim_distribution(grid = make_grid(res = c(20, 20)),
-#'                             ays_covar = sim_ays_covar(sd = 1)) %>%
-#'            sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
-#'            run_strat()
+#'   sim_distribution(grid = make_grid(res = c(20, 20)),
+#'                    ays_covar = sim_ays_covar(sd = 1)) %>%
+#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
+#'   run_strat()
 #' }
 #'
 #' @export
-#'
 
 run_strat <- function(sim,
                       length_group = "inherit",
@@ -268,30 +267,29 @@ run_strat <- function(sim,
 
 #' Calculate error of stratified estimates
 #'
-#' @param sim   Object from \code{\link{run_strat}} (includes simulated population and
-#'              survey along with stratified analysis results)
+#' @param sim Object returned by [`run_strat()`], which includes the simulated population,
+#' survey results, and stratified analysis outputs.
 #'
-#' @return Adds details and summary stats of stratified estimate error to the
-#'         \code{sim} list, ending with \code{"_strat_error"} or
-#'         \code{"_strat_error_stats"}. Error statistics includes mean absolute
-#'         error (\code{"MAE"}), mean squared error (\code{"MSE"}), and
-#'         root mean squared error (\code{"RMSE"})
+#' @return Adds error details and summary statistics to the `sim` list, ending with
+#' `"*_strat_error"` and `"*_strat_error_stats"`. Error statistics include:
+#'
+#' - **MAE**: Mean absolute error
+#' - **MSE**: Mean squared error
+#' - **RMSE**: Root mean squared error
 #'
 #' @examples
-#'
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5,
 #'                      R = sim_R(log_mean = log(1e+7)),
 #'                      growth = sim_vonB(length_group = 1)) %>%
-#'            sim_distribution(grid = make_grid(res = c(20, 20)),
-#'                             ays_covar = sim_ays_covar(sd = 1)) %>%
-#'            sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
-#'            run_strat() %>%
-#'            strat_error()
+#'   sim_distribution(grid = make_grid(res = c(20, 20)),
+#'                    ays_covar = sim_ays_covar(sd = 1)) %>%
+#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) %>%
+#'   run_strat() %>%
+#'   strat_error()
 #' }
 #'
 #' @export
-#'
 
 strat_error <- function(sim) {
 

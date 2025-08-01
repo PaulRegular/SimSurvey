@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_strat.R
 \name{strat_means}
 \alias{strat_means}
-\title{Calculate stratified means, variances and confidence intervals across groups}
+\title{Calculate stratified means, variances, and confidence intervals across groups}
 \usage{
 strat_means(
   data = NULL,
@@ -13,26 +13,24 @@ strat_means(
 )
 }
 \arguments{
-\item{data}{Expects data.table with all grouping variables in stacked format (must include
-strat_area and tow_area for scaling values)}
+\item{data}{A \code{data.table} with all grouping variables in stacked format. Must include
+\code{strat_area} and \code{tow_area} for scaling values.}
 
-\item{metric}{Variable in specified data.table. e.g. "number", "mass"}
+\item{metric}{Name of the variable in \code{data.table} to summarize (e.g., \code{"number"}, \code{"mass"}).}
 
-\item{strat_groups}{Grouping variables for calculations of the fine-scale strat-level
-means (strat and strat_area are required). e.g. c("year", "species",
-"shiptrip", "NAFOdiv", "strat", "strat_area","age")}
+\item{strat_groups}{Grouping variables for fine-scale stratum-level means.
+Must include \code{"strat"} and \code{"strat_area"}.
+Example: \code{c("year", "species", "shiptrip", "NAFOdiv", "strat", "strat_area", "age")}}
 
-\item{survey_groups}{Grouping variables for large-scale summary calculations. e.g. ("year","species")}
+\item{survey_groups}{Grouping variables for large-scale summary calculations
+Example: \code{c("year", "species")}}
 
-\item{confidence}{Percent for confidence limits}
+\item{confidence}{Confidence limit percentage (e.g., 95 for 95\% CI).}
 }
 \value{
-Returns a data.table including stratified estimates of abundance.
+A \code{data.table} containing stratified estimates of abundance.
 }
 \description{
-Calculate stratified means, variances and confidence intervals across groups
-}
-\details{
-Function was mainly created for use in the \code{\link{run_strat}} function.
-It first calculates strat-level statistics and then the larger-scale statistics like total abundance
+This function is primarily designed for use within \code{\link[=run_strat]{run_strat()}}. It first calculates
+statistics at the stratum level and then computes broader summaries like total abundance.
 }

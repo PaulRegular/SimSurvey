@@ -7,8 +7,8 @@
 \format{
 A sf object (MULTIPOLYGON)
 
-Derived from global administrative boundaries data (http://gadm.org/) downloaded
-using the \code{\link{getData}} function. Details provided in the
+Derived from global administrative boundaries data (http://gadm.org/), which
+was downloaded using the \code{\link[raster:getData]{raster::getData()}} function. Details provided in the
 data-raw folder for this package.
 }
 \usage{

@@ -14,28 +14,27 @@ sim_parabola(
 )
 }
 \arguments{
-\item{alpha, mu, sigma}{Parameters that control the shape of the parabola. Can be one value or
-a vector of equal length to the number of ages in the simulation
-(e.g. age-specific depth associations can be specified).}
+\item{alpha, }{mu, sigma Parameters that control the shape of the parabola. Can be a single value or
+a vector of the same length as the number of ages in the simulation (e.g., allowing age-specific
+depth associations).}
 
-\item{sigma_right}{Optional parameter to impose asymmetry by supplying a sigma parameter for the right side.
-If used, \code{sigma} will be used to define the width of the left side. Ignored if \code{NULL}.}
+\item{sigma_right}{Optional parameter to impose asymmetry by specifying a different \code{sigma} for the right side.
+If used, \code{sigma} defines the width of the left side. Ignored if \code{NULL}.}
 
-\item{log_space}{Should shape of the parabola be defined in log space? If \code{TRUE}, logged parameters are
-assumed to be supplied and x values used in the parabola equation are log transformed.
-This allows a more lognormal curve to be defined and, hence, allows a heavier tail and it
-forces very low values near zero.}
+\item{log_space}{Logical. Should the shape of the parabola be defined in log space?
+If \code{TRUE}, parameters are assumed to be logged, and input \code{x} values are log-transformed.
+This produces a lognormal-like curve with a heavier right tail and forces low values near zero.}
 
-\item{plot}{Produce a simple plot of the simulated values?}
+\item{plot}{Logical. Should a simple plot of the simulated values be produced?}
 }
 \value{
-Returns a function for use inside \code{\link{sim_distribution}}.
+A function that can be passed to \code{\link[=sim_distribution]{sim_distribution()}}.
 }
 \description{
-Closure to be used in \code{\link{sim_distribution}}. Form is based on the bi-gaussian function described here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/.
+Closure to be used in \code{\link[=sim_distribution]{sim_distribution()}}. The form is based on the bi-Gaussian
+function described \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/}{here}.
 }
 \examples{
-
 parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)
 parabola_fun(data.frame(depth = 0:100))
 

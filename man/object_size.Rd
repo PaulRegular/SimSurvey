@@ -7,14 +7,13 @@
 object_size(x, units = "Mb")
 }
 \arguments{
-\item{x}{an \code{R} object}
+\item{x}{An R object.}
 
-\item{units}{the units to be used in printing the size}
+\item{units}{The units to be used when printing the size.}
 }
 \value{
-Returns a character with the object size followed by the unit.
+A character string with the object size followed by the unit.
 }
 \description{
-A wrapper for \code{\link[utils]{object.size}} that prints in Mb
-by default
+A wrapper for \code{\link[utils:object.size]{utils::object.size()}} that prints in megabytes (Mb) by default.
 }

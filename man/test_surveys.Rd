@@ -22,113 +22,114 @@ test_surveys(
 resume_test(export_dir = NULL, ...)
 }
 \arguments{
-\item{sim}{Simulation from \code{\link{sim_distribution}}.}
+\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
 
-\item{surveys}{A data.frame or data.table with a sequence of surveys and their settings
-with a format like the data.table returned by \code{\link{expand_surveys}}.}
+\item{surveys}{A \code{data.frame} or \code{data.table} of survey configurations, formatted like
+the object returned by \code{\link[=expand_surveys]{expand_surveys()}}.}
 
-\item{keep_details}{Survey and stratified analysis details are dropped here to minimize object
-size. This argument allows the user to keep the details of one
-survey by specifying the survey number in the data.frame supplied to \code{surveys}.}
+\item{keep_details}{Integer. Retain full details for one survey (specified by survey number),
+and drop the rest to reduce object size.}
 
-\item{n_sims}{Number of times to simulate a survey over the simulated population.
-Requesting a large number of simulations here may max out your RAM.}
+\item{n_sims}{Number of surveys to simulate per design. Large values may consume significant RAM.}
 
-\item{n_loops}{Number of times to run the \code{\link{sim_survey}} function. Total
-simulations run will be the product of \code{n_sims} and \code{n_loops}
-arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
-will be easier on RAM, but may be slower.}
+\item{n_loops}{Number of times to loop \code{\link[=sim_survey]{sim_survey()}}.
+Total number of simulations = \code{n_sims} × \code{n_loops}.
+A lower \code{n_sims} and higher \code{n_loops} combination is more memory efficient but may take longer.}
 
-\item{cores}{Number of cores to use in parallel. More cores should speed up the process.}
+\item{cores}{Number of processor cores to use in parallel.}
 
-\item{export_dir}{Directory for exporting results as they are generated. Main use of the export
-is to allow this process to pick up where \code{test_survey} left off by
-calling \code{resume_test}. If NULL, nothing is exported.}
+\item{export_dir}{Optional directory path to export intermediate results.
+Useful for resuming later with \code{\link[=resume_test]{resume_test()}}. If \code{NULL}, nothing is exported.}
 
-\item{length_group}{Size of the length frequency bins for both abundance at length calculations
-and age-length-key construction. By default this value is inherited from
-the value defined in \code{\link{sim_abundance}} from the closure supplied to
-\code{sim_length} ("inherit"). A numeric value can also be supplied, however,
-a mismatch in length groupings will cause issues with \code{\link{strat_error}}
-as true vs. estimated length groupings will be mismatched.}
+\item{length_group}{Size of the length frequency bins used for both abundance-at-length
+calculations and age-length-key construction. By default, this is inherited from the
+value defined in \code{\link[=sim_abundance]{sim_abundance()}} via the closure supplied to \code{sim_length} (\code{"inherit"}).
+You may also supply a numeric value; however, mismatches in length groupings may cause
+issues with \code{\link[=strat_error]{strat_error()}} if true vs. estimated groupings are not aligned.}
 
-\item{alk_scale}{Spatial scale at which to construct and apply age-length-keys:
-"division" or "strat".}
+\item{alk_scale}{Spatial scale at which to construct and apply age-length keys:
+\code{"division"} or \code{"strat"}.}
 
-\item{progress}{Display progress bar and messages?}
+\item{progress}{Logical. Should progress bar and messages be displayed?}
 
 \item{...}{
   Arguments passed on to \code{\link[=sim_survey]{sim_survey}}
   \describe{
-    \item{\code{q}}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
-(returned values must be between 0 and 1)}
-    \item{\code{trawl_dim}}{Trawl width and distance (same units as grid)}
-    \item{\code{resample_cells}}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
-because depletion is imposed at the cell level.}
-    \item{\code{binom_error}}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
-at older ages because of more frequent rounding to zero.}
-    \item{\code{min_sets}}{Minimum number of sets per strat}
-    \item{\code{age_sampling}}{Should age sampling be "stratified" (default) or "random"?}
-    \item{\code{age_length_group}}{Numeric value indicating the size of the length bins for stratified
-age sampling. Ignored if \code{age_sampling = "random"}.}
-    \item{\code{age_space_group}}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
-That is, age sampling can be spread across each "division", "strat" or "set"
-in each year to a maximum number within each length bin (cap is defined using
-the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
-    \item{\code{custom_sets}}{Supply an object of the same structure as returned by \code{\link{sim_sets}} which
-specifies a custom series of set locations to be sampled. Set locations are
-automated if \code{custom_sets = NULL}.}
+    \item{\code{q}}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability at age.
+Returned values must range between 0 and 1.}
+    \item{\code{trawl_dim}}{Trawl width and distance (same units as the grid).}
+    \item{\code{resample_cells}}{Logical. If \code{TRUE}, allows grid cells to be resampled.
+May introduce bias, as depletion is applied at the cell level.}
+    \item{\code{binom_error}}{Logical. Should binomial error be imposed?
+If \code{FALSE}, stratified estimates at older ages may be biased due to rounding zeros.}
+    \item{\code{min_sets}}{Minimum number of sets per stratum.}
+    \item{\code{age_sampling}}{Type of age sampling strategy: \code{"stratified"} (default) or \code{"random"}.}
+    \item{\code{age_length_group}}{Width of length bins for stratified age sampling. Ignored if \code{age_sampling = "random"}.}
+    \item{\code{age_space_group}}{Spatial scale for stratified age sampling.
+Options: \code{"division"} (default), \code{"strat"}, or \code{"set"}. Ignored if \code{age_sampling = "random"}.}
+    \item{\code{custom_sets}}{A \code{data.table} of set locations (same structure as returned by \code{\link[=sim_sets]{sim_sets()}}).
+If \code{NULL}, set locations are generated automatically.}
   }}
 }
 \value{
-Adds a table of survey designs tested. Also adds details and summary
-stats of stratified estimate error to the \code{sim} list, ending with
-\code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
-includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
-mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
-Also adds a sample size summary table (\code{"samp_totals"}) to the list.
-Survey and stratified analysis details are not kept to minimize object size.
+The returned object includes:
+\itemize{
+\item A table of survey designs tested
+\item Stratified error results (\verb{*_strat_error} and \verb{*_strat_error_stats})
+\item Error statistics:
+\itemize{
+\item \code{ME}: Mean error
+\item \code{MAE}: Mean absolute error
+\item \code{MSE}: Mean squared error
+\item \code{RMSE}: Root mean squared error
+}
+\item A summary table of total sample sizes (\code{samp_totals})
+}
+
+Survey and stratified analysis details are dropped for all but one retained survey (via \code{keep_details}).
 }
 \description{
-This function allows a series of sampling design settings to
-be set and tested on the simulated population. True population values are compared
-to stratified estimates of abundance.
+This function allows a series of sampling design settings to be tested on a
+simulated population. True population values are compared to stratified estimates
+of abundance using a user-specified number of simulated surveys.
 }
 \details{
-Depending on the settings, \code{test_surveys} may take a long time to run.
-The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
-Note that progress bar time estimates will be biased here by previous completions.
-\code{test_loop} is a helper function used in both \code{test_surveys} and
-\code{resume_test}. CAUTION: while the dots construct is available in the \code{resume_test}
-function, be careful adding arguments as it will change the simulation settings
-if the arguments added were not specified in the initial \code{test_surveys} run.
+Depending on the number of surveys and simulations, \code{test_surveys()} can take a long time to run.
+
+The \code{\link[=resume_test]{resume_test()}} function can be used to resume partial runs.
+Note: progress bar time estimates may be biased if resuming previously completed iterations.
+
+Internally, this function calls a helper called \code{test_loop()} to process each survey simulation.
+
+\strong{Caution:} When using \code{...} inside \code{\link[=resume_test]{resume_test()}}, be careful not to pass arguments that
+were not part of the original \code{test_surveys()} call, as this could change simulation settings.
 }
 \examples{
-
 \donttest{
 pop <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
-           sim_distribution(grid = make_grid(res = c(10, 10)))
+  sim_distribution(grid = make_grid(res = c(10, 10)))
 
-surveys <- expand_surveys(set_den = c(1, 2) / 1000,
-                          lengths_cap = c(100, 500),
-                          ages_cap = c(5, 20))
+surveys <- expand_surveys(
+  set_den = c(1, 2) / 1000,
+  lengths_cap = c(100, 500),
+  ages_cap = c(5, 20)
+)
 
-## This call runs 25 simulations of 8 different surveys over the same
-## population, and then runs a stratified analysis and compares true vs
-## estimated values. (Note: total number of simulations are low to decrease
-## computation time for the example)
-tests <- test_surveys(pop, surveys = surveys, keep_details = 1,
-                      n_sims = 5, n_loops = 5, cores = 1)
+# Simulate 25 surveys for each of 8 survey designs (low for example speed)
+tests <- test_surveys(
+  pop, surveys = surveys, keep_details = 1,
+  n_sims = 5, n_loops = 5, cores = 1
+)
 
 library(plotly)
 tests$total_strat_error \%>\%
-    filter(survey == 8, sim \%in\% 1:50) \%>\%
-    group_by(sim) \%>\%
-    plot_ly(x = ~year) \%>\%
-    add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") \%>\%
-    add_lines(y = ~I, color = I("black"), name = "true") \%>\%
-    layout(xaxis = list(title = "Year"),
-           yaxis = list(title = "Abundance index"))
+  filter(survey == 8, sim \%in\% 1:50) \%>\%
+  group_by(sim) \%>\%
+  plot_ly(x = ~year) \%>\%
+  add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") \%>\%
+  add_lines(y = ~I, color = I("black"), name = "true") \%>\%
+  layout(xaxis = list(title = "Year"),
+         yaxis = list(title = "Abundance index"))
 
 plot_total_strat_fan(tests, surveys = 1:8)
 plot_length_strat_fan(tests, surveys = 1:8)
@@ -140,7 +141,6 @@ plot_error_surface(tests, plot_by = "samples")
 
 plot_survey_rank(tests, which_strat = "length")
 plot_survey_rank(tests, which_strat = "age")
-
 }
 
 }

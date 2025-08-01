@@ -1,19 +1,19 @@
 
 
-#' Set-up a series of surveys from all combinations of settings supplied
+#' Set up a series of surveys from all combinations of settings supplied
 #'
-#' @description Function is simply a wrapper for \code{\link[base]{expand.grid}} that
-#' adds a survey number to the returned object
+#' A convenience function that wraps [`base::expand.grid()`] to generate all combinations
+#' of survey design parameters and adds a unique survey number to each row.
 #'
-#' @param set_den           Vector of set densities (number of sets per grid unit squared)
-#' @param lengths_cap       Vector of maximum number of lengths measured per set
-#' @param ages_cap          Vector of maximum number of otoliths to collect per length group
-#'                          per division per year
+#' @param set_den A vector of set densities (sets per grid unit squared).
+#' @param lengths_cap A vector of maximum numbers of lengths measured per set.
+#' @param ages_cap A vector of maximum numbers of otoliths to collect per length group
+#' per division per year.
 #'
-#' @return Returns a data.frame including all combinations of the supplied vectors.
+#' @return A `data.frame` containing all combinations of the supplied vectors, with an added
+#' `survey` column identifying each combination.
 #'
 #' @export
-#'
 
 expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
                            lengths_cap = c(5, 10, 20, 50, 100, 500, 1000),
@@ -26,72 +26,76 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 
 #' Test sampling design of multiple surveys using a stratified analysis
 #'
-#' @description   This function allows a series of sampling design settings to
-#' be set and tested on the simulated population. True population values are compared
-#' to stratified estimates of abundance.
+#' This function allows a series of sampling design settings to be tested on a
+#' simulated population. True population values are compared to stratified estimates
+#' of abundance using a user-specified number of simulated surveys.
 #'
-#' @param sim               Simulation from \code{\link{sim_distribution}}.
-#' @param surveys           A data.frame or data.table with a sequence of surveys and their settings
-#'                          with a format like the data.table returned by \code{\link{expand_surveys}}.
-#' @param keep_details      Survey and stratified analysis details are dropped here to minimize object
-#'                          size. This argument allows the user to keep the details of one
-#'                          survey by specifying the survey number in the data.frame supplied to \code{surveys}.
-#' @param n_sims            Number of times to simulate a survey over the simulated population.
-#'                          Requesting a large number of simulations here may max out your RAM.
-#' @param n_loops           Number of times to run the \code{\link{sim_survey}} function. Total
-#'                          simulations run will be the product of \code{n_sims} and \code{n_loops}
-#'                          arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
-#'                          will be easier on RAM, but may be slower.
-#' @param cores             Number of cores to use in parallel. More cores should speed up the process.
-#' @param export_dir        Directory for exporting results as they are generated. Main use of the export
-#'                          is to allow this process to pick up where \code{test_survey} left off by
-#'                          calling \code{resume_test}. If NULL, nothing is exported.
-#' @param progress          Display progress bar and messages?
-#' @inherit                 run_strat
-#' @inheritDotParams        sim_survey -sim -n_sims -set_den -lengths_cap -ages_cap -light
+#' @param sim A simulation object returned by [`sim_distribution()`].
+#' @param surveys A `data.frame` or `data.table` of survey configurations, formatted like
+#' the object returned by [`expand_surveys()`].
+#' @param keep_details Integer. Retain full details for one survey (specified by survey number),
+#' and drop the rest to reduce object size.
+#' @param n_sims Number of surveys to simulate per design. Large values may consume significant RAM.
+#' @param n_loops Number of times to loop [`sim_survey()`].
+#' Total number of simulations = `n_sims` × `n_loops`.
+#' A lower `n_sims` and higher `n_loops` combination is more memory efficient but may take longer.
+#' @param cores Number of processor cores to use in parallel.
+#' @param export_dir Optional directory path to export intermediate results.
+#' Useful for resuming later with [`resume_test()`]. If `NULL`, nothing is exported.
+#' @param progress Logical. Should progress bar and messages be displayed?
+#' @inheritParams run_strat
+#' @inheritDotParams sim_survey -sim -n_sims -set_den -lengths_cap -ages_cap -light
 #'
-#' @details Depending on the settings, \code{test_surveys} may take a long time to run.
-#' The \code{resume_test} function is for resuming partial runs of \code{test_surveys}.
-#' Note that progress bar time estimates will be biased here by previous completions.
-#' \code{test_loop} is a helper function used in both \code{test_surveys} and
-#' \code{resume_test}. CAUTION: while the dots construct is available in the \code{resume_test}
-#' function, be careful adding arguments as it will change the simulation settings
-#' if the arguments added were not specified in the initial \code{test_surveys} run.
+#' @details
+#' Depending on the number of surveys and simulations, `test_surveys()` can take a long time to run.
 #'
-#' @return Adds a table of survey designs tested. Also adds details and summary
-#'         stats of stratified estimate error to the \code{sim} list, ending with
-#'         \code{"_strat_error"} or \code{"_strat_error_stats"}. Error statistics
-#'         includes mean error (\code{"ME"}), mean absolute error (\code{"MAE"}),
-#'         mean squared error (\code{"MSE"}), and root mean squared error (\code{"RMSE"}).
-#'         Also adds a sample size summary table (\code{"samp_totals"}) to the list.
-#'         Survey and stratified analysis details are not kept to minimize object size.
+#' The [`resume_test()`] function can be used to resume partial runs.
+#' Note: progress bar time estimates may be biased if resuming previously completed iterations.
+#'
+#' Internally, this function calls a helper called `test_loop()` to process each survey simulation.
+#'
+#' **Caution:** When using `...` inside [`resume_test()`], be careful not to pass arguments that
+#' were not part of the original `test_surveys()` call, as this could change simulation settings.
+#'
+#' @return The returned object includes:
+#'
+#' - A table of survey designs tested
+#' - Stratified error results (`*_strat_error` and `*_strat_error_stats`)
+#' - Error statistics:
+#'   - `ME`: Mean error
+#'   - `MAE`: Mean absolute error
+#'   - `MSE`: Mean squared error
+#'   - `RMSE`: Root mean squared error
+#' - A summary table of total sample sizes (`samp_totals`)
+#'
+#' Survey and stratified analysis details are dropped for all but one retained survey (via `keep_details`).
 #'
 #' @examples
-#'
 #' \donttest{
 #' pop <- sim_abundance(ages = 1:20, years = 1:5) %>%
-#'            sim_distribution(grid = make_grid(res = c(10, 10)))
+#'   sim_distribution(grid = make_grid(res = c(10, 10)))
 #'
-#' surveys <- expand_surveys(set_den = c(1, 2) / 1000,
-#'                           lengths_cap = c(100, 500),
-#'                           ages_cap = c(5, 20))
+#' surveys <- expand_surveys(
+#'   set_den = c(1, 2) / 1000,
+#'   lengths_cap = c(100, 500),
+#'   ages_cap = c(5, 20)
+#' )
 #'
-#' ## This call runs 25 simulations of 8 different surveys over the same
-#' ## population, and then runs a stratified analysis and compares true vs
-#' ## estimated values. (Note: total number of simulations are low to decrease
-#' ## computation time for the example)
-#' tests <- test_surveys(pop, surveys = surveys, keep_details = 1,
-#'                       n_sims = 5, n_loops = 5, cores = 1)
+#' # Simulate 25 surveys for each of 8 survey designs (low for example speed)
+#' tests <- test_surveys(
+#'   pop, surveys = surveys, keep_details = 1,
+#'   n_sims = 5, n_loops = 5, cores = 1
+#' )
 #'
 #' library(plotly)
 #' tests$total_strat_error %>%
-#'     filter(survey == 8, sim %in% 1:50) %>%
-#'     group_by(sim) %>%
-#'     plot_ly(x = ~year) %>%
-#'     add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") %>%
-#'     add_lines(y = ~I, color = I("black"), name = "true") %>%
-#'     layout(xaxis = list(title = "Year"),
-#'            yaxis = list(title = "Abundance index"))
+#'   filter(survey == 8, sim %in% 1:50) %>%
+#'   group_by(sim) %>%
+#'   plot_ly(x = ~year) %>%
+#'   add_lines(y = ~I_hat, alpha = 0.5, name = "estimated") %>%
+#'   add_lines(y = ~I, color = I("black"), name = "true") %>%
+#'   layout(xaxis = list(title = "Year"),
+#'          yaxis = list(title = "Abundance index"))
 #'
 #' plot_total_strat_fan(tests, surveys = 1:8)
 #' plot_length_strat_fan(tests, surveys = 1:8)
@@ -103,7 +107,6 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' plot_survey_rank(tests, which_strat = "length")
 #' plot_survey_rank(tests, which_strat = "age")
-#'
 #' }
 #'
 #' @export
@@ -112,7 +115,6 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #' @import doParallel
 #' @import parallel
 #' @import foreach
-#'
 
 test_surveys <- function(sim, surveys = expand_surveys(), keep_details = 1,
                          n_sims = 1, n_loops = 100, cores = 2, export_dir = NULL,

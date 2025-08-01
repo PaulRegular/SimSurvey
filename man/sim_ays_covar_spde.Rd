@@ -17,60 +17,58 @@ sim_ays_covar_spde(
 )
 }
 \arguments{
-\item{sd}{Variance (can be age specific)}
+\item{sd}{Variance of the process (can be age-specific).}
 
-\item{range}{Decorrelation range}
+\item{range}{Decorrelation range.}
 
-\item{model}{String indicating "barrier" or "spde" to generate Q with}
+\item{model}{Either \code{"barrier"} or \code{"spde"}; determines how the precision matrix \code{Q} is generated.}
 
-\item{phi_age}{Defines autocorrelation through ages. Can be one value or
-a vector of the same length as ages.}
+\item{phi_age}{Autocorrelation through ages. Can be a single value or a vector the same length as \code{ages}.}
 
-\item{phi_year}{Defines autocorrelation through years. Can be one value
-or a vector of the same length as years.}
+\item{phi_year}{Autocorrelation through years. Can be a single value or a vector the same length as \code{years}.}
 
-\item{group_ages}{Make space-age-year variance equal across these ages}
+\item{group_ages}{Ages to group together for shared space-age-year variance.}
 
-\item{group_years}{Make space-age-year variance equal across these years}
+\item{group_years}{Years to group together for shared space-age-year variance.}
 
-\item{mesh}{The mesh used to generate the precision matrix}
+\item{mesh}{The mesh used to generate the precision matrix.}
 
-\item{barrier.triangles}{the set of triangles in the barrier of the mesh
-for the barrier model}
+\item{barrier.triangles}{The set of mesh triangles that define the barrier (used only in the barrier model).}
 }
 \value{
-Returns a function for use in \code{\link{sim_distribution}}.
+A function that can be passed to \code{\link[=sim_distribution]{sim_distribution()}} as the \code{ays_covar} argument.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-
-Returns a function to use inside \code{\link{sim_distribution}} to
-generate the error term.
+}
+\details{
+Returns a function for use inside \code{\link[=sim_distribution]{sim_distribution()}} to generate the error term.
 }
 \examples{
-
 \donttest{
-
 if (requireNamespace("INLA")) {
 
-  ## Make a grid
-  my_grid <- make_grid(res = c(10,10))
+  # Make a grid
+  my_grid <- make_grid(res = c(10, 10))
 
-  ## Make a mesh based off it
-
+  # Make a mesh based on the grid
   my_mesh <- make_mesh(my_grid)
+
+  # Simulate and plot
   sim <- sim_abundance(ages = 1:10, years = 1:10) \%>\%
-          sim_distribution(grid = my_grid,
-                           ays_covar = sim_ays_covar_spde(phi_age = 0.8,
-                                                          phi_year = 0.1,
-                                                          model = "spde",
-                                                          mesh = my_mesh),
-                           depth_par = sim_parabola(mu = 200,
-                                                    sigma = 50))
+    sim_distribution(
+      grid = my_grid,
+      ays_covar = sim_ays_covar_spde(
+        phi_age = 0.8,
+        phi_year = 0.1,
+        model = "spde",
+        mesh = my_mesh
+      ),
+      depth_par = sim_parabola(mu = 200, sigma = 50)
+    )
+
   plot_distribution(sim, ages = 1:5, years = 1:5, type = "heatmap")
-
 }
-
 }
 
 }

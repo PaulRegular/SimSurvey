@@ -14,79 +14,71 @@ sim_survey_parallel(
 )
 }
 \arguments{
-\item{sim}{Simulation from \code{\link{sim_distribution}}}
+\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
 
-\item{n_sims}{Number of times to simulate a survey over the simulated population.
-Requesting a large number of simulations here may max out your RAM.}
+\item{n_sims}{Number of surveys to simulate per loop.
+Large values may increase memory usage significantly.}
 
-\item{n_loops}{Number of times to run the \code{\link{sim_survey}} function. Total
-simulations run will be the product of \code{n_sims} and \code{n_loops}
-arguments. Low numbers of \code{n_sims} and high numbers of \code{n_loops}
-will be easier on RAM, but may be slower.}
+\item{n_loops}{Number of times to call \code{\link[=sim_survey]{sim_survey()}}.
+Total number of simulations = \code{n_sims} × \code{n_loops}.
+Using a smaller \code{n_sims} and larger \code{n_loops} reduces memory demand but may increase runtime.}
 
-\item{cores}{Number of cores to use in parallel. More cores should speed up the process.}
+\item{cores}{Number of processor cores to use in parallel. More cores typically reduce total time.}
 
-\item{quiet}{Print message on what to expect for duration?}
+\item{quiet}{Logical. If \code{FALSE}, prints messages estimating run time.}
 
 \item{...}{
   Arguments passed on to \code{\link[=sim_survey]{sim_survey}}
   \describe{
-    \item{\code{q}}{Closure, such as \code{\link{sim_logistic}}, for simulating catchability at age
-(returned values must be between 0 and 1)}
-    \item{\code{trawl_dim}}{Trawl width and distance (same units as grid)}
-    \item{\code{resample_cells}}{Allow resampling of sampling units (grid cells)? Setting to TRUE may introduce bias
-because depletion is imposed at the cell level.}
-    \item{\code{binom_error}}{Impose binomial error? Setting to FALSE may introduce bias in stratified estimates
-at older ages because of more frequent rounding to zero.}
-    \item{\code{min_sets}}{Minimum number of sets per strat}
-    \item{\code{set_den}}{Set density (number of sets per grid unit squared). WARNING:
-may return an error if \code{set_den} is high and
-\code{resample_cells = FALSE} because the number of sets allocated may
-exceed the number of cells in a strata.}
-    \item{\code{lengths_cap}}{Maximum number of lengths measured per set}
-    \item{\code{ages_cap}}{If \code{age_sampling = "stratified"}, this cap represents the maximum
-number of ages to sample per length group (defined using the \code{age_length_group}
-argument) per division or strat (defined using the \code{age_space_group} argument)
-per year. If \code{age_sampling = "random"}, it is the maximum number of ages to sample
-from measured fish per set.}
-    \item{\code{age_sampling}}{Should age sampling be "stratified" (default) or "random"?}
-    \item{\code{age_length_group}}{Numeric value indicating the size of the length bins for stratified
-age sampling. Ignored if \code{age_sampling = "random"}.}
-    \item{\code{age_space_group}}{Should age sampling occur at the "division" (default), "strat" or "set" spatial scale?
-That is, age sampling can be spread across each "division", "strat" or "set"
-in each year to a maximum number within each length bin (cap is defined using
-the \code{age_cap} argument). Ignored if \code{age_sampling = "random"}.}
-    \item{\code{custom_sets}}{Supply an object of the same structure as returned by \code{\link{sim_sets}} which
-specifies a custom series of set locations to be sampled. Set locations are
-automated if \code{custom_sets = NULL}.}
-    \item{\code{light}}{Drop some objects from the output to keep object size low?}
+    \item{\code{q}}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability at age.
+Returned values must range between 0 and 1.}
+    \item{\code{trawl_dim}}{Trawl width and distance (same units as the grid).}
+    \item{\code{resample_cells}}{Logical. If \code{TRUE}, allows grid cells to be resampled.
+May introduce bias, as depletion is applied at the cell level.}
+    \item{\code{binom_error}}{Logical. Should binomial error be imposed?
+If \code{FALSE}, stratified estimates at older ages may be biased due to rounding zeros.}
+    \item{\code{min_sets}}{Minimum number of sets per stratum.}
+    \item{\code{set_den}}{Set density (sets per grid unit squared).
+\strong{Warning:} May error if \code{set_den} is high and \code{resample_cells = FALSE}, because allocated sets may exceed available cells.}
+    \item{\code{lengths_cap}}{Maximum number of lengths measured per set.}
+    \item{\code{ages_cap}}{Cap on the number of ages to sample, depending on \code{age_sampling} type:
+\itemize{
+\item If \code{"stratified"}: maximum per length bin (via \code{age_length_group}) and per \code{age_space_group} (e.g., \code{"division"}, \code{"strat"}).
+\item If \code{"random"}: maximum number of fish aged per set.
+}}
+    \item{\code{age_sampling}}{Type of age sampling strategy: \code{"stratified"} (default) or \code{"random"}.}
+    \item{\code{age_length_group}}{Width of length bins for stratified age sampling. Ignored if \code{age_sampling = "random"}.}
+    \item{\code{age_space_group}}{Spatial scale for stratified age sampling.
+Options: \code{"division"} (default), \code{"strat"}, or \code{"set"}. Ignored if \code{age_sampling = "random"}.}
+    \item{\code{custom_sets}}{A \code{data.table} of set locations (same structure as returned by \code{\link[=sim_sets]{sim_sets()}}).
+If \code{NULL}, set locations are generated automatically.}
+    \item{\code{light}}{Logical. If \code{TRUE}, drops some objects from output to reduce memory footprint.}
   }}
 }
 \value{
-Returns an object of the same structure as \code{\link{sim_survey}}.
+A list of the same structure as returned by \code{\link[=sim_survey]{sim_survey()}}, containing the
+results of all simulations.
 }
 \description{
-This function is a wrapper for \code{\link{sim_survey}} except it allows for
-many more total iterations to be run than \code{\link{sim_survey}} before running
-into RAM limitations. Unlike \code{\link{test_surveys}}, this function retains
-the full details of the survey and it may therefore be more useful for testing
-alternate approaches to a stratified analysis for obtaining survey indices.
+A wrapper around \code{\link[=sim_survey]{sim_survey()}} that enables a much larger number of survey
+simulations to be performed using parallel processing. Unlike \code{\link[=test_surveys]{test_surveys()}},
+this function retains full survey details and is suitable for evaluating
+alternate stratified analysis approaches for generating survey indices.
 }
 \details{
-\code{\link{sim_survey}} is hard-wired here to be "light" to minimize object size.
+This function runs \code{\link[=sim_survey]{sim_survey()}} with \code{light = TRUE} to reduce object size
+and minimize RAM usage.
 }
 \examples{
-
 \donttest{
-## This call runs a total of 25 simulations of the same survey over
-## the same population (Note: total number of simulations are low to
-## decrease computation time for the example)
+# Run 25 total simulations (5 per loop × 5 loops) over the same population
 sim <- sim_abundance(ages = 1:20, years = 1:5) \%>\%
-           sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
-           sim_survey_parallel(n_sims = 5, n_loops = 5, cores = 1,
-                               q = sim_logistic(k = 2, x0 = 3),
-                               quiet = FALSE)
+  sim_distribution(grid = make_grid(res = c(10, 10))) \%>\%
+  sim_survey_parallel(
+    n_sims = 5, n_loops = 5, cores = 1,
+    q = sim_logistic(k = 2, x0 = 3),
+    quiet = FALSE
+  )
 }
-
 
 }

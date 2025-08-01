@@ -2,7 +2,7 @@
 % Please edit documentation in R/test_surveys.R
 \name{expand_surveys}
 \alias{expand_surveys}
-\title{Set-up a series of surveys from all combinations of settings supplied}
+\title{Set up a series of surveys from all combinations of settings supplied}
 \usage{
 expand_surveys(
   set_den = c(0.5, 1, 2, 5, 10)/1000,
@@ -11,17 +11,18 @@ expand_surveys(
 )
 }
 \arguments{
-\item{set_den}{Vector of set densities (number of sets per grid unit squared)}
+\item{set_den}{A vector of set densities (sets per grid unit squared).}
 
-\item{lengths_cap}{Vector of maximum number of lengths measured per set}
+\item{lengths_cap}{A vector of maximum numbers of lengths measured per set.}
 
-\item{ages_cap}{Vector of maximum number of otoliths to collect per length group
-per division per year}
+\item{ages_cap}{A vector of maximum numbers of otoliths to collect per length group
+per division per year.}
 }
 \value{
-Returns a data.frame including all combinations of the supplied vectors.
+A \code{data.frame} containing all combinations of the supplied vectors, with an added
+\code{survey} column identifying each combination.
 }
 \description{
-Function is simply a wrapper for \code{\link[base]{expand.grid}} that
-adds a survey number to the returned object
+A convenience function that wraps \code{\link[base:expand.grid]{base::expand.grid()}} to generate all combinations
+of survey design parameters and adds a unique survey number to each row.
 }

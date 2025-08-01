@@ -7,14 +7,15 @@
 convert_N(N_at_age = NULL, lak = NULL)
 }
 \arguments{
-\item{N_at_age}{Abundance-at-age matrix}
+\item{N_at_age}{A matrix of abundance-at-age values.}
 
-\item{lak}{Length-age-key (i.e. probability of being in a specific length group given age)}
+\item{lak}{A length-age key matrix — i.e., the probability of being in a specific
+length group given age.}
 }
 \value{
-Returns abundance-at-length matrix.
+A matrix of abundance-at-length values.
 }
 \description{
-Function for converting abundance-at-age matrix to abundance-at-length given
-a length-age-key. Expects matrices to be named.
+Converts an abundance-at-age matrix to an abundance-at-length matrix using
+a length-age key. Both input matrices must be named appropriately.
 }
