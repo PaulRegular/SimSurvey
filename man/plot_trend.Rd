@@ -67,7 +67,7 @@ plot_survey_rank(sim, which_strat = "age")
 
 \item{mat}{Name of the matrix in the \code{sim} list to plot.}
 
-\item{xlab, }{ylab, zlab Axis labels.}
+\item{xlab, ylab, zlab}{Axis labels.}
 
 \item{grid}{Grid produced by \code{\link[=make_grid]{make_grid()}}.}
 

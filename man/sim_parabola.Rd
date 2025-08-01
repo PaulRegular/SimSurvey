@@ -14,7 +14,7 @@ sim_parabola(
 )
 }
 \arguments{
-\item{alpha, }{mu, sigma Parameters that control the shape of the parabola. Can be a single value or
+\item{alpha, mu, sigma}{Parameters that control the shape of the parabola. Can be a single value or
 a vector of the same length as the number of ages in the simulation (e.g., allowing age-specific
 depth associations).}
 

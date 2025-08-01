@@ -6,7 +6,7 @@
 #' @param sim Object returned by [`sim_abundance()`], [`sim_distribution()`], etc.
 #' @param mat Name of the matrix in the `sim` list to plot.
 #' @param grid Grid produced by [`make_grid()`].
-#' @param xlab, ylab, zlab Axis labels.
+#' @param xlab,ylab,zlab Axis labels.
 #' @param sum_ages Vector of ages to sum across.
 #' @param ages Subset the data to one or more ages.
 #' @param lengths Subset the data to one or more length groups.

@@ -160,7 +160,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 #' Closure to be used in [`sim_distribution()`]. The form is based on the bi-Gaussian
 #' function described [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/).
 #'
-#' @param alpha, mu, sigma Parameters that control the shape of the parabola. Can be a single value or
+#' @param alpha,mu,sigma Parameters that control the shape of the parabola. Can be a single value or
 #' a vector of the same length as the number of ages in the simulation (e.g., allowing age-specific
 #' depth associations).
 #' @param sigma_right Optional parameter to impose asymmetry by specifying a different `sigma` for the right side.
