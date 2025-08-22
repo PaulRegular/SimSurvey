@@ -32,7 +32,7 @@ A function that can be passed to \code{\link[=sim_distribution]{sim_distribution
 }
 \description{
 Closure to be used in \code{\link[=sim_distribution]{sim_distribution()}}. The form is based on the bi-Gaussian
-function described \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/}{here}.
+function described in \doi{10.1186/1471-2105-11-559}.
 }
 \examples{
 parabola_fun <- sim_parabola(mu = 50, sigma = 5, plot = TRUE)

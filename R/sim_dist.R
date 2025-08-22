@@ -158,7 +158,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
 #' Define a parabolic relationship
 #'
 #' Closure to be used in [`sim_distribution()`]. The form is based on the bi-Gaussian
-#' function described [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2993707/).
+#' function described in \doi{10.1186/1471-2105-11-559}.
 #'
 #' @param alpha,mu,sigma Parameters that control the shape of the parabola. Can be a single value or
 #' a vector of the same length as the number of ages in the simulation (e.g., allowing age-specific
