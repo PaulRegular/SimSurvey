@@ -20,7 +20,7 @@
 #' @format A sf object (MULTIPOLYGON)
 #'
 #' Derived from global administrative boundaries data (http://gadm.org/), which
-#' was downloaded using the [raster::getData()] function. Details provided in the
+#' was downloaded using the now deprecated function, `raster::getData()`. Details provided in the
 #' data-raw folder for this package.
 #'
 "land"
@@ -45,6 +45,10 @@
 #' folder of this package in the survey_mesh.R file. Includes the set
 #' of barrier triangles needed to use the barrier approach, barrier
 #' polygons for plotting and the set of triangles in the barrier.
+#'
+#' @importClassesFrom Matrix dgCMatrix
+#' @importFrom Matrix sparseMatrix
+#'
 "survey_mesh"
 
 #' Lite sample survey mesh and related items
