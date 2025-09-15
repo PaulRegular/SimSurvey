@@ -38,7 +38,7 @@ Some runs returned `INFO` notes due to Suggests or Enhances not in mainstream re
 
 ## Test environments
 
-- Local: R 4.4.2 on Windows 11
+- Local: R 4.5.1 on Windows 11
 - GitHub Actions: Linux (devel, release), macOS (release), Windows (release)
 - Win-builder: Windows (devel)
 
