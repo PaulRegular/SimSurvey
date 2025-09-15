@@ -44,7 +44,7 @@ All checks returned **no ERRORs, WARNINGs, or NOTEs**.
 - GitHub Actions: Linux (devel, release), macOS (release), Windows (release)
 - Win-builder: Windows (devel)
 
-## Changes in this version (0.1.7.1)
+## Changes in this version (0.1.8)
 
 - Add `Matrix` to `Imports` so lazy-loaded mesh data (`survey_mesh`, `survey_lite_mesh`) pass checks. 
   No user-visible changes; API and results unchanged.
