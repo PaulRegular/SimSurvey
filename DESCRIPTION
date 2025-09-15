@@ -1,7 +1,7 @@
 Package: SimSurvey
 Type: Package
 Title: Test Surveys by Simulating Spatially-Correlated Populations
-Version: 0.1.7
+Version: 0.1.8
 Authors@R: c(
     person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca", 
     role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0318-2615")),
@@ -36,7 +36,8 @@ Imports:
     foreach,
     plotly,
     rlang,
-    lifecycle
+    lifecycle,
+    Matrix
 Suggests:
     fields,
     rmarkdown,

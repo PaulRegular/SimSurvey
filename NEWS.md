@@ -36,3 +36,6 @@
 * Minor improvements to documentation
 * Dropped dependence on **magrittr** pipe (`%>%`); now using native R pipe (`|>`)
 
+# SimSurvey 0.1.7.1
+
+* Add `Matrix` to `Imports` so lazy-loaded mesh data (`survey_mesh`, `survey_lite_mesh`) pass checks. No user-visible changes; API and results unchanged.
