@@ -12,6 +12,8 @@
   `sd` is a standard deviation rather than a variance.
 * Fix `strat_means()` for a single survey group, including replacement of
   undefined confidence-limit values with `NA`.
+* Allow `group_lengths()` to return an empty vector, so surveys with no catch
+  or no measured lengths retain their set records without failing.
 
 # SimSurvey 0.1.1
 

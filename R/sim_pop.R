@@ -157,6 +157,7 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #' @export
 
 group_lengths <- function(length, group) {
+  if (!length(length)) return(numeric())
   breaks <- seq(0, max(length, na.rm = TRUE) * 2, group)
   interval <- findInterval(length, breaks)
   l <- breaks[interval]
