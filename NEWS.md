@@ -16,6 +16,8 @@
   or no measured lengths retain their set records without failing.
 * Preserve the retained survey's `I_at_length` truth when running or resuming
   survey scenarios.
+* Explicitly assign the documented kilometre-based projected CRS in
+  `make_grid()`; the data-frame conversion could leave the grid without a CRS.
 
 # SimSurvey 0.1.1
 

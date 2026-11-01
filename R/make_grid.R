@@ -110,6 +110,7 @@ make_grid <- function(x_range = c(-140, 140), y_range = c(-140, 140),
   ## convert xyz data to a raster
   xy$split <- NULL # drop - was useful for defining strata
   r <- stars::st_as_stars(xy, crs = utm_proj)
+  sf::st_crs(r) <- utm_proj
   r
 
 }
