@@ -14,6 +14,8 @@
   undefined confidence-limit values with `NA`.
 * Allow `group_lengths()` to return an empty vector, so surveys with no catch
   or no measured lengths retain their set records without failing.
+* Preserve the retained survey's `I_at_length` truth when running or resuming
+  survey scenarios.
 
 # SimSurvey 0.1.1
 

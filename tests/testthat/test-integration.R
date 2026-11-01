@@ -28,7 +28,11 @@ test_that("survey scenarios export and resume in temporary directories", {
   expect_true(all(file.exists(file.path(export_dir,
                                         c("test_inputs.RData", "complete.RData", "test_output.RData")))))
   expect_equal(sort(unique(result$samp_totals$survey)), 1:2)
+  expected_length_truth <- convert_N(result$I,
+                                      result$sim_length(result$ages, length_age_key = TRUE))
+  expect_equal(result$I_at_length, expected_length_truth)
   resumed <- resume_test(export_dir)
+  expect_equal(resumed$I_at_length, expected_length_truth)
   expect_equal(resumed$samp_totals, result$samp_totals)
   expect_equal(resumed$total_strat_error, result$total_strat_error)
 

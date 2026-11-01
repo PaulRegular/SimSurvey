@@ -285,7 +285,7 @@ resume_test <- function(export_dir = NULL, ...) {
   sim$N <- res$N
   sim$sp_N <- res$sp_N
   sim$I <- res$I
-  sim$I_at_length <- res$length$I
+  sim$I_at_length <- res$I_at_length
   sim$full_setdet <- res$full_setdet
   sim$setdet <- res$setdet
   sim$samp <- res$samp
