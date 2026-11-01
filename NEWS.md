@@ -10,6 +10,8 @@
 * Apply the current innovation scale throughout `sim_ays_covar()` when `sd`,
   `phi_age`, or `phi_year` varies. Cache only the spatial factor, and clarify that
   `sd` is a standard deviation rather than a variance.
+* Fix `strat_means()` for a single survey group, including replacement of
+  undefined confidence-limit values with `NA`.
 
 # SimSurvey 0.1.1
 
