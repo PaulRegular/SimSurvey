@@ -1,3 +1,11 @@
+# SimSurvey 0.1.8.9000 (development)
+
+* Add repository guidance and an automated testthat suite covering the core
+  population, spatial, survey, and analysis workflow, including parallel runs
+  and export/resume. Archive the historical informal tests under `analysis/`.
+* Include tests in source-package checks and enable the existing CI matrix on
+  the `fisheries-0.2.0` development branch.
+
 # SimSurvey 0.1.1
 
 * Initial release documented in Regular et al. (2020) <doi.org/10.1371/journal.pone.0232822>

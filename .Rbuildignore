@@ -4,7 +4,6 @@
 ^\.Rprofile$
 ^analysis$
 ^tutorial$
-^tests$
 ^data-raw$
 ^\.travis\.yml$
 ^_pkgdown\.yml$
