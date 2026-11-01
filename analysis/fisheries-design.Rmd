@@ -110,15 +110,20 @@ would require a shared mortality budget rather than independent unconstrained
 calls. Seasonal surveys after fishing, persistent spatial depletion, learning,
 age-reading error, and vessel efficiency trends are later extensions.
 
-## Existing compatibility question found during foundations testing
+## Mesh compatibility resolved during foundations work
 
-The current INLA/fmesher interface rejects the legacy `inla.mesh` class stored
-inside the bundled survey meshes (`fm_dof` has no matching method). The optional
-SPDE smoke test builds a tiny current mesh through `make_mesh()` instead of
-depending on those historical data objects. Review conversion or reproducible
-regeneration of the bundled meshes separately; do not silently relabel their
-classes or replace the data without updating their preparation scripts.
-`make_mesh()` also uses the deprecated INLA constructor wrapper; its replacement
-needs to preserve the package's support for older optional-dependency versions.
-The smoke test permits that specific constructor warning and leaves other
-warnings visible.
+Current INLA/fmesher no longer accepts some stored `inla.mesh` objects directly
+(`fm_dof` has no matching method). SimSurvey now converts these inputs using the
+official `fmesher::fm_as_fm()` method before precision construction and spatial
+projection. Conversion does not regenerate the mesh: regression tests verify
+unchanged vertex coordinates, graph/triangle indices, node identifiers, barrier
+assignments, and original inputs for both bundled survey meshes. Standard and
+barrier covariance simulations exercise both saved objects with current INLA.
+The bundled data files remain unchanged.
+
+`make_mesh()` uses `fmesher::fm_mesh_2d_inla()` when available, with its existing
+arguments, rather than the deprecated INLA wrapper. Its previous constructor is
+retained as a fallback when fmesher is unavailable. Optional tests no longer
+suppress constructor warnings, and the core workflow still does not require
+INLA or fmesher. See the upstream
+[mesh migration guidance](https://inlabru-org.github.io/fmesher/articles/inla_conversion.html).

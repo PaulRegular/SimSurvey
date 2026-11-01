@@ -52,6 +52,7 @@ Suggests:
     ggplot2,
     INLA,
     INLAspacetime,
+    fmesher,
     knitr,
     bezier
 Roxygen: list(markdown = TRUE)

@@ -1,5 +1,9 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Convert legacy `inla.mesh` inputs automatically for current INLA/fmesher in
+  standard and barrier SPDE simulations, preserving the stored geometry and
+  barrier triangle assignments. Use the current fmesher constructor in
+  `make_mesh()` when available, avoiding INLA's constructor deprecation warning.
 * Add repository guidance and an automated testthat suite covering the core
   population, spatial, survey, and analysis workflow, including parallel runs
   and export/resume. Archive the historical informal tests under `analysis/`.

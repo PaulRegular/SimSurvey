@@ -61,16 +61,7 @@ test_that("optional SPDE covariance has the expected shape", {
   skip_if_not_installed("INLAspacetime")
   withr::local_seed(438)
   grid <- small_grid()
-  ## The public constructor supports older INLA versions; allow its known
-  ## constructor deprecation while leaving other warnings visible.
-  mesh <- withCallingHandlers(
-    make_mesh(grid, max.edge = 10, bound.outer = 10, cutoff = 1),
-    warning = function(w) {
-      if (grepl("`inla.mesh.2d()` was deprecated", conditionMessage(w), fixed = TRUE)) {
-        invokeRestart("muffleWarning")
-      }
-    }
-  )
+  mesh <- make_mesh(grid, max.edge = 10, bound.outer = 10, cutoff = 1)
   sim <- sim_distribution(small_abundance(), grid = grid,
                            ays_covar = sim_ays_covar_spde(mesh = mesh,
                                                          model = "spde", sd = 0.1))

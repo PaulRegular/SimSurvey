@@ -17,7 +17,7 @@ make_mesh(
 \item{grid}{A grid object to generate a mesh from.}
 
 \item{max.edge}{The maximum allowed triangle edge length. One or two numeric values.
-Passed to \code{inla.mesh.2d}.}
+Passed to the mesh constructor.}
 
 \item{bound.outer}{Optional outer extension value passed to \code{offset}.}
 
@@ -25,15 +25,18 @@ Passed to \code{inla.mesh.2d}.}
 
 \item{offset}{Automatic extension distance used by \code{inla.mesh.2d}.}
 
-\item{...}{Additional options passed to \code{inla.mesh.2d}.}
+\item{...}{Additional options passed to the mesh constructor.}
 }
 \value{
-An object of class \code{inla.mesh}.
+An object of class \code{fm_mesh_2d} when \strong{fmesher} is available, or
+\code{inla.mesh} with older INLA installations.
 }
 \description{
 This function creates a mesh based on a given grid. While mesh construction
 and validation should ideally be done manually, this function provides a
-convenient default interface between a grid and \code{inla.mesh.2d}. It is designed
+convenient default interface between a grid and \code{fmesher::fm_mesh_2d_inla()}.
+With older INLA installations where \strong{fmesher} is unavailable, it falls back
+to \code{INLA::inla.mesh.2d()}. It is designed
 to support usage with \code{\link[=sim_ays_covar_spde]{sim_ays_covar_spde()}}, and the default parameters are
 tuned for use with the default grid setup.
 }

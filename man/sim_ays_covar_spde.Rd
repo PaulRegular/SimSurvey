@@ -31,7 +31,10 @@ sim_ays_covar_spde(
 
 \item{group_years}{Years to group together for shared space-age-year variance.}
 
-\item{mesh}{The mesh used to generate the precision matrix.}
+\item{mesh}{An \code{fm_mesh_2d} or legacy \code{inla.mesh} object used to generate the
+precision matrix. Stored legacy meshes, including the meshes inside
+\code{\link{survey_mesh}} and \code{\link{survey_lite_mesh}}, are converted automatically when
+\strong{fmesher} is available. Conversion preserves vertices and triangle indices.}
 
 \item{barrier.triangles}{The set of mesh triangles that define the barrier (used only in the barrier model).}
 }
@@ -43,6 +46,12 @@ A function that can be passed to \code{\link[=sim_distribution]{sim_distribution
 }
 \details{
 Returns a function for use inside \code{\link[=sim_distribution]{sim_distribution()}} to generate the error term.
+
+For a bundled mesh, supply \code{survey_mesh$mesh} (or \code{survey_lite_mesh$mesh}).
+With \code{model = "barrier"}, also supply its matching \code{barrier_tri} component as
+\code{barrier.triangles}. Legacy conversion updates the object representation, not
+the triangulation or the numbering used by these barrier indices. The original
+supplied mesh and bundled data are not modified.
 }
 \examples{
 \donttest{
