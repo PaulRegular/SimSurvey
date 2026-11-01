@@ -5,6 +5,8 @@
   and export/resume. Archive the historical informal tests under `analysis/`.
 * Include tests in source-package checks and enable the existing CI matrix on
   the `fisheries-0.2.0` development branch.
+* Reject descending, duplicated, empty, non-numeric, and non-finite age/year
+  sequences in `sim_abundance()` with the documented sequence error.
 
 # SimSurvey 0.1.1
 

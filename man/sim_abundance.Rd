@@ -14,9 +14,9 @@ sim_abundance(
 )
 }
 \arguments{
-\item{ages}{A numeric vector of ages to include in the simulation.}
+\item{ages}{A non-empty, finite numeric vector of ages, ascending in steps of one.}
 
-\item{years}{A numeric vector of years to include in the simulation.}
+\item{years}{A non-empty, finite numeric vector of years, ascending in steps of one.}
 
 \item{Z}{A function for generating a total mortality matrix, such as \code{\link[=sim_Z]{sim_Z()}}.}
 

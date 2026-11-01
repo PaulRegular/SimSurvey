@@ -265,8 +265,8 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' a growth function may be provided to simulate lengths given age and generate
 #' an abundance-at-length matrix.
 #'
-#' @param ages A numeric vector of ages to include in the simulation.
-#' @param years A numeric vector of years to include in the simulation.
+#' @param ages A non-empty, finite numeric vector of ages, ascending in steps of one.
+#' @param years A non-empty, finite numeric vector of years, ascending in steps of one.
 #' @param Z A function for generating a total mortality matrix, such as [`sim_Z()`].
 #' @param R A function for generating a recruitment vector (i.e., abundance at `min(ages)`),
 #' such as [`sim_R()`].
@@ -352,7 +352,10 @@ sim_abundance <- function(ages = 1:20, years = 1:20,
                           growth = sim_vonB()) {
 
   ## Simple error check
-  if (any(diff(ages) > 1) | any(diff(years) > 1)) {
+  valid_sequence <- function(x) {
+    is.numeric(x) && length(x) > 0 && all(is.finite(x)) && all(diff(x) == 1)
+  }
+  if (!valid_sequence(ages) || !valid_sequence(years)) {
     stop("Age and year sequences must be ascending and increment by 1")
   }
 
