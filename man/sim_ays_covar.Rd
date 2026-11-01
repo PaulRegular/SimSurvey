@@ -16,7 +16,7 @@ sim_ays_covar(
 )
 }
 \arguments{
-\item{sd}{Variance (can be age-specific).}
+\item{sd}{Innovation standard deviation (can be age-specific).}
 
 \item{range}{Decorrelation range.}
 

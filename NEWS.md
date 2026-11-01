@@ -7,6 +7,9 @@
   the `fisheries-0.2.0` development branch.
 * Reject descending, duplicated, empty, non-numeric, and non-finite age/year
   sequences in `sim_abundance()` with the documented sequence error.
+* Apply the current innovation scale throughout `sim_ays_covar()` when `sd`,
+  `phi_age`, or `phi_year` varies. Cache only the spatial factor, and clarify that
+  `sd` is a standard deviation rather than a variance.
 
 # SimSurvey 0.1.1
 
