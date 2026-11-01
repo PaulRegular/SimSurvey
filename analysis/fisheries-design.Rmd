@@ -109,3 +109,16 @@ relationship, and the minimal trip/landing sampling frames. Multiple fisheries
 would require a shared mortality budget rather than independent unconstrained
 calls. Seasonal surveys after fishing, persistent spatial depletion, learning,
 age-reading error, and vessel efficiency trends are later extensions.
+
+## Existing compatibility question found during foundations testing
+
+The current INLA/fmesher interface rejects the legacy `inla.mesh` class stored
+inside the bundled survey meshes (`fm_dof` has no matching method). The optional
+SPDE smoke test builds a tiny current mesh through `make_mesh()` instead of
+depending on those historical data objects. Review conversion or reproducible
+regeneration of the bundled meshes separately; do not silently relabel their
+classes or replace the data without updating their preparation scripts.
+`make_mesh()` also uses the deprecated INLA constructor wrapper; its replacement
+needs to preserve the package's support for older optional-dependency versions.
+The smoke test permits that specific constructor warning and leaves other
+warnings visible.
