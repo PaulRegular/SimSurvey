@@ -4,20 +4,32 @@
 #' This closure is useful for simulating catchability (`q`) inside the [`sim_survey()`] function.
 #'
 #' @param k Steepness of the curve.
-#' @param x0 The x-value at the midpoint of the sigmoid.
+#' @param x50 The value at 50 percent probability, such as age or length.
 #' @param plot Logical. Should the relationship be plotted?
+#' @param x0 Deprecated alias for `x50`. Do not supply both names.
 #'
 #' @return A function that can be passed to [`sim_survey()`].
 #'
 #' @examples
-#' logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)
+#' logistic_fun <- sim_logistic(k = 2, x50 = 3, plot = TRUE)
 #' logistic_fun(x = 1:10)
 #'
 #' @export
 
-sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
+sim_logistic <- function(k = 2, x50 = 3, plot = FALSE, x0 = NULL) {
+  if (!missing(x0)) {
+    if (!missing(x50)) stop("Supply only x50, not both x50 and x0.")
+    lifecycle::deprecate_warn("0.1.8.9000", "sim_logistic(x0)", "sim_logistic(x50)")
+    x50 <- x0
+  }
+  if (!is.numeric(k) || length(k) != 1 || !is.finite(k) ||
+      !is.numeric(x50) || length(x50) != 1 || !is.finite(x50)) {
+    stop("k and x50 must be finite numeric scalars.")
+  }
+  force(k)
+  force(x50)
   function(x = NULL) {
-    y <- 1 / (1 + exp(-k * (x - x0)))
+    y <- stats::plogis(k * (x - x50))
     if (plot) plot(x, y, type = "b")
     y
   }

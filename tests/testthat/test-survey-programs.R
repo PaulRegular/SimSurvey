@@ -1,7 +1,7 @@
 test_that("survey configurations consume no RNG and require common replicates", {
   withr::local_seed(320)
   rng <- .Random.seed
-  config <- sim_survey(q = sim_logistic(x0 = 20), q_by = "length")
+  config <- sim_survey(q = sim_logistic(x50 = 20), q_by = "length")
   expect_s3_class(config, "sim_survey_spec")
   expect_identical(.Random.seed, rng)
   sim <- small_population()
@@ -46,7 +46,7 @@ test_that("survey programs are independent of registration and other sampling ca
   a <- sim_survey(q = function(age) 1, trawl_dim = c(1, 5), min_sets = 2,
                    set_den = 0, lengths_cap = 20, ages_cap = 2, light = FALSE)
   b <- a
-  b$q <- sim_logistic(x0 = 30)
+  b$q <- sim_logistic(x50 = 30)
   b$q_by <- "length"
   set.seed(324)
   full <- sim_surveys(sim, a = a, b = b)

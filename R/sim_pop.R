@@ -393,3 +393,7 @@ sim_abundance <- function(ages = 1:20, years = 1:20,
 
 
 
+
+#' @rdname sim_vonB
+#' @export
+sim_growth <- sim_vonB

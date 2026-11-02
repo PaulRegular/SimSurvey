@@ -4,14 +4,16 @@
 \alias{sim_logistic}
 \title{Closure for simulating logistic curve}
 \usage{
-sim_logistic(k = 2, x0 = 3, plot = FALSE)
+sim_logistic(k = 2, x50 = 3, plot = FALSE, x0 = NULL)
 }
 \arguments{
 \item{k}{Steepness of the curve.}
 
-\item{x0}{The x-value at the midpoint of the sigmoid.}
+\item{x50}{The value at 50 percent probability, such as age or length.}
 
 \item{plot}{Logical. Should the relationship be plotted?}
+
+\item{x0}{Deprecated alias for \code{x50}. Do not supply both names.}
 }
 \value{
 A function that can be passed to \code{\link[=sim_survey]{sim_survey()}}.
@@ -20,7 +22,7 @@ A function that can be passed to \code{\link[=sim_survey]{sim_survey()}}.
 This closure is useful for simulating catchability (\code{q}) inside the \code{\link[=sim_survey]{sim_survey()}} function.
 }
 \examples{
-logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)
+logistic_fun <- sim_logistic(k = 2, x50 = 3, plot = TRUE)
 logistic_fun(x = 1:10)
 
 }
