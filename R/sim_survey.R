@@ -57,7 +57,7 @@ round_sim <- function(sim) {
   sim$N <- N
   sim$N0 <- N[, 1]
   sim$R <- N[1, ]
-  sim
+  .population_biology(sim)
 }
 
 

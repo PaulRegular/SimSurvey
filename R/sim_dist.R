@@ -368,7 +368,7 @@ sim_distribution <- function(sim,
   df_N$prob <- NULL
   setkeyv(df_N, "cell")
 
-  c(sim, list(grid = grid, grid_xy = grid_dat, sp_N = df_N))
+  .population_biology(c(sim, list(grid = grid, grid_xy = grid_dat, sp_N = df_N)))
 
 }
 
