@@ -37,7 +37,7 @@ sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
 round_sim <- function(sim) {
   sim$sp_N$N <- round(sim$sp_N$N)
   N <- tapply(sim$sp_N$N, list(sim$sp_N$age, sim$sp_N$year), sum)
-  N <- N[rownames(sim$N), colnames(sim$N)]
+  N <- N[rownames(sim$N), colnames(sim$N), drop = FALSE]
   dimnames(N) <- dimnames(sim$N)
   sim$N_at_length <- convert_N(N_at_age = N,
                                lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))

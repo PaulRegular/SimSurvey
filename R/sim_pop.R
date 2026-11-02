@@ -212,7 +212,7 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
         }
       }
-      lak <- lak[rowSums(lak) > 0, ]
+      lak <- lak[rowSums(lak) > 0, , drop = FALSE]
       if (plot) graphics::image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
                                 xlab = "Age", ylab = "Length", main = "P(Length | Age)",
                                 col = viridis::viridis(100))

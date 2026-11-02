@@ -1,5 +1,7 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Preserve dimensions in single-age length keys, spatial distributions, and
+  rounded single-age or single-year populations.
 * Convert legacy `inla.mesh` inputs automatically for current INLA/fmesher in
   standard and barrier SPDE simulations, preserving the stored geometry and
   barrier triangle assignments. Use the current fmesher constructor in

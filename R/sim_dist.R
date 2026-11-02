@@ -355,8 +355,8 @@ sim_distribution <- function(sim,
   }
 
   ## Distribute fish through the cells
-  N <- replicate(nrow(grid_dat), sim$N)
-  dimnames(N) <- dimnames(prob)
+  N <- array(rep(sim$N, times = nrow(grid_dat)), dim = dim(prob),
+              dimnames = dimnames(prob))
   N <- N * prob
 
   ## Output as data.frame
