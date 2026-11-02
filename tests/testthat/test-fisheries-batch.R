@@ -116,7 +116,7 @@ test_that("fishery batch configuration and replicate counts are validated", {
   expect_error(sim_fisheries(sim, a = sim_fishery(fishery_share = 0.2,
                 catch_model = capture_all, n_sims = 2)), "common n_sims")
   expect_error(sim_fisheries(sim, a = sim_fishery(fishery_share = 0.2,
-                catch_model = capture_all, weight = function(length) 1)), "weight")
+                catch_model = capture_all, weight = function(length) 1)), "unused argument")
   result <- sim_fisheries(sim, a = config, n_sims = 2)
   expect_identical(result$replicates, 1:2)
   expect_error(sim_fisheries(result, a = config, n_sims = 1), "existing batch")

@@ -21,10 +21,10 @@
 #' without its `sim` argument. Names must be unique and nonempty.
 #' @param n_sims Common replicate count; `NULL` inherits existing batch metadata,
 #' otherwise one. Do not supply counts inside configurations.
-#' @param weight Optional common function returning kilograms per fish at length.
-#' Do not supply weight relationships inside configurations.
+#' @details All fisheries inherit the weight relationship stored by
+#' [sim_abundance()]. Weights belong to the population, not individual programs.
 #'
-#' @details Every fishery's reference target uses the original population and Z.
+#' Every fishery's reference target uses the original population and Z.
 #' At each age/year the sum of `fishery_share * mean_selectivity_at_age` must not
 #' exceed one. Incompatible configurations produce an error rather than being
 #' normalized. Integer targets are rounded jointly across fisheries, preserving
@@ -54,12 +54,12 @@
 #' gillnet <- sim_fishery(fishery_share = 0.1, catch_model = sim_capture(q = 0.05))
 #' # population |> sim_fisheries(trawl = trawl, gillnet = gillnet)
 #' @export
-sim_fisheries <- function(sim, ..., n_sims = NULL, weight = NULL) {
+sim_fisheries <- function(sim, ..., n_sims = NULL) {
   configurations <- .program_configs(list(...), "sim_fishery_spec")
-  if (any(vapply(configurations, function(x) !is.null(x$n_sims) || !is.null(x$weight), logical(1)))) {
-    stop("Supply common n_sims and weight on sim_fisheries(), not inside configurations.")
+  if (any(vapply(configurations, function(x) !is.null(x$n_sims), logical(1)))) {
+    stop("Supply common n_sims on sim_fisheries(), not inside configurations.")
   }
-  .run_fisheries(sim, configurations, n_sims = n_sims, weight = weight)
+  .run_fisheries(sim, configurations, n_sims = n_sims)
 }
 
 #' Simulate independent survey programs on a shared population
@@ -92,7 +92,7 @@ sim_fisheries <- function(sim, ..., n_sims = NULL, weight = NULL) {
 #'
 #' @examples
 #' survey_A <- sim_survey(q = sim_logistic(), q_by = "age")
-#' survey_B <- sim_survey(q = sim_logistic(x0 = 30), q_by = "length")
+#' survey_B <- sim_survey(q = sim_logistic(x50 = 30), q_by = "length")
 #' # population |> sim_surveys(survey_A = survey_A, survey_B = survey_B)
 #' @export
 sim_surveys <- function(sim, ..., n_sims = NULL) {

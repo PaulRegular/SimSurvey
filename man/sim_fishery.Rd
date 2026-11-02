@@ -17,7 +17,6 @@ sim_fishery(
   targeting = 1,
   knowledge_sd = 0,
   exploration = 0.05,
-  weight = NULL,
   subset_cells,
   n_sims = NULL,
   max_operations = 10000,
@@ -62,8 +61,6 @@ mean accessible vulnerable density. Errors persist within a replicate/year.}
 \item{exploration}{Proportion of location probabilities allocated uniformly,
 in \verb{[0, 1]}. All-zero estimated densities fall back to uniform locations.}
 
-\item{weight}{Optional function of length returning kilograms per fish.}
-
 \item{subset_cells}{Logical expression evaluated on grid columns and \code{year},
 restricting accessible cells. By default all cells are accessible.}
 
@@ -99,7 +96,8 @@ The simulation list with \code{replicates} and a \code{fishery} list containing
 \code{configurations}. Identifiers link fishery, replicate (\code{sim}), year, operation,
 and sample. True counts are integers; reported numbers can be fractional.
 CPUE is catch divided by nominal effort; annual CPUE uses totals. Biomass and
-biomass CPUE are missing without \code{weight}. With \code{light = FALSE}, \code{joint_catch}
+biomass CPUE use the weight relationship stored by \code{\link[=sim_abundance]{sim_abundance()}}. With
+\code{light = FALSE}, \code{joint_catch}
 and \code{sample_truth} are also retained. Without \code{sim}, a \code{sim_fishery_spec} list.
 }
 \description{

@@ -22,7 +22,9 @@ test_that("monitoring settings leave all fishing truth unchanged", {
 
 test_that("reporting uses common number and weight multipliers, preserving zeros", {
   withr::local_seed(102)
-  result <- fishery_run(weight = function(length) 2, reporting_factor = 3,
+  sim <- fishery_population()
+  sim$sim_weight <- function(length) 2
+  result <- fishery_run(sim, reporting_factor = 3,
                          reporting_cv = 0.4)$fishery
   expect_equal(result$setdet$reported_kg, 2 * result$setdet$reported_n)
   expect_equal(result$annual$reported_biomass_cpue, 2 * result$annual$reported_cpue)
@@ -31,8 +33,7 @@ test_that("reporting uses common number and weight multipliers, preserving zeros
                        max_operations = 2, reporting_cv = 1)$fishery
   expect_equal(zero$setdet$reported_n, c(0, 0))
   expect_equal(zero$setdet$n_measured, c(0, 0))
-  no_catch <- sim_fishery(fishery_population(), 0, capture_all,
-                           weight = function(length) 2)$fishery
+  no_catch <- sim_fishery(sim, 0, capture_all)$fishery
   expect_equal(no_catch$annual$kg, 0)
 })
 

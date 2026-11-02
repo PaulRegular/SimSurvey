@@ -4,7 +4,7 @@
 \alias{sim_fisheries}
 \title{Simulate competing fisheries on a shared population}
 \usage{
-sim_fisheries(sim, ..., n_sims = NULL, weight = NULL)
+sim_fisheries(sim, ..., n_sims = NULL)
 }
 \arguments{
 \item{sim}{A simulation list returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
@@ -14,9 +14,6 @@ without its \code{sim} argument. Names must be unique and nonempty.}
 
 \item{n_sims}{Common replicate count; \code{NULL} inherits existing batch metadata,
 otherwise one. Do not supply counts inside configurations.}
-
-\item{weight}{Optional common function returning kilograms per fish at length.
-Do not supply weight relationships inside configurations.}
 }
 \value{
 The simulation list with \code{replicates} and combined \code{fishery} results as
@@ -29,6 +26,9 @@ Declares all fisheries upfront and interleaves their operations, using one
 population and one age-specific mortality budget per replicate and year.
 }
 \details{
+All fisheries inherit the weight relationship stored by
+\code{\link[=sim_abundance]{sim_abundance()}}. Weights belong to the population, not individual programs.
+
 Every fishery's reference target uses the original population and Z.
 At each age/year the sum of \code{fishery_share * mean_selectivity_at_age} must not
 exceed one. Incompatible configurations produce an error rather than being

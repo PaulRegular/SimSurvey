@@ -1,8 +1,10 @@
 test_that("reference targets, mortality and retained effort balance analytically", {
   withr::local_seed(21)
   sim <- fishery_population()
+  sim$sim_weight <- function(length) length / 10
+  sim <- round_sim(sim)
   saved <- data.table::copy(sim)
-  result <- fishery_run(sim, gear_amount = 3, duration = 4, weight = function(length) length / 10,
+  result <- fishery_run(sim, gear_amount = 3, duration = 4,
                          lengths_cap = 8, ages_cap = 2, light = FALSE)
   f <- result$fishery
   expect_equal(f$reference$F_reference, rep(log(2) / 2, 2))

@@ -23,7 +23,6 @@
 #' mean accessible vulnerable density. Errors persist within a replicate/year.
 #' @param exploration Proportion of location probabilities allocated uniformly,
 #' in `[0, 1]`. All-zero estimated densities fall back to uniform locations.
-#' @param weight Optional function of length returning kilograms per fish.
 #' @param subset_cells Logical expression evaluated on grid columns and `year`,
 #' restricting accessible cells. By default all cells are accessible.
 #' @param n_sims Replicate count. `NULL` inherits batch metadata, otherwise one.
@@ -78,7 +77,8 @@
 #' `configurations`. Identifiers link fishery, replicate (`sim`), year, operation,
 #' and sample. True counts are integers; reported numbers can be fractional.
 #' CPUE is catch divided by nominal effort; annual CPUE uses totals. Biomass and
-#' biomass CPUE are missing without `weight`. With `light = FALSE`, `joint_catch`
+#' biomass CPUE use the weight relationship stored by [sim_abundance()]. With
+#' `light = FALSE`, `joint_catch`
 #' and `sample_truth` are also retained. Without `sim`, a `sim_fishery_spec` list.
 #'
 #' @examples
@@ -97,7 +97,7 @@ sim_fishery <- function(sim, fishery_share, catch_model,
                         gear_amount = 1, duration = 1,
                         gear_unit = "gear_unit", time_unit = "time_unit",
                         targeting = 1, knowledge_sd = 0, exploration = 0.05,
-                        weight = NULL, subset_cells, n_sims = NULL,
+                        subset_cells, n_sims = NULL,
                         max_operations = 10000, reporting_factor = 1, reporting_cv = 0,
                         sampling_coverage = 1, sampling_targeting = 0,
                         lengths_cap = 100, ages_cap = 5,
@@ -110,7 +110,7 @@ sim_fishery <- function(sim, fishery_share, catch_model,
   config$subset_environment <- parent.frame()
   class(config) <- "sim_fishery_spec"
   if (missing(sim)) return(config)
-  .run_fisheries(sim, list(fishery = config), n_sims = n_sims, weight = weight)
+  .run_fisheries(sim, list(fishery = config), n_sims = n_sims)
 }
 
 .fishery_controls <- function(config, sim) {

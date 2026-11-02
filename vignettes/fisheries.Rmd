@@ -49,17 +49,16 @@ set.seed(202)
 fished <- population |>
   sim_fishery(
     fishery_share = 0.2, catch_model = capture,
-    selectivity = sim_logistic(k = 0.3, x0 = 25), selectivity_by = "length",
+    selectivity = sim_logistic(k = 0.3, x50 = 25), selectivity_by = "length",
     gear_amount = 2, duration = 4, gear_unit = "net", time_unit = "hour",
     targeting = 2, knowledge_sd = 0.5, exploration = 0.1,
-    weight = function(length) 0.00001 * length^3,
     max_operations = 200, lengths_cap = 10, ages_cap = 2, light = FALSE
   )
 fished$fishery$annual
 ```
 
-`weight(length)` returns kilograms per fish. Without it biomass outputs are
-missing. Nominal effort is gear amount times duration; the components and their
+The population weight relationship returns kilograms per fish. Configure it in
+`sim_abundance(weight = sim_weight())`. Nominal effort is gear amount times duration; the components and their
 units remain in the operation table `fishery$setdet`. Zero catches are retained.
 Both settings may instead be callbacks accepting an operation record.
 
@@ -102,9 +101,9 @@ set.seed(202)
 less_monitored <- population |>
   sim_fishery(
     fishery_share = 0.2, catch_model = capture,
-    selectivity = sim_logistic(k = 0.3, x0 = 25), selectivity_by = "length",
+    selectivity = sim_logistic(k = 0.3, x50 = 25), selectivity_by = "length",
     gear_amount = 2, duration = 4, targeting = 2, knowledge_sd = 0.5,
-    exploration = 0.1, weight = function(length) 0.00001 * length^3,
+    exploration = 0.1,
     max_operations = 200, reporting_factor = 0.9, reporting_cv = 0.2,
     sampling_coverage = 0.3, sampling_targeting = 1,
     lengths_cap = 5, ages_cap = 1, age_sampling = "random", light = FALSE
@@ -128,7 +127,7 @@ probability for a fish in that operation. Zero coverage or caps disable sampling
 
 ```{r survey}
 survey <- population |>
-  sim_survey(q = sim_logistic(k = 0.3, x0 = 25), q_by = "length",
+  sim_survey(q = sim_logistic(k = 0.3, x50 = 25), q_by = "length",
               trawl_dim = c(1, 5), min_sets = 2, set_den = 0)
 colSums(survey$I)
 ```
@@ -144,14 +143,13 @@ population snapshot even when called after fishing.
 Both batch functions take the population as their first argument. Calling
 `sim_fishery()` or `sim_survey()` without a population constructs a configuration,
 with no simulation or random draws. Give every program a unique name and declare
-all competing fisheries together. Common replicates and weight belong on the
-batch wrapper, while each fishery controls capture, access, knowledge, targeting,
+all competing fisheries together. Common replicates belong on the batch wrapper; weight belongs to the population, while each fishery controls capture, access, knowledge, targeting,
 gear, effort units, and monitoring.
 
 ```{r fisheries}
 trawl <- sim_fishery(
   fishery_share = 0.2, catch_model = sim_capture(q = 2),
-  selectivity = sim_logistic(k = 0.3, x0 = 25), selectivity_by = "length",
+  selectivity = sim_logistic(k = 0.3, x50 = 25), selectivity_by = "length",
   gear_amount = 1, duration = 2, gear_unit = "trawl", time_unit = "hour",
   max_operations = 100, sampling_coverage = 0.5, lengths_cap = 10, ages_cap = 2
 )
@@ -164,8 +162,7 @@ gillnet <- sim_fishery(
 )
 set.seed(203)
 fleets <- population |>
-  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 2,
-                 weight = function(length) 0.00001 * length^3)
+  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 2)
 fleets$fishery$annual[, c("fishery", "sim", "year", "target", "n", "shortfall", "cpue")]
 ```
 
@@ -189,7 +186,7 @@ the fishery result; it does not append a second set of removals to the first.
 ```{r programs}
 survey_A <- sim_survey(q = sim_logistic(), trawl_dim = c(1, 5),
                         min_sets = 2, set_den = 0, lengths_cap = 40, ages_cap = 3)
-survey_B <- sim_survey(q = sim_logistic(k = 0.3, x0 = 25), q_by = "length",
+survey_B <- sim_survey(q = sim_logistic(k = 0.3, x50 = 25), q_by = "length",
                         trawl_dim = c(1, 5), min_sets = 2, set_den = 0,
                         lengths_cap = 30, ages_cap = 2)
 programs <- fleets |>

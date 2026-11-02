@@ -23,8 +23,12 @@
   (1 - exploration) * weight / sum(weight) + exploration / length(weight)
 }
 
-.run_fisheries <- function(sim, configurations, n_sims = NULL, weight = NULL) {
+.run_fisheries <- function(sim, configurations, n_sims = NULL) {
   sim <- round_sim(sim)
+  if (!is.function(sim$sim_weight) || !is.function(sim$sim_maturity)) {
+    .population_biology(sim, required = TRUE)
+  }
+  weight <- sim$sim_weight
   n_sims <- .resolve_n_sims(sim, n_sims)
   if (!is.matrix(sim$Z) || !identical(dim(sim$Z), dim(sim$N)) ||
       any(!is.finite(sim$Z)) || any(sim$Z < 0) || any(!is.finite(sim$sp_N$N)) ||
@@ -47,13 +51,7 @@
   if (!is.finite(cell_area) || cell_area <= 0 || anyDuplicated(cells$cell)) {
     stop("The grid must have positive cell area and unique cell identifiers.")
   }
-  if (!is.null(weight) && !is.function(weight)) stop("weight must be a function of length.")
-  kg <- if (is.null(weight)) rep(NA_real_, nrow(key)) else weight(as.numeric(rownames(key)))
-  if (!is.numeric(kg) || !length(kg) %in% c(1, nrow(key)) ||
-      (!is.null(weight) && (any(!is.finite(kg)) || any(kg < 0)))) {
-    stop("weight must return finite nonnegative kilograms, one or one per length group.")
-  }
-  kg <- rep(kg, length.out = nrow(key))
+  kg <- .biology_values(weight, as.numeric(rownames(key)), "Weight")
   shares <- lapply(seq_along(sim$years), function(y) {
     combined <- Reduce(`+`, lapply(controls, function(c) c$fishery_share[y] * c$selection$at_age))
     if (any(combined > 1 + 1e-12)) stop("Combined fishery shares and selectivity exceed the mortality budget.")
@@ -152,7 +150,7 @@
           death_remaining[a] <- death_remaining[a] - sum(accepted[a_index[rows] == a])
         }
         operation$n <- sum(accepted)
-        operation$kg <- if (is.null(weight)) NA_real_ else sum(accepted * kg[l_index[rows]])
+        operation$kg <- sum(accepted * kg[l_index[rows]])
         operation$quota_limited <- quota_limited
         operation$mortality_limited <- mortality_limited
         operations[[length(operations) + 1L]] <- as.data.table(operation)
@@ -206,10 +204,10 @@
   truth <- list(setdet = if (length(operations)) rbindlist(operations) else empty_ops,
                 joint_catch = if (length(catches)) rbindlist(catches) else empty_catch,
                 mortality_ledger = rbindlist(ledgers), annual = rbindlist(annual),
-                reference = rbindlist(references), has_weight = !is.null(weight))
+                reference = rbindlist(references), has_weight = TRUE)
   result <- .monitor_fisheries(truth, controls, sim$years)
   result$configurations <- configurations
-  result$settings <- list(n_sims = n_sims, weight = weight, cell_area = cell_area,
+  result$settings <- list(n_sims = n_sims, weight_source = "sim_weight", cell_area = cell_area,
                           length_age_key = key, mortality = "conditional on existing Z")
   sim$fishery <- result
   sim$replicates <- seq_len(n_sims)
