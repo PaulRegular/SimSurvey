@@ -23,8 +23,8 @@
   sample
 }
 
-.monitor_fisheries <- function(truth, controls, years) {
-  n <- kg <- reported_n <- reported_kg <- effort <- NULL
+.monitor_fisheries <- function(truth, controls, years, sim) {
+  n <- kg <- reported_n <- reported_kg <- effort <- n_measured <- n_aged <- n_maturity <- NULL
   operations <- truth$setdet
   catches <- truth$joint_catch
   operations$reporting_multiplier <- rep(NA_real_, nrow(operations))
@@ -73,11 +73,30 @@
                              age_probability = numeric(), aged = logical(), measured = logical())
   sample <- if (length(samples)) rbindlist(samples) else empty_sample
   sample$sample <- seq_len(nrow(sample))
+  sample$true_mature <- rep(NA_integer_, nrow(sample))
+  sample$mature <- rep(NA_integer_, nrow(sample))
+  sample$maturity_observed <- rep(FALSE, nrow(sample))
+  for (label in names(controls)) {
+    rows <- which(sample$fishery == label)
+    maturity <- .maturity_observations(sample[rows, ], sim, controls[[label]]$maturity_sampling,
+                                       true_age = sample$true_age[rows])
+    for (column in c("true_mature", "mature", "maturity_observed")) {
+      set(sample, i = rows, j = column, value = maturity[[column]])
+    }
+  }
   operations$n_measured <- vapply(operations$operation, function(id) sum(sample$operation == id), numeric(1))
   operations$n_aged <- vapply(operations$operation, function(id) sum(sample$aged[sample$operation == id]), numeric(1))
+  operations$n_maturity <- vapply(operations$operation, function(id) {
+    sum(sample$maturity_observed[sample$operation == id])
+  }, numeric(1))
   totals <- operations[, list(kg = sum(kg), reported_n = sum(reported_n),
-                              reported_kg = sum(reported_kg)), by = c("fishery", "sim", "year")]
+                              reported_kg = sum(reported_kg), n_measured = sum(n_measured),
+                              n_aged = sum(n_aged), n_maturity = sum(n_maturity)),
+                        by = c("fishery", "sim", "year")]
   annual <- merge(truth$annual, totals, by = c("fishery", "sim", "year"), all.x = TRUE, sort = FALSE)
+  for (column in c("n_measured", "n_aged", "n_maturity")) {
+    annual[[column]][is.na(annual[[column]])] <- 0
+  }
   ## Programs with no operations still have explicit zero catches and effort.
   for (column in c("reported_n", "kg", "reported_kg")) {
     missing <- is.na(annual[[column]])
@@ -99,6 +118,7 @@
                        by = c("fishery", "sim", "year", "cell", "age")]
   sample_truth <- data.table::copy(sample)
   sample$true_age <- NULL
+  sample$true_mature <- NULL
   result <- list(setdet = operations, catch_at_age = catch_age,
                   catch_at_length = catch_length, sp_removals = removals,
                   mortality_ledger = truth$mortality_ledger, samp = sample,

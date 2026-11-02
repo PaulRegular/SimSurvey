@@ -28,7 +28,8 @@ sim_fishery(
   ages_cap = 5,
   age_sampling = "stratified",
   age_length_group = 1,
-  light = TRUE
+  light = TRUE,
+  maturity_sampling = "aged"
 )
 }
 \arguments{
@@ -88,6 +89,15 @@ operation and length group (\code{"stratified"}).}
 \item{age_length_group}{Positive length-bin width for stratified age sampling.}
 
 \item{light}{If \code{FALSE}, retain joint age-length catches and sample truth.}
+
+\item{maturity_sampling}{Fish examined for maturity: \code{"aged"} (default),
+\code{"measured"}, or \code{"none"}. Binary states follow the population maturity model.
+Unexamined \code{mature} values are missing and \code{maturity_observed} is \code{FALSE}.
+With \code{light = FALSE}, \code{sample_truth} retains latent states for measured fish.
+All length/age sampling finishes before maturity is drawn for every measured
+fish, independently of this observation mask. Switching only this argument
+preserves existing samples, catches, and overlapping maturity states. An older
+object lacking a maturity model can retain number-only sampling with \code{"none"}.}
 }
 \value{
 The simulation list with \code{replicates} and a \code{fishery} list containing

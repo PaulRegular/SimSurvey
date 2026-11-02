@@ -20,7 +20,8 @@ sim_survey(
   age_space_group = "division",
   custom_sets = NULL,
   light = TRUE,
-  q_by = "age"
+  q_by = "age",
+  maturity_sampling = "aged"
 )
 }
 \arguments{
@@ -74,6 +75,15 @@ If \code{NULL}, set locations are generated automatically.}
 \code{"length"}. Length-based catchability is evaluated on the growth model's
 discrete length-group labels. Availability integrates catchability over the
 length-age key; caught lengths follow that selected distribution.}
+
+\item{maturity_sampling}{Fish examined for maturity: \code{"aged"} (default),
+\code{"measured"}, or \code{"none"}. Binary states follow the population maturity model.
+Unexamined \code{mature} values are missing and \code{maturity_observed} is \code{FALSE}.
+With \code{light = FALSE}, \code{sample_truth} retains latent states for measured fish.
+All length/age sampling finishes before maturity is drawn for every measured
+fish, independently of this observation mask. Switching only this argument
+preserves existing samples, catches, and overlapping maturity states. An older
+object lacking a maturity model can retain number-only sampling with \code{"none"}.}
 }
 \value{
 A list including:
@@ -100,7 +110,7 @@ Supports optional catchability functions, sampling caps, and custom set location
 \donttest{
 sim <- sim_abundance(ages = 1:5, years = 1:5) |>
   sim_distribution(grid = make_grid(res = c(20, 20))) |>
-  sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
+  sim_survey(n_sims = 5, q = sim_logistic(k = 2, x50 = 3))
 
 plot_survey(sim, which_year = 3, which_sim = 1)
 }

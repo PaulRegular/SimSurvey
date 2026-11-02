@@ -1,5 +1,17 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add population-level weight and maturity relationships, `sim_weight()` and
+  `sim_maturity()`, and a `sim_growth()` alias for `sim_vonB()`. Derive expected
+  biomass (`B`, `B_at_length`) and mature biomass (`S`, `S_at_length`) from the
+  joint length-age key; refresh mass summaries in spatial and rounded populations.
+* Move weight configuration from the unreleased fishery interfaces to
+  `sim_abundance()`. Every fishery now shares the population weight relationship.
+* Prefer `x50` to `x0` in `sim_logistic()`, retaining positional calls and a
+  deprecated named `x0` alias without changing the default curve.
+* Add `maturity_sampling = "aged"`, `"measured"`, or `"none"` to fisheries and
+  surveys, including batch, parallel, scenario, and resume workflows. Maturity
+  observations and counts mask shared latent states after all existing sampling,
+  preserving catches, reporting, existing samples and overlapping maturity states.
 * Add `sim_fisheries(sim, ...)` for interleaved fisheries sharing one stock and
   mortality budget, with joint target rounding and per-fishery effort/CPUE.
   Support unnamed mortality matrices returned by existing custom closures, while

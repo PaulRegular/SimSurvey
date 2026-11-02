@@ -40,6 +40,7 @@
 #' @param age_sampling Either `"stratified"` or `"random"`.
 #' @param age_length_group Positive length-bin width for stratified age sampling.
 #' @param light If `FALSE`, retain joint age-length catches and sample truth.
+#' @inheritParams sim_survey
 #'
 #' @details Numeric controls may be scalar or year-aligned vectors; named vectors
 #' must name every year. Gear callbacks receive identifiers, location, and resolved
@@ -102,7 +103,7 @@ sim_fishery <- function(sim, fishery_share, catch_model,
                         sampling_coverage = 1, sampling_targeting = 0,
                         lengths_cap = 100, ages_cap = 5,
                         age_sampling = "stratified", age_length_group = 1,
-                        light = TRUE) {
+                        light = TRUE, maturity_sampling = "aged") {
   access <- if (missing(subset_cells)) quote(TRUE) else substitute(subset_cells)
   config_names <- setdiff(names(formals(sim_fishery)), c("sim", "subset_cells"))
   config <- mget(config_names, envir = environment(), inherits = FALSE)
@@ -115,6 +116,7 @@ sim_fishery <- function(sim, fishery_share, catch_model,
 
 .fishery_controls <- function(config, sim) {
   years <- sim$years
+  .check_maturity_model(sim, config$maturity_sampling)
   if (!is.function(config$catch_model)) stop("catch_model must be a function.")
   if (!is.character(config$gear_unit) || length(config$gear_unit) != 1 ||
       is.na(config$gear_unit) || !nzchar(config$gear_unit) ||

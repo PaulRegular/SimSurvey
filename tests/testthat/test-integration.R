@@ -72,3 +72,33 @@ test_that("survey programs coexist with scenario designs and length-selective wr
   expect_equal(parallel$I, programs$survey_programs$a$I)
   expect_equal(parallel$I_at_length, programs$survey_programs$a$I_at_length)
 })
+
+test_that("maturity and refreshed biomass propagate through parallel and scenario wrappers", {
+  withr::local_seed(430)
+  local_worker_library()
+  sim <- small_population()
+  expected <- round_sim(sim)
+  parallel <- sim_survey_parallel(sim, n_sims = 1, n_loops = 1, cores = 1, quiet = TRUE,
+    q = function(age) 1, trawl_dim = c(1, 5), min_sets = 2, set_den = 0,
+    lengths_cap = 20, ages_cap = 2, maturity_sampling = "measured")
+  expect_equal(parallel$B, expected$B)
+  expect_equal(parallel$S, expected$S)
+  expect_equal(sum(parallel$sp_N$B), sum(parallel$B))
+  expect_equal(parallel$setdet$n_maturity, parallel$setdet$n_measured)
+  expect_equal(parallel$samp$maturity_observed, parallel$samp$measured)
+  designs <- expand_surveys(set_den = 0, lengths_cap = 30, ages_cap = 2)
+  export_dir <- withr::local_tempdir()
+  scenarios <- test_surveys(sim, surveys = designs, n_sims = 1, n_loops = 1,
+    cores = 1, progress = FALSE, export_dir = export_dir, q = function(age) 1,
+    trawl_dim = c(1, 5), maturity_sampling = "measured")
+  expect_equal(scenarios$B, expected$B)
+  expect_equal(scenarios$S, expected$S)
+  expect_equal(scenarios$samp_totals$n_maturity, scenarios$samp_totals$n_measured)
+  expect_equal(scenarios$setdet$n_maturity, scenarios$setdet$n_measured)
+  resumed <- resume_test(export_dir)
+  expect_equal(resumed$S, scenarios$S)
+  columns <- c("set", "id", "age", "length", "mature")
+  expect_equal(resumed$sample_truth[, ..columns], resumed$samp[resumed$samp$measured, ..columns])
+  expect_equal(resumed$sample_truth$true_mature, resumed$sample_truth$mature)
+  expect_equal(resumed$samp_totals, scenarios$samp_totals)
+})

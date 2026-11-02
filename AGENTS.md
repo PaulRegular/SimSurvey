@@ -103,6 +103,12 @@ deaths again from future pre-generated populations. Keep stock and catch tables
 aggregate, with exact whole-fish mortality conservation. Complete all fishing
 truth before monitoring so monitoring controls cannot alter fishing outcomes.
 Keep effort units explicit and distinguish true catches from reported estimates.
+Weight and maturity belong to the population. Refresh `B` and `S` from the joint
+length-age key when abundance changes; do not substitute weight at mean length
+or multiply separately averaged weight and maturity. `S` is all-fish expected
+mature biomass, without spawning timing or sex structure. Complete every existing
+sample before maturity draws, and draw latent maturity for every measured fish
+before applying observation masks. Preserve the established `sim_length` component.
 Batch functions take `sim` first and named configurations thereafter. Declare
 competing fisheries upfront, interleave operations on one stock/budget, and
 generate survey-program truth independently before biological subsampling.

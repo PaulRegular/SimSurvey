@@ -289,9 +289,11 @@ resume_test <- function(export_dir = NULL, ...) {
   sim$full_setdet <- res$full_setdet
   sim$setdet <- res$setdet
   sim$samp <- res$samp
+  sim$sample_truth <- res$sample_truth
   sim$total_strat <- res$total_strat
   sim$length_strat <- res$length_strat
   sim$age_strat <- res$age_strat
+  sim <- .population_biology(sim)
 
   if (!is.null(export_dir)) {
     save(sim, file = file.path(export_dir, "test_output.RData"))

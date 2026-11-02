@@ -162,6 +162,14 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' `"length"`. Length-based catchability is evaluated on the growth model's
 #' discrete length-group labels. Availability integrates catchability over the
 #' length-age key; caught lengths follow that selected distribution.
+#' @param maturity_sampling Fish examined for maturity: `"aged"` (default),
+#' `"measured"`, or `"none"`. Binary states follow the population maturity model.
+#' Unexamined `mature` values are missing and `maturity_observed` is `FALSE`.
+#' With `light = FALSE`, `sample_truth` retains latent states for measured fish.
+#' All length/age sampling finishes before maturity is drawn for every measured
+#' fish, independently of this observation mask. Switching only this argument
+#' preserves existing samples, catches, and overlapping maturity states. An older
+#' object lacking a maturity model can retain number-only sampling with `"none"`.
 #' @param trawl_dim Trawl width and distance (same units as the grid).
 #' @param resample_cells Logical. If `TRUE`, allows grid cells to be resampled.
 #' May introduce bias, as depletion is applied at the cell level.
@@ -198,7 +206,7 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20))) |>
-#'   sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
+#'   sim_survey(n_sims = 5, q = sim_logistic(k = 2, x50 = 3))
 #'
 #' plot_survey(sim, which_year = 3, which_sim = 1)
 #' }
@@ -210,7 +218,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                        min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
                        ages_cap = 10, age_sampling = "stratified",
                        age_length_group = 1, age_space_group = "division",
-                       custom_sets = NULL, light = TRUE, q_by = "age") {
+                       custom_sets = NULL, light = TRUE, q_by = "age",
+                       maturity_sampling = "aged") {
   if (missing(sim)) {
     config <- mget(setdiff(names(formals(sim_survey)), "sim"),
                     envir = environment(), inherits = FALSE)
@@ -222,7 +231,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
     n_sims <- .resolve_n_sims(sim, if (missing(n_sims)) NULL else n_sims)
   }
   args <- as.list(environment())
-  .survey_samples(do.call(.survey_truth, args))
+  .survey_maturity(.survey_samples(do.call(.survey_truth, args)), maturity_sampling, light)
 }
 
 .survey_truth <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
@@ -230,7 +239,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                           min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
                           ages_cap = 10, age_sampling = "stratified",
                           age_length_group = 1, age_space_group = "division",
-                          custom_sets = NULL, light = TRUE, q_by = "age") {
+                          custom_sets = NULL, light = TRUE, q_by = "age",
+                          maturity_sampling = "aged") {
 
   n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- NULL
 
@@ -247,6 +257,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
+  .check_maturity_model(sim, maturity_sampling)
   if (length(q_by) != 1 || !q_by %in% c("age", "length")) {
     stop("q_by must be 'age' or 'length'.")
   }
@@ -416,7 +427,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #'   sim_distribution(grid = make_grid(res = c(10, 10))) |>
 #'   sim_survey_parallel(
 #'     n_sims = 5, n_loops = 5, cores = 1,
-#'     q = sim_logistic(k = 2, x0 = 3),
+#'     q = sim_logistic(k = 2, x50 = 3),
 #'     quiet = FALSE
 #'   )
 #' }
@@ -428,6 +439,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
 
   j <- loop <- new_set <- NULL
 
+  sim <- round_sim(sim)
   start <- Sys.time()
   one_res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)
   end <- Sys.time()
@@ -480,6 +492,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
   ## Add new stuff to main object
   sim$I <- one_res$I
   sim$I_at_length <- one_res$I_at_length
+  sim$sp_N$I <- one_res$sp_N$I
   sim$setdet <- setdet
   sim$samp <- samp
   sim$samp_totals <- samp_totals

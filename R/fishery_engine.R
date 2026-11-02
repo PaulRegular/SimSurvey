@@ -205,7 +205,7 @@
                 joint_catch = if (length(catches)) rbindlist(catches) else empty_catch,
                 mortality_ledger = rbindlist(ledgers), annual = rbindlist(annual),
                 reference = rbindlist(references), has_weight = TRUE)
-  result <- .monitor_fisheries(truth, controls, sim$years)
+  result <- .monitor_fisheries(truth, controls, sim$years, sim)
   result$configurations <- configurations
   result$settings <- list(n_sims = n_sims, weight_source = "sim_weight", cell_area = cell_area,
                           length_age_key = key, mortality = "conditional on existing Z")

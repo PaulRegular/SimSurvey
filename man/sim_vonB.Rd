@@ -24,6 +24,16 @@ sim_growth(
   digits = 0,
   plot = FALSE
 )
+
+sim_growth(
+  Linf = 120,
+  L0 = 5,
+  K = 0.1,
+  log_sd = 0.1,
+  length_group = 3,
+  digits = 0,
+  plot = FALSE
+)
 }
 \arguments{
 \item{Linf}{Mean asymptotic length.}

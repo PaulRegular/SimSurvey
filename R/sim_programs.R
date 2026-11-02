@@ -115,9 +115,12 @@ sim_surveys <- function(sim, ..., n_sims = NULL) {
     args$sim <- data.table::copy(sim)
     do.call(.survey_truth, args)
   })
-  programs <- lapply(seq_along(truths), function(i) {
-    result <- .survey_samples(truths[[i]])
-    keep <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals")
+  ## Finish all existing biological samples before drawing any maturity states.
+  results <- lapply(truths, .survey_samples)
+  programs <- lapply(seq_along(results), function(i) {
+    result <- .survey_maturity(results[[i]], configurations[[i]]$maturity_sampling,
+                               configurations[[i]]$light)
+    keep <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals", "sample_truth")
     program <- result[intersect(keep, names(result))]
     program$sp_I <- data.table::copy(as.data.table(result$sp_N)[, c("cell", "age", "year", "I")])
     program$configuration <- configurations[[i]]
@@ -130,7 +133,7 @@ sim_surveys <- function(sim, ..., n_sims = NULL) {
 }
 
 .clear_survey <- function(sim) {
-  fields <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals",
+  fields <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals", "sample_truth",
                "selected_survey", "survey_configuration", "total_strat", "length_strat", "age_strat",
                "total_strat_error", "total_strat_error_stats", "length_strat_error",
                "length_strat_error_stats", "age_strat_error", "age_strat_error_stats")
@@ -161,7 +164,7 @@ select_survey <- function(sim, survey) {
       !survey %in% names(sim$survey_programs)) stop("survey must name one available survey program.")
   sim <- .clear_survey(data.table::copy(sim))
   program <- sim$survey_programs[[survey]]
-  keep <- intersect(c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals"), names(program))
+  keep <- intersect(c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals", "sample_truth"), names(program))
   sim[keep] <- data.table::copy(program[keep])
   spatial <- as.data.table(sim$sp_N)[, c("cell", "age", "year")]
   sim$sp_N$I <- program$sp_I[spatial, on = c("cell", "age", "year")][["I"]]

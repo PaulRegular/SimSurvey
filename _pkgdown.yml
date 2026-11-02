@@ -8,6 +8,9 @@ reference:
   - sim_Z
   - sim_N0
   - sim_vonB
+  - sim_growth
+  - sim_weight
+  - sim_maturity
 - title: Simulate distribution
 - contents:
   - sim_distribution
