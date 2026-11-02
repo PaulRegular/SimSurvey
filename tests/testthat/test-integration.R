@@ -47,3 +47,28 @@ test_that("survey scenarios export and resume in temporary directories", {
   expect_equal(sort(unique(partial$samp_totals$survey)), 1:2)
   expect_equal(nrow(partial$samp_totals), nrow(result$samp_totals))
 })
+
+test_that("survey programs coexist with scenario designs and length-selective wrappers", {
+  withr::local_seed(330)
+  local_worker_library()
+  sim <- small_population()
+  q <- function(length) as.numeric(length >= 30)
+  config <- sim_survey(q = q, q_by = "length", trawl_dim = c(1, 5),
+                        min_sets = 2, set_den = 0, lengths_cap = 30, ages_cap = 2)
+  programs <- sim_surveys(sim, a = config)
+  designs <- expand_surveys(set_den = 0, lengths_cap = 30, ages_cap = 2)
+  result <- test_surveys(programs, surveys = designs, n_sims = 1, n_loops = 1,
+                         cores = 1, progress = FALSE, q = q, q_by = "length",
+                         trawl_dim = c(1, 5))
+  expect_equal(result$surveys, designs)
+  expect_equal(result$survey_programs, programs$survey_programs)
+  view <- select_survey(result, "a")
+  expect_null(view$total_strat_error)
+  expect_equal(view$surveys, designs)
+  expect_equal(view$I_at_length, programs$survey_programs$a$I_at_length)
+  parallel <- sim_survey_parallel(sim, n_sims = 1, n_loops = 1, cores = 1, quiet = TRUE,
+                                   q = q, q_by = "length", trawl_dim = c(1, 5),
+                                   min_sets = 2, set_den = 0, lengths_cap = 30, ages_cap = 2)
+  expect_equal(parallel$I, programs$survey_programs$a$I)
+  expect_equal(parallel$I_at_length, programs$survey_programs$a$I_at_length)
+})

@@ -101,3 +101,19 @@ test_that("lognormal reporting has the specified mean and CV parameterization", 
   expect_equal(noisy$setdet$reporting_multiplier, expected)
   expect_equal(noisy$setdet$reported_n, baseline$setdet$n * expected)
 })
+
+test_that("partial length selectivity is integrated without rescaling", {
+  withr::local_seed(108)
+  sim <- fishery_population()
+  key <- matrix(c(0.75, 0.25, 0.5, 0.5), 2,
+                dimnames = list(length = c(10, 20), age = 1:2))
+  sim$sim_length <- function(age, length_age_key = FALSE) key
+  result <- sim_fishery(sim, 0.4, capture_all, selectivity_by = "length",
+                         selectivity = function(length) ifelse(length == 20, 0.5, 0),
+                         subset_cells = cell == 1, light = FALSE)$fishery
+  expect_equal(result$reference$selectivity, c(0.125, 0.25))
+  expect_equal(result$reference$catch_reference, c(2.5, 5))
+  expect_equal(result$annual$target, 8)
+  expect_equal(result$annual$n, 8)
+  expect_true(all(result$joint_catch$length == 20))
+})

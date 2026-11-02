@@ -138,3 +138,80 @@ Availability at age integrates those probabilities over the length-age key, and
 caught lengths follow the selected length distribution. The default `q_by = "age"`
 retains the historical age-based workflow. Surveys observe the original rounded
 population snapshot even when called after fishing.
+
+## Competing fisheries
+
+Both batch functions take the population as their first argument. Calling
+`sim_fishery()` or `sim_survey()` without a population constructs a configuration,
+with no simulation or random draws. Give every program a unique name and declare
+all competing fisheries together. Common replicates and weight belong on the
+batch wrapper, while each fishery controls capture, access, knowledge, targeting,
+gear, effort units, and monitoring.
+
+```{r fisheries}
+trawl <- sim_fishery(
+  fishery_share = 0.2, catch_model = sim_capture(q = 2),
+  selectivity = sim_logistic(k = 0.3, x0 = 25), selectivity_by = "length",
+  gear_amount = 1, duration = 2, gear_unit = "trawl", time_unit = "hour",
+  max_operations = 100, sampling_coverage = 0.5, lengths_cap = 10, ages_cap = 2
+)
+gillnet <- sim_fishery(
+  fishery_share = 0.1, catch_model = sim_capture(q = 1, capacity_per_gear = 80),
+  selectivity = function(length) exp(-((length - 35) / 15)^2),
+  selectivity_by = "length", gear_amount = 2, duration = 4,
+  gear_unit = "net", time_unit = "hour", max_operations = 100,
+  sampling_coverage = 0.3, lengths_cap = 8, ages_cap = 2
+)
+set.seed(203)
+fleets <- population |>
+  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 2,
+                 weight = function(length) 0.00001 * length^3)
+fleets$fishery$annual[, c("fishery", "sim", "year", "target", "n", "shortfall", "cpue")]
+```
+
+Each target uses the original N and Z, rather than what a previous fishery left.
+At every age/year the sum of fishery shares times mean selectivity must be at
+most one; invalid combinations produce an error. Integer targets are rounded
+jointly. The next active fishery is selected uniformly for each operation, with
+shared stock depletion and age death budgets. Interleaving describes operation
+order, not calendar time. Some valid targets can remain unmet because competing
+fisheries need the same ages or cells. Other mortality is allocated once after
+all fisheries finish. A single shared ledger records the resulting balance.
+
+Fishery identifiers remain on catches, removals, operations, and annual summaries.
+Trawl-hour and net-hour CPUE have different meanings and are not pooled. Reordering
+the named configurations does not change same-seed results. Calling the batch
+wrapper again creates a fresh scenario from the annual population and replaces
+the fishery result; it does not append a second set of removals to the first.
+
+## Independent surveys and existing analyses
+
+```{r programs}
+survey_A <- sim_survey(q = sim_logistic(), trawl_dim = c(1, 5),
+                        min_sets = 2, set_den = 0, lengths_cap = 40, ages_cap = 3)
+survey_B <- sim_survey(q = sim_logistic(k = 0.3, x0 = 25), q_by = "length",
+                        trawl_dim = c(1, 5), min_sets = 2, set_den = 0,
+                        lengths_cap = 30, ages_cap = 2)
+programs <- fleets |>
+  sim_surveys(survey_A = survey_A, survey_B = survey_B)
+names(programs$survey_programs)
+programs$replicates
+selected <- programs |> select_survey("survey_B") |> run_strat() |> strat_error()
+selected$total_strat
+```
+
+The two fisheries and surveys share replicate identifiers (two here, inherited
+from `fleets`). Surveys independently observe the original rounded annual
+population, including after fishing. A survey does not remove fish from another
+survey or from the mortality ledger. All survey locations and catches are
+generated before any program's biological subsampling, so changing one program's
+sampling caps does not change another program's catches.
+
+Common population data are stored once; `survey_programs` holds each program's
+availability, observations, and configuration. `select_survey()` restores a
+standard view with the matching spatial availability and clears old analysis
+results. Existing `run_strat()`, `strat_error()`, and plotting functions work on
+that view. The `surveys` table used by `test_surveys()` remains a separate table
+of scenario designs. Calling `sim_surveys()` again replaces the program collection
+with a fresh simulation. Statistical comparisons should respect the shared
+population trajectory and the sampling design of each program.

@@ -20,6 +20,8 @@ reference:
 - title: Simulate survey
 - contents:
   - sim_survey
+  - sim_surveys
+  - select_survey
   - sim_survey_parallel
   - sim_logistic
   - sim_sets
@@ -27,6 +29,7 @@ reference:
 - contents:
   - sim_capture
   - sim_fishery
+  - sim_fisheries
 - title: Stratified analysis
 - contents:
   - run_strat

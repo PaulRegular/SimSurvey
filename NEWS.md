@@ -1,5 +1,11 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add `sim_fisheries(sim, ...)` for interleaved fisheries sharing one stock and
+  mortality budget, with joint target rounding and per-fishery effort/CPUE.
+* Add `sim_surveys(sim, ...)` for independent programs observing one annual
+  snapshot, and `select_survey()` for existing analyses and plots. Preserve the
+  scenario-design table used by `test_surveys()`. Batch configurations are named
+  and canonicalized; common replicate counts align across fisheries and surveys.
 * Add aggregate fishery simulation with explicit capture models, age/length gear
   selectivity, conditional mortality budgets, spatial depletion, effort and CPUE.
   Integrated reporting and nested biological sampling retain their inclusion

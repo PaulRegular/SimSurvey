@@ -103,5 +103,10 @@ deaths again from future pre-generated populations. Keep stock and catch tables
 aggregate, with exact whole-fish mortality conservation. Complete all fishing
 truth before monitoring so monitoring controls cannot alter fishing outcomes.
 Keep effort units explicit and distinguish true catches from reported estimates.
+Batch functions take `sim` first and named configurations thereafter. Declare
+competing fisheries upfront, interleave operations on one stock/budget, and
+generate survey-program truth independently before biological subsampling.
+Keep `survey_programs` separate from the `surveys` scenario-design table, and
+restore matching spatial availability when extracting a survey for analysis.
 See `vignettes/fisheries.Rmd` for the implemented model and limitations;
 `analysis/fisheries-design.Rmd` remains a historical research note.
