@@ -142,3 +142,19 @@ test_that("monitoring changes in one fishery leave all shared truth unchanged", 
   columns <- c("operation", "fishery", "n", "cell", "effort")
   expect_equal(full$setdet[, ..columns], reduced$setdet[, ..columns])
 })
+
+test_that("existing custom mortality closures can return unnamed matrices", {
+  withr::local_seed(311)
+  sim <- sim_abundance(ages = 1:2, years = 2001:2002,
+                        R = sim_R(log_mean = log(1000), log_sd = 0),
+                        Z = function(ages, years) matrix(log(2), length(ages), length(years))) |>
+    sim_distribution(grid = small_grid(), ays_covar = zero_covariance,
+                       depth_par = function(data) rep(0, nrow(data)))
+  expect_null(dimnames(sim$Z))
+  spec <- sim_fishery(fishery_share = 0.1, catch_model = capture_all,
+                       selectivity = function(age) 1, lengths_cap = 0)
+  result <- sim_fisheries(sim, custom = spec)
+  expect_equal(dimnames(result$Z), dimnames(result$N))
+  expect_true(all(result$fishery$annual$status == "target_met"))
+  expect_null(dimnames(sim$Z))
+})

@@ -27,9 +27,17 @@
   sim <- round_sim(sim)
   n_sims <- .resolve_n_sims(sim, n_sims)
   if (!is.matrix(sim$Z) || !identical(dim(sim$Z), dim(sim$N)) ||
-      !identical(dimnames(sim$Z), dimnames(sim$N)) ||
       any(!is.finite(sim$Z)) || any(sim$Z < 0) || any(!is.finite(sim$sp_N$N)) ||
       any(sim$sp_N$N < 0)) stop("Population counts and aligned Z must be finite and nonnegative.")
+  for (dimension in 1:2) {
+    labels <- dimnames(sim$Z)[[dimension]]
+    if (!is.null(labels) && !identical(labels, dimnames(sim$N)[[dimension]])) {
+      stop("Population counts and aligned Z must use the same age/year labels.")
+    }
+  }
+  ## Custom mortality closures historically may return unnamed matrices. Their
+  ## axes follow the same age/year order used by sim_abundance().
+  dimnames(sim$Z) <- dimnames(sim$N)
   configurations <- configurations[order(names(configurations), method = "radix")]
   controls <- lapply(configurations, .fishery_controls, sim = sim)
   names_f <- names(controls)

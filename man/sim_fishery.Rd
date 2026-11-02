@@ -130,6 +130,8 @@ shortfall and termination status. Local removals do not feed back into later
 pre-generated populations, and are not subtracted again from future abundance.
 Other mortality can include other fisheries. All simulated catches are retained;
 discards and seasonal scheduling are outside this model.
+Unnamed mortality matrices from custom closures use the age/year order of
+\code{\link[=sim_abundance]{sim_abundance()}}; supplied dimension labels must agree with the population.
 
 Fishing truth is completed before monitoring. Biological samples are drawn
 from actual catches, with ages nested within measured fish. Sample records

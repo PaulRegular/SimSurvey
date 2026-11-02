@@ -2,6 +2,8 @@
 
 * Add `sim_fisheries(sim, ...)` for interleaved fisheries sharing one stock and
   mortality budget, with joint target rounding and per-fishery effort/CPUE.
+  Support unnamed mortality matrices returned by existing custom closures, while
+  rejecting conflicting age/year labels.
 * Add `sim_surveys(sim, ...)` for independent programs observing one annual
   snapshot, and `select_survey()` for existing analyses and plots. Preserve the
   scenario-design table used by `test_surveys()`. Batch configurations are named
