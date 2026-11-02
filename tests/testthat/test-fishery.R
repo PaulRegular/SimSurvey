@@ -50,6 +50,13 @@ test_that("empty and unreachable fisheries return explicit statuses", {
   expect_equal(unsuccessful$fishery$annual$cpue, 0)
   no_selection <- sim_fishery(sim, 1, capture_all, selectivity = function(x) 0)
   expect_equal(no_selection$fishery$annual$target, 0)
+  impossible <- sim_fishery(sim, 0.5, sim_capture(0))$fishery
+  expect_equal(impossible$annual$status, "exhausted")
+  expect_equal(nrow(impossible$setdet), 0)
+  expect_equal(sim_fishery(sim, 0.5, sim_capture(1, 0))$fishery$annual$status, "exhausted")
+  reversed <- sim
+  dimnames(reversed$Z)[[1]] <- rev(rownames(sim$Z))
+  expect_error(sim_fishery(reversed, 0.5, capture_all), "aligned Z")
 })
 
 test_that("capture is bounded, responds to area and obeys capacity", {

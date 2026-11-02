@@ -27,6 +27,7 @@
   sim <- round_sim(sim)
   n_sims <- .resolve_n_sims(sim, n_sims)
   if (!is.matrix(sim$Z) || !identical(dim(sim$Z), dim(sim$N)) ||
+      !identical(dimnames(sim$Z), dimnames(sim$N)) ||
       any(!is.finite(sim$Z)) || any(sim$Z < 0) || any(!is.finite(sim$sp_N$N)) ||
       any(sim$sp_N$N < 0)) stop("Population counts and aligned Z must be finite and nonnegative.")
   configurations <- configurations[order(names(configurations))]
@@ -85,6 +86,12 @@
         ## Sampling an index avoids sample(5, 1)'s special length-one semantics.
         f <- active[sample.int(length(active), 1)]
         control <- controls[[f]]
+        capture_settings <- attr(control$catch_model, "sim_capture")
+        if (!is.null(capture_settings) &&
+            (capture_settings$q == 0 || capture_settings$capacity_per_gear == 0)) {
+          status[f] <- "exhausted"
+          next
+        }
         if (counts[f] >= control$max_operations[y]) {
           status[f] <- "operation_limit"
           next

@@ -35,7 +35,7 @@ sim_capture <- function(q, capacity_per_gear = Inf) {
   }
   force(q)
   force(capacity_per_gear)
-  function(available, operation) {
+  capture <- function(available, operation) {
     prob <- numeric(nrow(available))
     selected <- available$selectivity > 0
     prob[selected] <- -expm1(-q * operation$effort * available$selectivity[selected] /
@@ -44,4 +44,6 @@ sim_capture <- function(q, capacity_per_gear = Inf) {
     capacity <- floor(capacity_per_gear * operation$gear_amount)
     .thin_counts(caught, min(sum(caught), capacity))
   }
+  attr(capture, "sim_capture") <- list(q = q, capacity_per_gear = capacity_per_gear)
+  capture
 }
