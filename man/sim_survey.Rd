@@ -24,9 +24,14 @@ sim_survey(
 )
 }
 \arguments{
-\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
+\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}. Omit to
+create a \code{sim_survey_spec} configuration for \code{\link[=sim_surveys]{sim_surveys()}}, without running
+a simulation or consuming random numbers.}
 
-\item{n_sims}{Number of surveys to simulate.
+\item{n_sims}{Number of surveys to simulate. Supply common replicate counts
+on \code{\link[=sim_surveys]{sim_surveys()}} rather than inside a configuration.
+With existing batch metadata, an omitted count (or \code{NULL}) inherits its
+replicate identifiers; an explicit count must agree with them.
 Be cautious: large values may consume significant memory. Use \code{\link[=sim_survey_parallel]{sim_survey_parallel()}} if many simulations are needed.}
 
 \item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability.
@@ -84,6 +89,8 @@ Includes:
 \item \code{I}: individuals available to the survey
 \item \code{n}: individuals caught by the survey
 }
+
+When \code{sim} is omitted, returns a \code{sim_survey_spec} list of settings.
 }
 \description{
 Simulates a stratified-random survey on a population produced by \code{\link[=sim_distribution]{sim_distribution()}}.

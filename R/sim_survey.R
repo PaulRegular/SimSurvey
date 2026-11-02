@@ -136,8 +136,13 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' Simulates a stratified-random survey on a population produced by [`sim_distribution()`].
 #' Supports optional catchability functions, sampling caps, and custom set locations.
 #'
-#' @param sim A simulation object returned by [`sim_distribution()`].
-#' @param n_sims Number of surveys to simulate.
+#' @param sim A simulation object returned by [`sim_distribution()`]. Omit to
+#' create a `sim_survey_spec` configuration for [sim_surveys()], without running
+#' a simulation or consuming random numbers.
+#' @param n_sims Number of surveys to simulate. Supply common replicate counts
+#' on [sim_surveys()] rather than inside a configuration.
+#' With existing batch metadata, an omitted count (or `NULL`) inherits its
+#' replicate identifiers; an explicit count must agree with them.
 #' Be cautious: large values may consume significant memory. Use [`sim_survey_parallel()`] if many simulations are needed.
 #' @param q A closure (e.g., [`sim_logistic()`]) for simulating catchability.
 #' Returned values must range between 0 and 1.
@@ -175,6 +180,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' - `I`: individuals available to the survey
 #' - `n`: individuals caught by the survey
 #'
+#' When `sim` is omitted, returns a `sim_survey_spec` list of settings.
+#'
 #' @examples
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5) |>
@@ -192,6 +199,16 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                        ages_cap = 10, age_sampling = "stratified",
                        age_length_group = 1, age_space_group = "division",
                        custom_sets = NULL, light = TRUE, q_by = "age") {
+  if (missing(sim)) {
+    config <- mget(setdiff(names(formals(sim_survey)), "sim"),
+                    envir = environment(), inherits = FALSE)
+    attr(config, "n_sims_supplied") <- !missing(n_sims)
+    class(config) <- "sim_survey_spec"
+    return(config)
+  }
+  if (!is.null(sim$replicates) || is.null(n_sims)) {
+    n_sims <- .resolve_n_sims(sim, if (missing(n_sims)) NULL else n_sims)
+  }
   args <- as.list(environment())
   .survey_samples(do.call(.survey_truth, args))
 }

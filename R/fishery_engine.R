@@ -30,7 +30,7 @@
       !identical(dimnames(sim$Z), dimnames(sim$N)) ||
       any(!is.finite(sim$Z)) || any(sim$Z < 0) || any(!is.finite(sim$sp_N$N)) ||
       any(sim$sp_N$N < 0)) stop("Population counts and aligned Z must be finite and nonnegative.")
-  configurations <- configurations[order(names(configurations))]
+  configurations <- configurations[order(names(configurations), method = "radix")]
   controls <- lapply(configurations, .fishery_controls, sim = sim)
   names_f <- names(controls)
   key <- .growth_key(sim)
