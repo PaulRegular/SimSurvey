@@ -19,7 +19,8 @@ sim_survey(
   age_length_group = 1,
   age_space_group = "division",
   custom_sets = NULL,
-  light = TRUE
+  light = TRUE,
+  q_by = "age"
 )
 }
 \arguments{
@@ -28,7 +29,7 @@ sim_survey(
 \item{n_sims}{Number of surveys to simulate.
 Be cautious: large values may consume significant memory. Use \code{\link[=sim_survey_parallel]{sim_survey_parallel()}} if many simulations are needed.}
 
-\item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability at age.
+\item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability.
 Returned values must range between 0 and 1.}
 
 \item{trawl_dim}{Trawl width and distance (same units as the grid).}
@@ -63,6 +64,11 @@ Options: \code{"division"} (default), \code{"strat"}, or \code{"set"}. Ignored i
 If \code{NULL}, set locations are generated automatically.}
 
 \item{light}{Logical. If \code{TRUE}, drops some objects from output to reduce memory footprint.}
+
+\item{q_by}{Basis of catchability: \code{"age"} (the historical default) or
+\code{"length"}. Length-based catchability is evaluated on the growth model's
+discrete length-group labels. Availability integrates catchability over the
+length-age key; caught lengths follow that selected distribution.}
 }
 \value{
 A list including:
