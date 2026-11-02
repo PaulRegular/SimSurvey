@@ -1,214 +1,776 @@
 ---
-title: "Fisheries and monitoring"
-output: rmarkdown::html_vignette
+title: "Simulating multiple fisheries and surveys"
+output:
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
-  %\VignetteIndexEntry{Fisheries and monitoring}
+  %\VignetteIndexEntry{Simulating multiple fisheries and surveys}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                     fig.height = 4, dpi = 110)
 library(SimSurvey)
-set.seed(201)
 ```
 
-## An individual fishery
+## Questions the new features can answer
 
-Fisheries operate on the same simulation list as surveys. This small population
-uses a flat spatial effect to keep the example quick and independent of INLA.
+SimSurvey now supports competing fisheries, their reporting and biological
+monitoring, and multiple survey programs observing the same population. Weight
+and maturity relationships also provide biomass and mature-biomass truth. These
+are extensions to the framework described by
+[Regular et al. (2020)](https://doi.org/10.1371/journal.pone.0232822); that paper
+provides the background on population generation and stratified survey analysis.
+This vignette describes the extensions in development version 0.1.8.9000, toward
+0.2.0, rather than repeating those established methods.
+
+| Question | New capability |
+|:---|:---|
+| How do fisheries compete for fish? | Interleaved operations share stocks and mortality budgets. |
+| How do targeting and imperfect knowledge affect effort and CPUE? | Separate controls for targeting, knowledge error, and exploration. |
+| How do biological relationships and gear selection affect the quantities observed? | Shared weight and maturity models; age- or length-based selectivity. |
+| How do reporting and monitoring affect the available data? | Reporting errors, preferential coverage, and nested biological observations. |
+| How do different survey programs observe one population? | Independent programs with distinct settings and a standard extraction interface. |
+
+The model is **conditional on the generated population and total mortality**.
+Fishing allocates deaths permitted by `Z`; effort determines how catches are
+obtained. This is useful for examining data-generation and sampling mechanisms.
+It does not turn SimSurvey into a population-feedback or management-strategy model.
+
+```{r workflow, echo=FALSE, fig.height=3.3, fig.cap="Data flow. Both fisheries and surveys start from the annual population snapshot. Survey programs do not sample the stock left behind by the fisheries."}
+par(mar = c(0, 0, 0, 0))
+plot.new()
+plot.window(xlim = c(0, 1.04), ylim = c(0, 1))
+box_text <- function(x, y, label) {
+  rect(x - 0.14, y - 0.14, x + 0.14, y + 0.14,
+       col = "#EDF3F7", border = "#52758C")
+  text(x, y, label, cex = 0.8)
+}
+box_text(0.17, 0.74, "Annual population\nN, Z, growth")
+box_text(0.52, 0.74, "Shared fisheries\nCatches and effort")
+box_text(0.87, 0.74, "Reporting\nBiological samples")
+box_text(0.17, 0.24, "Weight and maturity\nBiomass B, mature B: S")
+box_text(0.52, 0.24, "Independent\nsurvey programs")
+box_text(0.87, 0.24, "Select one survey\nExisting analyses")
+arrows(c(0.31, 0.66, 0.17, 0.31, 0.66), c(0.74, 0.74, 0.60, 0.64, 0.24),
+       c(0.38, 0.73, 0.17, 0.38, 0.73), c(0.74, 0.74, 0.38, 0.34, 0.24),
+       length = 0.07, col = "#52758C")
+```
+
+## Shared biological truth
+
+Here is a small synthetic groundfish population. The fewer ages and years,
+coarser grid, and single broad stratum keep the example quick. Recruitment,
+mortality, growth, spatial processes, weight, and maturity otherwise use their
+package defaults. The example is illustrative, not a reconstruction of 3Ps cod.
 
 ```{r population}
-flat <- function(x, ages, years, cells) {
-  array(0, c(length(ages), length(years), length(cells)),
-        dimnames = list(age = ages, year = years, cell = cells))
-}
-population <- sim_abundance(
-  ages = 1:3, years = 2001:2002,
-  R = sim_R(log_mean = log(2000), log_sd = 0, random_walk = FALSE)
-) |>
+set.seed(501)
+population <- sim_abundance(ages = 1:6, years = 2001:2003) |>
   sim_distribution(
-    grid = make_grid(x_range = c(-10, 10), y_range = c(-10, 10),
-                     res = c(5, 5), shelf_depth = 50,
-                     depth_range = c(0, 100), strat_breaks = c(0, 101),
-                     strat_splits = 1, method = "linear"),
-    ays_covar = flat, depth_par = function(data) rep(0, nrow(data))
+    grid = make_grid(res = c(70, 70),
+                     strat_breaks = c(0, 1000), strat_splits = 1)
   )
 ```
 
-The generic capture model uses encounter probability
-`1 - exp(-q * gear_amount * duration * selectivity / cell_area)` and an optional
-capacity per gear unit. Here grid distances are kilometres, duration is hours,
-gear amount is a count, and `q` is square kilometres per gear-hour. A custom
-`function(available, operation)` can replace this model; it returns bounded
-whole-fish proposals for the aggregate age-length rows in `available`.
+`sim_abundance()` now retains three biological relationships. `sim_growth()` is
+an alias for `sim_vonB()`; its returned function remains stored as `sim_length`.
+`sim_weight()` provides kilograms given length in centimetres. `sim_maturity()`
+provides maturity probability, by length by default. Supply alternatives through
+the `growth`, `weight`, and `maturity` arguments. For example,
+`maturity = sim_maturity(x50 = 50)` changes the midpoint while retaining the other
+defaults. Use `maturity_by = "age"` with age-appropriate parameters for an age ogive.
 
-```{r fishery}
-capture <- sim_capture(q = 2, capacity_per_gear = 100)
-set.seed(202)
+Weight defaults follow the reference relationship used for 3Ps cod in
+[Varkey et al. (2024), Table 10](https://publications.gc.ca/collections/collection_2024/mpo-dfo/Fs97-13-1381-eng.pdf).
+Maturity defaults approximate the historical female relationship for 1996 in
+[Brattey and Morgan (1996), Table 3](https://waves-vagues.dfo-mpo.gc.ca/Library/198884.pdf).
+These defaults are convenient starting points, not contemporary stock-specific
+calibrations. One maturity curve applies to all simulated fish.
+
+```{r biology-curves, echo=FALSE, fig.height=3.1, fig.cap="Default weight and maturity relationships. The maturity midpoint is a probability of 0.5, not a minimum size at which every fish becomes mature."}
+par(mfrow = c(1, 2), mar = c(4, 4, 1, 1))
+curve(sim_weight()(x), from = 0, to = 100, xlab = "Length (cm)",
+      ylab = "Weight (kg)", col = "#0072B2", lwd = 2)
+curve(sim_maturity()(x), from = 0, to = 100, xlab = "Length (cm)",
+      ylab = "Maturity probability", ylim = c(0, 1), col = "#D55E00", lwd = 2)
+abline(h = 0.5, v = 47.81, lty = 3, col = "grey50")
+```
+
+`B` and `S` are age-by-year matrices of expected biomass and mature biomass in
+kilograms. `B_at_length` and `S_at_length` give the corresponding length-by-year
+quantities. Spatial `sp_N` also contains expected `B` and `S`. The two
+representations have matching annual totals:
+
+```{r biomass}
+stopifnot(isTRUE(all.equal(colSums(population$B), colSums(population$B_at_length))),
+          isTRUE(all.equal(colSums(population$S), colSums(population$S_at_length))))
+knitr::kable(data.frame(
+  year = population$years,
+  biomass_tonnes = round(colSums(population$B) / 1000),
+  mature_biomass_tonnes = round(colSums(population$S) / 1000)
+), row.names = FALSE)
+```
+
+Here `S` is mature biomass of **all fish** under the supplied curve, without a
+female fraction or a spawning-season adjustment. It does not drive recruitment.
+Both mass summaries integrate over the length-age key: weight at mean length is
+generally not mean weight, and separately averaging weight and maturity loses
+their association. [Appendix A](#appendix-a-mathematics-of-the-extensions) gives
+the joint calculation and a numerical example.
+
+## Two fisheries sharing one population
+
+Calling `sim_fishery()` without `sim` constructs a configuration, without
+simulating anything or consuming random numbers. All competing fisheries are
+declared together. Their names become identifiers in the results.
+
+```{r configurations}
+trawl <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 400))
+gillnet <- sim_fishery(
+  fishery_share = 0.1, catch_model = sim_capture(q = 200),
+  selectivity = sim_logistic(x50 = 40), selectivity_by = "length"
+)
+
+set.seed(502)
 fished <- population |>
-  sim_fishery(
-    fishery_share = 0.2, catch_model = capture,
-    selectivity = sim_logistic(k = 0.3, x50 = 25), selectivity_by = "length",
-    gear_amount = 2, duration = 4, gear_unit = "net", time_unit = "hour",
-    targeting = 2, knowledge_sd = 0.5, exploration = 0.1,
-    max_operations = 200, lengths_cap = 10, ages_cap = 2, light = FALSE
-  )
-fished$fishery$annual
+  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 20)
 ```
 
-The population weight relationship returns kilograms per fish. Configure it in
-`sim_abundance(weight = sim_weight())`. Nominal effort is gear amount times duration; the components and their
-units remain in the operation table `fishery$setdet`. Zero catches are retained.
-Both settings may instead be callbacks accepting an operation record.
+The gear names denote illustrative programs, not calibrated gear models. The
+trawl configuration uses default age selectivity; the second configuration
+demonstrates length selectivity. For a single fishery, supply the population
+directly to `sim_fishery(population, ...)` instead.
 
-## Conditional mortality and CPUE
+```{r individual-fishery, eval=FALSE}
+population |>
+  sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 400))
+```
 
-The annual population and Z are generated before fishing. For share p and mean
-selectivity at age s, reference fishing mortality is p Z s and reference catch
-is N p s (1 - exp(-Z)). The rounded total catch in numbers is the target; the
-realized age composition can differ. Age-specific integer death budgets constrain
-operations. Remaining deaths are allocated among remaining fish as other mortality.
+`sim_capture()` is a generic encounter model. Its required `q` has grid-area
+units per gear-time unit. These coefficients suit the coarse grid and nominal
+effort units used here; they are not estimates of actual trawl or gillnet
+efficiency. Default `gear_amount` and `duration` are each one. Their product is
+effort. Set `gear_unit` and `time_unit` when defining physical units for a real
+application. Gear amount and duration can also be operation-level callbacks;
+`capacity_per_gear` adds a capacity limit to the encounter model.
 
-```{r balance}
+**Fishery capture `q` differs from survey `q`**, which is a dimensionless
+catchability probability. Also, selectivity is not automatically rescaled to a
+maximum of one: its magnitude affects the reference target as well as capture.
+
+Each reference target uses the original population, `Z`, the fishery share, and
+mean selectivity. A share of 0.2 therefore need not mean 20% of all deaths: mean
+selectivity also matters. The engine chooses the next active fishery uniformly
+for each operation, depletes shared age-length stocks, and enforces shared
+age-specific death budgets. Reference shares must be compatible at every age
+and year. They are rejected, rather than normalized, when incompatible.
+
+```{r annual}
+knitr::kable(fished$fishery$annual[sim == 1,
+  list(fishery, year, target, n, shortfall, status)])
 ledger <- fished$fishery$mortality_ledger
 stopifnot(all(ledger$starting == ledger$fishery_deaths +
                 ledger$other_deaths + ledger$survivors))
-fished$fishery$annual[, c("year", "target", "n", "shortfall", "status", "cpue")]
 ```
 
-These removals do not create persistent spatial depletion in subsequent annual
-snapshots, and are not subtracted again from future abundance. Effort controls
-where and how the fixed catch budget is realized. Increasing effort cannot
-independently increase that budget. Concentrated fishing can leave a shortfall
-when selected ages or accessible cells run out; `status` also records an operation
-limit. Interpreting these outcomes requires this conditional model.
+The most useful new outputs are:
+
+| Component in `fishery` | Use |
+|:---|:---|
+| `annual` | Targets, achieved catches, effort, CPUE, shortfalls, and status |
+| `setdet` | Operations, including zero catches, reports, sampling counts, and constraint flags |
+| `catch_at_age`, `catch_at_length` | Aggregate true catch composition |
+| `sp_removals` | Fishery-specific spatial removals |
+| `mortality_ledger` | One shared count balance, not a separate population per fishery |
+| `samp` | Biological observations and sampling-stage probabilities |
+
+All fisheries inherit `population$sim_weight`, so catch kilograms and biomass
+CPUE share the population weight relationship. Targets remain in **numbers**.
+Fishery stocks and catches remain aggregate. Only bounded biological samples
+are expanded into individual records. Use `light = FALSE` to retain joint
+age-length catches and sample truth when inspecting a small simulation.
+
+### What does a shortfall mean?
+
+Feasible reference shares do not guarantee attainable catches. Fisheries can
+compete for particular ages or locations. `status` distinguishes `target_met`,
+`exhausted`, and `operation_limit`; `shortfall` records the unmet target. Invalid
+inputs, including incompatible shares, produce errors instead.
+
+For example, with 100 fish, `Z = log(2)`, full selectivity, and share 0.4, there
+are 50 expected deaths and a reference target of 20 fish. If access permits only
+five catches, the ledger allocates 45 other deaths and 50 survivors. The shortfall
+does not create a different population trajectory: mortality was fixed upstream.
+Other deaths need not mean natural mortality alone.
+
+Interleaving specifies operation order, not calendar time. Other deaths are
+allocated after fishing, and subsequent annual populations were generated
+before fishing. Thus neither this ledger nor `S` describes seasonal spawning
+biomass or persistent spatial depletion carried into the next year.
+
+## How do targeting and knowledge affect effort and CPUE?
+
+The default fishery favors high vulnerable density (`targeting = 1`), has accurate
+knowledge (`knowledge_sd = 0`), and allocates 5% of location probability uniformly
+to exploration. Zero targeting produces uniform accessible locations. Knowledge
+error is persistent within a replicate/year; it is not learning or vessel routing.
+
+We keep the population and competing fishery fixed. A small helper makes the
+controlled changes visible and avoids repeating the full pipeline. Seeding is
+explicit caller code; package functions do not reseed themselves.
+
+```{r spatial-comparisons}
+run_fleets <- function(trawl_spec) {
+  set.seed(502)
+  sim_fisheries(population, trawl = trawl_spec, gillnet = gillnet, n_sims = 20)
+}
+uniform <- run_fleets(modifyList(trawl, list(targeting = 0)))
+noisy <- run_fleets(modifyList(trawl, list(knowledge_sd = 1)))
+spatial_scenarios <- list(Uniform = uniform, Targeted = fished, Noisy = noisy)
+```
+
+```{r map-helper, include=FALSE}
+grid <- data.frame(population$grid)
+draw_map <- function(value, title, zlim = range(value), label = "") {
+  surface <- tapply(value, list(grid$x, grid$y), sum)
+  image(sort(unique(grid$x)), sort(unique(grid$y)), surface,
+        col = hcl.colors(32, "YlOrRd", rev = TRUE), zlim = zlim,
+        xlab = "x (km)", ylab = "y (km)", main = title, asp = 1)
+  mtext(label, side = 3, line = 0.1, cex = 0.65)
+  text(grid$x, grid$y, sprintf("%.1f", value), cex = 0.7,
+       col = ifelse(value > mean(zlim), "white", "black"))
+}
+operation_share <- function(result) {
+  ops <- result$fishery$setdet
+  cells <- ops$cell[ops$fishery == "trawl" & ops$year == 2003]
+  tabulate(match(cells, grid$cell), nbins = nrow(grid)) / length(cells) * 100
+}
+```
+
+```{r targeting-map, echo=FALSE, fig.height=6.5, fig.cap="Starting vulnerable density and the percentage of trawl operations assigned to each cell in 2003, pooled over 20 conditional replicates. Cell labels give values; darker colours indicate higher values. Operation maps share a colour scale and include unsuccessful operations; the density panel has its own scale."}
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1), mgp = c(2.3, 0.7, 0))
+vulnerable <- fished$sp_N[fished$sp_N$year == 2003, ]
+vulnerable$density <- vulnerable$N * sim_logistic()(vulnerable$age) / 70^2
+density <- vulnerable[, list(density = sum(density)), by = "cell"]
+draw_map(log1p(density$density[match(grid$cell, density$cell)]),
+         "Starting vulnerable density", label = "log(1 + fish / square km)")
+shares <- lapply(spatial_scenarios, operation_share)
+limits <- c(0, max(unlist(shares)))
+for (label in names(spatial_scenarios)) {
+  draw_map(shares[[label]], label, zlim = limits, label = "Percent of operations")
+}
+```
+
+```{r cpue-comparison, echo=FALSE, fig.height=3.6, fig.cap="Annual trawl CPUE by scenario and year. Boxes summarize 20 fishing replicates conditional on the same population trajectory, not independent stock histories. Values are thousands of fish per nominal gear-time unit."}
+par(mfrow = c(1, 3), mar = c(5, 4, 2, 1))
+for (year in population$years) {
+  values <- lapply(spatial_scenarios, function(result) {
+    annual <- result$fishery$annual
+    annual$cpue[annual$fishery == "trawl" & annual$year == year] / 1000
+  })
+  boxplot(values, main = year, las = 2, col = c("#B8D7E8", "#A4CDA8", "#F0C18A"),
+          ylab = "1000 fish / nominal effort")
+}
+```
+
+Interpret these comparisons within the fixed-removals framework. More effort
+does not independently increase the annual catch budget. It can change the
+number and allocation of operations needed to approach that budget. Capacity,
+depletion, available mortality, and quota capping can all affect CPUE.
 
 The final operation keeps its specified effort when catch is capped by the
-remaining target and is flagged `quota_limited`. Its CPUE is consequently limited
-by the quota. Annual CPUE is total catch divided by total effort, rather than an
-average of operation CPUEs. It is missing when effort is zero. Statistical CPUE
-standardization is left to downstream analyses.
+remaining target (`quota_limited`). Its CPUE is consequently quota-limited.
+Annual CPUE is total catch divided by total effort, not an average of operation
+ratios. Keep zero-catch operations and fishery identifiers, and compare effort
+units carefully: matching placeholder labels do not make different gears'
+effort comparable. Statistical CPUE standardization is left to downstream work.
 
-## Reporting and biological monitoring
+The figures illustrate mechanisms; they do not establish CPUE hyperstability or
+quantify statistical bias. Sharing a seed makes a scenario reproducible, but
+changed operation sequences do not guarantee paired random innovations.
 
-Reporting multiplies each operation's true numbers and kilograms by the same
-lognormal multiplier. Its mean is `reporting_factor` and CV is `reporting_cv`.
-Biological samples come from the true catch, regardless of reported totals.
+## How does monitoring change the available data?
 
-```{r monitoring}
-set.seed(202)
-less_monitored <- population |>
-  sim_fishery(
-    fishery_share = 0.2, catch_model = capture,
-    selectivity = sim_logistic(k = 0.3, x50 = 25), selectivity_by = "length",
-    gear_amount = 2, duration = 4, targeting = 2, knowledge_sd = 0.5,
-    exploration = 0.1,
-    max_operations = 200, reporting_factor = 0.9, reporting_cv = 0.2,
-    sampling_coverage = 0.3, sampling_targeting = 1,
-    lengths_cap = 5, ages_cap = 1, age_sampling = "random", light = FALSE
+Default reporting is unbiased and noiseless. Every operation is selected for
+biological monitoring, up to the default length and age caps. We first reduce
+coverage, then change preferential selection at that **same** coverage. A separate
+scenario changes reporting while retaining default coverage.
+
+```{r monitoring-comparisons}
+random_monitoring <- run_fleets(modifyList(trawl, list(sampling_coverage = 0.25)))
+preferential_monitoring <- run_fleets(modifyList(trawl,
+  list(sampling_coverage = 0.25, sampling_targeting = 2)))
+under_reporting <- run_fleets(modifyList(trawl,
+  list(reporting_factor = 0.8, reporting_cv = 0.2)))
+
+for (result in list(random_monitoring, preferential_monitoring, under_reporting)) {
+  stopifnot(identical(fished$fishery$catch_at_length, result$fishery$catch_at_length),
+            identical(fished$fishery$mortality_ledger, result$fishery$mortality_ledger))
+}
+```
+
+`reporting_factor` and `reporting_cv` specify the mean and coefficient of
+variation of an operation-level lognormal multiplier. The same multiplier
+applies to numbers and kilograms. Zero catches stay zero. Biological samples
+come from actual catches, regardless of reported totals.
+
+Coverage is an **expected** proportion, not a fixed count of selected operations.
+Positive `sampling_targeting` favors larger reported catches. Its probabilities
+are calibrated to the requested expected coverage. Fisheries retain operation,
+length, and conditional age-sampling probabilities in their biological records.
+
+```{r monitoring-figure, echo=FALSE, fig.height=3.8, fig.cap="Left: reporting error for the trawl, with the identity line. Right: pooled true catch composition and unweighted measured-length compositions under uniform and preferential operation selection, both at 25% expected coverage. These sample compositions are descriptive, not design-weighted catch estimates."}
+par(mfrow = c(1, 2), mar = c(4, 4, 1, 1))
+annual <- under_reporting$fishery$annual[under_reporting$fishery$annual$fishery == "trawl", ]
+lim <- range(c(annual$n, annual$reported_n)) / 1000
+plot(annual$n / 1000, annual$reported_n / 1000, pch = 16, col = "#0072B280",
+     xlim = lim, ylim = lim, xlab = "True catch (1000 fish)", ylab = "Reported catch (1000 fish)")
+abline(0, 1, lty = 2)
+truth <- fished$fishery$catch_at_length
+truth <- truth[truth$fishery == "trawl", list(n = sum(n)), by = "length"]
+truth <- truth[order(truth$length), ]
+measured_frequency <- function(result) {
+  sample <- result$fishery$samp
+  table(factor(sample$length[sample$fishery == "trawl"], levels = truth$length))
+}
+random <- measured_frequency(random_monitoring)
+preferential <- measured_frequency(preferential_monitoring)
+composition <- cbind(truth$n / sum(truth$n), random / sum(random), preferential / sum(preferential))
+matplot(truth$length, composition, type = "l", lty = c(1, 2, 3), lwd = 2,
+        col = c("black", "#0072B2", "#D55E00"), xlab = "Length group (cm)", ylab = "Proportion")
+legend("topright", c("Catch truth", "Uniform monitoring", "Preferential monitoring"),
+       lty = 1:3, col = c("black", "#0072B2", "#D55E00"), cex = 0.65, bty = "n")
+```
+
+Even uniformly selected operations with fixed fish-sampling caps do not produce
+an automatically representative unweighted sample of all caught fish. Operations
+with different catches can contribute similar numbers of measured fish. Known
+unequal probabilities can support appropriate design-based weighting, but do
+not by themselves correct spatial fishing preferences or gear selectivity when
+inferring population abundance. Zero coverage creates a different limitation.
+
+### Determine maturity for measured or aged fish
+
+The default `maturity_sampling = "aged"` examines every aged fish. `"measured"`
+examines every length-measured fish, and `"none"` disables maturity observations.
+These options apply to both fisheries and surveys, with no additional maturity cap.
+
+```{r maturity-observations}
+measured_maturity <- run_fleets(modifyList(trawl, list(maturity_sampling = "measured")))
+aged_sample <- fished$fishery$samp
+measured_sample <- measured_maturity$fishery$samp
+stopifnot(identical(aged_sample$sample, measured_sample$sample),
+          identical(aged_sample$mature[aged_sample$maturity_observed],
+                    measured_sample$mature[aged_sample$maturity_observed]))
+knitr::kable(data.frame(
+  protocol = c("Aged", "Measured"),
+  trawl_maturity_observations = c(
+    sum(aged_sample$maturity_observed[aged_sample$fishery == "trawl"]),
+    sum(measured_sample$maturity_observed[measured_sample$fishery == "trawl"]))
+))
+```
+
+`mature` is a binary observation; unexamined fish have `NA`, not zero.
+`maturity_observed` marks examinations and `n_maturity` counts them in summaries.
+Latent states are drawn once for all measured fish after existing reporting and
+length/age sampling. The protocol then masks observations. This preserves
+existing samples and overlapping maturity states when only the protocol changes.
+With `light = FALSE`, `sample_truth` retains latent states for inspection.
+
+Biological maturation is stochastic here, but classification is perfect.
+Misclassification, sex-specific maturation, and persistent individual histories
+are outside the model. Also note the grouping distinction: fishery stratified
+age caps apply per operation and length group; survey stratified caps apply at
+the configured `age_space_group`, per replicate/year and length group.
+
+## Independent survey programs
+
+Configure surveys without `sim`, then execute them together. With this coarse
+16-cell grid, `set_den = 0` invokes the default minimum of two sets per stratum;
+the default area-based allocation would exceed the number of cells. Other
+survey settings remain at defaults unless needed to illustrate length catchability.
+
+```{r surveys}
+programs <- fished |>
+  sim_surveys(
+    survey_A = sim_survey(set_den = 0),
+    survey_B = sim_survey(q = sim_logistic(x50 = 40), q_by = "length", set_den = 0)
   )
-stopifnot(identical(fished$fishery$joint_catch,
-                    less_monitored$fishery$joint_catch))
-head(less_monitored$fishery$samp)
-```
-
-Operation selection probabilities are calibrated to the expected coverage;
-positive `sampling_targeting` favors larger reported catches. Selection remains
-probabilistic rather than guaranteeing that fraction in each realization.
-Lengths are sampled without replacement up to `lengths_cap`. Ages are nested
-within those measured fish: `ages_cap` applies per operation for random sampling
-or per operation and length group for stratified sampling. Unaged records have
-missing ages. `operation_probability`, `length_probability`, and `age_probability`
-record the separate selection stages; their product is the age inclusion
-probability for a fish in that operation. Zero coverage or caps disable sampling.
-
-## Length-based survey catchability
-
-```{r survey}
-survey <- population |>
-  sim_survey(q = sim_logistic(k = 0.3, x50 = 25), q_by = "length",
-              trawl_dim = c(1, 5), min_sets = 2, set_den = 0)
-colSums(survey$I)
-```
-
-Catchability is evaluated on the growth model's discrete length-group labels.
-Availability at age integrates those probabilities over the length-age key, and
-caught lengths follow the selected length distribution. The default `q_by = "age"`
-retains the historical age-based workflow. Surveys observe the original rounded
-population snapshot even when called after fishing.
-
-## Competing fisheries
-
-Both batch functions take the population as their first argument. Calling
-`sim_fishery()` or `sim_survey()` without a population constructs a configuration,
-with no simulation or random draws. Give every program a unique name and declare
-all competing fisheries together. Common replicates belong on the batch wrapper; weight belongs to the population, while each fishery controls capture, access, knowledge, targeting,
-gear, effort units, and monitoring.
-
-```{r fisheries}
-trawl <- sim_fishery(
-  fishery_share = 0.2, catch_model = sim_capture(q = 2),
-  selectivity = sim_logistic(k = 0.3, x50 = 25), selectivity_by = "length",
-  gear_amount = 1, duration = 2, gear_unit = "trawl", time_unit = "hour",
-  max_operations = 100, sampling_coverage = 0.5, lengths_cap = 10, ages_cap = 2
-)
-gillnet <- sim_fishery(
-  fishery_share = 0.1, catch_model = sim_capture(q = 1, capacity_per_gear = 80),
-  selectivity = function(length) exp(-((length - 35) / 15)^2),
-  selectivity_by = "length", gear_amount = 2, duration = 4,
-  gear_unit = "net", time_unit = "hour", max_operations = 100,
-  sampling_coverage = 0.3, lengths_cap = 8, ages_cap = 2
-)
-set.seed(203)
-fleets <- population |>
-  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 2)
-fleets$fishery$annual[, c("fishery", "sim", "year", "target", "n", "shortfall", "cpue")]
-```
-
-Each target uses the original N and Z, rather than what a previous fishery left.
-At every age/year the sum of fishery shares times mean selectivity must be at
-most one; invalid combinations produce an error. Integer targets are rounded
-jointly. The next active fishery is selected uniformly for each operation, with
-shared stock depletion and age death budgets. Interleaving describes operation
-order, not calendar time. Some valid targets can remain unmet because competing
-fisheries need the same ages or cells. Other mortality is allocated once after
-all fisheries finish. A single shared ledger records the resulting balance.
-
-Fishery identifiers remain on catches, removals, operations, and annual summaries.
-Trawl-hour and net-hour CPUE have different meanings and are not pooled. Reordering
-the named configurations does not change same-seed results. Calling the batch
-wrapper again creates a fresh scenario from the annual population and replaces
-the fishery result; it does not append a second set of removals to the first.
-
-## Independent surveys and existing analyses
-
-```{r programs}
-survey_A <- sim_survey(q = sim_logistic(), trawl_dim = c(1, 5),
-                        min_sets = 2, set_den = 0, lengths_cap = 40, ages_cap = 3)
-survey_B <- sim_survey(q = sim_logistic(k = 0.3, x50 = 25), q_by = "length",
-                        trawl_dim = c(1, 5), min_sets = 2, set_den = 0,
-                        lengths_cap = 30, ages_cap = 2)
-programs <- fleets |>
-  sim_surveys(survey_A = survey_A, survey_B = survey_B)
-names(programs$survey_programs)
-programs$replicates
 selected <- programs |> select_survey("survey_B") |> run_strat() |> strat_error()
-selected$total_strat
+head(selected$total_strat_error)
 ```
 
-The two fisheries and surveys share replicate identifiers (two here, inherited
-from `fleets`). Surveys independently observe the original rounded annual
-population, including after fishing. A survey does not remove fish from another
-survey or from the mortality ledger. All survey locations and catches are
-generated before any program's biological subsampling, so changing one program's
-sampling caps does not change another program's catches.
+Both programs observe the same original rounded annual snapshot, including when
+called after fisheries. Survey catches do not consume mortality budgets or
+deplete another survey. All programs' locations and catches precede biological
+subsampling; all existing subsampling precedes maturity observations.
 
-Common population data are stored once; `survey_programs` holds each program's
-availability, observations, and configuration. `select_survey()` restores a
-standard view with the matching spatial availability and clears old analysis
-results. Existing `run_strat()`, `strat_error()`, and plotting functions work on
-that view. The `surveys` table used by `test_surveys()` remains a separate table
-of scenario designs. Calling `sim_surveys()` again replaces the program collection
-with a fresh simulation. Statistical comparisons should respect the shared
-population trajectory and the sampling design of each program.
+Common population data, including `B` and `S`, are stored once. Program-specific
+availability, sets, samples, summaries, and configurations live in
+`survey_programs`. `select_survey()` restores the chosen program's observations
+and spatial availability and clears incompatible cached analyses. The `surveys`
+table used by `test_surveys()` remains a separate table of scenario designs.
+
+```{r survey-comparison, echo=FALSE, fig.height=3.5, fig.cap="Each program's survey estimates compared with its own available population I. Dots are conditional replicate estimates; the line is availability truth. Axes show millions of available fish. Twenty replicates and two sets per stratum illustrate variability rather than establish precision."}
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+for (label in names(programs$survey_programs)) {
+  view <- programs |> select_survey(label) |> run_strat() |> strat_error()
+  estimate <- view$total_strat_error
+  truth <- colSums(view$I) / 1e6
+  limits <- range(c(estimate$I_hat / 1e6, truth))
+  plot(estimate$year, estimate$I_hat / 1e6, pch = 16, col = "#0072B260",
+       ylim = limits, xaxt = "n", xlab = "Year", ylab = "Available fish (millions)", main = label)
+  axis(1, at = view$years)
+  lines(view$years, truth, lwd = 2)
+}
+```
+
+The target of these existing analyses is **availability `I`, not total abundance
+`N`**. Programs with different catchabilities need not have matching indices.
+Adding `B` and `S` truth does not add biomass or mature-biomass estimators to
+`run_strat()`.
+
+Survey `samp` tables retain simulated fish with `measured` and `aged` flags.
+Extract measured lengths with `samp[samp$measured, ]` and observed ages with
+`samp[samp$aged, ]`; otherwise latent age information could enter an analysis.
+Use `maturity_observed` for maturity observations. Fishery `samp` already contains
+only measured fish, with missing unobserved ages. Add the program name before
+combining survey tables: set identifiers are program-scoped.
+
+The inherited `replicates` here are 20 fishing/observation replicates conditional
+on one population trajectory. Matching identifiers do not identify the same
+individual fish or shared length-stock draws across surveys and fisheries.
+For independent biological histories, regenerate abundance and distribution in
+an outer simulation loop. Record seeds, settings, and package versions for
+reproducibility. Canonical name ordering makes registration order irrelevant;
+adding or renaming programs can still change random draws.
+
+### Limits and extensions
+
+Use these mechanisms to explore sampling and observation processes before
+choosing downstream estimators. Discards, vessel routes, explicit trip/port
+hierarchies, seasons, and population feedback are not represented. All simulated
+fishery catches are retained. Reports can be fractional estimates, while true
+commercial catches remain whole fish. Retain unsuccessful operations and
+distinguish genuine zeros from missing data in downstream work.
+
+Custom capture functions receive aggregate remaining age-length counts,
+selectivity, cell area, and an operation record. They return whole-fish proposals
+bounded by available counts, with zero proposals at zero selectivity. This
+extension point permits alternative encounter/capacity responses without a
+mechanistic implementation of every fishing gear.
+
+For an older distributed simulation, attach the new relationships explicitly:
+
+```{r migration, eval=FALSE}
+sim$sim_weight <- sim_weight()
+sim$sim_maturity <- sim_maturity()
+sim$maturity_by <- "length"
+sim <- round_sim(sim)
+```
+
+This refreshes mass summaries using existing cell rounding without regenerating
+the trajectory. For an older abundance-only object, attach the same relationships
+before its usual `sim_distribution()` call instead.
+For number-only surveys of an older object, `maturity_sampling = "none"` permits
+sampling without inventing missing biological models. The former fishery-level
+`weight` arguments have been removed. Prefer `x50` to the deprecated `x0` name;
+positional logistic calls and the default curve are preserved.
+
+## Appendix A: mathematics of the extensions
+
+The population-generation and stratified-estimation equations are described in
+the original paper. This appendix takes the generated abundance, mortality,
+length-age key, and grid as inputs and specifies the new mechanisms.
+
+### Notation and units
+
+| Symbol | Meaning |
+|:---|:---|
+| \(a,l,y,c,f,r,j\) | Age, length group, year, cell, fishery, replicate, operation |
+| \(N_{a,y}, n_{c,a,l}^{(j)}\) | Rounded annual abundance and remaining integer stock |
+| \(P_{l,a}=P(l\mid a)\) | Growth-model length-age probabilities; columns sum to one |
+| \(w_l,m_{a,l}\) | Kilograms per fish and maturity probability |
+| \(p_{f,y},s_{f,a,l}\) | Fishery share and selectivity probabilities |
+| \(A_c,G_j,T_j,E_j\) | Cell area, gear amount, duration, and nominal effort \(G_jT_j\) |
+| \(q_f,q_{s,l}\) | Capture area per gear-time, and dimensionless survey catchability |
+| \(\beta_f,\sigma_f,\epsilon_f\) | Targeting, knowledge-error multiplier, exploration |
+| \(\pi_j,\pi_{L\mid j},\pi_{A\mid L,j}\) | Operation and conditional biological selection probabilities |
+
+Indices omitted below are held fixed. The biological relationships are
+deterministic probability/mean functions, constant across cells and years in
+this milestone. Length-based population summaries evaluate them on the growth
+key's discrete labels. Survey age-based length draws retain their historical
+rounded-length path, so integration over length groups is a discretization of
+that underlying relationship.
+
+### A1. Weight, maturity, biomass, and mature biomass
+
+The default functions are
+
+\[
+w_l=\alpha l^b,\quad \alpha=10^{-5.2106},\quad b=3.0879,
+\qquad m(x)=\operatorname{logit}^{-1}\{k(x-x_{50})\}.
+\]
+
+Weight uses centimetres and kilograms. Default maturity uses \(k=0.28\)
+per centimetre and \(x_{50}=47.81\) cm. For length-based maturity,
+\(m_{a,l}=m(l)\); for age-based maturity, \(m_{a,l}=m(a)\).
+
+\[
+B_{a,y}=N_{a,y}\sum_lP_{l,a}w_l,\qquad
+S_{a,y}=N_{a,y}\sum_lP_{l,a}w_lm_{a,l},
+\]
+\[
+B_{l,y}=w_l\sum_aN_{a,y}P_{l,a},\qquad
+S_{l,y}=w_l\sum_aN_{a,y}P_{l,a}m_{a,l}.
+\]
+
+These equations give equal annual totals across age and length representations,
+with \(0\le S\le B\). Spatial values multiply cell abundance at age by the same
+conditional expectations. All summaries are refreshed after rounding changes
+abundance. No mortality timing, female fraction, or fecundity adjustment is applied.
+
+As a hand calculation, suppose an age group contains 100 fish, with probabilities
+0.75 and 0.25 of lengths whose weights are 1 and 8 kg and maturities 0 and 1.
+Biomass is \(100(0.75+0.25\times8)=275\) kg; mature biomass is
+\(100(0.25\times8)=200\) kg. Multiplying biomass by mean maturity instead gives
+only \(275\times0.25=68.75\) kg. Converting an age-based mass matrix with the
+ordinary number-based length-age key would likewise lose the relevant association.
+
+### A2. Reference catches and integer mortality budgets
+
+Mean selectivity at age and reference fishing mortality are
+
+\[
+\bar s_{f,a}=\sum_lP_{l,a}s_{f,a,l},\qquad
+F^{\rm ref}_{f,a,y}=p_{f,y}Z_{a,y}\bar s_{f,a}.
+\]
+
+For constant annual mortality, the
+[Baranov reference catch](https://www.fao.org/4/X9026E/x9026e06.htm) becomes
+
+\[
+C^{\rm ref}_{f,a,y}
+=N_{a,y}\frac{F^{\rm ref}_{f,a,y}}{Z_{a,y}}(1-e^{-Z_{a,y}})
+=N_{a,y}p_{f,y}\bar s_{f,a}(1-e^{-Z_{a,y}}).
+\]
+
+The final expression defines zero catch at \(Z=0\), without division by zero.
+The constraint is \(\sum_f p_{f,y}\bar s_{f,a}\le1\) for every age/year
+(up to floating-point tolerance). These are reference quantities: realized age
+composition and implied allocation of deaths may differ.
+
+Cell abundances are rounded with R's `round()` convention and annual abundance
+is recomputed from cells. Within each cell/age, integer length stocks are drawn
+as a multinomial allocation of that cell count with probabilities \(P_{l,a}\).
+They are independent allocations in each replicate/year, not tracked individuals.
+
+Define balanced rounding \(\mathcal R(\mathbf x)\) by flooring each value and
+adding one to the largest fractional remainders until the total is
+`round(sum(x))`. R uses ties-to-even for half-integer totals; remainder ties use
+age order or canonical fishery-name order. Then
+
+\[
+\mathbf D_y=\mathcal R\{N_{a,y}(1-e^{-Z_{a,y}})\}_a,\qquad
+\mathbf Q_y=\mathcal R\{\sum_a C^{\rm ref}_{f,a,y}\}_f.
+\]
+
+\(D_{a,y}\) is the shared age death budget and \(Q_{f,y}\) the total-number
+target. Target rounding is joint across fisheries, not independent rounding
+of each age/fishery catch. The valid combined target cannot exceed the overall
+death budget; realized catches must additionally fit age-specific budgets.
+
+### A3. Location probabilities and knowledge errors
+
+Within a replicate/year, initial vulnerable density defines a persistent map
+error for each fishery/cell. On accessible cells, let
+
+\[
+d^{(0)}_{f,c}=A_c^{-1}\sum_{a,l}n^{(0)}_{c,a,l}s_{f,a,l},\qquad
+e_{f,c}\sim N\{0,(\sigma_f\overline d^{(0)}_f)^2\}.
+\]
+
+Errors are drawn once and reused across operations, with the mean taken over
+accessible cells. Current density excludes ages with exhausted death budgets:
+
+\[
+d^{(j)}_{f,c}=A_c^{-1}\sum_{a,l}n^{(j)}_{c,a,l}s_{f,a,l}
+\mathbf1(D^{\rm remaining}_a>0),\qquad
+u^{(j)}_{f,c}=\max(0,d^{(j)}_{f,c}+e_{f,c})^{\beta_f}.
+\]
+
+For \(K_f\) accessible cells, the location probability is
+
+\[
+P(c\mid f,j)=(1-\epsilon_f)
+\frac{u^{(j)}_{f,c}}{\sum_{c'}u^{(j)}_{f,c'}}+\frac{\epsilon_f}{K_f}.
+\]
+
+Zero targeting or an all-zero signal gives uniform probabilities. All accessible
+cells remain in this location frame, including cells that can produce zero
+catches. A fishery is exhausted when no accessible vulnerable stock has remaining
+age mortality, even though the signal may suggest otherwise. Noisy knowledge
+with zero targeting does not change the uniform choice probabilities.
+
+### A4. Capture proposals, thinning, and interleaving
+
+For a selected cell, the built-in proposal probability and counts are
+
+\[
+v_{a,l,j}=1-\exp\left(-q_fG_jT_js_{f,a,l}/A_c\right),\qquad
+X_{a,l,j}\sim\operatorname{Binomial}(n^{(j)}_{c,a,l},v_{a,l,j}).
+\]
+
+The engine thins proposals without replacement, first for capacity
+\(\lfloor\texttt{capacity_per_gear}\,G_j\rfloor\), then within each age for
+remaining mortality, and finally across accepted proposals for the remaining
+fishery target. With category counts \(\mathbf x\), thinning to \(h\) fish uses
+the multivariate hypergeometric distribution; counts are not expanded into fish.
+Accepted catches reduce the common stock and age death budgets.
+
+The capture probability describes a proposal, not the final constrained catch
+distribution. `mortality_limited` and `quota_limited` flag their respective
+constraints. All specified \(E_j=G_jT_j\) remains when the quota caps a catch.
+
+One replicate/year follows this algorithm:
+
+1. Initialize stocks, death budgets, and every fishery target once.
+2. Choose the next active fishery uniformly; check its opportunities and operation limit.
+3. Choose a location, resolve gear/time, propose catches, and apply constraints.
+4. Update shared stock/budgets and retain the operation, including a zero catch.
+5. Retire completed/exhausted/limited fisheries and repeat until none is active.
+6. Allocate other deaths, then complete reporting and biological samples.
+
+The known impossible built-in cases (`q = 0` or zero capacity) retire as exhausted.
+A custom model returning zeros can instead reach its operation limit, because
+the engine cannot infer all future responses of an arbitrary callback.
+
+### A5. Residual mortality and conservation
+
+After fishing, residual deaths at age are
+
+\[
+O_a=D_a-\sum_{f,c,l}C_{f,c,a,l}.
+\]
+
+Sample those deaths without replacement among all remaining fish at that age,
+across cells and lengths. For every ledger row,
+
+\[
+n^{(0)}_{c,a,l}=\sum_f C_{f,c,a,l}+O_{c,a,l}+V_{c,a,l},
+\]
+
+where \(V\) denotes survivors. Integer stocks balance exactly. Population `B`
+and `S` integrate over the length key, whereas each fishery replicate has a
+particular integer length allocation; their starting masses need not be identical.
+None of these deaths is subtracted again from a future pre-generated population.
+
+### A6. Reporting and preferential monitoring
+
+For mean reporting factor \(b\) and CV \(c\), draw independent operation multipliers
+
+\[
+\sigma_R^2=\log(1+c^2),\qquad
+\log R_j\sim N(\log b-\sigma_R^2/2,\sigma_R^2).
+\]
+
+Thus \(E(R_j)=b\). Reported numbers and kilograms equal their true values times
+the same \(R_j\). At zero CV the multiplier is constant; at zero mean it is zero.
+
+Within each fishery/replicate/year, operation weights use reported catch \(r_j\):
+
+\[
+w_j=(1+r_j/\overline r)^\gamma,\qquad
+\pi_j=\min(1,\lambda w_j),\qquad
+\sum_j\pi_j=\texttt{sampling_coverage}\times J.
+\]
+
+\(\gamma\) is `sampling_targeting`. Zero targeting or all-zero reported catches
+gives equal probabilities. Selection is independent Bernoulli with these
+probabilities, so realized coverage varies. The implementation rescales weights
+for numerical stability and retains a positive numerical floor under extreme
+preferences. Coverage zero and one are handled directly.
+
+For a selected operation with catch \(C_j\), measure
+\(n_{L,j}=\min(C_j,\texttt{lengths_cap})\) fish without replacement. The
+conditional length-selection probability is \(n_{L,j}/C_j\). Random age sampling
+selects up to `ages_cap` from these fish. Stratified sampling selects up to that
+cap within each measured length group, per operation. The conditional probability
+within an age-sampling group is its selected count divided by its measured count.
+Zero coverage or caps disable the corresponding observations.
+
+Recorded probabilities describe the stages conditional on the realized frame
+and previous sample. Their product is a multistage selection factor; it is not
+automatically the unconditional marginal inclusion probability when later groups
+depend on earlier random samples. Appropriate inference also needs a defined
+estimand, frame, and positive coverage. No catch-composition estimator is supplied
+by this vignette.
+
+### A7. Maturity observations
+
+After every existing sample is generated, draw a latent state for each measured
+fish \(i\):
+
+\[
+M_i\sim\operatorname{Bernoulli}\{m(x_i)\},\qquad
+x_i=l_i\ \text{or}\ a_i.
+\]
+
+Use the simulated true age internally when maturity depends on age, even if it
+will not be observed. The observation indicator is `aged`, `measured`, or zero
+according to `maturity_sampling`. Report \(M_i\) when examined and `NA` otherwise.
+Latent draws occur even for `"none"` when a model is present, so protocol changes
+preserve overlapping states and RNG consumption. Only the bounded measured
+sample is materialized for fisheries; no individual commercial-population
+maturity records are needed to calculate expected `S`.
+
+### A8. Length-selective survey observations
+
+For length catchability \(q_{s,l}\), program-specific availability is
+
+\[
+\overline q_{s,a}=\sum_lP_{l,a}q_{s,l},\qquad
+I_{s,a,y}=N_{a,y}\overline q_{s,a},\qquad
+I_{s,l,y}=q_{s,l}\sum_aN_{a,y}P_{l,a}.
+\]
+
+Caught lengths conditional on age follow
+\(P(l\mid a,\text{caught},s)=P_{l,a}q_{s,l}/\overline q_{s,a}\).
+At zero availability there is no catch, so that conditional distribution is
+never sampled. The historical age-based path uses age catchability and the
+original growth sampler. New length-based draws use the growth key's labels.
+
+Survey catches at age use binomial trials with rounded cell abundance divided
+by the number of sets in that cell, and probability
+\((A_{\rm tow}/A_c)\overline q_{s,a}\). Repeated-cell handling retains that
+historical splitting convention; it is not fishery-style sequential depletion.
+`binom_error = FALSE` rounds the corresponding expectation. Swept-area and
+catchability settings must define valid probabilities. Length caps apply per
+set; stratified survey age caps use `age_space_group` per replicate/year/length
+group, while random caps apply per set.
+
+### A9. Biomass catches, CPUE, and random sequencing
+
+With realized joint catches \(C_{j,a,l}\), operation biomass is
+\(K_j=\sum_{a,l}C_{j,a,l}w_l\). Population weights apply to every fishery.
+For a fishery/replicate/year,
+
+\[
+\operatorname{CPUE}=\frac{\sum_j C_j}{\sum_j E_j},\qquad
+\operatorname{CPUE}_{\rm biomass}=\frac{\sum_j K_j}{\sum_j E_j}.
+\]
+
+Reported versions use reported totals. Zero total effort gives missing CPUE;
+zero catches with positive effort give zero CPUE. Biomass is stored in kilograms,
+even when figures display tonnes. Different fisheries' effort is not pooled.
+
+All fisheries' truth across replicates/years is generated before reporting and
+biological sampling. Survey programs likewise generate all their truth before
+biological subsampling. Maturity follows every existing sample in its batch.
+Names are processed canonically, and all draws use the caller's RNG state.
+Changing earlier pipeline stages can still change later stages' RNG state;
+repeat a stage from an explicit seed when constructing controlled comparisons.

@@ -43,3 +43,7 @@ survey_A <- sim_survey(q = sim_logistic(), q_by = "age")
 survey_B <- sim_survey(q = sim_logistic(x50 = 30), q_by = "length")
 # population |> sim_surveys(survey_A = survey_A, survey_B = survey_B)
 }
+\seealso{
+\code{vignette("fisheries", package = "SimSurvey")} for multiple survey
+programs, program extraction, and comparisons against availability truth.
+}

@@ -49,6 +49,9 @@
 #' operations, spatial removals and annual CPUE; effort units are never pooled.
 #' The mortality ledger and population are shared across fisheries.
 #'
+#' @seealso `vignette("fisheries", package = "SimSurvey")` for the joint workflow
+#' and a mathematical appendix.
+#'
 #' @examples
 #' trawl <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 0.1))
 #' gillnet <- sim_fishery(fishery_share = 0.1, catch_model = sim_capture(q = 0.05))
@@ -85,6 +88,9 @@ sim_fisheries <- function(sim, ..., n_sims = NULL) {
 #' summaries, and its configuration. The existing `surveys` design table used by
 #' [test_surveys()] is preserved. Repeated calls replace program results with a
 #' fresh simulation; they do not append or replay earlier programs.
+#'
+#' @seealso `vignette("fisheries", package = "SimSurvey")` for multiple survey
+#' programs, program extraction, and comparisons against availability truth.
 #'
 #' @return A simulation list with common `replicates` and named `survey_programs`.
 #' Use [select_survey()] to create a standard single-survey view for existing

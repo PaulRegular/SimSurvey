@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Expand "Simulating multiple fisheries and surveys" with default-based workflows,
+  controlled targeting and monitoring comparisons, maturity observations,
+  independent surveys, and a mathematical appendix explaining the extensions.
 * Add population-level weight and maturity relationships, `sim_weight()` and
   `sim_maturity()`, and a `sim_growth()` alias for `sim_vonB()`. Derive expected
   biomass (`B`, `B_at_length`) and mature biomass (`S`, `S_at_length`) from the

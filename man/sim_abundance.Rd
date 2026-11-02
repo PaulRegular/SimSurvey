@@ -137,3 +137,7 @@ plot_surface(sim, mat = "Z")
 plot_surface(sim, mat = "N_at_length", xlab = "Length", zlab = "N")
 
 }
+\seealso{
+\code{vignette("fisheries", package = "SimSurvey")} for shared biological
+truth, competing fisheries, independent surveys, and the model equations.
+}

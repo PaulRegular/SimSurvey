@@ -323,6 +323,9 @@ sim_growth <- sim_vonB
 #' abundance-only object, attach the components before [sim_distribution()].
 #' Biological defaults are not silently assigned to old objects.
 #'
+#' @seealso `vignette("fisheries", package = "SimSurvey")` for shared biological
+#' truth, competing fisheries, independent surveys, and the model equations.
+#'
 #' @examples
 #' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
 #' R_fun(years = 1:100)

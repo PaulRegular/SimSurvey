@@ -82,6 +82,9 @@
 #' `light = FALSE`, `joint_catch`
 #' and `sample_truth` are also retained. Without `sim`, a `sim_fishery_spec` list.
 #'
+#' @seealso `vignette("fisheries", package = "SimSurvey")` for controlled
+#' comparisons of targeting, knowledge, reporting, and biological monitoring.
+#'
 #' @examples
 #' capture <- sim_capture(q = 0.1, capacity_per_gear = 50)
 #' specification <- sim_fishery(fishery_share = 0.2, catch_model = capture)

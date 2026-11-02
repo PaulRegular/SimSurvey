@@ -157,3 +157,7 @@ result <- sim_fishery(population, fishery_share = 0.2, catch_model = capture,
 result$fishery$annual
 }
 }
+\seealso{
+\code{vignette("fisheries", package = "SimSurvey")} for controlled
+comparisons of targeting, knowledge, reporting, and biological monitoring.
+}

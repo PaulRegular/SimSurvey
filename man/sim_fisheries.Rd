@@ -54,3 +54,7 @@ trawl <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 0.1))
 gillnet <- sim_fishery(fishery_share = 0.1, catch_model = sim_capture(q = 0.05))
 # population |> sim_fisheries(trawl = trawl, gillnet = gillnet)
 }
+\seealso{
+\code{vignette("fisheries", package = "SimSurvey")} for the joint workflow
+and a mathematical appendix.
+}
