@@ -23,6 +23,10 @@ reference:
   - sim_survey_parallel
   - sim_logistic
   - sim_sets
+- title: Simulate fisheries
+- contents:
+  - sim_capture
+  - sim_fishery
 - title: Stratified analysis
 - contents:
   - run_strat

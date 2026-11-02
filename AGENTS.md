@@ -98,8 +98,10 @@ The automated suite uses testthat edition 3 in `tests/testthat/`.
 
 ## Fisheries development
 
-The foundations milestone adds no fishery API. The next design starts with
-attributing existing total mortality to fisheries, rather than subtracting those
-deaths again from an already generated population. See
-`analysis/fisheries-design.Rmd` for the accepted direction and remaining design
-questions; it is a research note, not an implemented public contract.
+Fisheries attribute existing total mortality to fishing; they do not subtract
+deaths again from future pre-generated populations. Keep stock and catch tables
+aggregate, with exact whole-fish mortality conservation. Complete all fishing
+truth before monitoring so monitoring controls cannot alter fishing outcomes.
+Keep effort units explicit and distinguish true catches from reported estimates.
+See `vignettes/fisheries.Rmd` for the implemented model and limitations;
+`analysis/fisheries-design.Rmd` remains a historical research note.

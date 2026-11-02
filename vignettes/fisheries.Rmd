@@ -1,0 +1,140 @@
+---
+title: "Fisheries and monitoring"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fisheries and monitoring}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(SimSurvey)
+set.seed(201)
+```
+
+## An individual fishery
+
+Fisheries operate on the same simulation list as surveys. This small population
+uses a flat spatial effect to keep the example quick and independent of INLA.
+
+```{r population}
+flat <- function(x, ages, years, cells) {
+  array(0, c(length(ages), length(years), length(cells)),
+        dimnames = list(age = ages, year = years, cell = cells))
+}
+population <- sim_abundance(
+  ages = 1:3, years = 2001:2002,
+  R = sim_R(log_mean = log(2000), log_sd = 0, random_walk = FALSE)
+) |>
+  sim_distribution(
+    grid = make_grid(x_range = c(-10, 10), y_range = c(-10, 10),
+                     res = c(5, 5), shelf_depth = 50,
+                     depth_range = c(0, 100), strat_breaks = c(0, 101),
+                     strat_splits = 1, method = "linear"),
+    ays_covar = flat, depth_par = function(data) rep(0, nrow(data))
+  )
+```
+
+The generic capture model uses encounter probability
+`1 - exp(-q * gear_amount * duration * selectivity / cell_area)` and an optional
+capacity per gear unit. Here grid distances are kilometres, duration is hours,
+gear amount is a count, and `q` is square kilometres per gear-hour. A custom
+`function(available, operation)` can replace this model; it returns bounded
+whole-fish proposals for the aggregate age-length rows in `available`.
+
+```{r fishery}
+capture <- sim_capture(q = 2, capacity_per_gear = 100)
+set.seed(202)
+fished <- population |>
+  sim_fishery(
+    fishery_share = 0.2, catch_model = capture,
+    selectivity = sim_logistic(k = 0.3, x0 = 25), selectivity_by = "length",
+    gear_amount = 2, duration = 4, gear_unit = "net", time_unit = "hour",
+    targeting = 2, knowledge_sd = 0.5, exploration = 0.1,
+    weight = function(length) 0.00001 * length^3,
+    max_operations = 200, lengths_cap = 10, ages_cap = 2, light = FALSE
+  )
+fished$fishery$annual
+```
+
+`weight(length)` returns kilograms per fish. Without it biomass outputs are
+missing. Nominal effort is gear amount times duration; the components and their
+units remain in the operation table `fishery$setdet`. Zero catches are retained.
+Both settings may instead be callbacks accepting an operation record.
+
+## Conditional mortality and CPUE
+
+The annual population and Z are generated before fishing. For share p and mean
+selectivity at age s, reference fishing mortality is p Z s and reference catch
+is N p s (1 - exp(-Z)). The rounded total catch in numbers is the target; the
+realized age composition can differ. Age-specific integer death budgets constrain
+operations. Remaining deaths are allocated among remaining fish as other mortality.
+
+```{r balance}
+ledger <- fished$fishery$mortality_ledger
+stopifnot(all(ledger$starting == ledger$fishery_deaths +
+                ledger$other_deaths + ledger$survivors))
+fished$fishery$annual[, c("year", "target", "n", "shortfall", "status", "cpue")]
+```
+
+These removals do not create persistent spatial depletion in subsequent annual
+snapshots, and are not subtracted again from future abundance. Effort controls
+where and how the fixed catch budget is realized. Increasing effort cannot
+independently increase that budget. Concentrated fishing can leave a shortfall
+when selected ages or accessible cells run out; `status` also records an operation
+limit. Interpreting these outcomes requires this conditional model.
+
+The final operation keeps its specified effort when catch is capped by the
+remaining target and is flagged `quota_limited`. Its CPUE is consequently limited
+by the quota. Annual CPUE is total catch divided by total effort, rather than an
+average of operation CPUEs. It is missing when effort is zero. Statistical CPUE
+standardization is left to downstream analyses.
+
+## Reporting and biological monitoring
+
+Reporting multiplies each operation's true numbers and kilograms by the same
+lognormal multiplier. Its mean is `reporting_factor` and CV is `reporting_cv`.
+Biological samples come from the true catch, regardless of reported totals.
+
+```{r monitoring}
+set.seed(202)
+less_monitored <- population |>
+  sim_fishery(
+    fishery_share = 0.2, catch_model = capture,
+    selectivity = sim_logistic(k = 0.3, x0 = 25), selectivity_by = "length",
+    gear_amount = 2, duration = 4, targeting = 2, knowledge_sd = 0.5,
+    exploration = 0.1, weight = function(length) 0.00001 * length^3,
+    max_operations = 200, reporting_factor = 0.9, reporting_cv = 0.2,
+    sampling_coverage = 0.3, sampling_targeting = 1,
+    lengths_cap = 5, ages_cap = 1, age_sampling = "random", light = FALSE
+  )
+stopifnot(identical(fished$fishery$joint_catch,
+                    less_monitored$fishery$joint_catch))
+head(less_monitored$fishery$samp)
+```
+
+Operation selection probabilities are calibrated to the expected coverage;
+positive `sampling_targeting` favors larger reported catches. Selection remains
+probabilistic rather than guaranteeing that fraction in each realization.
+Lengths are sampled without replacement up to `lengths_cap`. Ages are nested
+within those measured fish: `ages_cap` applies per operation for random sampling
+or per operation and length group for stratified sampling. Unaged records have
+missing ages. `operation_probability`, `length_probability`, and `age_probability`
+record the separate selection stages; their product is the age inclusion
+probability for a fish in that operation. Zero coverage or caps disable sampling.
+
+## Length-based survey catchability
+
+```{r survey}
+survey <- population |>
+  sim_survey(q = sim_logistic(k = 0.3, x0 = 25), q_by = "length",
+              trawl_dim = c(1, 5), min_sets = 2, set_den = 0)
+colSums(survey$I)
+```
+
+Catchability is evaluated on the growth model's discrete length-group labels.
+Availability at age integrates those probabilities over the length-age key, and
+caught lengths follow the selected length distribution. The default `q_by = "age"`
+retains the historical age-based workflow. Surveys observe the original rounded
+population snapshot even when called after fishing.

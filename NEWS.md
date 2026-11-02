@@ -1,5 +1,11 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add aggregate fishery simulation with explicit capture models, age/length gear
+  selectivity, conditional mortality budgets, spatial depletion, effort and CPUE.
+  Integrated reporting and nested biological sampling retain their inclusion
+  probabilities and do not change fishing truth.
+* Add length-based survey catchability with `q_by = "length"`, preserving the
+  historical age-based default. Round and simulate on copies of caller tables.
 * Preserve dimensions in single-age length keys, spatial distributions, and
   rounded single-age or single-year populations.
 * Convert legacy `inla.mesh` inputs automatically for current INLA/fmesher in
