@@ -13,7 +13,7 @@
 \alias{plot_survey_rank}
 \title{Simple plotting functions}
 \usage{
-plot_trend(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...)
+plot_trend(sim, sum_ages = sim$ages, col = viridis::viridis(1), ..., mat = "N")
 
 plot_surface(sim, mat = "N", xlab = "Age", ylab = "Year", zlab = mat, ...)
 
@@ -65,7 +65,8 @@ plot_survey_rank(sim, which_strat = "age")
 
 \item{...}{Additional arguments passed to \code{\link[plotly:plot_ly]{plotly::plot_ly()}}.}
 
-\item{mat}{Name of the matrix in the \code{sim} list to plot.}
+\item{mat}{Name of the matrix in the \code{sim} list to plot. For \code{plot_trend},
+choose \code{"N"} (fish), \code{"B"} (kg), or \code{"S"} (mature kg).}
 
 \item{xlab, ylab, zlab}{Axis labels.}
 

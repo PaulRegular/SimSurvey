@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add Plotly fishery maps/compositions and annual trends with `plot_fishery()`
+  and `plot_fishery_trend()`. Extend `plot_trend(mat = ...)` to biomass and mature
+  biomass, with matching units and preserved positional calls.
 * Add deterministic individual survey catch weights and catch kilograms per set,
   age/set, and replicate/year, including batch, parallel, and scenario workflows.
   Weights use all caught fish, preserve RNG state, and remain missing when an

@@ -4,7 +4,8 @@
 #' [`sim_abundance()`], [`sim_distribution()`], and related simulation functions.
 #'
 #' @param sim Object returned by [`sim_abundance()`], [`sim_distribution()`], etc.
-#' @param mat Name of the matrix in the `sim` list to plot.
+#' @param mat Name of the matrix in the `sim` list to plot. For `plot_trend`,
+#' choose `"N"` (fish), `"B"` (kg), or `"S"` (mature kg).
 #' @param grid Grid produced by [`make_grid()`].
 #' @param xlab,ylab,zlab Axis labels.
 #' @param sum_ages Vector of ages to sum across.
@@ -30,16 +31,19 @@
 #'
 #' @export
 #' @rdname plot_trend
-plot_trend <- function(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...) {
-  if (length(sum_ages) == 1) {
-    n <- sim$N[sum_ages, ]
-  } else {
-    n <- colSums(sim$N[sum_ages, ])
+plot_trend <- function(sim, sum_ages = sim$ages, col = viridis::viridis(1), ..., mat = "N") {
+  if (length(mat) != 1 || !mat %in% c("N", "B", "S") || !is.matrix(sim[[mat]])) {
+    stop("mat must name an available N, B, or S matrix; see help('sim_abundance') for older objects.")
   }
+  indices <- match(sum_ages, sim$ages)
+  if (!length(indices) || anyNA(indices)) stop("sum_ages must select population ages.")
+  n <- colSums(sim[[mat]][indices, , drop = FALSE])
   tot <- data.frame(Year = sim$years, N = n)
-  tot$text <- paste0("Year: ", tot$Year, "\nN: ", round(tot$N))
+  units <- switch(mat, N = "fish", B = "kg", S = "mature kg")
+  tot$text <- paste0("Year: ", tot$Year, "<br>", mat, ": ", round(tot$N), " ", units)
   plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
-          type = "scatter", mode = "lines", color = I(col), data = tot, ...)
+          type = "scatter", mode = "lines", color = I(col), data = tot, ...) |>
+    layout(xaxis = list(title = "Year"), yaxis = list(title = paste0(mat, " (", units, ")")))
 }
 
 #' @export
