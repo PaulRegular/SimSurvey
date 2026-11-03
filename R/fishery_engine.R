@@ -201,7 +201,7 @@
           sim$Z[positive_z, y] / -expm1(-sim$Z[positive_z, y])
         references[[length(references) + 1L]] <- data.table(
           fishery = names_f[f], sim = replicate, year = year, age = sim$ages,
-          N = sim$N[, y], Z = sim$Z[, y], death_budget = budget,
+          N = sim$N[, y], Z = sim$Z[, y], total_deaths = budget, death_budget = budget,
           selectivity = controls[[f]]$selection$at_age,
           F_reference = controls[[f]]$fishery_share[y] * sim$Z[, y] * controls[[f]]$selection$at_age,
           catch_reference = sim$N[, y] * controls[[f]]$fishery_share[y] *

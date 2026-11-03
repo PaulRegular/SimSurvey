@@ -129,8 +129,14 @@ total in numbers, rounded to whole fish. Realized age composition may differ.
 Age-specific death budgets preserve the rounded total expected deaths using
 largest-remainder rounding. Fishing and residual other deaths share those
 budgets. Residual deaths are sampled from remaining fish without replacement.
-\code{reference} retains \code{N}, \code{Z}, the shared integer \code{death_budget}, reference and
+\code{reference} retains \code{N}, \code{Z}, shared integer \code{total_deaths}, reference and
 realized catches, \code{U_realized = catch_realized / N}, and \code{F_realized} at age.
+\code{total_deaths} is the whole-fish total implied by N and Z for that age/year,
+balanced-rounded across ages. It includes all fishery and other deaths, and
+is repeated in each fishery's reference rows; do not sum it across fisheries.
+It is neither an individual catch target nor a remaining allowance. At the
+end it equals the ledger's fishery plus other deaths. \code{death_budget} remains
+an identical compatibility alias; new code should prefer \code{total_deaths}.
 Realized F is the Baranov-equivalent \code{U_realized * Z / (1 - exp(-Z))} under
 fixed upstream Z, not a fitted operation-time hazard. With positive N and zero
 Z it is zero; with zero N both realized rates are missing. Integer rounding

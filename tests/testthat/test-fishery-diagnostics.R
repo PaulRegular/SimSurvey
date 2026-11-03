@@ -9,6 +9,8 @@ test_that("shortfalls retain analytical reference and realized mortality", {
   expect_equal(reference$N, 100)
   expect_equal(reference$Z, log(2))
   expect_equal(reference$death_budget, 50)
+  expect_equal(reference$total_deaths, 50)
+  expect_identical(reference$total_deaths, reference$death_budget)
   expect_equal(reference$catch_reference, 20)
   expect_equal(reference$F_reference, 0.4 * log(2))
   expect_equal(reference$catch_realized, 5)
@@ -17,6 +19,8 @@ test_that("shortfalls retain analytical reference and realized mortality", {
   expect_equal(result$annual$shortfall, 15)
   expect_equal(result$annual$status, "exhausted")
   expect_equal(sum(result$mortality_ledger$other_deaths), 45)
+  expect_equal(reference$total_deaths, sum(result$mortality_ledger$fishery_deaths +
+                                            result$mortality_ledger$other_deaths))
   expect_equal(sum(result$mortality_ledger$survivors), 50)
 })
 
@@ -37,6 +41,7 @@ test_that("mortality diagnostics retain zeros, undefined rates and rounding", {
                           selectivity = function(age) 1)$fishery$reference
   expect_equal(rounded$catch_reference, 1.5)
   expect_equal(rounded$catch_realized, 2)
+  expect_equal(rounded$total_deaths, 2)
   expect_equal(rounded$F_realized, 4 * log(2) / 3)
   expect_gt(rounded$F_realized, rounded$Z)
 })

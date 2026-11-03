@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Prefer `total_deaths` in fishery reference diagnostics, clarifying that it is
+  the shared age/year whole-fish total across fishing and other mortality.
+  Retain `death_budget` as an identical compatibility alias.
 * Embed local widget support resources in the workflow vignette so its packaged
   HTML remains portable, while keeping one Plotly web bundle external and
   avoiding plotting-asset downloads during builds.
