@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Retain realized catches, removal fractions, and Baranov-equivalent F at age in
+  fishery reference diagnostics, alongside original N, Z, and integer budgets.
+  Clarify capture q units and the allocation/shortfall interpretation.
 * Correct fishery stock initialization to use only the current year's spatial
   population. Previous multi-year fishery results pooled years and must be rerun
   from their saved populations; population trajectories need not be regenerated.

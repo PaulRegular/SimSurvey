@@ -7,7 +7,8 @@
 sim_capture(q, capacity_per_gear = Inf)
 }
 \arguments{
-\item{q}{Nonnegative catchability, in grid-area units per gear-time unit.}
+\item{q}{Nonnegative capture coefficient, in grid-area units per gear-time
+unit. It can exceed one; it is not a capture probability.}
 
 \item{capacity_per_gear}{Maximum fish per gear unit in one operation, or \code{Inf}.}
 }
@@ -28,6 +29,9 @@ available age-length counts. If necessary, proposals are sampled without
 replacement to respect \code{floor(capacity_per_gear * G)}.
 This is an idealized encounter-and-capacity model, not a mechanistic model of
 every gear's soak-time response. Alternative capture functions may be supplied.
+The symbol q is conventional in fisheries catch/effort models; see
+\url{https://www.fao.org/4/x5685e/x5685e04.htm}. It differs from the dimensionless
+age/length catchability probabilities supplied as q to \code{\link[=sim_survey]{sim_survey()}}.
 }
 \examples{
 capture <- sim_capture(q = 0.1, capacity_per_gear = 1)

@@ -55,12 +55,24 @@
 #' Age-specific death budgets preserve the rounded total expected deaths using
 #' largest-remainder rounding. Fishing and residual other deaths share those
 #' budgets. Residual deaths are sampled from remaining fish without replacement.
+#' `reference` retains `N`, `Z`, the shared integer `death_budget`, reference and
+#' realized catches, `U_realized = catch_realized / N`, and `F_realized` at age.
+#' Realized F is the Baranov-equivalent `U_realized * Z / (1 - exp(-Z))` under
+#' fixed upstream Z, not a fitted operation-time hazard. With positive N and zero
+#' Z it is zero; with zero N both realized rates are missing. Integer rounding
+#' can make combined equivalent F exceed Z in tiny populations; values are not
+#' clipped. Matching the total number target need not match F at every age.
 #'
 #' Effort determines allocation and required operations conditional on the catch
 #' budget; it cannot independently increase annual removals. The final operation
 #' retains all specified effort when capped by the target (`quota_limited`).
 #' Zero-catch operations retain their effort. Unreachable targets return a
-#' shortfall and termination status. Local removals do not feed back into later
+#' shortfall and termination status.
+#' A shortfall is `target - n`: `exhausted` means no eligible accessible catching
+#' opportunities remain (including known zero capture/capacity); `operation_limit`
+#' means the allowed operations ended before reaching the target. Unused fishing
+#' allocation becomes other deaths under the fixed total-mortality budget.
+#' Local removals do not feed back into later
 #' pre-generated populations, and are not subtracted again from future abundance.
 #' Other mortality can include other fisheries. All simulated catches are retained;
 #' discards and seasonal scheduling are outside this model.

@@ -87,6 +87,7 @@
         if (!is.finite(sd) || sd == 0) rep(0, nrow(cells)) else stats::rnorm(nrow(cells), sd = sd)
       })
       achieved <- effort <- counts <- numeric(length(controls))
+      achieved_at_age <- matrix(0, nrow = length(sim$ages), ncol = length(controls))
       status <- rep("active", length(controls))
       status[targets == 0] <- "target_met"
       while (any(status == "active")) {
@@ -149,7 +150,9 @@
         accepted <- .thin_counts(accepted, targets[f] - achieved[f])
         remaining[rows] <- remaining[rows] - accepted
         for (a in seq_along(sim$ages)) {
-          death_remaining[a] <- death_remaining[a] - sum(accepted[a_index[rows] == a])
+          caught_at_age <- sum(accepted[a_index[rows] == a])
+          death_remaining[a] <- death_remaining[a] - caught_at_age
+          achieved_at_age[a, f] <- achieved_at_age[a, f] + caught_at_age
         }
         operation$n <- sum(accepted)
         operation$kg <- sum(accepted * kg[l_index[rows]])
@@ -189,12 +192,22 @@
         target = targets, n = achieved, effort = effort, shortfall = targets - achieved,
         n_operations = counts, status = status)
       for (f in seq_along(controls)) {
+        removal_fraction <- rep(NA_real_, length(sim$ages))
+        populated <- sim$N[, y] > 0
+        removal_fraction[populated] <- achieved_at_age[populated, f] / sim$N[populated, y]
+        realized_f <- removal_fraction
+        positive_z <- sim$Z[, y] > 0
+        realized_f[positive_z] <- removal_fraction[positive_z] *
+          sim$Z[positive_z, y] / -expm1(-sim$Z[positive_z, y])
         references[[length(references) + 1L]] <- data.table(
           fishery = names_f[f], sim = replicate, year = year, age = sim$ages,
+          N = sim$N[, y], Z = sim$Z[, y], death_budget = budget,
           selectivity = controls[[f]]$selection$at_age,
           F_reference = controls[[f]]$fishery_share[y] * sim$Z[, y] * controls[[f]]$selection$at_age,
           catch_reference = sim$N[, y] * controls[[f]]$fishery_share[y] *
-            controls[[f]]$selection$at_age * -expm1(-sim$Z[, y]))
+            controls[[f]]$selection$at_age * -expm1(-sim$Z[, y]),
+          catch_realized = achieved_at_age[, f], U_realized = removal_fraction,
+          F_realized = realized_f)
       }
     }
   }

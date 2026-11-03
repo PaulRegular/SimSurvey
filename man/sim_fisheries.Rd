@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim_programs.R
 \name{sim_fisheries}
 \alias{sim_fisheries}
-\title{Simulate competing fisheries on a shared population}
+\title{Simulate multiple fisheries with user-supplied allocations}
 \usage{
 sim_fisheries(sim, ..., n_sims = NULL)
 }
@@ -38,7 +38,8 @@ the rounded combined target and overall mortality bound.
 At each operation the next active fishery is chosen uniformly. Catches deplete
 shared age-length stocks and death budgets. A fishery retires on reaching its
 target, exhausting accessible catching opportunities, or reaching its operation
-limit. Competition can make otherwise valid targets unreachable. Other deaths
+limit. Shared stocks and access restrictions can constrain valid allocations.
+Other deaths
 are allocated once, after all fishing. Interleaving defines operation order,
 not calendar time. All truth precedes reporting and biological sampling.
 

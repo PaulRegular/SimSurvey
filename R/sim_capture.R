@@ -3,7 +3,8 @@
 #' Returns a function for the `catch_model` argument of [sim_fishery()]. Capture
 #' proposals use a bounded encounter probability and an optional gear capacity.
 #'
-#' @param q Nonnegative catchability, in grid-area units per gear-time unit.
+#' @param q Nonnegative capture coefficient, in grid-area units per gear-time
+#' unit. It can exceed one; it is not a capture probability.
 #' @param capacity_per_gear Maximum fish per gear unit in one operation, or `Inf`.
 #'
 #' @details
@@ -13,6 +14,9 @@
 #' replacement to respect `floor(capacity_per_gear * G)`.
 #' This is an idealized encounter-and-capacity model, not a mechanistic model of
 #' every gear's soak-time response. Alternative capture functions may be supplied.
+#' The symbol q is conventional in fisheries catch/effort models; see
+#' <https://www.fao.org/4/x5685e/x5685e04.htm>. It differs from the dimensionless
+#' age/length catchability probabilities supplied as q to [sim_survey()].
 #'
 #' @return A function with arguments `available` and `operation`. `available` is a
 #' table with `age`, `length`, `N`, `selectivity`, and `cell_area`; `operation`
