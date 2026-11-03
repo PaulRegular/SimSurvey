@@ -1,5 +1,9 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add deterministic individual survey catch weights and catch kilograms per set,
+  age/set, and replicate/year, including batch, parallel, and scenario workflows.
+  Weights use all caught fish, preserve RNG state, and remain missing when an
+  older number-only simulation has no weight model.
 * Retain realized catches, removal fractions, and Baranov-equivalent F at age in
   fishery reference diagnostics, alongside original N, Z, and integer budgets.
   Clarify capture q units and the allocation/shortfall interpretation.

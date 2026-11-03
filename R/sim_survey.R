@@ -201,6 +201,12 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' - `n`: individuals caught by the survey
 #'
 #' When `sim` is omitted, returns a `sim_survey_spec` list of settings.
+#' `samp$weight` gives deterministic kilograms for every simulated caught fish;
+#' unmeasured fish weights are latent truth, not extra measurements. `setdet$kg`
+#' and `samp_totals$kg_caught` sum all caught fish, not just measured lengths.
+#' With `light = FALSE`, `full_setdet$kg` gives catch weight by set and age.
+#' Legacy objects without a weight model retain missing weights and positive-catch
+#' totals, with zero kilograms for zero catches. No defaults are silently assigned.
 #'
 #' @examples
 #' \donttest{
@@ -242,7 +248,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                           custom_sets = NULL, light = TRUE, q_by = "age",
                           maturity_sampling = "aged") {
 
-  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- NULL
+  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- weight <- kg <- i.kg <- NULL
 
   ## Couple error traps
   if (!age_sampling %in% c("stratified", "random")) {
@@ -324,6 +330,14 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
     }
   }
 
+  ## Deterministic catch weights use all caught lengths, before subsampling.
+  samp$weight <- if (is.null(sim$sim_weight)) rep(NA_real_, nrow(samp)) else
+    .biology_values(sim$sim_weight, samp$length, "Weight")
+  mass <- samp[, list(kg = sum(weight)), by = c("set", "age")]
+  setdet$kg <- rep(NA_real_, nrow(setdet))
+  setdet[mass, on = c("set", "age"), kg := i.kg]
+  setdet$kg[setdet$n == 0] <- 0
+
   list(sim = sim, sets = sets, setdet = setdet, samp = samp, I = I,
        I_at_length = I_at_length, lengths_cap = lengths_cap, ages_cap = ages_cap,
        age_sampling = age_sampling, age_length_group = age_length_group,
@@ -341,7 +355,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   age_length_group <- truth$age_length_group
   age_space_group <- truth$age_space_group
   light <- truth$light
-  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- NULL
+  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- weight <- kg <- NULL
 
   ## Sample lengths
   measured <- samp[, list(id = id[sample(.N, ifelse(.N > lengths_cap, lengths_cap, .N),
@@ -368,12 +382,12 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   rm(length_samp)
 
   ## Simplify samp object
-  samp <- samp[, list(set, id, length, age, measured, aged)]
+  samp <- samp[, list(set, id, length, weight, age, measured, aged)]
   if (light) samp$id <- NULL
 
   ## Summarise set catch and sampling
   if (!light) full_setdet <- setdet
-  setdet <- merge(sets, setdet[, list(N = sum(N), n = sum(n)), by = "set"], by = "set")
+  setdet <- merge(sets, setdet[, list(N = sum(N), n = sum(n), kg = sum(kg)), by = "set"], by = "set")
   setdet <- merge(setdet,
                   samp[, list(n_measured = sum(measured), n_aged = sum(aged)), by = "set"],
                   by = "set", all.x = TRUE)
@@ -382,6 +396,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 
   ## Further summarize samples
   samp_totals <- setdet[, list(n_sets = .N, n_caught = sum(n),
+                               kg_caught = sum(kg),
                                n_measured = sum(n_measured),
                                n_aged = sum(n_aged)), by = c("sim", "year")]
 

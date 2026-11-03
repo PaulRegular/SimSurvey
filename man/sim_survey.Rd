@@ -101,6 +101,12 @@ Includes:
 }
 
 When \code{sim} is omitted, returns a \code{sim_survey_spec} list of settings.
+\code{samp$weight} gives deterministic kilograms for every simulated caught fish;
+unmeasured fish weights are latent truth, not extra measurements. \code{setdet$kg}
+and \code{samp_totals$kg_caught} sum all caught fish, not just measured lengths.
+With \code{light = FALSE}, \code{full_setdet$kg} gives catch weight by set and age.
+Legacy objects without a weight model retain missing weights and positive-catch
+totals, with zero kilograms for zero catches. No defaults are silently assigned.
 }
 \description{
 Simulates a stratified-random survey on a population produced by \code{\link[=sim_distribution]{sim_distribution()}}.

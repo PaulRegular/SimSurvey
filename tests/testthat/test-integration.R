@@ -12,6 +12,8 @@ test_that("parallel survey batches have unique set and replicate identifiers", {
     expect_true(all(result$samp$set %in% result$setdet$set))
     expect_equal(nrow(result$samp_totals), 4 * 3)
     expect_equal(sum(result$samp_totals$n_caught), sum(result$setdet$n))
+    expect_equal(sum(result$samp_totals$kg_caught), sum(result$setdet$kg))
+    expect_equal(sum(result$setdet$kg), sum(result$samp$weight))
   }
 })
 
@@ -34,6 +36,11 @@ test_that("survey scenarios export and resume in temporary directories", {
   resumed <- resume_test(export_dir)
   expect_equal(resumed$I_at_length, expected_length_truth)
   expect_equal(resumed$samp_totals, result$samp_totals)
+  expect_equal(sum(result$setdet$kg),
+               sum(result$samp$weight))
+  expect_equal(sum(resumed$setdet$kg), sum(resumed$samp$weight))
+  exported <- data.table::fread(file.path(export_dir, "samp_totals", "1.csv"))
+  expect_equal(exported$kg_caught, result$samp_totals$kg_caught[result$samp_totals$survey == 1])
   expect_equal(resumed$total_strat_error, result$total_strat_error)
 
   state <- new.env(parent = emptyenv())
