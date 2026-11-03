@@ -68,8 +68,9 @@ See `vignettes/custom_closures.Rmd` and Regular et al. (2020),
   edit generated documentation. Avoid unrelated generator/version churn.
 - Record user-visible changes and bug fixes in `NEWS.md`. Keep development
   versions distinct from releases; current work toward 0.2.0 uses 0.1.8.9000.
-- List non-self-contained vignette assets in `vignettes/.install_extras` and
-  verify their links inside the built source archive, not only a local render.
+- Verify vignette resources inside the built source archive, not only a local
+  render. Embed generated local widget resources because R cleans their support
+  directories; explicitly mark web-loaded scripts external to avoid build downloads.
 - Keep research analyses, exploratory scripts, and large simulations under
   `analysis/` (excluded from builds). The archived informal tests are historical
   examples, not the automated test suite. `data-raw/` contains data preparation;

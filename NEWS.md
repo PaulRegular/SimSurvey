@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Embed local widget support resources in the workflow vignette so its packaged
+  HTML remains portable, while keeping one Plotly web bundle external and
+  avoiding plotting-asset downloads during builds.
 * Revise the multi-fishery vignette around user-supplied allocations, explicit
   shortfalls/F diagnostics, survey catch kilograms, and package Plotly helpers.
   Add a controlled five-year preferential-fishing CPUE demonstration and its

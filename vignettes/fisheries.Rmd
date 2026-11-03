@@ -3,7 +3,7 @@ title: "Simulating multiple fisheries and surveys"
 output:
   rmarkdown::html_vignette:
     toc: true
-    self_contained: false
+    self_contained: true
     css: fisheries.css
 vignette: >
   %\VignetteIndexEntry{Simulating multiple fisheries and surveys}
@@ -16,7 +16,13 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                      fig.height = 4, dpi = 110)
 library(SimSurvey)
 vignette_widget <- function(p) {
-  plotly::partial_bundle(p, type = "cartesian", local = FALSE)
+  p <- plotly::partial_bundle(p, type = "cartesian", local = FALSE)
+  index <- which(vapply(p$dependencies,
+    function(dependency) dependency$name == "plotly-cartesian", logical(1)))
+  # Keep only the large Plotly bundle external; embed local support resources.
+  p$dependencies[[index]]$script <- list(list(
+    src = p$dependencies[[index]]$script, "data-external" = "1"))
+  p
 }
 ```
 
