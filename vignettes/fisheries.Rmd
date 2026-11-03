@@ -83,15 +83,13 @@ All examples use this one synthetic groundfish population over **2001--2005**.
 Six ages, a 16-cell coarse grid, and one broad stratum keep the workflow quick.
 Growth, weight, maturity, and starting age structure use package defaults.
 Recruitment declines by 30% each year; mortality remains at the default 0.5.
-We disable recruitment, mortality, and spatial random variation to make the
-comparisons easier to interpret. This is illustrative, not a reconstruction of
-3Ps cod.
-
-A core cell retains 20% of the first year's abundance throughout; the remaining
-fish are distributed equally among the other 15 cells. Thus abundance falls
-while the population becomes more concentrated. This deliberately controlled
-spatial pattern will help explain the later CPUE comparison. The recruitment
-scale also provides useful survey catches with default tow dimensions.
+Recruitment and mortality variation are disabled to make the abundance decline
+easy to interpret. Spatial distributions use the default depth relationship
+and correlated age-year-space variation, so locations and concentrations can
+change between years. No cell is assigned a fixed abundance or population share.
+This is an illustrative stochastic population, not a calibrated reconstruction
+of 3Ps cod. The recruitment scale provides useful survey catches with default
+tow dimensions.
 
 ```{r population}
 set.seed(601)
@@ -99,18 +97,10 @@ population <- sim_abundance(
   ages = 1:6, years = 2001:2005,
   R = sim_R(log_mean = log(1e7 * 0.7^(0:4)), log_sd = 0),
   Z = sim_Z(log_sd = 0)
-)
-total_N <- colSums(population$N)
-core_share <- 0.2 * total_N[1] / total_N
-population <- population |>
+) |>
   sim_distribution(
     grid = make_grid(res = c(70, 70),
-                     strat_breaks = c(0, 1000), strat_splits = 1),
-    ays_covar = sim_ays_covar(sd = 0),
-    depth_par = function(data) {
-      core <- core_share[match(data$year, 2001:2005)]
-      log(ifelse(data$cell == 1, core, (1 - core) / 15))
-    }
+                     strat_breaks = c(0, 1000), strat_splits = 1)
   )
 ```
 
@@ -312,8 +302,14 @@ biomass or persistent spatial depletion carried into the next year.
 
 The default fishery favors high vulnerable density (`targeting = 1`), has accurate
 knowledge (`knowledge_sd = 0`), and allocates 5% of location probability uniformly
-to exploration. Zero targeting produces uniform accessible locations. Knowledge
-error is persistent within a replicate/year; it is not learning or vessel routing.
+to exploration. Zero targeting produces uniform accessible locations. Location
+choice uses the **current year's** vulnerable density, updated as catches remove
+fish. Positive `knowledge_sd` adds a noisy density map: new cell errors are
+drawn each year and persist across that year's operations. Fisheries therefore
+respond to shifting distributions, with imperfect knowledge when requested.
+This is contemporaneous noisy knowledge, without learning, a lagged map, or
+vessel routing. A positive targeting exponent does not guarantee a good choice
+in every operation.
 
 We keep the population and the other fishery's allocation fixed. A small helper makes the
 controlled changes visible and avoids repeating the full pipeline. Seeding is
@@ -348,17 +344,35 @@ Preferential fishing means selecting locations according to fish density. It
 differs from preferential monitoring of already completed operations. Here we
 isolate fishing locations, holding gear, effort, and monitoring fixed.
 
-We reuse the five-year `population` above: its core cell holds a constant number
-of fish as abundance declines elsewhere. Only the fishing configuration changes.
-Equal selectivity at all ages removes changing age composition as a cause of
-changing catchability.
+We reuse the five-year `population` above, including its default shifting spatial
+distribution. Equal selectivity at all ages removes changing age composition as
+a cause of changing catchability. Both fishing scenarios have imperfect knowledge
+(`knowledge_sd = 1`): map-error SD equals the year's initial mean vulnerable
+density across accessible cells. Uniform fishing ignores this signal; targeted
+fishing favors its higher values, with the default 5% exploration. The knowledge
+setting is illustrative, not calibrated to a particular fleet.
+
+The densest cell and concentration change without specifying a persistent core:
+
+```{r cpue-distribution}
+distribution <- population$sp_N[, list(N = sum(N)), by = c("year", "cell")]
+distribution[, share := N / sum(N), by = "year"]
+spatial_summary <- distribution[, list(
+  peak_cell = cell[which.max(N)], peak_share = round(max(share), 2),
+  effective_cells = round(1 / sum(share^2), 1)), by = "year"]
+knitr::kable(spatial_summary)
+```
+
+`effective_cells` describes spatial spread: one means all fish are in one cell;
+16 means an equal distribution over this grid. This is a summary of annual
+densities, without tracking individual fish movements.
 
 ```{r cpue-fishing}
 run_cpue <- function(targeting) {
   set.seed(602)
   sim_fishery(population,
     fishery_share = 0.2, catch_model = sim_capture(q = 10),
-    selectivity = function(age) 1, targeting = targeting,
+    selectivity = function(age) 1, targeting = targeting, knowledge_sd = 1,
     max_operations = 30, sampling_coverage = 0, n_sims = 10)
 }
 cpue_scenarios <- list(Uniform = run_cpue(0), Targeted = run_cpue(1))
@@ -374,7 +388,8 @@ Each year has 30 unit-effort operations, ending before the allocation is caught.
 These runs intentionally have shortfalls. The checks rule out quota and mortality
 capping as explanations for the CPUE pattern. Capture `q = 10` and the coarse
 cell area give a low encounter probability; monitoring is disabled in both runs.
-Default knowledge and exploration settings are unchanged.
+Default exploration is unchanged. A new noisy map is drawn each year in each
+replicate; harvesters do not continue targeting last year's locations by default.
 
 ```{r cpue-summary}
 cpue_summary <- data.table::rbindlist(lapply(names(cpue_scenarios), function(label) {
@@ -419,14 +434,21 @@ plotly::subplot(trajectory, proportionality, titleX = TRUE, titleY = TRUE, margi
 
 Values are normalized to each series' first-year mean. CPUE is total true catch
 divided by total effort across ten replicates conditional on this one population.
-Uniform fishing can follow falling abundance, while density-targeted fishing
-continues to find the persistent concentration. This illustrates a mechanism for
-CPUE hyperstability; it does not quantify bias for an actual fishery.
+Targeted fishing achieves higher **absolute** CPUE than uniform fishing in this
+run, despite imperfect knowledge. However, its relative CPUE falls more sharply
+than abundance as the initial concentration disperses, and rises again when
+fish become more concentrated in the final year. Uniform fishing more closely
+follows the overall abundance decline, with variation from finite sampling and
+within-year depletion. Normalizing the series hides their initial difference
+in absolute catch rates.
 
-Targeting alone does not necessarily destroy proportionality: with constant
-relative spatial patterns, both strategies can remain proportional to abundance.
-The appendix shows why changing spatial concentration matters. Five years are
-used for illustration, without fitting a CPUE standardization model or treating
+Preferential fishing does not always produce hyperstability. Changing spatial
+concentration can make targeted CPUE decline more slowly **or more quickly**
+than abundance. Simply moving an otherwise unchanged spatial pattern need not
+break proportionality if harvesters can follow it. Noisy knowledge can reduce
+that ability; its effects vary among realizations. The appendix gives the
+location-weighted expectation. Five years illustrate these mechanisms without
+fitting a CPUE standardization model, calibrating a real fleet, or treating
 conditional replicate variability as empirical uncertainty.
 
 Interpret these comparisons within the fixed-removals framework. More effort
@@ -629,9 +651,9 @@ combining survey tables: set identifiers are program-scoped.
 The inherited `replicates` here are 20 fishing/observation replicates conditional
 on one population trajectory. Matching identifiers do not identify the same
 individual fish or shared length-stock draws across surveys and fisheries.
-For independent biological histories, restore the desired recruitment,
-mortality, and spatial process variation and regenerate abundance and distribution
-in an outer simulation loop. Record seeds, settings, and package versions for
+For independent biological histories, choose the recruitment, mortality, and
+spatial process settings and regenerate abundance and distribution in an outer
+simulation loop. Record seeds, settings, and package versions for
 reproducibility. Canonical name ordering makes registration order irrelevant;
 adding or renaming programs can still change random draws.
 
@@ -1013,19 +1035,41 @@ probability \(v=1-\exp(-q_fE/A_c)\), expected first-operation CPUE is
 E(C/E)=\frac{v}{E}\sum_c\pi_c n_c.
 \]
 
-Uniform fishing in K accessible cells gives \(vN/(EK)\). Default accurate
-density targeting with exploration \(\epsilon\) gives
+Uniform fishing in K accessible cells gives \(vN/(EK)\). In the special case
+of accurate density targeting with exploration \(\epsilon\), the expectation is
 
 \[
 E(C/E)=\frac{v}{E}\left\{(1-\epsilon)\frac{\sum_c n_c^2}{N}
 +\epsilon\frac{N}{K}\right\}.
 \]
 
-If \(n_c=Nr_c\) with constant relative spatial proportions \(r_c\), both
-expressions are proportional to N. Changing spatial concentration changes the
-targeted density factor. In the demonstration the core abundance stays fixed
-while background abundance declines, allowing targeted catch rates to persist.
-Annual simulated CPUE also reflects repeated operations and within-year depletion;
+With imperfect knowledge, let \(h_c=\max(0,n_c/A_c+e_c)\), using the
+replicate/year's errors from A3. For positive total signal and `targeting = 1`,
+
+\[
+E(C/E\mid\mathbf e)=\frac{v}{E}\left\{(1-\epsilon)
+\frac{\sum_c n_ch_c}{\sum_c h_c}+\epsilon\frac{N}{K}\right\}.
+\]
+
+An all-zero signal uses uniform probabilities. The example uses this noisy
+signal with `knowledge_sd = 1`, not the accurate-knowledge special case. New
+errors are drawn around each year's distribution; within-year density updates
+after catches, while those errors stay fixed. There is no dependence on the
+previous year's fishing map.
+
+If \(n_c=Nr_c\) with constant relative spatial proportions \(r_c\),
+accurate-targeting and uniform expectations are proportional to N. Permuting
+cells does not change those expectations. Since error SD scales with initial
+mean density, a proportionally scaled population also has a proportionally
+scaled noisy signal distribution, before depletion. Movement alone therefore
+does not necessarily break proportionality under this contemporaneous model.
+Changing concentration or knowledge quality can change the location-weighted
+density factor in either direction. In this realization, spreading out after
+the first year reduces the targeting advantage; subsequent reconcentration
+raises targeted CPUE even as total abundance continues to decline.
+
+Annual simulated CPUE also reflects finite operations and within-year depletion;
 the first-operation equation explains the mechanism, not an exact annual fit.
 The example checks that quota and mortality capping are inactive and uses the
-same annual effort for both strategies.
+same annual effort for both strategies. It does not prescribe a particular
+CPUE-abundance relationship or imply empirical uncertainty from these replicates.

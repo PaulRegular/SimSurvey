@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Replace the vignette's fixed-core CPUE example with default shifting spatial
+  distributions and imperfect current-year knowledge. Explain how changing
+  concentration can steepen or flatten the CPUE-abundance relationship.
 * Clarify that fishery knowledge uses current-year density and fresh annual map
   errors, and verify that fishing locations follow a shifted population.
 * Use one controlled five-year population throughout the fisheries vignette,
