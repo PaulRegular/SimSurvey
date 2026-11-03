@@ -1,5 +1,9 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Shorten the fisheries vignette, replace verification tables with explanations,
+  and show a function-based workflow. Extend examples to ten years, improve
+  imperfect harvester knowledge, and compare random with targeted fishing using
+  series divided by their overall temporal means.
 * Specify the survey-map polygon trace type explicitly, removing Plotly's
   inferred-scatter message without suppressing messages from plotting.
 * Base the new-workflow vignette on the documented five-age, 20-km survey example,
