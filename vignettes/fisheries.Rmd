@@ -79,29 +79,18 @@ arrows(c(0.31, 0.66, 0.17, 0.31, 0.66), c(0.74, 0.74, 0.60, 0.64, 0.24),
 
 ## Shared biological truth
 
-All examples use this one synthetic groundfish population over **2001--2005**.
-Six ages, a 16-cell coarse grid, and one broad stratum keep the workflow quick.
-Growth, weight, maturity, and starting age structure use package defaults.
-Recruitment declines by 30% each year; mortality remains at the default 0.5.
-Recruitment and mortality variation are disabled to make the abundance decline
-easy to interpret. Spatial distributions use the default depth relationship
-and correlated age-year-space variation, so locations and concentrations can
-change between years. No cell is assigned a fixed abundance or population share.
-This is an illustrative stochastic population, not a calibrated reconstruction
-of 3Ps cod. The recruitment scale provides useful survey catches with default
-tow dimensions.
+All examples use one synthetic groundfish population over **2001--2005**.
+The setup follows the example in `sim_survey()`: five ages, a 20-km grid, and
+default population and spatial processes. We use calendar-year labels for
+readability. Recruitment, mortality, growth, weight, maturity, depth associations,
+and age-year-space variation all use their defaults. No trend, fixed core, or
+cell-specific population share is prescribed. This is an illustrative stochastic
+population, not a calibrated reconstruction of 3Ps cod.
 
 ```{r population}
 set.seed(601)
-population <- sim_abundance(
-  ages = 1:6, years = 2001:2005,
-  R = sim_R(log_mean = log(1e7 * 0.7^(0:4)), log_sd = 0),
-  Z = sim_Z(log_sd = 0)
-) |>
-  sim_distribution(
-    grid = make_grid(res = c(70, 70),
-                     strat_breaks = c(0, 1000), strat_splits = 1)
-  )
+population <- sim_abundance(ages = 1:5, years = 2001:2005) |>
+  sim_distribution(grid = make_grid(res = c(20, 20)))
 ```
 
 `sim_abundance()` now retains three biological relationships. `sim_growth()` is
@@ -179,7 +168,7 @@ gillnet <- sim_fishery(
 
 set.seed(502)
 fished <- population |>
-  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 20)
+  sim_fisheries(trawl = trawl, gillnet = gillnet, n_sims = 5)
 ```
 
 The gear names denote illustrative programs, not calibrated gear models. The
@@ -318,7 +307,7 @@ explicit caller code; package functions do not reseed themselves.
 ```{r spatial-comparisons}
 run_fleets <- function(trawl_spec) {
   set.seed(502)
-  sim_fisheries(population, trawl = trawl_spec, gillnet = gillnet, n_sims = 20)
+  sim_fisheries(population, trawl = trawl_spec, gillnet = gillnet, n_sims = 5)
 }
 uniform <- run_fleets(modifyList(trawl, list(targeting = 0)))
 noisy <- run_fleets(modifyList(trawl, list(knowledge_sd = 1)))
@@ -364,16 +353,16 @@ knitr::kable(spatial_summary)
 ```
 
 `effective_cells` describes spatial spread: one means all fish are in one cell;
-16 means an equal distribution over this grid. This is a summary of annual
+196 means an equal distribution over this grid. This is a summary of annual
 densities, without tracking individual fish movements.
 
 ```{r cpue-fishing}
 run_cpue <- function(targeting) {
   set.seed(602)
   sim_fishery(population,
-    fishery_share = 0.2, catch_model = sim_capture(q = 10),
+    fishery_share = 0.2, catch_model = sim_capture(q = 1),
     selectivity = function(age) 1, targeting = targeting, knowledge_sd = 1,
-    max_operations = 30, sampling_coverage = 0, n_sims = 10)
+    max_operations = 30, sampling_coverage = 0, n_sims = 5)
 }
 cpue_scenarios <- list(Uniform = run_cpue(0), Targeted = run_cpue(1))
 for (result in cpue_scenarios) {
@@ -386,7 +375,7 @@ for (result in cpue_scenarios) {
 
 Each year has 30 unit-effort operations, ending before the allocation is caught.
 These runs intentionally have shortfalls. The checks rule out quota and mortality
-capping as explanations for the CPUE pattern. Capture `q = 10` and the coarse
+capping as explanations for the CPUE pattern. Capture `q = 1` and the 400-square-kilometre
 cell area give a low encounter probability; monitoring is disabled in both runs.
 Default exploration is unchanged. A new noisy map is drawn each year in each
 replicate; harvesters do not continue targeting last year's locations by default.
@@ -433,14 +422,14 @@ plotly::subplot(trajectory, proportionality, titleX = TRUE, titleY = TRUE, margi
 ```
 
 Values are normalized to each series' first-year mean. CPUE is total true catch
-divided by total effort across ten replicates conditional on this one population.
+divided by total effort across five replicates conditional on this one population.
 Targeted fishing achieves higher **absolute** CPUE than uniform fishing in this
-run, despite imperfect knowledge. However, its relative CPUE falls more sharply
-than abundance as the initial concentration disperses, and rises again when
-fish become more concentrated in the final year. Uniform fishing more closely
-follows the overall abundance decline, with variation from finite sampling and
-within-year depletion. Normalizing the series hides their initial difference
-in absolute catch rates.
+run, despite imperfect knowledge. Its relative trajectory also responds to
+changing spatial concentration and the noisy density signal. Neither realized
+curve follows abundance exactly. Uniform fishing is proportional to abundance
+in expectation before depletion, but 30 operations over a patchy 196-cell grid
+produce appreciable sampling variation. Normalizing the series hides their
+initial difference in absolute catch rates.
 
 Preferential fishing does not always produce hyperstability. Changing spatial
 concentration can make targeted CPUE decline more slowly **or more quickly**
@@ -573,18 +562,18 @@ the configured `age_space_group`, per replicate/year and length group.
 ## Independent survey programs
 
 Configure surveys without `sim`, then execute them together on the same
-five-year population. With this coarse 16-cell grid, `set_den = 1 / 10000`
-allocates **eight sets per year and replicate** in the single stratum, each in
-a different cell. This makes the sampled spatial coverage easier to see; the
-default area-based allocation would exceed the number of cells. Other survey
-settings remain at defaults unless needed to illustrate length catchability.
+five-year population. As in the `sim_survey()` example, survey allocation, gear
+dimensions, and biological sample sizes use their defaults. This grid gives
+**160 sets per year and replicate**, stratified by depth and location, each in
+a different cell. The second program changes only the catchability curve and
+its age/length basis.
 
 ```{r surveys}
 set.seed(503)
 programs <- fished |>
   sim_surveys(
-    survey_A = sim_survey(set_den = 1 / 10000),
-    survey_B = sim_survey(q = sim_logistic(x50 = 40), q_by = "length", set_den = 1 / 10000)
+    survey_A = sim_survey(),
+    survey_B = sim_survey(q = sim_logistic(x50 = 40), q_by = "length")
   )
 selected <- programs |> select_survey("survey_B") |> run_strat() |> strat_error()
 head(selected$total_strat_error)
@@ -615,9 +604,8 @@ plotly::subplot(survey_figures, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
   plotly::layout(legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
 
-Each program's estimates are compared with its own availability truth. The twenty
-conditional replicates and eight sets per stratum illustrate variability rather
-than establish precision. Existing survey graphics also work on extracted views:
+Each program's estimates are compared with its own availability truth. The five
+conditional replicates illustrate variability rather than establish precision. Existing survey graphics also work on extracted views:
 
 ```{r survey-view, fig.height=6.5}
 plot_survey(selected, which_year = 2005, which_sim = 1) |> vignette_widget()
@@ -648,7 +636,7 @@ Use `maturity_observed` for maturity observations. Fishery `samp` already contai
 only measured fish, with missing unobserved ages. Add the program name before
 combining survey tables: set identifiers are program-scoped.
 
-The inherited `replicates` here are 20 fishing/observation replicates conditional
+The inherited `replicates` here are five fishing/observation replicates conditional
 on one population trajectory. Matching identifiers do not identify the same
 individual fish or shared length-stock draws across surveys and fisheries.
 For independent biological histories, choose the recruitment, mortality, and
@@ -1064,9 +1052,9 @@ mean density, a proportionally scaled population also has a proportionally
 scaled noisy signal distribution, before depletion. Movement alone therefore
 does not necessarily break proportionality under this contemporaneous model.
 Changing concentration or knowledge quality can change the location-weighted
-density factor in either direction. In this realization, spreading out after
-the first year reduces the targeting advantage; subsequent reconcentration
-raises targeted CPUE even as total abundance continues to decline.
+density factor in either direction. The example uses the default stochastic
+processes for abundance and spatial structure, so neither a monotonic decline
+nor a particular direction of CPUE departure is imposed.
 
 Annual simulated CPUE also reflects finite operations and within-year depletion;
 the first-operation equation explains the mechanism, not an exact annual fit.

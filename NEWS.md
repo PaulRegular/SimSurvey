@@ -1,5 +1,7 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Base the new-workflow vignette on the documented five-age, 20-km survey example,
+  with default biology, abundance, spatial processes, and survey allocation.
 * Replace the vignette's fixed-core CPUE example with default shifting spatial
   distributions and imperfect current-year knowledge. Explain how changing
   concentration can steepen or flatten the CPUE-abundance relationship.
