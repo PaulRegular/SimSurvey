@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Correct fishery stock initialization to use only the current year's spatial
+  population. Previous multi-year fishery results pooled years and must be rerun
+  from their saved populations; population trajectories need not be regenerated.
 * Expand "Simulating multiple fisheries and surveys" with default-based workflows,
   controlled targeting and monitoring comparisons, maturity observations,
   independent surveys, and a mathematical appendix explaining the extensions.

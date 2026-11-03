@@ -1,7 +1,9 @@
 ## All fisheries use one stock and age-specific mortality budget. The public
 ## single-fishery entry point uses this same engine as the batch orchestrator.
 .fishery_stock <- function(sim, year, key) {
-  rows <- sim$sp_N[sim$sp_N$year == year, c("cell", "age", "N")]
+  ## Select outside data.table's column scope: its year column masks the argument.
+  year_rows <- which(sim$sp_N$year == year)
+  rows <- sim$sp_N[year_rows, c("cell", "age", "N")]
   rows <- as.data.frame(rows)
   rows <- rows[order(rows$cell, match(rows$age, sim$ages)), ]
   pieces <- lapply(seq_len(nrow(rows)), function(i) {
