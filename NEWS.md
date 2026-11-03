@@ -1,5 +1,9 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Revise the multi-fishery vignette around user-supplied allocations, explicit
+  shortfalls/F diagnostics, survey catch kilograms, and package Plotly helpers.
+  Add a controlled five-year preferential-fishing CPUE demonstration and its
+  spatial-proportionality equations; separate backwards compatibility guidance.
 * Add Plotly fishery maps/compositions and annual trends with `plot_fishery()`
   and `plot_fishery_trend()`. Extend `plot_trend(mat = ...)` to biomass and mature
   biomass, with matching units and preserved positional calls.

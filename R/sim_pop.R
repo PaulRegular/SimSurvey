@@ -324,7 +324,8 @@ sim_growth <- sim_vonB
 #' Biological defaults are not silently assigned to old objects.
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for shared biological
-#' truth, competing fisheries, independent surveys, and the model equations.
+#' truth, multiple fisheries with user-supplied allocations, independent surveys,
+#' and the model equations.
 #'
 #' @examples
 #' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)

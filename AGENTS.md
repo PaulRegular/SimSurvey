@@ -68,6 +68,8 @@ See `vignettes/custom_closures.Rmd` and Regular et al. (2020),
   edit generated documentation. Avoid unrelated generator/version churn.
 - Record user-visible changes and bug fixes in `NEWS.md`. Keep development
   versions distinct from releases; current work toward 0.2.0 uses 0.1.8.9000.
+- List non-self-contained vignette assets in `vignettes/.install_extras` and
+  verify their links inside the built source archive, not only a local render.
 - Keep research analyses, exploratory scripts, and large simulations under
   `analysis/` (excluded from builds). The archived informal tests are historical
   examples, not the automated test suite. `data-raw/` contains data preparation;
@@ -110,8 +112,9 @@ mature biomass, without spawning timing or sex structure. Complete every existin
 sample before maturity draws, and draw latent maturity for every measured fish
 before applying observation masks. Preserve the established `sim_length` component.
 Batch functions take `sim` first and named configurations thereafter. Declare
-all fisheries and their user-supplied allocations upfront, interleave operations on one stock/budget, and
-generate survey-program truth independently before biological subsampling.
+all fisheries and their user-supplied allocations upfront, interleave operations
+on one stock/budget, and generate survey-program truth independently before
+biological subsampling.
 Use only the current year's spatial population when initializing fishery stocks;
 test starting ledger counts against that year's cells, not just ledger balance.
 Keep `survey_programs` separate from the `surveys` scenario-design table, and

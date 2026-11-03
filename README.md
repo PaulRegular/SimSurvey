@@ -31,8 +31,9 @@ remotes::install_github("PaulRegular/SimSurvey")
 ## Documentation
 
 The development vignette [Simulating multiple fisheries and surveys](vignettes/fisheries.Rmd)
-introduces shared population biology, multiple fisheries with user-supplied allocations, monitoring, and independent
-survey programs, with a mathematical appendix. After installing the development
+introduces shared population biology, multiple fisheries with user-supplied
+allocations, monitoring, and independent survey programs, with a mathematical
+appendix and five-year CPUE demonstration. After installing the development
 package with vignettes, open it with `vignette("fisheries", package = "SimSurvey")`.
 
 `pkgdown` site: https://paulregular.github.io/SimSurvey/  

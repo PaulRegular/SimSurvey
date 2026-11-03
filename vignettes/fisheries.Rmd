@@ -3,6 +3,8 @@ title: "Simulating multiple fisheries and surveys"
 output:
   rmarkdown::html_vignette:
     toc: true
+    self_contained: false
+    css: fisheries.css
 vignette: >
   %\VignetteIndexEntry{Simulating multiple fisheries and surveys}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,11 +15,14 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                      fig.height = 4, dpi = 110)
 library(SimSurvey)
+vignette_widget <- function(p) {
+  plotly::partial_bundle(p, type = "cartesian", local = FALSE)
+}
 ```
 
 ## Questions the new features can answer
 
-SimSurvey now supports competing fisheries, their reporting and biological
+SimSurvey now supports multiple fisheries with user-supplied allocations, their reporting and biological
 monitoring, and multiple survey programs observing the same population. Weight
 and maturity relationships also provide biomass and mature-biomass truth. These
 are extensions to the framework described by
@@ -28,7 +33,7 @@ This vignette describes the extensions in development version 0.1.8.9000, toward
 
 | Question | New capability |
 |:---|:---|
-| How do fisheries compete for fish? | Interleaved operations share stocks and mortality budgets. |
+| How are user-supplied fishery allocations realized? | Interleaved operations share stocks and mortality budgets. |
 | How do targeting and imperfect knowledge affect effort and CPUE? | Separate controls for targeting, knowledge error, and exploration. |
 | How do biological relationships and gear selection affect the quantities observed? | Shared weight and maturity models; age- or length-based selectivity. |
 | How do reporting and monitoring affect the available data? | Reporting errors, preferential coverage, and nested biological observations. |
@@ -38,6 +43,8 @@ The model is **conditional on the generated population and total mortality**.
 Fishing allocates deaths permitted by `Z`; effort determines how catches are
 obtained. This is useful for examining data-generation and sampling mechanisms.
 It does not turn SimSurvey into a population-feedback or management-strategy model.
+The interactive figures use the package's Plotly graphics. Viewing them requires
+access to the shared Plotly web asset; building this vignette does not download it.
 
 ```{r workflow, echo=FALSE, fig.height=3.3, fig.cap="Data flow. Both fisheries and surveys start from the annual population snapshot. Survey programs do not sample the stock left behind by the fisheries."}
 par(mar = c(0, 0, 0, 0))
@@ -90,14 +97,20 @@ Maturity defaults approximate the historical female relationship for 1996 in
 These defaults are convenient starting points, not contemporary stock-specific
 calibrations. One maturity curve applies to all simulated fish.
 
-```{r biology-curves, echo=FALSE, fig.height=3.1, fig.cap="Default weight and maturity relationships. The maturity midpoint is a probability of 0.5, not a minimum size at which every fish becomes mature."}
-par(mfrow = c(1, 2), mar = c(4, 4, 1, 1))
-curve(sim_weight()(x), from = 0, to = 100, xlab = "Length (cm)",
-      ylab = "Weight (kg)", col = "#0072B2", lwd = 2)
-curve(sim_maturity()(x), from = 0, to = 100, xlab = "Length (cm)",
-      ylab = "Maturity probability", ylim = c(0, 1), col = "#D55E00", lwd = 2)
-abline(h = 0.5, v = 47.81, lty = 3, col = "grey50")
+```{r biology-curves, echo=FALSE}
+length_cm <- 0:100
+weight_curve <- plotly::plot_ly(x = length_cm, y = sim_weight()(length_cm),
+  type = "scatter", mode = "lines", name = "Weight") |>
+  plotly::layout(xaxis = list(title = "Length (cm)"), yaxis = list(title = "Weight (kg)"))
+maturity_curve <- plotly::plot_ly(x = length_cm, y = sim_maturity()(length_cm),
+  type = "scatter", mode = "lines", name = "Maturity probability") |>
+  plotly::layout(xaxis = list(title = "Length (cm)"), yaxis = list(title = "Maturity probability"))
+plotly::subplot(weight_curve, maturity_curve, titleX = TRUE, titleY = TRUE) |>
+  plotly::layout(height = 320, showlegend = FALSE) |> vignette_widget()
 ```
+
+The maturity midpoint gives probability 0.5, rather than a minimum size at which
+every fish becomes mature.
 
 `B` and `S` are age-by-year matrices of expected biomass and mature biomass in
 kilograms. `B_at_length` and `S_at_length` give the corresponding length-by-year
@@ -114,6 +127,14 @@ knitr::kable(data.frame(
 ), row.names = FALSE)
 ```
 
+The existing trend helper now accepts biological mass matrices:
+
+```{r biomass-trends}
+plotly::subplot(plot_trend(population, mat = "B"), plot_trend(population, mat = "S"),
+                titleX = TRUE, titleY = TRUE) |>
+  plotly::layout(height = 320, showlegend = FALSE) |> vignette_widget()
+```
+
 Here `S` is mature biomass of **all fish** under the supplied curve, without a
 female fraction or a spawning-season adjustment. It does not drive recruitment.
 Both mass summaries integrate over the length-age key: weight at mean length is
@@ -124,7 +145,7 @@ the joint calculation and a numerical example.
 ## Two fisheries sharing one population
 
 Calling `sim_fishery()` without `sim` constructs a configuration, without
-simulating anything or consuming random numbers. All competing fisheries are
+simulating anything or consuming random numbers. All fisheries and their allocations are
 declared together. Their names become identifiers in the results.
 
 ```{r configurations}
@@ -149,7 +170,9 @@ population |>
   sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 400))
 ```
 
-`sim_capture()` is a generic encounter model. Its required `q` has grid-area
+`sim_capture()` is a generic encounter model. The symbol `q` is conventional in
+[fisheries catch/effort models](https://www.fao.org/4/x5685e/x5685e04.htm).
+Its required `q` has grid-area
 units per gear-time unit. These coefficients suit the coarse grid and nominal
 effort units used here; they are not estimates of actual trawl or gillnet
 efficiency. Default `gear_amount` and `duration` are each one. Their product is
@@ -158,7 +181,9 @@ application. Gear amount and duration can also be operation-level callbacks;
 `capacity_per_gear` adds a capacity limit to the encounter model.
 
 **Fishery capture `q` differs from survey `q`**, which is a dimensionless
-catchability probability. Also, selectivity is not automatically rescaled to a
+catchability probability. Capture `q` is a coefficient, can exceed one, and is
+converted to a bounded encounter probability internally. The appendix distinguishes
+fishery \(q_f\) from survey \(q_{s,l}\). Also, selectivity is not automatically rescaled to a
 maximum of one: its magnitude affects the reference target as well as capture.
 
 Each reference target uses the original population, `Z`, the fishery share, and
@@ -167,6 +192,9 @@ selectivity also matters. The engine chooses the next active fishery uniformly
 for each operation, depletes shared age-length stocks, and enforces shared
 age-specific death budgets. Reference shares must be compatible at every age
 and year. They are rejected, rather than normalized, when incompatible.
+This is an allocation-based framework, analogous to setting catch allocations
+before fishing. Here allocations are shares of mortality before selectivity,
+translated into targets in numbers, rather than directly supplied kilogram TACs.
 
 ```{r annual}
 knitr::kable(fished$fishery$annual[sim == 1,
@@ -185,6 +213,7 @@ The most useful new outputs are:
 | `catch_at_age`, `catch_at_length` | Aggregate true catch composition |
 | `sp_removals` | Fishery-specific spatial removals |
 | `mortality_ledger` | One shared count balance, not a separate population per fishery |
+| `reference` | Reference and realized catches and F at age, original N/Z, and shared death budgets |
 | `samp` | Biological observations and sampling-stage probabilities |
 
 All fisheries inherit `population$sim_weight`, so catch kilograms and biomass
@@ -195,16 +224,43 @@ age-length catches and sample truth when inspecting a small simulation.
 
 ### What does a shortfall mean?
 
-Feasible reference shares do not guarantee attainable catches. Fisheries can
-compete for particular ages or locations. `status` distinguishes `target_met`,
-`exhausted`, and `operation_limit`; `shortfall` records the unmet target. Invalid
-inputs, including incompatible shares, produce errors instead.
+The allocation sets an intended catch; the operations determine what is actually
+caught. A **shortfall is the integer target minus realized catch**, in fish.
+Shared stocks, access restrictions, and gear responses can constrain an allocation.
+The status explains why fishing stopped:
+
+| Status | Meaning |
+|:---|:---|
+| `target_met` | The number target was caught, including a zero target. |
+| `exhausted` | No eligible accessible catching opportunities remain; this includes known zero capture or capacity. |
+| `operation_limit` | The permitted operations ended while catch remained below target. More operations might help, but are not guaranteed to do so. |
+
+Invalid inputs, including incompatible reference shares, produce errors instead.
 
 For example, with 100 fish, `Z = log(2)`, full selectivity, and share 0.4, there
 are 50 expected deaths and a reference target of 20 fish. If access permits only
-five catches, the ledger allocates 45 other deaths and 50 survivors. The shortfall
-does not create a different population trajectory: mortality was fixed upstream.
-Other deaths need not mean natural mortality alone.
+five catches, the shortfall is 15 fish. The ledger allocates 45 other deaths and
+50 survivors. The unused fishing allocation becomes other deaths because total
+mortality was fixed upstream. It does not leave an additional 15 survivors or
+improve next year's generated population. Other deaths can include mortality
+from processes beyond this simulated fishery, not just natural mortality.
+
+The new diagnostics distinguish intended and realized mortality. For this example,
+reference F is \(0.4\log(2)\simeq0.277\); realized-equivalent F is
+\((5/100)\log(2)/(1-0.5)\simeq0.069\). The removal fraction is 0.05.
+These diagnostics are retained at age:
+
+```{r mortality-diagnostics}
+knitr::kable(fished$fishery$reference[sim == 1 & year == 2001,
+  list(fishery, age, N, death_budget, catch_reference, catch_realized,
+       F_reference = round(F_reference, 3), F_realized = round(F_realized, 3))])
+```
+
+`F_realized` inverts Baranov using the original `N` and fixed `Z`; it is a
+catch-equivalent diagnostic, not an estimated operation-time hazard. The catch
+target is a total number, so realized age composition, and therefore F at each
+age, may differ even when that target is met. Integer budget rounding can also
+produce differences in tiny populations. There is no implicit annual average F.
 
 Interleaving specifies operation order, not calendar time. Other deaths are
 allocated after fishing, and subsequent annual populations were generated
@@ -218,7 +274,7 @@ knowledge (`knowledge_sd = 0`), and allocates 5% of location probability uniform
 to exploration. Zero targeting produces uniform accessible locations. Knowledge
 error is persistent within a replicate/year; it is not learning or vessel routing.
 
-We keep the population and competing fishery fixed. A small helper makes the
+We keep the population and the other fishery's allocation fixed. A small helper makes the
 controlled changes visible and avoids repeating the full pipeline. Seeding is
 explicit caller code; package functions do not reseed themselves.
 
@@ -232,49 +288,130 @@ noisy <- run_fleets(modifyList(trawl, list(knowledge_sd = 1)))
 spatial_scenarios <- list(Uniform = uniform, Targeted = fished, Noisy = noisy)
 ```
 
-```{r map-helper, include=FALSE}
-grid <- data.frame(population$grid)
-draw_map <- function(value, title, zlim = range(value), label = "") {
-  surface <- tapply(value, list(grid$x, grid$y), sum)
-  image(sort(unique(grid$x)), sort(unique(grid$y)), surface,
-        col = hcl.colors(32, "YlOrRd", rev = TRUE), zlim = zlim,
-        xlab = "x (km)", ylab = "y (km)", main = title, asp = 1)
-  mtext(label, side = 3, line = 0.1, cex = 0.65)
-  text(grid$x, grid$y, sprintf("%.1f", value), cex = 0.7,
-       col = ifelse(value > mean(zlim), "white", "black"))
+```{r targeting-map}
+plot_fishery(fished, "trawl", which_year = 2003, which_sim = NULL) |>
+  plotly::layout(height = 460) |> vignette_widget()
+```
+
+The map counts every operation, including unsuccessful operations, pooled over
+replicates. The adjoining panels compare true catch composition with unweighted
+biological observations. Replace `fished` with `uniform` or `noisy` to inspect
+the alternative location patterns. Annual quantities can be plotted directly:
+
+```{r fishery-trends}
+plot_fishery_trend(fished, "trawl", metric = "n") |>
+  plotly::layout(height = 320) |> vignette_widget()
+```
+
+### A five-year example: CPUE and true abundance
+
+Preferential fishing means selecting locations according to fish density. It
+differs from preferential monitoring of already completed operations. Here we
+isolate fishing locations, holding gear, effort, and monitoring fixed.
+
+For this controlled example, recruitment declines over five years. A core cell
+retains 20% of the initial population while abundance falls elsewhere. Thus the
+core's density stays constant and the population becomes more concentrated.
+This is a deliberately constructed mechanism, not a fitted distribution model.
+
+```{r cpue-population}
+set.seed(601)
+cpue_population <- sim_abundance(
+  ages = 1:6, years = 2001:2005,
+  R = sim_R(log_mean = log(1e6 * 0.7^(0:4)), log_sd = 0),
+  Z = sim_Z(log_sd = 0)
+)
+total_N <- colSums(cpue_population$N)
+core_share <- 0.2 * total_N[1] / total_N
+cpue_population <- cpue_population |>
+  sim_distribution(
+    grid = population$grid,
+    ays_covar = sim_ays_covar(sd = 0),
+    depth_par = function(data) {
+      core <- core_share[match(data$year, 2001:2005)]
+      log(ifelse(data$cell == 1, core, (1 - core) / 15))
+    }
+  )
+```
+
+Growth, weight, maturity, and starting age structure retain their defaults.
+The spatial closure allocates the remaining abundance equally among the other
+15 cells. Equal selectivity at all ages removes changing age composition as a
+cause of changing catchability.
+
+```{r cpue-fishing}
+run_cpue <- function(targeting) {
+  set.seed(602)
+  sim_fishery(cpue_population,
+    fishery_share = 0.2, catch_model = sim_capture(q = 10),
+    selectivity = function(age) 1, targeting = targeting,
+    max_operations = 30, sampling_coverage = 0, n_sims = 10)
 }
-operation_share <- function(result) {
-  ops <- result$fishery$setdet
-  cells <- ops$cell[ops$fishery == "trawl" & ops$year == 2003]
-  tabulate(match(cells, grid$cell), nbins = nrow(grid)) / length(cells) * 100
+cpue_scenarios <- list(Uniform = run_cpue(0), Targeted = run_cpue(1))
+for (result in cpue_scenarios) {
+  stopifnot(all(result$fishery$annual$n_operations == 30),
+            all(result$fishery$annual$status == "operation_limit"),
+            !any(result$fishery$setdet$quota_limited),
+            !any(result$fishery$setdet$mortality_limited))
 }
 ```
 
-```{r targeting-map, echo=FALSE, fig.height=6.5, fig.cap="Starting vulnerable density and the percentage of trawl operations assigned to each cell in 2003, pooled over 20 conditional replicates. Cell labels give values; darker colours indicate higher values. Operation maps share a colour scale and include unsuccessful operations; the density panel has its own scale."}
-par(mfrow = c(2, 2), mar = c(4, 4, 3, 1), mgp = c(2.3, 0.7, 0))
-vulnerable <- fished$sp_N[fished$sp_N$year == 2003, ]
-vulnerable$density <- vulnerable$N * sim_logistic()(vulnerable$age) / 70^2
-density <- vulnerable[, list(density = sum(density)), by = "cell"]
-draw_map(log1p(density$density[match(grid$cell, density$cell)]),
-         "Starting vulnerable density", label = "log(1 + fish / square km)")
-shares <- lapply(spatial_scenarios, operation_share)
-limits <- c(0, max(unlist(shares)))
-for (label in names(spatial_scenarios)) {
-  draw_map(shares[[label]], label, zlim = limits, label = "Percent of operations")
-}
+Each year has 30 unit-effort operations, ending before the allocation is caught.
+These runs intentionally have shortfalls. The checks rule out quota and mortality
+capping as explanations for the CPUE pattern. Capture `q = 10` and the coarse
+cell area give a low encounter probability; monitoring is disabled in both runs.
+Default knowledge and exploration settings are unchanged.
+
+```{r cpue-summary}
+cpue_summary <- data.table::rbindlist(lapply(names(cpue_scenarios), function(label) {
+  result <- cpue_scenarios[[label]]
+  summary <- result$fishery$annual[, list(cpue = sum(n) / sum(effort)), by = "year"]
+  summary$scenario <- label
+  summary$N <- colSums(result$N)[match(summary$year, result$years)]
+  summary$relative_cpue <- summary$cpue / summary$cpue[1]
+  summary$relative_N <- summary$N / summary$N[1]
+  summary
+}))
+knitr::kable(cpue_summary[year %in% c(2001, 2005),
+  list(scenario, year, N = round(N), CPUE = round(cpue, 1))])
 ```
 
-```{r cpue-comparison, echo=FALSE, fig.height=3.6, fig.cap="Annual trawl CPUE by scenario and year. Boxes summarize 20 fishing replicates conditional on the same population trajectory, not independent stock histories. Values are thousands of fish per nominal gear-time unit."}
-par(mfrow = c(1, 3), mar = c(5, 4, 2, 1))
-for (year in population$years) {
-  values <- lapply(spatial_scenarios, function(result) {
-    annual <- result$fishery$annual
-    annual$cpue[annual$fishery == "trawl" & annual$year == year] / 1000
-  })
-  boxplot(values, main = year, las = 2, col = c("#B8D7E8", "#A4CDA8", "#F0C18A"),
-          ylab = "1000 fish / nominal effort")
+```{r cpue-comparison, echo=FALSE}
+abundance <- cpue_summary[scenario == "Uniform", ]
+trajectory <- plotly::plot_ly(x = abundance$year, y = abundance$relative_N,
+  type = "scatter", mode = "lines+markers", name = "Abundance", legendgroup = "N",
+  line = list(color = "black")) |>
+  plotly::layout(xaxis = list(title = "Year"), yaxis = list(title = "Relative abundance / CPUE"))
+proportionality <- plotly::plot_ly(x = c(0, 1.1), y = c(0, 1.1),
+  type = "scatter", mode = "lines", name = "Proportional", line = list(color = "grey50", dash = "dash")) |>
+  plotly::layout(xaxis = list(title = "Relative abundance"), yaxis = list(title = "Relative CPUE"))
+colours <- c(Uniform = "#0072B2", Targeted = "#D55E00")
+for (label in names(cpue_scenarios)) {
+  keep <- cpue_summary$scenario == label
+  values <- cpue_summary[keep, ]
+  trajectory <- trajectory |> plotly::add_trace(x = values$year, y = values$relative_cpue,
+    type = "scatter", mode = "lines+markers", name = label, legendgroup = label,
+    line = list(color = colours[[label]]), inherit = FALSE)
+  proportionality <- proportionality |> plotly::add_trace(x = values$relative_N, y = values$relative_cpue,
+    text = paste0("Year: ", values$year, "<br>N: ", round(values$N), "<br>CPUE: ", round(values$cpue, 1)),
+    hoverinfo = "text", type = "scatter", mode = "lines+markers", name = label,
+    legendgroup = label, showlegend = FALSE, line = list(color = colours[[label]]), inherit = FALSE)
 }
+plotly::subplot(trajectory, proportionality, titleX = TRUE, titleY = TRUE) |>
+  plotly::layout(height = 360, legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
+
+Values are normalized to each series' first-year mean. CPUE is total true catch
+divided by total effort across ten replicates conditional on this one population.
+Uniform fishing can follow falling abundance, while density-targeted fishing
+continues to find the persistent concentration. This illustrates a mechanism for
+CPUE hyperstability; it does not quantify bias for an actual fishery.
+
+Targeting alone does not necessarily destroy proportionality: with constant
+relative spatial patterns, both strategies can remain proportional to abundance.
+The appendix shows why changing spatial concentration matters. Five years are
+used for illustration, without fitting a CPUE standardization model or treating
+conditional replicate variability as empirical uncertainty.
 
 Interpret these comparisons within the fixed-removals framework. More effort
 does not independently increase the annual catch budget. It can change the
@@ -288,8 +425,7 @@ ratios. Keep zero-catch operations and fishery identifiers, and compare effort
 units carefully: matching placeholder labels do not make different gears'
 effort comparable. Statistical CPUE standardization is left to downstream work.
 
-The figures illustrate mechanisms; they do not establish CPUE hyperstability or
-quantify statistical bias. Sharing a seed makes a scenario reproducible, but
+Sharing a seed makes a scenario reproducible, but
 changed operation sequences do not guarantee paired random innovations.
 
 ## How does monitoring change the available data?
@@ -322,28 +458,38 @@ Positive `sampling_targeting` favors larger reported catches. Its probabilities
 are calibrated to the requested expected coverage. Fisheries retain operation,
 length, and conditional age-sampling probabilities in their biological records.
 
-```{r monitoring-figure, echo=FALSE, fig.height=3.8, fig.cap="Left: reporting error for the trawl, with the identity line. Right: pooled true catch composition and unweighted measured-length compositions under uniform and preferential operation selection, both at 25% expected coverage. These sample compositions are descriptive, not design-weighted catch estimates."}
-par(mfrow = c(1, 2), mar = c(4, 4, 1, 1))
+```{r monitoring-figure, echo=FALSE}
 annual <- under_reporting$fishery$annual[under_reporting$fishery$annual$fishery == "trawl", ]
-lim <- range(c(annual$n, annual$reported_n)) / 1000
-plot(annual$n / 1000, annual$reported_n / 1000, pch = 16, col = "#0072B280",
-     xlim = lim, ylim = lim, xlab = "True catch (1000 fish)", ylab = "Reported catch (1000 fish)")
-abline(0, 1, lty = 2)
+limits <- range(c(annual$n, annual$reported_n)) / 1000
+reporting <- plotly::plot_ly(x = annual$n / 1000, y = annual$reported_n / 1000,
+  type = "scatter", mode = "markers", name = "Reports", showlegend = FALSE) |>
+  plotly::add_lines(x = limits, y = limits, inherit = FALSE, name = "Identity",
+    line = list(color = "grey50", dash = "dash"), showlegend = FALSE) |>
+  plotly::layout(xaxis = list(title = "True catch (1000 fish)"),
+    yaxis = list(title = "Reported catch (1000 fish)"))
 truth <- fished$fishery$catch_at_length
 truth <- truth[truth$fishery == "trawl", list(n = sum(n)), by = "length"]
 truth <- truth[order(truth$length), ]
 measured_frequency <- function(result) {
   sample <- result$fishery$samp
-  table(factor(sample$length[sample$fishery == "trawl"], levels = truth$length))
+  count <- table(factor(sample$length[sample$fishery == "trawl"], levels = truth$length))
+  as.numeric(count / sum(count))
 }
-random <- measured_frequency(random_monitoring)
-preferential <- measured_frequency(preferential_monitoring)
-composition <- cbind(truth$n / sum(truth$n), random / sum(random), preferential / sum(preferential))
-matplot(truth$length, composition, type = "l", lty = c(1, 2, 3), lwd = 2,
-        col = c("black", "#0072B2", "#D55E00"), xlab = "Length group (cm)", ylab = "Proportion")
-legend("topright", c("Catch truth", "Uniform monitoring", "Preferential monitoring"),
-       lty = 1:3, col = c("black", "#0072B2", "#D55E00"), cex = 0.65, bty = "n")
+composition <- plotly::plot_ly(x = truth$length, y = truth$n / sum(truth$n),
+  type = "scatter", mode = "lines", name = "Catch truth", line = list(color = "black")) |>
+  plotly::add_lines(y = measured_frequency(random_monitoring), name = "Uniform monitoring",
+    line = list(color = "#0072B2", dash = "dash")) |>
+  plotly::add_lines(y = measured_frequency(preferential_monitoring), name = "Preferential monitoring",
+    line = list(color = "#D55E00", dash = "dot")) |>
+  plotly::layout(xaxis = list(title = "Length group (cm)"), yaxis = list(title = "Proportion"))
+plotly::subplot(reporting, composition, titleX = TRUE, titleY = TRUE) |>
+  plotly::layout(height = 360, legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
+
+Left: reporting errors and the identity line. Right: pooled catch truth and
+unweighted length compositions from uniformly or preferentially monitored
+operations, both at 25% expected coverage. These sample proportions are descriptive,
+not design-weighted catch estimates.
 
 Even uniformly selected operations with fixed fish-sampling caps do not produce
 an automatically representative unweighted sample of all caught fish. Operations
@@ -414,19 +560,41 @@ availability, sets, samples, summaries, and configurations live in
 and spatial availability and clears incompatible cached analyses. The `surveys`
 table used by `test_surveys()` remains a separate table of scenario designs.
 
-```{r survey-comparison, echo=FALSE, fig.height=3.5, fig.cap="Each program's survey estimates compared with its own available population I. Dots are conditional replicate estimates; the line is availability truth. Axes show millions of available fish. Twenty replicates and two sets per stratum illustrate variability rather than establish precision."}
-par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
-for (label in names(programs$survey_programs)) {
+```{r survey-comparison, echo=FALSE}
+survey_figures <- lapply(names(programs$survey_programs), function(label) {
   view <- programs |> select_survey(label) |> run_strat() |> strat_error()
   estimate <- view$total_strat_error
-  truth <- colSums(view$I) / 1e6
-  limits <- range(c(estimate$I_hat / 1e6, truth))
-  plot(estimate$year, estimate$I_hat / 1e6, pch = 16, col = "#0072B260",
-       ylim = limits, xaxt = "n", xlab = "Year", ylab = "Available fish (millions)", main = label)
-  axis(1, at = view$years)
-  lines(view$years, truth, lwd = 2)
-}
+  plotly::plot_ly(x = estimate$year, y = estimate$I_hat / 1e6,
+    type = "scatter", mode = "markers", name = paste(label, "estimates")) |>
+    plotly::add_lines(x = view$years, y = colSums(view$I) / 1e6, inherit = FALSE,
+      name = paste(label, "availability"), line = list(color = "black")) |>
+    plotly::layout(xaxis = list(title = "Year"), yaxis = list(title = "Available fish (millions)"))
+})
+plotly::subplot(survey_figures, titleX = TRUE, titleY = TRUE) |>
+  plotly::layout(height = 350, legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
+
+Each program's estimates are compared with its own availability truth. The twenty
+conditional replicates and two sets per stratum illustrate variability rather
+than establish precision. Existing survey graphics also work on extracted views:
+
+```{r survey-view}
+plot_survey(selected, which_year = 2003, which_sim = 1) |>
+  plotly::layout(height = 460) |> vignette_widget()
+```
+
+Survey counts now have corresponding catch weights:
+
+```{r survey-catch-weights}
+knitr::kable(head(selected$setdet[, list(sim, year, set, n, kg = round(kg, 3))]))
+stopifnot(isTRUE(all.equal(sum(selected$setdet$kg), sum(selected$samp$weight))),
+          isTRUE(all.equal(sum(selected$samp_totals$kg_caught), sum(selected$samp$weight))))
+```
+
+`samp$weight` is deterministic kilograms for every simulated caught fish, and
+`full_setdet$kg` retains set/age totals when `light = FALSE`. Catch totals use all
+fish, not the length subsample. Individual weights for unmeasured fish are latent
+truth, not additional weight measurements. No weight measurement error is imposed.
 
 The target of these existing analyses is **availability `I`, not total abundance
 `N`**. Programs with different catchabilities need not have matching indices.
@@ -463,6 +631,8 @@ bounded by available counts, with zero proposals at zero selectivity. This
 extension point permits alternative encounter/capacity responses without a
 mechanistic implementation of every fishing gear.
 
+## Backwards compatibility
+
 For an older distributed simulation, attach the new relationships explicitly:
 
 ```{r migration, eval=FALSE}
@@ -479,6 +649,15 @@ For number-only surveys of an older object, `maturity_sampling = "none"` permits
 sampling without inventing missing biological models. The former fishery-level
 `weight` arguments have been removed. Prefer `x50` to the deprecated `x0` name;
 positional logistic calls and the default curve are preserved.
+
+For number-only legacy objects, individual weights and positive-catch kilograms
+are missing; empty catches have zero kilograms.
+
+Multi-year fishery results created before the annual-stock selection correction
+pooled population rows across years. Rerun those fisheries from their saved
+populations, with the intended seeds and configurations; do not patch the old
+ledger or regenerate the population trajectory. Calling `sim_fisheries()` again
+replaces its fishery results from the original annual snapshots.
 
 ## Appendix A: mathematics of the extensions
 
@@ -547,15 +726,15 @@ Mean selectivity at age and reference fishing mortality are
 
 \[
 \bar s_{f,a}=\sum_lP_{l,a}s_{f,a,l},\qquad
-F^{\rm ref}_{f,a,y}=p_{f,y}Z_{a,y}\bar s_{f,a}.
+F^{\mathrm{ref}}_{f,a,y}=p_{f,y}Z_{a,y}\bar s_{f,a}.
 \]
 
 For constant annual mortality, the
 [Baranov reference catch](https://www.fao.org/4/X9026E/x9026e06.htm) becomes
 
 \[
-C^{\rm ref}_{f,a,y}
-=N_{a,y}\frac{F^{\rm ref}_{f,a,y}}{Z_{a,y}}(1-e^{-Z_{a,y}})
+C^{\mathrm{ref}}_{f,a,y}
+=N_{a,y}\frac{F^{\mathrm{ref}}_{f,a,y}}{Z_{a,y}}(1-e^{-Z_{a,y}})
 =N_{a,y}p_{f,y}\bar s_{f,a}(1-e^{-Z_{a,y}}).
 \]
 
@@ -576,13 +755,28 @@ age order or canonical fishery-name order. Then
 
 \[
 \mathbf D_y=\mathcal R\{N_{a,y}(1-e^{-Z_{a,y}})\}_a,\qquad
-\mathbf Q_y=\mathcal R\{\sum_a C^{\rm ref}_{f,a,y}\}_f.
+\mathbf Q_y=\mathcal R\{\sum_a C^{\mathrm{ref}}_{f,a,y}\}_f.
 \]
 
 \(D_{a,y}\) is the shared age death budget and \(Q_{f,y}\) the total-number
 target. Target rounding is joint across fisheries, not independent rounding
 of each age/fishery catch. The valid combined target cannot exceed the overall
 death budget; realized catches must additionally fit age-specific budgets.
+
+After fishing, retain true catches and their mortality equivalents at age:
+
+\[
+U^{\mathrm{realized}}_{f,a,y}=\frac{C^{\mathrm{realized}}_{f,a,y}}{N_{a,y}},\qquad
+F^{\mathrm{realized}}_{f,a,y}=U^{\mathrm{realized}}_{f,a,y}
+\frac{Z_{a,y}}{1-e^{-Z_{a,y}}}.
+\]
+
+For positive N and zero Z, realized catches and F are zero. At zero N, both
+realized rates are missing. The factor uses `-expm1(-Z)` for numerical stability.
+No operation-time hazard is fitted and no future abundance is changed. Integer
+rounding can give a death budget above the continuous expectation, so combined
+equivalent F may exceed Z in tiny populations; values are retained without clipping.
+The stored N, Z, and integer budget allow the discrepancy to be inspected.
 
 ### A3. Location probabilities and knowledge errors
 
@@ -599,7 +793,7 @@ accessible cells. Current density excludes ages with exhausted death budgets:
 
 \[
 d^{(j)}_{f,c}=A_c^{-1}\sum_{a,l}n^{(j)}_{c,a,l}s_{f,a,l}
-\mathbf1(D^{\rm remaining}_a>0),\qquad
+\mathbf1(D^{\mathrm{remaining}}_a>0),\qquad
 u^{(j)}_{f,c}=\max(0,d^{(j)}_{f,c}+e_{f,c})^{\beta_f}.
 \]
 
@@ -626,7 +820,7 @@ X_{a,l,j}\sim\operatorname{Binomial}(n^{(j)}_{c,a,l},v_{a,l,j}).
 \]
 
 The engine thins proposals without replacement, first for capacity
-\(\lfloor\texttt{capacity_per_gear}\,G_j\rfloor\), then within each age for
+\(\lfloor\texttt{capacity\_per\_gear}\,G_j\rfloor\), then within each age for
 remaining mortality, and finally across accepted proposals for the remaining
 fishery target. With category counts \(\mathbf x\), thinning to \(h\) fish uses
 the multivariate hypergeometric distribution; counts are not expanded into fish.
@@ -686,7 +880,7 @@ Within each fishery/replicate/year, operation weights use reported catch \(r_j\)
 \[
 w_j=(1+r_j/\overline r)^\gamma,\qquad
 \pi_j=\min(1,\lambda w_j),\qquad
-\sum_j\pi_j=\texttt{sampling_coverage}\times J.
+\sum_j\pi_j=\texttt{sampling\_coverage}\times J.
 \]
 
 \(\gamma\) is `sampling_targeting`. Zero targeting or all-zero reported catches
@@ -696,7 +890,7 @@ for numerical stability and retains a positive numerical floor under extreme
 preferences. Coverage zero and one are handled directly.
 
 For a selected operation with catch \(C_j\), measure
-\(n_{L,j}=\min(C_j,\texttt{lengths_cap})\) fish without replacement. The
+\(n_{L,j}=\min(C_j,\texttt{lengths\_cap})\) fish without replacement. The
 conditional length-selection probability is \(n_{L,j}/C_j\). Random age sampling
 selects up to `ages_cap` from these fish. Stratified sampling selects up to that
 cap within each measured length group, per operation. The conditional probability
@@ -746,12 +940,19 @@ original growth sampler. New length-based draws use the growth key's labels.
 
 Survey catches at age use binomial trials with rounded cell abundance divided
 by the number of sets in that cell, and probability
-\((A_{\rm tow}/A_c)\overline q_{s,a}\). Repeated-cell handling retains that
+\((A_{\mathrm{tow}}/A_c)\overline q_{s,a}\). Repeated-cell handling retains that
 historical splitting convention; it is not fishery-style sequential depletion.
 `binom_error = FALSE` rounds the corresponding expectation. Swept-area and
 catchability settings must define valid probabilities. Length caps apply per
 set; stratified survey age caps use `age_space_group` per replicate/year/length
 group, while random caps apply per set.
+
+For every realized caught fish i, deterministic weight is \(w(l_i)\). Catch mass
+for set j is \(K_j=\sum_{i\in j}w(l_i)\), including unmeasured fish; set/age and
+replicate/year totals sum the same realized weights. These are not population
+biomass expectations or estimates scaled from the measured subsample. Legacy
+objects without a weight model retain missing individual weights and nonempty
+catch masses, with mass zero for an empty catch.
 
 ### A9. Biomass catches, CPUE, and random sequencing
 
@@ -761,7 +962,7 @@ For a fishery/replicate/year,
 
 \[
 \operatorname{CPUE}=\frac{\sum_j C_j}{\sum_j E_j},\qquad
-\operatorname{CPUE}_{\rm biomass}=\frac{\sum_j K_j}{\sum_j E_j}.
+\operatorname{CPUE}_{\mathrm{biomass}}=\frac{\sum_j K_j}{\sum_j E_j}.
 \]
 
 Reported versions use reported totals. Zero total effort gives missing CPUE;
@@ -774,3 +975,32 @@ biological subsampling. Maturity follows every existing sample in its batch.
 Names are processed canonically, and all draws use the caller's RNG state.
 Changing earlier pipeline stages can still change later stages' RNG state;
 repeat a stage from an explicit seed when constructing controlled comparisons.
+
+
+### A10. Spatial preferences and CPUE proportionality
+
+Consider the five-year example's equal-area cells, full selectivity, constant
+effort E, and inactive capacity/quota/mortality constraints. Before depletion,
+let \(n_c\) be abundance in cell c and \(N=\sum_c n_c\). With constant encounter
+probability \(v=1-\exp(-q_fE/A_c)\), expected first-operation CPUE is
+
+\[
+E(C/E)=\frac{v}{E}\sum_c\pi_c n_c.
+\]
+
+Uniform fishing in K accessible cells gives \(vN/(EK)\). Default accurate
+density targeting with exploration \(\epsilon\) gives
+
+\[
+E(C/E)=\frac{v}{E}\left\{(1-\epsilon)\frac{\sum_c n_c^2}{N}
++\epsilon\frac{N}{K}\right\}.
+\]
+
+If \(n_c=Nr_c\) with constant relative spatial proportions \(r_c\), both
+expressions are proportional to N. Changing spatial concentration changes the
+targeted density factor. In the demonstration the core abundance stays fixed
+while background abundance declines, allowing targeted catch rates to persist.
+Annual simulated CPUE also reflects repeated operations and within-year depletion;
+the first-operation equation explains the mechanism, not an exact annual fit.
+The example checks that quota and mortality capping are inactive and uses the
+same annual effort for both strategies.
