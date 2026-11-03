@@ -1,5 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Use one controlled five-year population throughout the fisheries vignette,
+  increase survey coverage to eight sets, match CPUE markers to their lines,
+  and size widgets without deprecated Plotly layout arguments.
 * Increase spacing in fishery and survey map/composition graphics and keep
   zero-catch survey locations visible, including when marker counts are constant.
 * Prefer `total_deaths` in fishery reference diagnostics, clarifying that it is

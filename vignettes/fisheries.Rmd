@@ -12,11 +12,16 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
-                     fig.height = 4, dpi = 110)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9.5,
+                     fig.height = 5, dpi = 110)
 library(SimSurvey)
 vignette_widget <- function(p) {
   p <- plotly::partial_bundle(p, type = "cartesian", local = FALSE)
+  axes <- grep("^[xy]axis[0-9]*$", names(p$x$layout), value = TRUE)
+  for (axis in axes) p$x$layout[[axis]]$automargin <- TRUE
+  margins <- list(l = 80, r = 45, t = 50, b = 85)
+  if (!is.null(p$x$layout$legend$y) && p$x$layout$legend$y < 0) margins$b <- 140
+  p$x$layout$margin <- margins
   index <- which(vapply(p$dependencies,
     function(dependency) dependency$name == "plotly-cartesian", logical(1)))
   # Keep only the large Plotly bundle external; embed local support resources.
@@ -74,17 +79,38 @@ arrows(c(0.31, 0.66, 0.17, 0.31, 0.66), c(0.74, 0.74, 0.60, 0.64, 0.24),
 
 ## Shared biological truth
 
-Here is a small synthetic groundfish population. The fewer ages and years,
-coarser grid, and single broad stratum keep the example quick. Recruitment,
-mortality, growth, spatial processes, weight, and maturity otherwise use their
-package defaults. The example is illustrative, not a reconstruction of 3Ps cod.
+All examples use this one synthetic groundfish population over **2001--2005**.
+Six ages, a 16-cell coarse grid, and one broad stratum keep the workflow quick.
+Growth, weight, maturity, and starting age structure use package defaults.
+Recruitment declines by 30% each year; mortality remains at the default 0.5.
+We disable recruitment, mortality, and spatial random variation to make the
+comparisons easier to interpret. This is illustrative, not a reconstruction of
+3Ps cod.
+
+A core cell retains 20% of the first year's abundance throughout; the remaining
+fish are distributed equally among the other 15 cells. Thus abundance falls
+while the population becomes more concentrated. This deliberately controlled
+spatial pattern will help explain the later CPUE comparison. The recruitment
+scale also provides useful survey catches with default tow dimensions.
 
 ```{r population}
-set.seed(501)
-population <- sim_abundance(ages = 1:6, years = 2001:2003) |>
+set.seed(601)
+population <- sim_abundance(
+  ages = 1:6, years = 2001:2005,
+  R = sim_R(log_mean = log(1e7 * 0.7^(0:4)), log_sd = 0),
+  Z = sim_Z(log_sd = 0)
+)
+total_N <- colSums(population$N)
+core_share <- 0.2 * total_N[1] / total_N
+population <- population |>
   sim_distribution(
     grid = make_grid(res = c(70, 70),
-                     strat_breaks = c(0, 1000), strat_splits = 1)
+                     strat_breaks = c(0, 1000), strat_splits = 1),
+    ays_covar = sim_ays_covar(sd = 0),
+    depth_par = function(data) {
+      core <- core_share[match(data$year, 2001:2005)]
+      log(ifelse(data$cell == 1, core, (1 - core) / 15))
+    }
   )
 ```
 
@@ -103,7 +129,7 @@ Maturity defaults approximate the historical female relationship for 1996 in
 These defaults are convenient starting points, not contemporary stock-specific
 calibrations. One maturity curve applies to all simulated fish.
 
-```{r biology-curves, echo=FALSE}
+```{r biology-curves, echo=FALSE, fig.height=4.5}
 length_cm <- 0:100
 weight_curve <- plotly::plot_ly(x = length_cm, y = sim_weight()(length_cm),
   type = "scatter", mode = "lines", name = "Weight") |>
@@ -111,8 +137,8 @@ weight_curve <- plotly::plot_ly(x = length_cm, y = sim_weight()(length_cm),
 maturity_curve <- plotly::plot_ly(x = length_cm, y = sim_maturity()(length_cm),
   type = "scatter", mode = "lines", name = "Maturity probability") |>
   plotly::layout(xaxis = list(title = "Length (cm)"), yaxis = list(title = "Maturity probability"))
-plotly::subplot(weight_curve, maturity_curve, titleX = TRUE, titleY = TRUE) |>
-  plotly::layout(height = 320, showlegend = FALSE) |> vignette_widget()
+plotly::subplot(weight_curve, maturity_curve, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
+  plotly::layout(showlegend = FALSE) |> vignette_widget()
 ```
 
 The maturity midpoint gives probability 0.5, rather than a minimum size at which
@@ -135,10 +161,10 @@ knitr::kable(data.frame(
 
 The existing trend helper now accepts biological mass matrices:
 
-```{r biomass-trends}
+```{r biomass-trends, fig.height=4.5}
 plotly::subplot(plot_trend(population, mat = "B"), plot_trend(population, mat = "S"),
-                titleX = TRUE, titleY = TRUE) |>
-  plotly::layout(height = 320, showlegend = FALSE) |> vignette_widget()
+                titleX = TRUE, titleY = TRUE, margin = 0.09) |>
+  plotly::layout(showlegend = FALSE) |> vignette_widget()
 ```
 
 Here `S` is mature biomass of **all fish** under the supplied curve, without a
@@ -219,7 +245,7 @@ The most useful new outputs are:
 | `catch_at_age`, `catch_at_length` | Aggregate true catch composition |
 | `sp_removals` | Fishery-specific spatial removals |
 | `mortality_ledger` | One shared count balance, not a separate population per fishery |
-| `reference` | Reference and realized catches and F at age, original N/Z, and shared death budgets |
+| `reference` | Reference and realized catches and F at age, original N/Z, and shared `total_deaths` |
 | `samp` | Biological observations and sampling-stage probabilities |
 
 All fisheries inherit `population$sim_weight`, so catch kilograms and biomass
@@ -258,9 +284,18 @@ These diagnostics are retained at age:
 
 ```{r mortality-diagnostics}
 knitr::kable(fished$fishery$reference[sim == 1 & year == 2001,
-  list(fishery, age, N, death_budget, catch_reference, catch_realized,
+  list(fishery, age, N, total_deaths, catch_reference, catch_realized,
        F_reference = round(F_reference, 3), F_realized = round(F_realized, 3))])
 ```
+
+`total_deaths` is the **whole-fish count assigned to all mortality** for that
+age/year, derived from \(N(1-e^{-Z})\) with balanced rounding across ages.
+It includes deaths attributed to all simulated fisheries **plus other deaths**.
+It is not one fishery's allocation or its remaining catch allowance. The same
+shared value appears on each fishery's reference row; do not sum it across
+fisheries. At the end, it equals `fishery_deaths + other_deaths` summed over
+cells for that age/year in the mortality ledger. In the 100-fish example it is
+50, regardless of whether that fishery catches five or twenty fish.
 
 `F_realized` inverts Baranov using the original `N` and fixed `Z`; it is a
 catch-equivalent diagnostic, not an estimated operation-time hazard. The catch
@@ -294,9 +329,8 @@ noisy <- run_fleets(modifyList(trawl, list(knowledge_sd = 1)))
 spatial_scenarios <- list(Uniform = uniform, Targeted = fished, Noisy = noisy)
 ```
 
-```{r targeting-map}
-plot_fishery(fished, "trawl", which_year = 2003, which_sim = NULL) |>
-  plotly::layout(height = 460) |> vignette_widget()
+```{r targeting-map, fig.height=6.5}
+plot_fishery(fished, "trawl", which_year = 2005, which_sim = NULL) |> vignette_widget()
 ```
 
 The map counts every operation, including unsuccessful operations, pooled over
@@ -304,9 +338,8 @@ replicates. The adjoining panels compare true catch composition with unweighted
 biological observations. Replace `fished` with `uniform` or `noisy` to inspect
 the alternative location patterns. Annual quantities can be plotted directly:
 
-```{r fishery-trends}
-plot_fishery_trend(fished, "trawl", metric = "n") |>
-  plotly::layout(height = 320) |> vignette_widget()
+```{r fishery-trends, fig.height=4.5}
+plot_fishery_trend(fished, "trawl", metric = "n") |> vignette_widget()
 ```
 
 ### A five-year example: CPUE and true abundance
@@ -315,40 +348,15 @@ Preferential fishing means selecting locations according to fish density. It
 differs from preferential monitoring of already completed operations. Here we
 isolate fishing locations, holding gear, effort, and monitoring fixed.
 
-For this controlled example, recruitment declines over five years. A core cell
-retains 20% of the initial population while abundance falls elsewhere. Thus the
-core's density stays constant and the population becomes more concentrated.
-This is a deliberately constructed mechanism, not a fitted distribution model.
-
-```{r cpue-population}
-set.seed(601)
-cpue_population <- sim_abundance(
-  ages = 1:6, years = 2001:2005,
-  R = sim_R(log_mean = log(1e6 * 0.7^(0:4)), log_sd = 0),
-  Z = sim_Z(log_sd = 0)
-)
-total_N <- colSums(cpue_population$N)
-core_share <- 0.2 * total_N[1] / total_N
-cpue_population <- cpue_population |>
-  sim_distribution(
-    grid = population$grid,
-    ays_covar = sim_ays_covar(sd = 0),
-    depth_par = function(data) {
-      core <- core_share[match(data$year, 2001:2005)]
-      log(ifelse(data$cell == 1, core, (1 - core) / 15))
-    }
-  )
-```
-
-Growth, weight, maturity, and starting age structure retain their defaults.
-The spatial closure allocates the remaining abundance equally among the other
-15 cells. Equal selectivity at all ages removes changing age composition as a
-cause of changing catchability.
+We reuse the five-year `population` above: its core cell holds a constant number
+of fish as abundance declines elsewhere. Only the fishing configuration changes.
+Equal selectivity at all ages removes changing age composition as a cause of
+changing catchability.
 
 ```{r cpue-fishing}
 run_cpue <- function(targeting) {
   set.seed(602)
-  sim_fishery(cpue_population,
+  sim_fishery(population,
     fishery_share = 0.2, catch_model = sim_capture(q = 10),
     selectivity = function(age) 1, targeting = targeting,
     max_operations = 30, sampling_coverage = 0, n_sims = 10)
@@ -382,11 +390,11 @@ knitr::kable(cpue_summary[year %in% c(2001, 2005),
   list(scenario, year, N = round(N), CPUE = round(cpue, 1))])
 ```
 
-```{r cpue-comparison, echo=FALSE}
+```{r cpue-comparison, echo=FALSE, fig.height=5.5}
 abundance <- cpue_summary[scenario == "Uniform", ]
 trajectory <- plotly::plot_ly(x = abundance$year, y = abundance$relative_N,
   type = "scatter", mode = "lines+markers", name = "Abundance", legendgroup = "N",
-  line = list(color = "black")) |>
+  line = list(color = "black"), marker = list(color = "black", size = 6)) |>
   plotly::layout(xaxis = list(title = "Year"), yaxis = list(title = "Relative abundance / CPUE"))
 proportionality <- plotly::plot_ly(x = c(0, 1.1), y = c(0, 1.1),
   type = "scatter", mode = "lines", name = "Proportional", line = list(color = "grey50", dash = "dash")) |>
@@ -397,14 +405,16 @@ for (label in names(cpue_scenarios)) {
   values <- cpue_summary[keep, ]
   trajectory <- trajectory |> plotly::add_trace(x = values$year, y = values$relative_cpue,
     type = "scatter", mode = "lines+markers", name = label, legendgroup = label,
-    line = list(color = colours[[label]]), inherit = FALSE)
+    line = list(color = colours[[label]]), marker = list(color = colours[[label]], size = 6),
+    inherit = FALSE)
   proportionality <- proportionality |> plotly::add_trace(x = values$relative_N, y = values$relative_cpue,
     text = paste0("Year: ", values$year, "<br>N: ", round(values$N), "<br>CPUE: ", round(values$cpue, 1)),
     hoverinfo = "text", type = "scatter", mode = "lines+markers", name = label,
-    legendgroup = label, showlegend = FALSE, line = list(color = colours[[label]]), inherit = FALSE)
+    legendgroup = label, showlegend = FALSE, line = list(color = colours[[label]]),
+    marker = list(color = colours[[label]], size = 6), inherit = FALSE)
 }
-plotly::subplot(trajectory, proportionality, titleX = TRUE, titleY = TRUE) |>
-  plotly::layout(height = 360, legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
+plotly::subplot(trajectory, proportionality, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
+  plotly::layout(legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
 
 Values are normalized to each series' first-year mean. CPUE is total true catch
@@ -464,7 +474,7 @@ Positive `sampling_targeting` favors larger reported catches. Its probabilities
 are calibrated to the requested expected coverage. Fisheries retain operation,
 length, and conditional age-sampling probabilities in their biological records.
 
-```{r monitoring-figure, echo=FALSE}
+```{r monitoring-figure, echo=FALSE, fig.height=5.5}
 annual <- under_reporting$fishery$annual[under_reporting$fishery$annual$fishery == "trawl", ]
 limits <- range(c(annual$n, annual$reported_n)) / 1000
 reporting <- plotly::plot_ly(x = annual$n / 1000, y = annual$reported_n / 1000,
@@ -488,8 +498,8 @@ composition <- plotly::plot_ly(x = truth$length, y = truth$n / sum(truth$n),
   plotly::add_lines(y = measured_frequency(preferential_monitoring), name = "Preferential monitoring",
     line = list(color = "#D55E00", dash = "dot")) |>
   plotly::layout(xaxis = list(title = "Length group (cm)"), yaxis = list(title = "Proportion"))
-plotly::subplot(reporting, composition, titleX = TRUE, titleY = TRUE) |>
-  plotly::layout(height = 360, legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
+plotly::subplot(reporting, composition, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
+  plotly::layout(legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
 
 Left: reporting errors and the identity line. Right: pooled catch truth and
@@ -540,16 +550,19 @@ the configured `age_space_group`, per replicate/year and length group.
 
 ## Independent survey programs
 
-Configure surveys without `sim`, then execute them together. With this coarse
-16-cell grid, `set_den = 0` invokes the default minimum of two sets per stratum;
-the default area-based allocation would exceed the number of cells. Other
-survey settings remain at defaults unless needed to illustrate length catchability.
+Configure surveys without `sim`, then execute them together on the same
+five-year population. With this coarse 16-cell grid, `set_den = 1 / 10000`
+allocates **eight sets per year and replicate** in the single stratum, each in
+a different cell. This makes the sampled spatial coverage easier to see; the
+default area-based allocation would exceed the number of cells. Other survey
+settings remain at defaults unless needed to illustrate length catchability.
 
 ```{r surveys}
+set.seed(503)
 programs <- fished |>
   sim_surveys(
-    survey_A = sim_survey(set_den = 0),
-    survey_B = sim_survey(q = sim_logistic(x50 = 40), q_by = "length", set_den = 0)
+    survey_A = sim_survey(set_den = 1 / 10000),
+    survey_B = sim_survey(q = sim_logistic(x50 = 40), q_by = "length", set_den = 1 / 10000)
   )
 selected <- programs |> select_survey("survey_B") |> run_strat() |> strat_error()
 head(selected$total_strat_error)
@@ -566,7 +579,7 @@ availability, sets, samples, summaries, and configurations live in
 and spatial availability and clears incompatible cached analyses. The `surveys`
 table used by `test_surveys()` remains a separate table of scenario designs.
 
-```{r survey-comparison, echo=FALSE}
+```{r survey-comparison, echo=FALSE, fig.height=5.5}
 survey_figures <- lapply(names(programs$survey_programs), function(label) {
   view <- programs |> select_survey(label) |> run_strat() |> strat_error()
   estimate <- view$total_strat_error
@@ -576,17 +589,16 @@ survey_figures <- lapply(names(programs$survey_programs), function(label) {
       name = paste(label, "availability"), line = list(color = "black")) |>
     plotly::layout(xaxis = list(title = "Year"), yaxis = list(title = "Available fish (millions)"))
 })
-plotly::subplot(survey_figures, titleX = TRUE, titleY = TRUE) |>
-  plotly::layout(height = 350, legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
+plotly::subplot(survey_figures, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
+  plotly::layout(legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
 
 Each program's estimates are compared with its own availability truth. The twenty
-conditional replicates and two sets per stratum illustrate variability rather
+conditional replicates and eight sets per stratum illustrate variability rather
 than establish precision. Existing survey graphics also work on extracted views:
 
-```{r survey-view}
-plot_survey(selected, which_year = 2003, which_sim = 1) |>
-  plotly::layout(height = 460) |> vignette_widget()
+```{r survey-view, fig.height=6.5}
+plot_survey(selected, which_year = 2005, which_sim = 1) |> vignette_widget()
 ```
 
 Survey counts now have corresponding catch weights:
@@ -617,8 +629,9 @@ combining survey tables: set identifiers are program-scoped.
 The inherited `replicates` here are 20 fishing/observation replicates conditional
 on one population trajectory. Matching identifiers do not identify the same
 individual fish or shared length-stock draws across surveys and fisheries.
-For independent biological histories, regenerate abundance and distribution in
-an outer simulation loop. Record seeds, settings, and package versions for
+For independent biological histories, restore the desired recruitment,
+mortality, and spatial process variation and regenerate abundance and distribution
+in an outer simulation loop. Record seeds, settings, and package versions for
 reproducibility. Canonical name ordering makes registration order irrelevant;
 adding or renaming programs can still change random draws.
 
@@ -658,6 +671,11 @@ positional logistic calls and the default curve are preserved.
 
 For number-only legacy objects, individual weights and positive-catch kilograms
 are missing; empty catches have zero kilograms.
+
+The fishery reference column `total_deaths` replaces the less explicit name
+`death_budget`. Both names currently contain identical values for compatibility.
+These are shared all-cause age/year deaths, repeated on each fishery's row,
+rather than separate fishery allocations.
 
 Multi-year fishery results created before the annual-stock selection correction
 pooled population rows across years. Rerun those fisheries from their saved
@@ -764,8 +782,9 @@ age order or canonical fishery-name order. Then
 \mathbf Q_y=\mathcal R\{\sum_a C^{\mathrm{ref}}_{f,a,y}\}_f.
 \]
 
-\(D_{a,y}\) is the shared age death budget and \(Q_{f,y}\) the total-number
-target. Target rounding is joint across fisheries, not independent rounding
+\(D_{a,y}\), stored as `total_deaths`, is the shared whole-fish count of all
+deaths at age, including fishing and other deaths. \(Q_{f,y}\) is one fishery's
+total-number target. Target rounding is joint across fisheries, not independent rounding
 of each age/fishery catch. The valid combined target cannot exceed the overall
 death budget; realized catches must additionally fit age-specific budgets.
 
