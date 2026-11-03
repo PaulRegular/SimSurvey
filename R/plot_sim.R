@@ -212,7 +212,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
                 showlegend = FALSE,
                 marker = list(size = ~.scale_between(n, 2, 600),
                               sizemode = "area", sizemin = 5)) |>
-    add_sf(data = sf_strat, color = I(NA), stroke = I("black"),
+    add_sf(data = sf_strat, type = "scatter", color = I(NA), stroke = I("black"),
            hoverinfo = "none", span = I(1), showlegend = FALSE, alpha = 0.1) |>
     layout(xaxis = xax, yaxis = yax,
            margin = list(t = 0, r = 0, l = 0, b = 0, pad = 0))

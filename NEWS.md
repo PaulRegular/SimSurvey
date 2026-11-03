@@ -1,5 +1,7 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Specify the survey-map polygon trace type explicitly, removing Plotly's
+  inferred-scatter message without suppressing messages from plotting.
 * Base the new-workflow vignette on the documented five-age, 20-km survey example,
   with default biology, abundance, spatial processes, and survey allocation.
 * Replace the vignette's fixed-core CPUE example with default shifting spatial

@@ -7,7 +7,7 @@ test_that("survey maps retain all set locations, including zero catches", {
                     trawl_dim = c(1, 5))
   survey <- sim_survey(population, custom_sets = sets, q = function(age) 1,
                         lengths_cap = 10, ages_cap = 1)
-  plot <- plotly::plotly_build(plot_survey(survey, which_year = 2001))
+  expect_no_message(plot <- plotly::plotly_build(plot_survey(survey, which_year = 2001)))
   markers <- Filter(function(trace) identical(trace$name, "n") &&
                       identical(trace$mode, "markers"), plot$x$data)[[1]]
   expect_length(markers$x, 8)
