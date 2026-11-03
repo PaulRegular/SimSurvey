@@ -161,6 +161,8 @@ plot_distribution <- function(sim, ages = sim$ages, years = sim$years,
 
 ## little helper for scaling the bubbles (using plotly's scale results in a warning)
 .scale_between <- function(x, new_min = 0, new_max = 1) {
+  if (!length(x)) return(numeric())
+  if (max(x) == min(x)) return(rep(new_min, length(x)))
   (x - min(x)) / (max(x) - min(x)) * (new_max - new_min) + new_min
 }
 
@@ -209,7 +211,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
                 color = ~n, name = "n",
                 showlegend = FALSE,
                 marker = list(size = ~.scale_between(n, 2, 600),
-                              sizemode = "area")) |>
+                              sizemode = "area", sizemin = 5)) |>
     add_sf(data = sf_strat, color = I(NA), stroke = I("black"),
            hoverinfo = "none", span = I(1), showlegend = FALSE, alpha = 0.1) |>
     layout(xaxis = xax, yaxis = yax,
@@ -248,11 +250,12 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 
   subplot(sp_p,
           subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
-                  margin = 0.1),
-          nrows = 1, margin = c(0, 0.2, 0, 0), widths = c(0.75, 0.25),
+                  margin = 0.14),
+          nrows = 1, margin = 0.12, widths = c(0.6, 0.4),
           titleX = TRUE, titleY = TRUE) |>
-    colorbar(x = 0.52, y = 1) |>
-    layout(legend = list(x = 1, y = 0.95))
+    colorbar(x = 0.53, y = 0.9, len = 0.75, thickness = 12) |>
+    layout(margin = list(l = 70, r = 45, t = 55, b = 130),
+           legend = list(orientation = "h", x = 0, y = -0.22, yanchor = "top"))
 
 }
 

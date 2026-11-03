@@ -1,5 +1,7 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Increase spacing in fishery and survey map/composition graphics and keep
+  zero-catch survey locations visible, including when marker counts are constant.
 * Prefer `total_deaths` in fishery reference diagnostics, clarifying that it is
   the shared age/year whole-fish total across fishing and other mortality.
   Retain `death_budget` as an identical compatibility alias.

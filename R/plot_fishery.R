@@ -76,7 +76,7 @@ plot_fishery <- function(sim, fishery, which_year = sim$years[1],
   map <- plotly::plot_ly(x = sort(unique(cells$x)), y = sort(unique(cells$y)),
                          z = unname(z), text = unname(hover), type = "heatmap", hoverinfo = "text",
                          colors = viridis::viridis(32), zmin = 0, zmax = max(1, value),
-                         colorbar = list(title = units, x = 0.57, len = 0.8), showscale = TRUE) |>
+                         colorbar = list(title = units, x = 0.53, len = 0.75, thickness = 12), showscale = TRUE) |>
     plotly::layout(xaxis = list(title = "x (km)"), yaxis = list(title = "y (km)", scaleanchor = "x"))
   catch_length <- sim$fishery$catch_at_length
   keep <- catch_length$operation %in% operations$operation
@@ -91,11 +91,12 @@ plot_fishery <- function(sim, fishery, which_year = sim$years[1],
   aged_rows <- which(sample$aged)
   ages <- .plot_fishery_composition(catch_age, sample[aged_rows, ], "age", sim$ages, FALSE)
   plotly::subplot(map, plotly::subplot(lengths, ages, nrows = 2, titleX = TRUE, titleY = TRUE,
-                                      margin = 0.12), widths = c(0.65, 0.35),
-                    titleX = TRUE, titleY = TRUE, margin = 0.1) |>
+                                      margin = 0.14), widths = c(0.6, 0.4),
+                    titleX = TRUE, titleY = TRUE, margin = 0.12) |>
     plotly::layout(title = paste(fishery, which_year,
                                   if (is.null(which_sim)) "(all replicates)" else paste("replicate", which_sim)),
-                    legend = list(orientation = "h", x = 0.6, y = 1.15))
+                    margin = list(l = 70, r = 45, t = 55, b = 130),
+                    legend = list(orientation = "h", x = 0, y = -0.22, yanchor = "top"))
 }
 
 #' Plot annual fishery catches, effort, or CPUE
