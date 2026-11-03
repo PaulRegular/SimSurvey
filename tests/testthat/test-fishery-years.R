@@ -37,3 +37,21 @@ test_that("each fishery stock and ledger use only the corresponding annual popul
   }
   expect_equal(population, saved)
 })
+test_that("fishery location choice follows the current year's shifted stock", {
+  withr::local_seed(702)
+  population <- fishery_population(100, years = 2001:2002)
+  population$sp_N$N[population$sp_N$year == 2002] <- 0
+  population$sp_N$N[population$sp_N$year == 2002 & population$sp_N$cell == 2] <- 100
+  population <- round_sim(population)
+  # A zero-catch callback preserves stocks; no exploration or map error means
+  # only the occupied cell can be selected in each year's single operation.
+  result <- sim_fishery(population, fishery_share = 0.2,
+    catch_model = function(available, operation) numeric(nrow(available)),
+    selectivity = function(age) 1, exploration = 0,
+    max_operations = 1, sampling_coverage = 0)
+  operations <- result$fishery$setdet[order(result$fishery$setdet$year), ]
+  expect_equal(operations$year, 2001:2002)
+  expect_equal(operations$cell, c(1, 2))
+  expect_equal(operations$n, c(0, 0))
+})
+

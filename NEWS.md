@@ -1,5 +1,7 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Clarify that fishery knowledge uses current-year density and fresh annual map
+  errors, and verify that fishing locations follow a shifted population.
 * Use one controlled five-year population throughout the fisheries vignette,
   increase survey coverage to eight sets, match CPUE markers to their lines,
   and size widgets without deprecated Plotly layout arguments.

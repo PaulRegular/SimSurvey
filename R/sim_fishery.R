@@ -20,7 +20,10 @@
 #' @param targeting Nonnegative exponent controlling preference for high estimated
 #' vulnerable density. Zero gives uniform locations.
 #' @param knowledge_sd Nonnegative map-error SD, expressed as a multiple of initial
-#' mean accessible vulnerable density. Errors persist within a replicate/year.
+#' mean accessible vulnerable density. Errors are redrawn for each replicate/year
+#' and persist across its operations. Location choice uses that year's current
+#' vulnerable density plus these errors, updating density after catches. This is
+#' noisy contemporaneous knowledge, without learning or a lagged distribution map.
 #' @param exploration Proportion of location probabilities allocated uniformly,
 #' in `[0, 1]`. All-zero estimated densities fall back to uniform locations.
 #' @param subset_cells Logical expression evaluated on grid columns and `year`,
