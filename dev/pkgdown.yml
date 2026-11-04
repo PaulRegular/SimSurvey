@@ -1,0 +1,10 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  custom_closures: custom_closures.html
+  fisheries: fisheries.html
+last_built: 2026-11-04T02:47Z
+urls:
+  reference: https://paulregular.github.io/SimSurvey/reference
+  article: https://paulregular.github.io/SimSurvey/articles
