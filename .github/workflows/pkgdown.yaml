@@ -2,20 +2,29 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main]
+  pull_request:
   release:
     types: [published]
   workflow_dispatch:
 
 name: pkgdown
 
+permissions: read-all
+
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
+    concurrency:
+      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
+    permissions:
+      contents: write
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_DATATABLE_NUM_THREADS: 2
+      OMP_THREAD_LIMIT: 2
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -25,7 +34,8 @@ jobs:
 
       - name: Add INLA repo
         run: |
-          writeLines('options(repos = c(INLA = "https://inla.r-inla-download.org/R/stable/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
+          write('options(repos = c(INLA = "https://inla.r-inla-download.org/R/stable/", getOption("repos")))',
+                file = path.expand("~/.Rprofile"), append = TRUE)
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
@@ -37,10 +47,21 @@ jobs:
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
+      - name: Verify development site is separate
+        run: |
+          version <- read.dcf("DESCRIPTION")[1, "Version"]
+          if (length(strsplit(version, ".", fixed = TRUE)[[1]]) == 4L) {
+            stopifnot(file.exists("docs/dev/index.html"),
+                      file.exists("docs/dev/articles/fisheries.html"),
+                      !file.exists("docs/index.html"))
+          }
+        shell: Rscript {0}
+
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@4.1.4
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
         with:
+          # Keep released pages at the root when publishing docs/dev.
           clean: false
           branch: gh-pages
           folder: docs

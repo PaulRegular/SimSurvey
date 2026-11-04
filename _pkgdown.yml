@@ -1,4 +1,9 @@
+url: https://paulregular.github.io/SimSurvey/
 destination: docs
+
+development:
+  mode: auto
+  destination: dev
 
 reference:
 - title: Simulate abundance
