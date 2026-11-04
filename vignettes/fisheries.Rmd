@@ -110,7 +110,7 @@ and year. `B_at_length` and `S_at_length` give the corresponding length-based
 values; `sp_N` contains spatial `B` and `S`. `S` covers all fish under the
 supplied curve, without sex structure, spawning timing, or recruitment feedback.
 Both summaries integrate weight and maturity jointly over the length-age key
-([Appendix A1](#a1-weight-maturity-biomass-and-mature-biomass)).
+([Appendix A1](#a1.-weight-maturity-biomass-and-mature-biomass)).
 
 ```{r biomass-trends, fig.height=4.5}
 plotly::subplot(plot_trend(population, mat = "B"), plot_trend(population, mat = "S"),
@@ -188,7 +188,7 @@ mortality; it does not improve later survival.
 across fisheries and repeated on their reference rows. Do not sum it across
 fisheries. `F_realized` is the Baranov-equivalent rate from true catches,
 original `N`, and fixed `Z`. Meeting a total-number target need not reproduce
-reference F at every age. [Appendix A2](#a2-reference-catches-and-integer-mortality-budgets)
+reference F at every age. [Appendix A2](#a2.-reference-catches-and-integer-mortality-budgets)
 defines rounding and zero-abundance cases.
 
 ## Fishing locations and CPUE
@@ -289,7 +289,7 @@ finite number of operations over a patchy grid produces sampling variation.
 Preferential fishing need not produce hyperstability: changing concentration
 can make CPUE decline more slowly or more quickly than abundance. Moving an
 otherwise unchanged spatial pattern need not break proportionality when
-harvesters can follow it ([Appendix A10](#a10-spatial-preferences-and-cpue-proportionality)).
+harvesters can follow it ([Appendix A10](#a10.-spatial-preferences-and-cpue-proportionality)).
 
 More effort cannot independently increase the fixed annual catch budget.
 A quota-capped final operation retains its specified effort, so its CPUE is
