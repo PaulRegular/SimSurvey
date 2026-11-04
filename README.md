@@ -1,5 +1,5 @@
 
-## SimSurvey <img src="man/figures/logo.png" align="right" width="120" />
+## SimSurvey <img src="man/figures/logo.png" alt="SimSurvey logo" align="right" width="120" />
 
 <!-- badges: start -->
 

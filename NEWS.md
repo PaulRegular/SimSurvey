@@ -2,6 +2,7 @@
 
 * Publish development documentation under `/dev/`, preserving the released site
   at the root. Build the site on pull requests before deployment from `main`.
+  Use stable appendix anchors in both the vignette and website article.
 * Shorten the fisheries vignette, replace verification tables with explanations,
   and show a function-based workflow. Extend examples to ten years, improve
   imperfect harvester knowledge, and compare random with targeted fishing using

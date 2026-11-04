@@ -110,7 +110,7 @@ and year. `B_at_length` and `S_at_length` give the corresponding length-based
 values; `sp_N` contains spatial `B` and `S`. `S` covers all fish under the
 supplied curve, without sex structure, spawning timing, or recruitment feedback.
 Both summaries integrate weight and maturity jointly over the length-age key
-([Appendix A1](#a1.-weight-maturity-biomass-and-mature-biomass)).
+([Appendix A1](#biology-equations)).
 
 ```{r biomass-trends, fig.height=4.5}
 plotly::subplot(plot_trend(population, mat = "B"), plot_trend(population, mat = "S"),
@@ -188,7 +188,7 @@ mortality; it does not improve later survival.
 across fisheries and repeated on their reference rows. Do not sum it across
 fisheries. `F_realized` is the Baranov-equivalent rate from true catches,
 original `N`, and fixed `Z`. Meeting a total-number target need not reproduce
-reference F at every age. [Appendix A2](#a2.-reference-catches-and-integer-mortality-budgets)
+reference F at every age. [Appendix A2](#fishery-targets)
 defines rounding and zero-abundance cases.
 
 ## Fishing locations and CPUE
@@ -289,7 +289,7 @@ finite number of operations over a patchy grid produces sampling variation.
 Preferential fishing need not produce hyperstability: changing concentration
 can make CPUE decline more slowly or more quickly than abundance. Moving an
 otherwise unchanged spatial pattern need not break proportionality when
-harvesters can follow it ([Appendix A10](#a10.-spatial-preferences-and-cpue-proportionality)).
+harvesters can follow it ([Appendix A10](#cpue-proportionality)).
 
 More effort cannot independently increase the fixed annual catch budget.
 A quota-capped final operation retains its specified effort, so its CPUE is
@@ -502,7 +502,7 @@ constant across cells and years. Population summaries use the growth key's
 discrete length labels. Age-selective surveys retain their continuous growth
 draws followed by length rounding, so the key discretizes that relationship.
 
-### A1. Weight, maturity, biomass, and mature biomass
+### A1. Weight, maturity, biomass, and mature biomass {#biology-equations}
 
 The default functions are
 
@@ -535,7 +535,7 @@ Biomass is \(100(0.75+0.25\times8)=275\) kg; mature biomass is
 only \(275\times0.25=68.75\) kg. Converting an age-based mass matrix with the
 ordinary number-based length-age key would likewise lose the relevant association.
 
-### A2. Reference catches and integer mortality budgets
+### A2. Reference catches and integer mortality budgets {#fishery-targets}
 
 Mean selectivity at age and reference fishing mortality are
 
@@ -792,7 +792,7 @@ Changing earlier pipeline stages can still change later stages' RNG state;
 repeat a stage from an explicit seed when constructing controlled comparisons.
 
 
-### A10. Spatial preferences and CPUE proportionality
+### A10. Spatial preferences and CPUE proportionality {#cpue-proportionality}
 
 
 For the plotted comparison, first pool each year's catch and effort across

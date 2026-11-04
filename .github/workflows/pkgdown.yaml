@@ -54,6 +54,10 @@ jobs:
             stopifnot(file.exists("docs/dev/index.html"),
                       file.exists("docs/dev/articles/fisheries.html"),
                       !file.exists("docs/index.html"))
+            article <- xml2::read_html("docs/dev/articles/fisheries.html")
+            links <- xml2::xml_attr(xml2::xml_find_all(article, "//a[starts-with(@href, '#')]"), "href")
+            ids <- xml2::xml_attr(xml2::xml_find_all(article, "//*[@id]"), "id")
+            stopifnot(all(sub("^#", "", links) %in% c(ids, "")))
           }
         shell: Rscript {0}
 
