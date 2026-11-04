@@ -157,6 +157,7 @@ sim_N0 <- function(N0 = "exp", plot = FALSE) {
 #' @export
 
 group_lengths <- function(length, group) {
+  if (!length(length)) return(numeric())
   breaks <- seq(0, max(length, na.rm = TRUE) * 2, group)
   interval <- findInterval(length, breaks)
   l <- breaks[interval]
@@ -211,7 +212,7 @@ sim_vonB <- function(Linf = 120, L0 = 5, K = 0.1, log_sd = 0.1,
             stats::pnorm(log(breaks[i - 1]), log(pred_length[j]), sd = log_sd)
         }
       }
-      lak <- lak[rowSums(lak) > 0, ]
+      lak <- lak[rowSums(lak) > 0, , drop = FALSE]
       if (plot) graphics::image(x = as.numeric(colnames(lak)), y = as.numeric(rownames(lak)), z = t(lak),
                                 xlab = "Age", ylab = "Length", main = "P(Length | Age)",
                                 col = viridis::viridis(100))
@@ -258,6 +259,9 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 }
 
 
+#' @rdname sim_vonB
+#' @export
+sim_growth <- sim_vonB
 #' Simulate basic population dynamics model
 #'
 #' Simulates a basic age-structured population using recruitment (`R`),
@@ -265,8 +269,8 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' a growth function may be provided to simulate lengths given age and generate
 #' an abundance-at-length matrix.
 #'
-#' @param ages A numeric vector of ages to include in the simulation.
-#' @param years A numeric vector of years to include in the simulation.
+#' @param ages A non-empty, finite numeric vector of ages, ascending in steps of one.
+#' @param years A non-empty, finite numeric vector of years, ascending in steps of one.
 #' @param Z A function for generating a total mortality matrix, such as [`sim_Z()`].
 #' @param R A function for generating a recruitment vector (i.e., abundance at `min(ages)`),
 #' such as [`sim_R()`].
@@ -275,6 +279,11 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' @param growth A closure, such as [`sim_vonB()`], for simulating length given age.
 #' This is used both to generate an abundance-at-length matrix and later for length simulation
 #' in [`sim_survey()`].
+#' @param weight Function returning expected kilograms at length, such as
+#' [sim_weight()]. Default lengths are centimetres. Shared by all fisheries.
+#' @param maturity Function returning probabilities of maturity, such as
+#' [sim_maturity()] or [sim_logistic()].
+#' @param maturity_by Trait supplied to `maturity`: `"length"` or `"age"`.
 #'
 #' @return A list with the following elements:
 #'
@@ -287,6 +296,9 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' - `N`: Matrix of abundance-at-age
 #' - `N_at_length`: Matrix of abundance-at-length
 #' - `sim_length`: Function for simulating lengths given ages
+#' - `sim_weight`, `sim_maturity`, `maturity_by`: Shared biological relationships
+#' - `B`, `B_at_length`: Expected biomass (kg), by age/year and length/year
+#' - `S`, `S_at_length`: Expected mature biomass (kg), by age/year and length/year
 #'
 #' @details
 #' Abundance is simulated using a standard population dynamics model. If a growth function
@@ -295,6 +307,25 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 #' from catch-at-age survey data.
 #'
 #' Note: The ability to simulate distributions by length is not yet implemented.
+#'
+#' Biomass integrates weight over the discrete length-age key. Mature biomass
+#' integrates weight times maturity, retaining their association. `S` represents
+#' all mature fish under one curve, without a female fraction, spawning-season
+#' adjustment, or recruitment feedback. These are expected annual snapshots, not
+#' the biomass of a particular integer length-stock realization used by a fishery.
+#' Spatial simulation and [round_sim()] refresh summaries when abundance changes.
+#'
+#' To migrate an older distributed simulation without regenerating its trajectory,
+#' explicitly attach the relationships, then call `round_sim()`:
+#' `sim$sim_weight <- sim_weight()`; `sim$sim_maturity <- sim_maturity()`;
+#' `sim$maturity_by <- "length"`; `sim <- round_sim(sim)`.
+#' This uses existing cell rounding; it does not resimulate N or Z. For an older
+#' abundance-only object, attach the components before [sim_distribution()].
+#' Biological defaults are not silently assigned to old objects.
+#'
+#' @seealso `vignette("fisheries", package = "SimSurvey")` for shared biological
+#' truth, multiple fisheries with user-supplied allocations, independent surveys,
+#' and the model equations.
 #'
 #' @examples
 #' R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
@@ -349,10 +380,14 @@ convert_N <- function(N_at_age = NULL, lak = NULL) {
 
 sim_abundance <- function(ages = 1:20, years = 1:20,
                           Z = sim_Z(), R = sim_R(), N0 = sim_N0(),
-                          growth = sim_vonB()) {
+                          growth = sim_growth(), weight = sim_weight(),
+                          maturity = sim_maturity(), maturity_by = "length") {
 
   ## Simple error check
-  if (any(diff(ages) > 1) | any(diff(years) > 1)) {
+  valid_sequence <- function(x) {
+    is.numeric(x) && length(x) > 0 && all(is.finite(x)) && all(diff(x) == 1)
+  }
+  if (!valid_sequence(ages) || !valid_sequence(years)) {
     stop("Age and year sequences must be ascending and increment by 1")
   }
 
@@ -375,7 +410,7 @@ sim_abundance <- function(ages = 1:20, years = 1:20,
                            lak = growth(age = ages, length_age_key = TRUE))
   lengths <- as.numeric(rownames(N_at_length))
 
-  list(ages = ages,
+  sim <- list(ages = ages,
        lengths = lengths,
        years = years,
        R = R,
@@ -383,9 +418,14 @@ sim_abundance <- function(ages = 1:20, years = 1:20,
        Z = Z,
        N = N,
        N_at_length = N_at_length,
-       sim_length = growth)
+       sim_length = growth,
+       sim_weight = weight,
+       sim_maturity = maturity,
+       maturity_by = maturity_by)
+  .population_biology(sim, required = TRUE)
 
 }
 
-
-
+#' @rdname sim_vonB
+#' @export
+sim_growth <- sim_vonB

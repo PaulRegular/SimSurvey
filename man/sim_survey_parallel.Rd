@@ -30,8 +30,20 @@ Using a smaller \code{n_sims} and larger \code{n_loops} reduces memory demand bu
 \item{...}{
   Arguments passed on to \code{\link[=sim_survey]{sim_survey}}
   \describe{
-    \item{\code{q}}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability at age.
+    \item{\code{q}}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability.
 Returned values must range between 0 and 1.}
+    \item{\code{q_by}}{Basis of catchability: \code{"age"} (the historical default) or
+\code{"length"}. Length-based catchability is evaluated on the growth model's
+discrete length-group labels. Availability integrates catchability over the
+length-age key; caught lengths follow that selected distribution.}
+    \item{\code{maturity_sampling}}{Fish examined for maturity: \code{"aged"} (default),
+\code{"measured"}, or \code{"none"}. Binary states follow the population maturity model.
+Unexamined \code{mature} values are missing and \code{maturity_observed} is \code{FALSE}.
+With \code{light = FALSE}, \code{sample_truth} retains latent states for measured fish.
+All length/age sampling finishes before maturity is drawn for every measured
+fish, independently of this observation mask. Switching only this argument
+preserves existing samples, catches, and overlapping maturity states. An older
+object lacking a maturity model can retain number-only sampling with \code{"none"}.}
     \item{\code{trawl_dim}}{Trawl width and distance (same units as the grid).}
     \item{\code{resample_cells}}{Logical. If \code{TRUE}, allows grid cells to be resampled.
 May introduce bias, as depletion is applied at the cell level.}
@@ -76,7 +88,7 @@ sim <- sim_abundance(ages = 1:20, years = 1:5) |>
   sim_distribution(grid = make_grid(res = c(10, 10))) |>
   sim_survey_parallel(
     n_sims = 5, n_loops = 5, cores = 1,
-    q = sim_logistic(k = 2, x0 = 3),
+    q = sim_logistic(k = 2, x50 = 3),
     quiet = FALSE
   )
 }

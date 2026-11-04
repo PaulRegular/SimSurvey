@@ -33,7 +33,7 @@
 #'
 #' @param range Decorrelation range.
 #' @param lambda Controls the degree of smoothness in the Matérn covariance process.
-#' @param sd Variance (can be age-specific).
+#' @param sd Innovation standard deviation (can be age-specific).
 #' @param phi_age Autocorrelation through ages. Can be a single value or a vector the same length as `ages`.
 #' @param phi_year Autocorrelation through years. Can be a single value or a vector the same length as `years`.
 #' @param group_ages A vector of ages to group together with shared space-age-year noise.
@@ -90,17 +90,13 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
     pc_age <- sqrt(1 - phi_age ^ 2)
     pc_year <- sqrt(1 - phi_year ^ 2)
     ##chol is costly, so calculate only once!
-    chol_cor <- chol(.sp_cor(x = x, range = range, lambda = lambda, model = model))
+    spatial_factor <- t(chol(.sp_cor(x = x, range = range, lambda = lambda, model = model)))
     for (j in seq_along(years)) {
       for (i in seq_along(ages)) {
         if ((i == 1) & (j == 1)) {
           m <- 0
           s <- sd[i] / (pc_age[i] * pc_year[j])
-          if (!exists("w1")) { # Might save some time...
-            Sigma <- s * chol_cor
-            w1 <- t(Sigma)
-          }
-          E[i, j, ] <- m + w1 %*% stats::rnorm(nc)
+          E[i, j, ] <- m + s * (spatial_factor %*% stats::rnorm(nc))
         }
         if ((i > 1) & (j == 1)) {
           if (age_map[i] == age_map[i - 1]) {
@@ -108,11 +104,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
           } else {
             m <- phi_age[i] * E[i - 1, j, ]
             s <- sd[i] / pc_year[j]
-            if (!exists("w2")) {
-              Sigma <- s * chol_cor
-              w2 <- t(Sigma)
-            }
-            E[i, j, ] <- m + w2 %*% stats::rnorm(nc)
+            E[i, j, ] <- m + s * (spatial_factor %*% stats::rnorm(nc))
           }
         }
         if ((i == 1) & (j > 1)) {
@@ -121,11 +113,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
           } else {
             m <- phi_year[j] * E[i, j - 1, ]
             s <- sd[i] / pc_age[i]
-            if (!exists("w3")) {
-              Sigma <- s * chol_cor
-              w3 <- t(Sigma)
-            }
-            E[i, j, ] <- m + w3 %*% stats::rnorm(nc)
+            E[i, j, ] <- m + s * (spatial_factor %*% stats::rnorm(nc))
           }
         }
         if ((i > 1) & (j > 1)) {
@@ -139,11 +127,7 @@ sim_ays_covar <- function(sd = 2.8, range = 300, lambda = 1, model = "matern",
           if ((age_map[i] != age_map[i - 1]) & (year_map[j] != year_map[j - 1])) {
             m <- phi_year[j] * E[i, j - 1, ] + phi_age[i] * (E[i - 1, j, ] - phi_year[j] * E[i - 1, j - 1, ])
             s <- sd[i]
-            if (!exists("w4")) { # chol is costly, therefore only calculate once
-              Sigma <- s * chol_cor
-              w4 <- t(Sigma)
-            }
-            E[i, j, ] <- m + w4 %*% stats::rnorm(nc)
+            E[i, j, ] <- m + s * (spatial_factor %*% stats::rnorm(nc))
           }
 
         }
@@ -371,8 +355,8 @@ sim_distribution <- function(sim,
   }
 
   ## Distribute fish through the cells
-  N <- replicate(nrow(grid_dat), sim$N)
-  dimnames(N) <- dimnames(prob)
+  N <- array(rep(sim$N, times = nrow(grid_dat)), dim = dim(prob),
+              dimnames = dimnames(prob))
   N <- N * prob
 
   ## Output as data.frame
@@ -384,7 +368,7 @@ sim_distribution <- function(sim,
   df_N$prob <- NULL
   setkeyv(df_N, "cell")
 
-  c(sim, list(grid = grid, grid_xy = grid_dat, sp_N = df_N))
+  .population_biology(c(sim, list(grid = grid, grid_xy = grid_dat, sp_N = df_N)))
 
 }
 

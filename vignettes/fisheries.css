@@ -1,0 +1,19 @@
+body {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 24px;
+  color: #252525;
+  background: white;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+h1, h2, h3 { line-height: 1.25; margin-top: 1.5em; }
+a { color: #226699; }
+pre, code { font-family: Consolas, monospace; font-size: 0.9em; }
+pre { background: #f5f5f5; padding: 12px; overflow-x: auto; }
+table { display: block; overflow-x: auto; border-collapse: collapse; margin: 1em 0; }
+th, td { padding: 6px 10px; border-bottom: 1px solid #ddd; text-align: left; }
+img, .html-widget { max-width: 100%; }
+.math.display { display: block; overflow-x: auto; }
+@media (max-width: 600px) { body { padding: 12px; } }

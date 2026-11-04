@@ -1,7 +1,7 @@
 Package: SimSurvey
 Type: Package
 Title: Test Surveys by Simulating Spatially-Correlated Populations
-Version: 0.1.8
+Version: 0.1.8.9000
 Authors@R: c(
     person("Paul", "Regular", email = "Paul.Regular@dfo-mpo.gc.ca", 
     role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0318-2615")),
@@ -39,6 +39,8 @@ Imports:
     lifecycle,
     Matrix
 Suggests:
+    testthat (>= 3.0.0),
+    withr,
     fields,
     rmarkdown,
     flexdashboard,
@@ -50,9 +52,11 @@ Suggests:
     ggplot2,
     INLA,
     INLAspacetime,
+    fmesher,
     knitr,
     bezier
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Encoding: UTF-8
 VignetteBuilder: knitr
+Config/testthat/edition: 3

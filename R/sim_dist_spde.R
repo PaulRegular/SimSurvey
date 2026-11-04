@@ -1,3 +1,11 @@
+## Upgrade stored INLA objects without rebuilding or renumbering the mesh.
+.mesh_compat <- function(mesh) {
+  if (!inherits(mesh, "fm_mesh_2d") && inherits(mesh, "inla.mesh") &&
+      requireNamespace("fmesher", quietly = TRUE)) {
+    mesh <- fmesher::fm_as_fm(mesh)
+  }
+  mesh
+}
 
 #' Helper function to generate precision matrix Q for simulation
 #'
@@ -20,6 +28,7 @@
 .Q <- function(mesh,barrier.triangles, range = 50, range_fraction = 0.2,
                sigma_u = 1, model = "spde"){
 
+  mesh <- .mesh_compat(mesh)
   Q <-  switch(model,
                spde = {
                  ##Priors aren't used...
@@ -56,10 +65,20 @@
 #' @param phi_year Autocorrelation through years. Can be a single value or a vector the same length as `years`.
 #' @param group_ages Ages to group together for shared space-age-year variance.
 #' @param group_years Years to group together for shared space-age-year variance.
-#' @param mesh The mesh used to generate the precision matrix.
+#' @param mesh An `fm_mesh_2d` or legacy `inla.mesh` object used to generate the
+#' precision matrix. Stored legacy meshes, including the meshes inside
+#' [`survey_mesh`] and [`survey_lite_mesh`], are converted automatically when
+#' **fmesher** is available. Conversion preserves vertices and triangle indices.
 #' @param barrier.triangles The set of mesh triangles that define the barrier (used only in the barrier model).
 #'
 #' @return A function that can be passed to [`sim_distribution()`] as the `ays_covar` argument.
+#'
+#' @details
+#' For a bundled mesh, supply `survey_mesh$mesh` (or `survey_lite_mesh$mesh`).
+#' With `model = "barrier"`, also supply its matching `barrier_tri` component as
+#' `barrier.triangles`. Legacy conversion updates the object representation, not
+#' the triangulation or the numbering used by these barrier indices. The original
+#' supplied mesh and bundled data are not modified.
 #'
 #' @examples
 #' \donttest{
@@ -102,11 +121,13 @@ sim_ays_covar_spde <- function(sd = 2.8,
 
   function(x = NULL, ages = NULL, years = NULL, cells = NULL){
 
-    for (pkg in c("INLA")) {
+    packages <- if (model == "barrier") c("INLA", "INLAspacetime") else "INLA"
+    for (pkg in packages) {
       if (!requireNamespace(pkg, quietly = TRUE)) {
-        stop(paste(pkg, "is needed for make_mesh to work. Please install it."), call. = FALSE)
+        stop(paste(pkg, "is needed for sim_ays_covar_spde to work. Please install it."), call. = FALSE)
       }
     }
+    mesh <- .mesh_compat(mesh)
 
     na <- length(ages)
     ny <- length(years)
@@ -209,19 +230,22 @@ sim_ays_covar_spde <- function(sd = 2.8,
 #'
 #' This function creates a mesh based on a given grid. While mesh construction
 #' and validation should ideally be done manually, this function provides a
-#' convenient default interface between a grid and `inla.mesh.2d`. It is designed
+#' convenient default interface between a grid and `fmesher::fm_mesh_2d_inla()`.
+#' With older INLA installations where **fmesher** is unavailable, it falls back
+#' to `INLA::inla.mesh.2d()`. It is designed
 #' to support usage with [`sim_ays_covar_spde()`], and the default parameters are
 #' tuned for use with the default grid setup.
 #'
 #' @param grid A grid object to generate a mesh from.
 #' @param max.edge The maximum allowed triangle edge length. One or two numeric values.
-#' Passed to `inla.mesh.2d`.
+#' Passed to the mesh constructor.
 #' @param bound.outer Optional outer extension value passed to `offset`.
 #' @param offset Automatic extension distance used by `inla.mesh.2d`.
 #' @param cutoff Minimum distance allowed between mesh points.
-#' @param ... Additional options passed to `inla.mesh.2d`.
+#' @param ... Additional options passed to the mesh constructor.
 #'
-#' @return An object of class `inla.mesh`.
+#' @return An object of class `fm_mesh_2d` when **fmesher** is available, or
+#' `inla.mesh` with older INLA installations.
 #'
 #' @examples
 #' \donttest{
@@ -248,7 +272,11 @@ make_mesh <- function(grid = make_grid(),
 
   gridPoints <- data.frame(grid)
   locs <- as.matrix(gridPoints[,1:2])
-  mesh <- INLA::inla.mesh.2d(locs, offset = offset, max.edge = max.edge, cutoff = cutoff, ...)
+  if (requireNamespace("fmesher", quietly = TRUE)) {
+    mesh <- fmesher::fm_mesh_2d_inla(locs, offset = offset, max.edge = max.edge, cutoff = cutoff, ...)
+  } else {
+    mesh <- INLA::inla.mesh.2d(locs, offset = offset, max.edge = max.edge, cutoff = cutoff, ...)
+  }
   mesh
 
 }

@@ -45,6 +45,9 @@
 #' folder of this package in the survey_mesh.R file. Includes the set
 #' of barrier triangles needed to use the barrier approach, barrier
 #' polygons for plotting and the set of triangles in the barrier.
+#' The saved meshes use the legacy `inla.mesh` class. [`sim_ays_covar_spde()`]
+#' converts them for current INLA/fmesher installations without changing their
+#' vertices, triangle indices, or stored barrier assignments.
 #'
 #' @importClassesFrom Matrix dgCMatrix
 #' @importFrom Matrix sparseMatrix

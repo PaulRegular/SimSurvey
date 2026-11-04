@@ -4,7 +4,8 @@
 #' [`sim_abundance()`], [`sim_distribution()`], and related simulation functions.
 #'
 #' @param sim Object returned by [`sim_abundance()`], [`sim_distribution()`], etc.
-#' @param mat Name of the matrix in the `sim` list to plot.
+#' @param mat Name of the matrix in the `sim` list to plot. For `plot_trend`,
+#' choose `"N"` (fish), `"B"` (kg), or `"S"` (mature kg).
 #' @param grid Grid produced by [`make_grid()`].
 #' @param xlab,ylab,zlab Axis labels.
 #' @param sum_ages Vector of ages to sum across.
@@ -30,16 +31,19 @@
 #'
 #' @export
 #' @rdname plot_trend
-plot_trend <- function(sim, sum_ages = sim$ages, col = viridis::viridis(1), ...) {
-  if (length(sum_ages) == 1) {
-    n <- sim$N[sum_ages, ]
-  } else {
-    n <- colSums(sim$N[sum_ages, ])
+plot_trend <- function(sim, sum_ages = sim$ages, col = viridis::viridis(1), ..., mat = "N") {
+  if (length(mat) != 1 || !mat %in% c("N", "B", "S") || !is.matrix(sim[[mat]])) {
+    stop("mat must name an available N, B, or S matrix; see help('sim_abundance') for older objects.")
   }
+  indices <- match(sum_ages, sim$ages)
+  if (!length(indices) || anyNA(indices)) stop("sum_ages must select population ages.")
+  n <- colSums(sim[[mat]][indices, , drop = FALSE])
   tot <- data.frame(Year = sim$years, N = n)
-  tot$text <- paste0("Year: ", tot$Year, "\nN: ", round(tot$N))
+  units <- switch(mat, N = "fish", B = "kg", S = "mature kg")
+  tot$text <- paste0("Year: ", tot$Year, "<br>", mat, ": ", round(tot$N), " ", units)
   plot_ly(x = ~Year, y = ~N, text = ~text, hoverinfo = "text",
-          type = "scatter", mode = "lines", color = I(col), data = tot, ...)
+          type = "scatter", mode = "lines", color = I(col), data = tot, ...) |>
+    layout(xaxis = list(title = "Year"), yaxis = list(title = paste0(mat, " (", units, ")")))
 }
 
 #' @export
@@ -157,6 +161,8 @@ plot_distribution <- function(sim, ages = sim$ages, years = sim$years,
 
 ## little helper for scaling the bubbles (using plotly's scale results in a warning)
 .scale_between <- function(x, new_min = 0, new_max = 1) {
+  if (!length(x)) return(numeric())
+  if (max(x) == min(x)) return(rep(new_min, length(x)))
   (x - min(x)) / (max(x) - min(x)) * (new_max - new_min) + new_min
 }
 
@@ -205,8 +211,8 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
                 color = ~n, name = "n",
                 showlegend = FALSE,
                 marker = list(size = ~.scale_between(n, 2, 600),
-                              sizemode = "area")) |>
-    add_sf(data = sf_strat, color = I(NA), stroke = I("black"),
+                              sizemode = "area", sizemin = 5)) |>
+    add_sf(data = sf_strat, type = "scatter", color = I(NA), stroke = I("black"),
            hoverinfo = "none", span = I(1), showlegend = FALSE, alpha = 0.1) |>
     layout(xaxis = xax, yaxis = yax,
            margin = list(t = 0, r = 0, l = 0, b = 0, pad = 0))
@@ -244,11 +250,12 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 
   subplot(sp_p,
           subplot(lf_p, af_p, nrows = 2, titleX = TRUE, titleY = TRUE,
-                  margin = 0.1),
-          nrows = 1, margin = c(0, 0.2, 0, 0), widths = c(0.75, 0.25),
+                  margin = 0.14),
+          nrows = 1, margin = 0.12, widths = c(0.6, 0.4),
           titleX = TRUE, titleY = TRUE) |>
-    colorbar(x = 0.52, y = 1) |>
-    layout(legend = list(x = 1, y = 0.95))
+    colorbar(x = 0.53, y = 0.9, len = 0.75, thickness = 12) |>
+    layout(margin = list(l = 70, r = 45, t = 55, b = 130),
+           legend = list(orientation = "h", x = 0, y = -0.22, yanchor = "top"))
 
 }
 

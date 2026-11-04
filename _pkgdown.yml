@@ -1,4 +1,9 @@
+url: https://paulregular.github.io/SimSurvey/
 destination: docs
+
+development:
+  mode: auto
+  destination: dev
 
 reference:
 - title: Simulate abundance
@@ -8,6 +13,9 @@ reference:
   - sim_Z
   - sim_N0
   - sim_vonB
+  - sim_growth
+  - sim_weight
+  - sim_maturity
 - title: Simulate distribution
 - contents:
   - sim_distribution
@@ -20,9 +28,16 @@ reference:
 - title: Simulate survey
 - contents:
   - sim_survey
+  - sim_surveys
+  - select_survey
   - sim_survey_parallel
   - sim_logistic
   - sim_sets
+- title: Simulate fisheries
+- contents:
+  - sim_capture
+  - sim_fishery
+  - sim_fisheries
 - title: Stratified analysis
 - contents:
   - run_strat

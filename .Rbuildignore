@@ -4,7 +4,6 @@
 ^\.Rprofile$
 ^analysis$
 ^tutorial$
-^tests$
 ^data-raw$
 ^\.travis\.yml$
 ^_pkgdown\.yml$
@@ -18,3 +17,4 @@
 ^man/figures/logo\.svg$
 ^CRAN-SUBMISSION$
 ^\.github$
+^AGENTS\.md$

@@ -19,16 +19,23 @@ sim_survey(
   age_length_group = 1,
   age_space_group = "division",
   custom_sets = NULL,
-  light = TRUE
+  light = TRUE,
+  q_by = "age",
+  maturity_sampling = "aged"
 )
 }
 \arguments{
-\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}.}
+\item{sim}{A simulation object returned by \code{\link[=sim_distribution]{sim_distribution()}}. Omit to
+create a \code{sim_survey_spec} configuration for \code{\link[=sim_surveys]{sim_surveys()}}, without running
+a simulation or consuming random numbers.}
 
-\item{n_sims}{Number of surveys to simulate.
+\item{n_sims}{Number of surveys to simulate. Supply common replicate counts
+on \code{\link[=sim_surveys]{sim_surveys()}} rather than inside a configuration.
+With existing batch metadata, an omitted count (or \code{NULL}) inherits its
+replicate identifiers; an explicit count must agree with them.
 Be cautious: large values may consume significant memory. Use \code{\link[=sim_survey_parallel]{sim_survey_parallel()}} if many simulations are needed.}
 
-\item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability at age.
+\item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability.
 Returned values must range between 0 and 1.}
 
 \item{trawl_dim}{Trawl width and distance (same units as the grid).}
@@ -63,6 +70,20 @@ Options: \code{"division"} (default), \code{"strat"}, or \code{"set"}. Ignored i
 If \code{NULL}, set locations are generated automatically.}
 
 \item{light}{Logical. If \code{TRUE}, drops some objects from output to reduce memory footprint.}
+
+\item{q_by}{Basis of catchability: \code{"age"} (the historical default) or
+\code{"length"}. Length-based catchability is evaluated on the growth model's
+discrete length-group labels. Availability integrates catchability over the
+length-age key; caught lengths follow that selected distribution.}
+
+\item{maturity_sampling}{Fish examined for maturity: \code{"aged"} (default),
+\code{"measured"}, or \code{"none"}. Binary states follow the population maturity model.
+Unexamined \code{mature} values are missing and \code{maturity_observed} is \code{FALSE}.
+With \code{light = FALSE}, \code{sample_truth} retains latent states for measured fish.
+All length/age sampling finishes before maturity is drawn for every measured
+fish, independently of this observation mask. Switching only this argument
+preserves existing samples, catches, and overlapping maturity states. An older
+object lacking a maturity model can retain number-only sampling with \code{"none"}.}
 }
 \value{
 A list including:
@@ -78,6 +99,14 @@ Includes:
 \item \code{I}: individuals available to the survey
 \item \code{n}: individuals caught by the survey
 }
+
+When \code{sim} is omitted, returns a \code{sim_survey_spec} list of settings.
+\code{samp$weight} gives deterministic kilograms for every simulated caught fish;
+unmeasured fish weights are latent truth, not extra measurements. \code{setdet$kg}
+and \code{samp_totals$kg_caught} sum all caught fish, not just measured lengths.
+With \code{light = FALSE}, \code{full_setdet$kg} gives catch weight by set and age.
+Legacy objects without a weight model retain missing weights and positive-catch
+totals, with zero kilograms for zero catches. No defaults are silently assigned.
 }
 \description{
 Simulates a stratified-random survey on a population produced by \code{\link[=sim_distribution]{sim_distribution()}}.
@@ -87,7 +116,7 @@ Supports optional catchability functions, sampling caps, and custom set location
 \donttest{
 sim <- sim_abundance(ages = 1:5, years = 1:5) |>
   sim_distribution(grid = make_grid(res = c(20, 20))) |>
-  sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
+  sim_survey(n_sims = 5, q = sim_logistic(k = 2, x50 = 3))
 
 plot_survey(sim, which_year = 3, which_sim = 1)
 }

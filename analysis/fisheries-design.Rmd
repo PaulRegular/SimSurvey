@@ -1,0 +1,129 @@
+---
+title: "Direction for fisheries simulation in SimSurvey 0.2.0"
+output: html_document
+---
+
+This research note records the direction agreed for the next design milestone.
+It does not describe an implemented API. First establish repository guidance,
+formal tests, and focused fixes to the existing survey workflow.
+
+## Population and catch
+
+Start with one species and one fishery applied after `sim_distribution()`.
+Attribute part of the existing total mortality to that fishery. For annual,
+constant instantaneous mortality rates, Baranov catch in numbers is
+
+\[
+C_{f,a,y}=N_{a,y}\frac{F_{f,a,y}}{Z_{a,y}}(1-\exp(-Z_{a,y})).
+\]
+
+The fishery share and selectivity must jointly define fishing mortality before
+calculating catch. Define the meaning of the share explicitly (for example,
+age-specific F/Z versus the share at fully selected ages); do not silently apply
+another selectivity curve to an already established catch budget. Handle zero
+mortality without dividing by zero, and ensure allocated mortality never exceeds
+total mortality. Call the unallocated remainder "other mortality," since it may
+include other fisheries. See the [FAO population and catch model](https://www.fao.org/4/X9026E/x9026e06.htm).
+
+Existing abundance trajectories already include Z. Do not subtract attributed
+fishery deaths from subsequent abundance again. Existing annual spatial surfaces
+do not propagate local depletion through movement or later years. A dynamic
+fishing/effort feedback model would need a separate population design.
+
+With fixed removals, relative effort and targeting allocate catches among cells
+and operations. Increasing all effort cannot independently increase total catch;
+the resulting CPUE is conditional on the catch budget. Bound spatial allocations
+by available fish and the specified local mortality budget. Report infeasible
+targets rather than silently clipping catches or reallocating outside accessible
+areas. Decide the local mortality assumption before implementing allocation.
+
+Keep retained catch, dead discards, live releases, and mortality distinct. Begin
+with a simple all-retained scenario, leaving explicit extension points rather
+than implying that observed legal landings equal all removals. Counts and lengths
+do not define landed kilograms: add a weight relationship with explicit units.
+Length-selective fishing must alter the joint age-length composition; drawing
+unconditional lengths after selecting ages cannot represent arbitrary length
+selectivity.
+
+## Fishing activity
+
+Separate knowledge (noise or lag in the perceived density signal) from targeting
+strength (preference for high-signal cells). Include accessibility and exploration
+in location choice. Distinguish the signal used to choose locations from the true
+abundance available to catches, avoiding unintended extra density weighting.
+
+Represent generic operations grouped into trips and landings, with stable
+identifiers and explicit effort units. Gear-specific effort conversions can be
+supplied without simulating vessel routing, economic optimization, or detailed
+gear mechanics. Store aggregate catches and simulate only the individual fish
+needed for biological samples rather than expanding every commercial catch.
+
+## Monitoring as a separate observation process
+
+The proposed separation is `sim_fishery()` for fishing truth and a subsequent
+monitoring function for observations. Names beyond `sim_fishery()`, argument
+contracts, and returned table schemas remain for the next design discussion.
+
+Use independent controls for:
+
+- Catch and effort reporting, including missing records and measurement error.
+- Observer selection of trips and sampling of operations within selected trips.
+- Port access, port/time strata, and selection of landings.
+- Numbers of fish measured and random or length-stratified age samples.
+- Tiered allocation among strata and selection within strata.
+
+Preserve links among operations, trips, landings, and samples; retain inclusion
+probabilities where the sampling design supplies them. Avoid using future true
+catch to select an observer trip unless an explicitly idealized scenario requests
+it. Preferential allocation among active ports can support valid weighted
+inference when inclusion probabilities are known; convenience sampling and
+zero-coverage groups present different limitations. More fish from the same
+few trips do not replace more independent primary sampling units.
+
+Program examples informing these abstractions:
+
+- [Historical Northern cod protocols](https://waves-vagues.dfo-mpo.gc.ca/Library/40576838.pdf)
+  describe distinct observer and port sampling strata, length samples, and
+  length-stratified otolith collections (commercial catch-at-age questionnaire).
+  These are historical protocols, not claims about current required coverage.
+- [Alaska's 2026 deployment plan](https://www.fisheries.noaa.gov/s3/2026-01/Final_2026_ADP_akro.pdf)
+  combines full coverage with randomized partial coverage and separates
+  deployment strata and monitoring methods.
+- [Ireland's 2021 sampling report](https://www.dcmap-ireland.ie/sites/default/files/DCF_Files/docs/Ireland_AR_2021_Text_20220531.pdf)
+  illustrates prioritized port frames, landings-weighted selection, and subsequent
+  sampling stages.
+
+## CPUE and further design questions
+
+Retain unsuccessful operations, separate missing catches from zeros, and preserve
+effort units and catch definitions (retained or total). Define aggregate ratios
+explicitly; a ratio of total catch to total effort differs from an unweighted
+mean of operation-level ratios. Do not pool incompatible gear units. Initially
+provide data suitable for downstream standardization rather than another fitted
+index model. [Research on targeting and spatial effects](https://academic.oup.com/icesjms/article/83/9/fsag169/8788795)
+illustrates why nominal CPUE need not track abundance proportionally.
+
+Before implementation, settle share/selectivity semantics, the constrained
+spatial allocation rule, effort units, retained/dead-discard defaults, the weight
+relationship, and the minimal trip/landing sampling frames. Multiple fisheries
+would require a shared mortality budget rather than independent unconstrained
+calls. Seasonal surveys after fishing, persistent spatial depletion, learning,
+age-reading error, and vessel efficiency trends are later extensions.
+
+## Mesh compatibility resolved during foundations work
+
+Current INLA/fmesher no longer accepts some stored `inla.mesh` objects directly
+(`fm_dof` has no matching method). SimSurvey now converts these inputs using the
+official `fmesher::fm_as_fm()` method before precision construction and spatial
+projection. Conversion does not regenerate the mesh: regression tests verify
+unchanged vertex coordinates, graph/triangle indices, node identifiers, barrier
+assignments, and original inputs for both bundled survey meshes. Standard and
+barrier covariance simulations exercise both saved objects with current INLA.
+The bundled data files remain unchanged.
+
+`make_mesh()` uses `fmesher::fm_mesh_2d_inla()` when available, with its existing
+arguments, rather than the deprecated INLA wrapper. Its previous constructor is
+retained as a fallback when fmesher is unavailable. Optional tests no longer
+suppress constructor warnings, and the core workflow still does not require
+INLA or fmesher. See the upstream
+[mesh migration guidance](https://inlabru-org.github.io/fmesher/articles/inla_conversion.html).

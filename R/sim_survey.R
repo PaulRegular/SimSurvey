@@ -4,20 +4,32 @@
 #' This closure is useful for simulating catchability (`q`) inside the [`sim_survey()`] function.
 #'
 #' @param k Steepness of the curve.
-#' @param x0 The x-value at the midpoint of the sigmoid.
+#' @param x50 The value at 50 percent probability, such as age or length.
 #' @param plot Logical. Should the relationship be plotted?
+#' @param x0 Deprecated alias for `x50`. Do not supply both names.
 #'
 #' @return A function that can be passed to [`sim_survey()`].
 #'
 #' @examples
-#' logistic_fun <- sim_logistic(k = 2, x0 = 3, plot = TRUE)
+#' logistic_fun <- sim_logistic(k = 2, x50 = 3, plot = TRUE)
 #' logistic_fun(x = 1:10)
 #'
 #' @export
 
-sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
+sim_logistic <- function(k = 2, x50 = 3, plot = FALSE, x0 = NULL) {
+  if (!missing(x0)) {
+    if (!missing(x50)) stop("Supply only x50, not both x50 and x0.")
+    lifecycle::deprecate_warn("0.1.8.9000", "sim_logistic(x0)", "sim_logistic(x50)")
+    x50 <- x0
+  }
+  if (!is.numeric(k) || length(k) != 1 || !is.finite(k) ||
+      !is.numeric(x50) || length(x50) != 1 || !is.finite(x50)) {
+    stop("k and x50 must be finite numeric scalars.")
+  }
+  force(k)
+  force(x50)
   function(x = NULL) {
-    y <- 1 / (1 + exp(-k * (x - x0)))
+    y <- stats::plogis(k * (x - x50))
     if (plot) plot(x, y, type = "b")
     y
   }
@@ -35,16 +47,17 @@ sim_logistic <- function(k = 2, x0 = 3, plot = FALSE) {
 #' @export
 
 round_sim <- function(sim) {
+  sim <- data.table::copy(sim)
   sim$sp_N$N <- round(sim$sp_N$N)
   N <- tapply(sim$sp_N$N, list(sim$sp_N$age, sim$sp_N$year), sum)
-  N <- N[rownames(sim$N), colnames(sim$N)]
+  N <- N[rownames(sim$N), colnames(sim$N), drop = FALSE]
   dimnames(N) <- dimnames(sim$N)
   sim$N_at_length <- convert_N(N_at_age = N,
                                lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
   sim$N <- N
   sim$N0 <- N[, 1]
   sim$R <- N[1, ]
-  sim
+  .population_biology(sim)
 }
 
 
@@ -135,11 +148,28 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' Simulates a stratified-random survey on a population produced by [`sim_distribution()`].
 #' Supports optional catchability functions, sampling caps, and custom set locations.
 #'
-#' @param sim A simulation object returned by [`sim_distribution()`].
-#' @param n_sims Number of surveys to simulate.
+#' @param sim A simulation object returned by [`sim_distribution()`]. Omit to
+#' create a `sim_survey_spec` configuration for [sim_surveys()], without running
+#' a simulation or consuming random numbers.
+#' @param n_sims Number of surveys to simulate. Supply common replicate counts
+#' on [sim_surveys()] rather than inside a configuration.
+#' With existing batch metadata, an omitted count (or `NULL`) inherits its
+#' replicate identifiers; an explicit count must agree with them.
 #' Be cautious: large values may consume significant memory. Use [`sim_survey_parallel()`] if many simulations are needed.
-#' @param q A closure (e.g., [`sim_logistic()`]) for simulating catchability at age.
+#' @param q A closure (e.g., [`sim_logistic()`]) for simulating catchability.
 #' Returned values must range between 0 and 1.
+#' @param q_by Basis of catchability: `"age"` (the historical default) or
+#' `"length"`. Length-based catchability is evaluated on the growth model's
+#' discrete length-group labels. Availability integrates catchability over the
+#' length-age key; caught lengths follow that selected distribution.
+#' @param maturity_sampling Fish examined for maturity: `"aged"` (default),
+#' `"measured"`, or `"none"`. Binary states follow the population maturity model.
+#' Unexamined `mature` values are missing and `maturity_observed` is `FALSE`.
+#' With `light = FALSE`, `sample_truth` retains latent states for measured fish.
+#' All length/age sampling finishes before maturity is drawn for every measured
+#' fish, independently of this observation mask. Switching only this argument
+#' preserves existing samples, catches, and overlapping maturity states. An older
+#' object lacking a maturity model can retain number-only sampling with `"none"`.
 #' @param trawl_dim Trawl width and distance (same units as the grid).
 #' @param resample_cells Logical. If `TRUE`, allows grid cells to be resampled.
 #' May introduce bias, as depletion is applied at the cell level.
@@ -170,11 +200,19 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' - `I`: individuals available to the survey
 #' - `n`: individuals caught by the survey
 #'
+#' When `sim` is omitted, returns a `sim_survey_spec` list of settings.
+#' `samp$weight` gives deterministic kilograms for every simulated caught fish;
+#' unmeasured fish weights are latent truth, not extra measurements. `setdet$kg`
+#' and `samp_totals$kg_caught` sum all caught fish, not just measured lengths.
+#' With `light = FALSE`, `full_setdet$kg` gives catch weight by set and age.
+#' Legacy objects without a weight model retain missing weights and positive-catch
+#' totals, with zero kilograms for zero catches. No defaults are silently assigned.
+#'
 #' @examples
 #' \donttest{
 #' sim <- sim_abundance(ages = 1:5, years = 1:5) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20))) |>
-#'   sim_survey(n_sims = 5, q = sim_logistic(k = 2, x0 = 3))
+#'   sim_survey(n_sims = 5, q = sim_logistic(k = 2, x50 = 3))
 #'
 #' plot_survey(sim, which_year = 3, which_sim = 1)
 #' }
@@ -186,9 +224,31 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                        min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
                        ages_cap = 10, age_sampling = "stratified",
                        age_length_group = 1, age_space_group = "division",
-                       custom_sets = NULL, light = TRUE) {
+                       custom_sets = NULL, light = TRUE, q_by = "age",
+                       maturity_sampling = "aged") {
+  if (missing(sim)) {
+    config <- mget(setdiff(names(formals(sim_survey)), "sim"),
+                    envir = environment(), inherits = FALSE)
+    attr(config, "n_sims_supplied") <- !missing(n_sims)
+    class(config) <- "sim_survey_spec"
+    return(config)
+  }
+  if (!is.null(sim$replicates) || is.null(n_sims)) {
+    n_sims <- .resolve_n_sims(sim, if (missing(n_sims)) NULL else n_sims)
+  }
+  args <- as.list(environment())
+  .survey_maturity(.survey_samples(do.call(.survey_truth, args)), maturity_sampling, light)
+}
 
-  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- NULL
+.survey_truth <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0.02),
+                          resample_cells = FALSE, binom_error = TRUE,
+                          min_sets = 2, set_den = 2 / 1000, lengths_cap = 500,
+                          ages_cap = 10, age_sampling = "stratified",
+                          age_length_group = 1, age_space_group = "division",
+                          custom_sets = NULL, light = TRUE, q_by = "age",
+                          maturity_sampling = "aged") {
+
+  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- weight <- kg <- i.kg <- NULL
 
   ## Couple error traps
   if (!age_sampling %in% c("stratified", "random")) {
@@ -203,17 +263,30 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 
   ## Round simulated population and calculate numbers available to survey
   sim <- round_sim(sim)
-  I <- sim$N * q(replicate(length(sim$years), sim$ages))
-  I_at_length <- convert_N(N_at_age = I,
-                           lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
-  sim$sp_N$I <- sim$sp_N$N * q(sim$sp_N$age)
+  .check_maturity_model(sim, maturity_sampling)
+  if (length(q_by) != 1 || !q_by %in% c("age", "length")) {
+    stop("q_by must be 'age' or 'length'.")
+  }
+  if (q_by == "age") {
+    I <- sim$N * q(replicate(length(sim$years), sim$ages))
+    I_at_length <- convert_N(N_at_age = I,
+                             lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
+    sim$sp_N$I <- sim$sp_N$N * q(sim$sp_N$age)
+    catchability <- q
+  } else {
+    selection <- .trait_selection(sim, q, "length")
+    I <- sim$N * selection$at_age
+    I_at_length <- sim$N_at_length * selection$values
+    catchability <- function(age) selection$at_age[match(age, sim$ages)]
+    sim$sp_N$I <- sim$sp_N$N * catchability(sim$sp_N$age)
+  }
 
   ## Simulate sets conducted across survey grid
   if (is.null(custom_sets)) {
     sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
                      trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets)
   } else {
-    sets <- as.data.table(custom_sets)
+    sets <- data.table::copy(as.data.table(custom_sets))
     if (any(duplicated(sets$set))) {
       stop("When supplying 'custom_sets', please make sure each set has a unique number.")
     }
@@ -233,9 +306,9 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   setdet <- merge(sets, sp_I, by = c("sim", "year", "cell"))
   if (binom_error) {
     setdet$n <- stats::rbinom(rep(1, nrow(setdet)), size = round(setdet$N / setdet$cell_sets),
-                              prob = (setdet$tow_area / setdet$cell_area) * q(setdet$age))
+                              prob = (setdet$tow_area / setdet$cell_area) * catchability(setdet$age))
   } else {
-    setdet$n <- round((setdet$N / setdet$cell_sets) * ((setdet$tow_area / setdet$cell_area) * q(setdet$age)))
+    setdet$n <- round((setdet$N / setdet$cell_sets) * ((setdet$tow_area / setdet$cell_area) * catchability(setdet$age)))
   }
   setkeyv(setdet, "set")
   setkeyv(sets, "set")
@@ -244,7 +317,45 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   ## Expand set catch to individuals and simulate length
   samp <- setdet[rep(seq(.N), n), list(set, age)]
   samp$id <- seq(nrow(samp))
-  samp$length <- sim$sim_length(samp$age)
+  if (q_by == "age") {
+    samp$length <- sim$sim_length(samp$age)
+  } else {
+    samp$length <- numeric(nrow(samp))
+    for (a in sim$ages) {
+      rows <- which(samp$age == a)
+      if (!length(rows)) next
+      prob <- selection$key[, as.character(a)] * selection$values
+      samp$length[rows] <- sample(as.numeric(rownames(selection$key)), length(rows),
+                                 replace = TRUE, prob = prob)
+    }
+  }
+
+  ## Deterministic catch weights use all caught lengths, before subsampling.
+  samp$weight <- if (is.null(sim$sim_weight)) rep(NA_real_, nrow(samp)) else
+    .biology_values(sim$sim_weight, samp$length, "Weight")
+  mass <- samp[, list(kg = sum(weight)), by = c("set", "age")]
+  setdet$kg <- rep(NA_real_, nrow(setdet))
+  setdet[mass, on = c("set", "age"), kg := i.kg]
+  setdet$kg[setdet$n == 0] <- 0
+
+  list(sim = sim, sets = sets, setdet = setdet, samp = samp, I = I,
+       I_at_length = I_at_length, lengths_cap = lengths_cap, ages_cap = ages_cap,
+       age_sampling = age_sampling, age_length_group = age_length_group,
+       age_space_group = age_space_group, light = light)
+}
+
+.survey_samples <- function(truth) {
+  sim <- truth$sim
+  sets <- truth$sets
+  setdet <- truth$setdet
+  samp <- truth$samp
+  lengths_cap <- truth$lengths_cap
+  ages_cap <- truth$ages_cap
+  age_sampling <- truth$age_sampling
+  age_length_group <- truth$age_length_group
+  age_space_group <- truth$age_space_group
+  light <- truth$light
+  n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- weight <- kg <- NULL
 
   ## Sample lengths
   measured <- samp[, list(id = id[sample(.N, ifelse(.N > lengths_cap, lengths_cap, .N),
@@ -271,12 +382,12 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   rm(length_samp)
 
   ## Simplify samp object
-  samp <- samp[, list(set, id, length, age, measured, aged)]
+  samp <- samp[, list(set, id, length, weight, age, measured, aged)]
   if (light) samp$id <- NULL
 
   ## Summarise set catch and sampling
   if (!light) full_setdet <- setdet
-  setdet <- merge(sets, setdet[, list(N = sum(N), n = sum(n)), by = "set"], by = "set")
+  setdet <- merge(sets, setdet[, list(N = sum(N), n = sum(n), kg = sum(kg)), by = "set"], by = "set")
   setdet <- merge(setdet,
                   samp[, list(n_measured = sum(measured), n_aged = sum(aged)), by = "set"],
                   by = "set", all.x = TRUE)
@@ -285,12 +396,13 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 
   ## Further summarize samples
   samp_totals <- setdet[, list(n_sets = .N, n_caught = sum(n),
+                               kg_caught = sum(kg),
                                n_measured = sum(n_measured),
                                n_aged = sum(n_aged)), by = c("sim", "year")]
 
   ## Add new stuff to main object
-  sim$I <- I
-  sim$I_at_length <- I_at_length
+  sim$I <- truth$I
+  sim$I_at_length <- truth$I_at_length
   if (!light) sim$full_setdet <- full_setdet
   sim$setdet <- setdet
   sim$samp <- samp
@@ -330,7 +442,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
 #'   sim_distribution(grid = make_grid(res = c(10, 10))) |>
 #'   sim_survey_parallel(
 #'     n_sims = 5, n_loops = 5, cores = 1,
-#'     q = sim_logistic(k = 2, x0 = 3),
+#'     q = sim_logistic(k = 2, x50 = 3),
 #'     quiet = FALSE
 #'   )
 #' }
@@ -342,6 +454,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
 
   j <- loop <- new_set <- NULL
 
+  sim <- round_sim(sim)
   start <- Sys.time()
   one_res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)
   end <- Sys.time()
@@ -394,6 +507,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
   ## Add new stuff to main object
   sim$I <- one_res$I
   sim$I_at_length <- one_res$I_at_length
+  sim$sp_N$I <- one_res$sp_N$I
   sim$setdet <- setdet
   sim$samp <- samp
   sim$samp_totals <- samp_totals

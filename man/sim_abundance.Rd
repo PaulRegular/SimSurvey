@@ -10,13 +10,16 @@ sim_abundance(
   Z = sim_Z(),
   R = sim_R(),
   N0 = sim_N0(),
-  growth = sim_vonB()
+  growth = sim_growth(),
+  weight = sim_weight(),
+  maturity = sim_maturity(),
+  maturity_by = "length"
 )
 }
 \arguments{
-\item{ages}{A numeric vector of ages to include in the simulation.}
+\item{ages}{A non-empty, finite numeric vector of ages, ascending in steps of one.}
 
-\item{years}{A numeric vector of years to include in the simulation.}
+\item{years}{A non-empty, finite numeric vector of years, ascending in steps of one.}
 
 \item{Z}{A function for generating a total mortality matrix, such as \code{\link[=sim_Z]{sim_Z()}}.}
 
@@ -29,6 +32,14 @@ such as \code{\link[=sim_N0]{sim_N0()}}.}
 \item{growth}{A closure, such as \code{\link[=sim_vonB]{sim_vonB()}}, for simulating length given age.
 This is used both to generate an abundance-at-length matrix and later for length simulation
 in \code{\link[=sim_survey]{sim_survey()}}.}
+
+\item{weight}{Function returning expected kilograms at length, such as
+\code{\link[=sim_weight]{sim_weight()}}. Default lengths are centimetres. Shared by all fisheries.}
+
+\item{maturity}{Function returning probabilities of maturity, such as
+\code{\link[=sim_maturity]{sim_maturity()}} or \code{\link[=sim_logistic]{sim_logistic()}}.}
+
+\item{maturity_by}{Trait supplied to \code{maturity}: \code{"length"} or \code{"age"}.}
 }
 \value{
 A list with the following elements:
@@ -42,6 +53,9 @@ A list with the following elements:
 \item \code{N}: Matrix of abundance-at-age
 \item \code{N_at_length}: Matrix of abundance-at-length
 \item \code{sim_length}: Function for simulating lengths given ages
+\item \code{sim_weight}, \code{sim_maturity}, \code{maturity_by}: Shared biological relationships
+\item \code{B}, \code{B_at_length}: Expected biomass (kg), by age/year and length/year
+\item \code{S}, \code{S_at_length}: Expected mature biomass (kg), by age/year and length/year
 }
 }
 \description{
@@ -57,6 +71,21 @@ matrix. The same growth function is retained for use in \code{\link[=sim_survey]
 from catch-at-age survey data.
 
 Note: The ability to simulate distributions by length is not yet implemented.
+
+Biomass integrates weight over the discrete length-age key. Mature biomass
+integrates weight times maturity, retaining their association. \code{S} represents
+all mature fish under one curve, without a female fraction, spawning-season
+adjustment, or recruitment feedback. These are expected annual snapshots, not
+the biomass of a particular integer length-stock realization used by a fishery.
+Spatial simulation and \code{\link[=round_sim]{round_sim()}} refresh summaries when abundance changes.
+
+To migrate an older distributed simulation without regenerating its trajectory,
+explicitly attach the relationships, then call \code{round_sim()}:
+\code{sim$sim_weight <- sim_weight()}; \code{sim$sim_maturity <- sim_maturity()};
+\code{sim$maturity_by <- "length"}; \code{sim <- round_sim(sim)}.
+This uses existing cell rounding; it does not resimulate N or Z. For an older
+abundance-only object, attach the components before \code{\link[=sim_distribution]{sim_distribution()}}.
+Biological defaults are not silently assigned to old objects.
 }
 \examples{
 R_fun <- sim_R(log_mean = log(100000), log_sd = 0.1, random_walk = TRUE, plot = TRUE)
@@ -107,4 +136,9 @@ plot_surface(sim, mat = "N")
 plot_surface(sim, mat = "Z")
 plot_surface(sim, mat = "N_at_length", xlab = "Length", zlab = "N")
 
+}
+\seealso{
+\code{vignette("fisheries", package = "SimSurvey")} for shared biological
+truth, multiple fisheries with user-supplied allocations, independent surveys,
+and the model equations.
 }

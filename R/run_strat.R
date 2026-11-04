@@ -166,7 +166,10 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
   survey_tab[, sumYst := N * meanYst]
   survey_tab[, sumYst_lcl := (sumYst - abs(stats::qt(lc, df)) * N * sqrt(varYst))]
   survey_tab[, sumYst_ucl := (sumYst + abs(stats::qt(lc, df)) * N * sqrt(varYst))]
-  survey_tab[sapply(survey_tab,  is.nan)] <- NA
+  for (column in names(survey_tab)) {
+    nan_rows <- which(is.nan(survey_tab[[column]]))
+    if (length(nan_rows)) data.table::set(survey_tab, i = nan_rows, j = column, value = NA)
+  }
 
   ## Rename cols
   survey_tab <- survey_tab[, c(survey_groups,  "n", "N", "df", "varYst",
@@ -211,7 +214,7 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #'                      growth = sim_vonB(length_group = 1)) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20)),
 #'                    ays_covar = sim_ays_covar(sd = 1)) |>
-#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) |>
+#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x50 = 3)) |>
 #'   run_strat()
 #' }
 #'
@@ -284,7 +287,7 @@ run_strat <- function(sim,
 #'                      growth = sim_vonB(length_group = 1)) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20)),
 #'                    ays_covar = sim_ays_covar(sd = 1)) |>
-#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x0 = 3)) |>
+#'   sim_survey(n_sims = 1, q = sim_logistic(k = 2, x50 = 3)) |>
 #'   run_strat() |>
 #'   strat_error()
 #' }
