@@ -76,7 +76,7 @@
       reference_kg <- vapply(allocation, function(a) sum(a$catch_kg), numeric(1))
       reference <- reference_n
       reference[biomass_target] <- reference_kg[biomass_target]
-      targets <- .balanced_round(reference_n)
+      targets <- .balanced_round(reference_n, total = min(round(sum(reference_n)), sum(budget)))
       targets[biomass_target] <- vapply(controls[biomass_target], function(c) c$target[y], numeric(1))
       selected <- lapply(controls, function(c) c$selection$selected[cbind(a_index, l_index)])
       access <- lapply(controls, .fishery_access, cells = cells, year = year)

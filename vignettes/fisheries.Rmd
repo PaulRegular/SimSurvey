@@ -646,12 +646,16 @@ age order or canonical fishery-name order. Then
 
 \[
 \mathbf D_y=\mathcal R\{N_{a,y}(1-e^{-Z_{a,y}})\}_a,\qquad
-\mathbf Q_y=\mathcal R\{\sum_a C^{\mathrm{ref}}_{f,a,y}\}_f.
+\mathbf Q_y=\mathcal R_{\sum_aD_{a,y}}\{\sum_a C^{\mathrm{ref}}_{f,a,y}\}_f.
 \]
 
 \(D_{a,y}\), stored as `total_deaths`, is the shared whole-fish count of all
 deaths at age, including fishing and other deaths. \(Q_{f,y}\) is one fishery's
-total-number target for share, F_full and catch_n modes. Reference-number rounding
+total-number target for share, F_full and catch_n modes. The subscript on the
+rounding operator caps its rounded total at the supplied integer death count;
+this prevents floating-point drift at half-integer ties from adding an
+unsupported fish. If the cap is below the sum of floors, scale reference counts
+proportionally before largest-remainder allocation. Reference-number rounding
 is joint across all fisheries, including the reference numbers for kilogram
 fisheries; the latter use their unrounded kilogram quota to stop instead of Q.
 Rounding is not applied independently to each age/fishery catch. The rounded

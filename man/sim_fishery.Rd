@@ -159,7 +159,8 @@ draws. Valid targets can still have shortfalls due to access, capture response,
 operation limits, integer rounding or shared-stock constraints.
 
 Shares, F_full and catch_n stop at the rounded reference total in numbers.
-These reference catches are rounded jointly across fisheries. Catch_kg stops
+These reference catches are rounded jointly across fisheries, with the rounded
+combined total capped at the shared integer death count. Catch_kg stops
 at the requested kilograms using realized catch weights, not a converted
 number quota. Whole fish are retained; final catches are thinned proportionally
 in aggregate, then filled with randomly selected categories of fish that fit.

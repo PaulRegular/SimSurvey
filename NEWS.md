@@ -9,6 +9,9 @@
   requested settings, reference catches, achieved catches and shortfalls.
 * Update fishery plots and the workflow vignette for mixed target types,
   reference F and kilogram quotas, including the mathematical conversion.
+* Bound jointly rounded reference-number targets by the shared integer death
+  count, preventing floating-point round trips at half-integer ties from
+  creating an unsupported extra fish.
 
 * Publish development documentation under `/dev/`, preserving the released site
   at the root. Build the site on pull requests before deployment from `main`.

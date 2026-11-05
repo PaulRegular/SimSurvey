@@ -282,3 +282,18 @@ test_that("kilogram targets retain unsuccessful operations and repeated-cell dep
   expect_equal(limited$annual$shortfall, 21)
   expect_equal(limited$annual$kg, 0)
 })
+
+test_that("rounding reference targets cannot exceed the shared integer death count", {
+  withr::local_seed(817)
+  for (N in c(13, 53, 105)) {
+    sim <- fishery_population(N)
+    result <- sim_fishery(sim, log(2), capture_all, target_type = "F_full",
+                           selectivity = function(age) 1, subset_cells = cell == 1)$fishery
+    # The algebraic round trip (N*.5/log(2))*log(2) can land just above N*.5.
+    expect_equal(result$annual$target, round(N * 0.5))
+    expect_equal(result$annual$n, round(N * 0.5))
+    expect_equal(result$annual$shortfall, 0)
+    expect_equal(result$annual$status, "target_met")
+  }
+  expect_equal(.balanced_round(c(4, 4), total = 6), c(3, 3))
+})
