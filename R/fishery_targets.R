@@ -59,6 +59,20 @@
            sim$years[y], ", age ", sim$ages[a], ": reference F ", signif(combined[a], 8),
            " exceeds Z ", signif(Z[a], 8), " (mortality budget). Reduce targets.", call. = FALSE)
     }
+    ## Length-selective fisheries can share a high-weight subset even when
+    ## their age-average F fits Z. Also bound their combined reference catches.
+    prefix <- if (length(controls) == 1) paste0("Fishery '", names(controls), "'") else
+      paste0("Combined fisheries '", paste(names(controls), collapse = "', '"), "'")
+    for (type in c("catch_n", "catch_kg")) {
+      reference <- sum(vapply(allocations, function(a) sum(a[[type]]), numeric(1)))
+      population <- if (type == "catch_n") sum(N) else sum(sim$B[, y])
+      if (reference > population + 1e-12 * max(reference, population)) {
+        stop(prefix, ", year ", sim$years[y], ": reference catch ", signif(reference, 8),
+             if (type == "catch_n") " fish" else " kg", " exceeds starting ",
+             if (type == "catch_n") "N " else "B ", signif(population, 8),
+             if (type == "catch_n") " fish" else " kg", ". Reduce targets.", call. = FALSE)
+      }
+    }
     allocations
   })
 }

@@ -297,3 +297,25 @@ test_that("rounding reference targets cannot exceed the shared integer death cou
   }
   expect_equal(.balanced_round(c(4, 4), total = 6), c(3, 3))
 })
+
+test_that("combined reference biomass cannot exceed B for length-selective fisheries", {
+  withr::local_seed(818)
+  sim <- fishery_population(100)
+  key <- matrix(c(0.9, 0.1), 2, dimnames = list(length = c(10, 20), age = 1))
+  sim$sim_length <- function(age, length_age_key = FALSE) key
+  sim$sim_weight <- function(length) ifelse(length == 20, 100, 1)
+  sim <- round_sim(sim)
+  spec <- sim_fishery(target = 0.75 * sum(sim$B), target_type = "catch_kg",
+                       selectivity_by = "length", selectivity = function(length) as.numeric(length == 20),
+                       catch_model = capture_all, subset_cells = cell == 1)
+  # Each reference allocation fits B and Z, but their combined kg exceeds B.
+  expect_no_error(sim_fisheries(sim, first = spec))
+  before <- .Random.seed
+  expect_error(sim_fisheries(sim, first = spec, second = spec),
+                 "Combined fisheries.*first.*second.*2001.*reference catch.*exceeds starting B 1090")
+  expect_identical(.Random.seed, before)
+  spec$target_type <- "F_full"
+  spec$target <- log(2) / 0.1
+  expect_error(sim_fisheries(sim, first = spec), "first.*reference catch.*exceeds starting B 1090")
+  expect_identical(.Random.seed, before)
+})

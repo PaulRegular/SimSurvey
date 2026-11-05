@@ -12,6 +12,8 @@
 * Bound jointly rounded reference-number targets by the shared integer death
   count, preventing floating-point round trips at half-integer ties from
   creating an unsupported extra fish.
+* Check combined reference catches against N and B as well as Z, including
+  length-selective fisheries whose biomass targets overlap on heavy fish.
 
 * Publish development documentation under `/dev/`, preserving the released site
   at the root. Build the site on pull requests before deployment from `main`.

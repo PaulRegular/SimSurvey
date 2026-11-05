@@ -69,6 +69,8 @@
 #' Targets must be finite and nonnegative. Catch targets cannot exceed starting
 #' N or B, and must fit the mortality available under Z and selectivity.
 #' Reference F, including combined fisheries, cannot exceed Z at any age/year.
+#' Combined reference catches must also fit starting N and B, including when
+#' length selectivity concentrates several fisheries on the same heavy fish.
 #' Errors identify the fishery/year and applicable limits before stock allocation
 #' draws. Valid targets can still have shortfalls due to access, capture response,
 #' operation limits, integer rounding or shared-stock constraints.

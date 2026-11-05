@@ -182,8 +182,9 @@ Targets must be nonnegative and aligned with years. Number and kilogram targets
 cannot exceed starting `N` and `B`, respectively. They must also fit the mortality
 available under `Z` and selectivity: 100 fish with `Z = log(2)` provide only 50
 annual deaths. Reference F after selectivity, summed across all fisheries, must
-not exceed `Z` at any age/year. Invalid specifications error before fishing,
-identifying the fishery, year, and relevant limit. Access and capture constraints
+not exceed `Z` at any age/year. Combined reference catches must also fit starting
+`N` and `B`. Invalid specifications error before fishing, identifying the fishery,
+year, and relevant limit. Access and capture constraints
 can still prevent valid targets from being reached.
 
 Operations from active fisheries are interleaved at random on shared stocks.
@@ -633,6 +634,17 @@ low selectivity provided its selected F fits. All fisheries are checked together
 even when they use different target types. The population trajectory is unchanged.
 These are reference quantities: realized age composition and allocation of deaths
 may differ, and valid reference targets can still have operational shortfalls.
+
+Also require the combined reference catches to fit the starting population:
+
+\[
+\sum_{f,a}C^{\mathrm{ref}}_{f,a,y}\le\sum_a N_{a,y},\qquad
+\sum_{f,a}W^{\mathrm{ref}}_{f,a,y}\le\sum_a B_{a,y}.
+\]
+
+The biomass check matters when length-selective fisheries all target the same
+heavy fish: their age-average F can fit Z while their combined reference
+kilograms exceed B. This global check does not guarantee local feasibility.
 
 Cell abundances are rounded with R's `round()` convention and annual abundance
 is recomputed from cells. Within each cell/age, integer length stocks are drawn
