@@ -102,7 +102,8 @@ plot_fishery <- function(sim, fishery, which_year = sim$years[1],
 #' Plot annual fishery catches, effort, or CPUE
 #'
 #' Replicate values and median annual trends for one fishery, preserving its
-#' effort units. Number-catch plots also show the integer catch target.
+#' effort units. Catch plots show the stopping target when their units match:
+#' numbers for share, F_full and catch_n targets, kilograms for catch_kg targets.
 #' @inheritParams plot_fishery
 #' @param metric Annual result column: `"n"`, `"reported_n"`, `"kg"`,
 #' `"reported_kg"`, `"effort"`, `"shortfall"`, `"cpue"`, `"reported_cpue"`,
@@ -121,14 +122,15 @@ plot_fishery_trend <- function(sim, fishery, metric = "cpue", ...) {
   keep <- annual$fishery == fishery
   annual <- as.data.frame(annual[keep, ])
   annual$value <- annual[[metric]]
+  target_unit <- if (is.null(annual$target_unit)) "fish" else unique(annual$target_unit)
   effort_units <- paste(config$gear_unit, config$time_unit, sep = " * ")
   units <- switch(metric, n = "Fish", reported_n = "Reported fish", kg = "kg", reported_kg = "Reported kg",
-                    effort = effort_units, shortfall = "Uncaught target (fish)",
+                    effort = effort_units, shortfall = paste0("Uncaught target (", target_unit, ")"),
                     cpue = paste("Fish /", effort_units), reported_cpue = paste("Reported fish /", effort_units),
                     biomass_cpue = paste("kg /", effort_units), reported_biomass_cpue = paste("Reported kg /", effort_units))
   annual$hover <- paste0("Year: ", annual$year, "<br>Replicate: ", annual$sim,
                           "<br>", units, ": ", signif(annual$value, 5),
-                          "<br>Status: ", annual$status, "<br>Shortfall: ", annual$shortfall)
+                          "<br>Status: ", annual$status, "<br>Shortfall (", target_unit, "): ", annual$shortfall)
   median_value <- vapply(sim$years, function(year) {
     stats::median(annual$value[annual$year == year], na.rm = TRUE)
   }, numeric(1))
@@ -145,7 +147,7 @@ plot_fishery_trend <- function(sim, fishery, metric = "cpue", ...) {
                                        text = "No finite values (check effort or available weights)",
                                        showarrow = FALSE)
   }
-  if (metric == "n") {
+  if ((metric == "n" && target_unit == "fish") || (metric == "kg" && target_unit == "kg")) {
     target <- vapply(sim$years, function(year) unique(annual$target[annual$year == year])[1], numeric(1))
     p <- p |> plotly::add_lines(x = sim$years, y = target, inherit = FALSE, name = "Catch target",
                                 line = list(color = "#D55E00", dash = "dash"))

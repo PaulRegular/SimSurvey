@@ -71,7 +71,7 @@ test_that("fishery protocols preserve reporting, all existing samples and later 
   withr::local_seed(415)
   sim <- fishery_population(years = 2001:2003)
   sim$sim_maturity <- function(length) rep(0.5, length(length))
-  a <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(1),
+  a <- sim_fishery(target = 0.2, catch_model = sim_capture(1),
                     reporting_cv = 0.2, max_operations = 8, lengths_cap = 10,
                     ages_cap = 2, light = FALSE)
   b <- a
@@ -157,7 +157,7 @@ test_that("empty samples, invalid protocols and old objects are explicit", {
 test_that("fisheries inherit one population weight without changing number targets", {
   withr::local_seed(420)
   sim <- fishery_population()
-  config <- sim_fishery(fishery_share = 0.2, catch_model = capture_all, light = FALSE)
+  config <- sim_fishery(target = 0.2, catch_model = capture_all, light = FALSE)
   set.seed(421)
   first <- sim_fisheries(sim, a = config, b = config)
   sim$sim_weight <- function(length) 2

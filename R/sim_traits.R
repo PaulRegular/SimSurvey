@@ -67,9 +67,11 @@
 }
 
 ## Largest-remainder rounding preserves the rounded total, including ties.
-.balanced_round <- function(x) {
+.balanced_round <- function(x, total = round(sum(x))) {
+  ## A supplied total can cap fishery quotas at the shared integer death count.
+  if (sum(floor(x)) > total) x <- x * total / sum(x)
   result <- floor(x)
-  extra <- round(sum(x)) - sum(result)
+  extra <- total - sum(result)
   if (extra > 0) {
     indices <- order(-(x - result), seq_along(x))[seq_len(extra)]
     result[indices] <- result[indices] + 1

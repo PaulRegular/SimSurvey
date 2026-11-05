@@ -1,13 +1,17 @@
 #' Simulate a fishery conditional on population mortality
 #'
-#' Allocate a share of existing mortality to fishing, generate aggregate catches,
+#' Allocate existing mortality using a share, fully selected F, or catch target,
+#' generate aggregate catches,
 #' and simulate catch reporting and nested biological monitoring. Omitting `sim`
 #' creates a configuration without running a simulation or drawing random values.
 #'
 #' @param sim A simulation list from [sim_distribution()]. May be omitted to
 #' create a `sim_fishery_spec` configuration.
-#' @param fishery_share Proportion of Z attributed to the fishery before
-#' selectivity: a scalar or vector aligned with simulation years, in `[0, 1]`.
+#' @param target A nonnegative scalar or vector aligned with simulation years.
+#' Its meaning is set by `target_type`.
+#' @param target_type One of `"share"` (default: proportion of Z before
+#' selectivity, in `[0, 1]`), `"F_full"` (annual fishing mortality at selectivity
+#' one), `"catch_n"` (fish), or `"catch_kg"` (kilograms).
 #' @param catch_model Function `(available, operation)` returning one whole-fish
 #' proposal per available row, between zero and its remaining `N`. See
 #' [sim_capture()] for the table contract and a generic built-in model.
@@ -52,9 +56,34 @@
 #' `fishery`, `sim`, `year`, `operation`, `cell`, `gear_amount`, `duration`, and
 #' `effort`. Grid area and capture-model units must agree.
 #'
-#' For length-age probabilities P and selectivity s, reference catch at age is
-#' `N * fishery_share * sum(P * s) * (1 - exp(-Z))`. The stopping target is its
-#' total in numbers, rounded to whole fish. Realized age composition may differ.
+#' For length-age probabilities P and selectivity s, mean selectivity at age is
+#' `s_bar = sum(P * s)`. Share targets set `F_reference = target * Z * s_bar`;
+#' fully selected F targets set `F_reference = target * s_bar`, without rescaling
+#' selectivity. Catch targets scale that same selectivity pattern to the requested
+#' expected numbers or kilograms using the Baranov equation under fixed Z.
+#' Kilograms integrate weight jointly with length selectivity, not as a product
+#' of separately averaged weight and selectivity.
+#'
+#' Targets must be finite and nonnegative. Catch targets cannot exceed starting
+#' N or B, and must fit the mortality available under Z and selectivity.
+#' Reference F, including combined fisheries, cannot exceed Z at any age/year.
+#' Combined reference catches must also fit starting N and B, including when
+#' length selectivity concentrates several fisheries on the same heavy fish.
+#' Errors identify the fishery/year and applicable limits before stock allocation
+#' draws. Valid targets can still have shortfalls due to access, capture response,
+#' operation limits, integer rounding or shared-stock constraints.
+#'
+#' Shares, F_full and catch_n stop at the rounded reference total in numbers.
+#' These reference catches are rounded jointly across fisheries, with the rounded
+#' combined total capped at the shared integer death count. Catch_kg stops
+#' at the requested kilograms using realized catch weights, not a converted
+#' number quota. Whole fish are retained; final catches are thinned proportionally
+#' in aggregate, then filled with randomly selected categories of fish that fit.
+#' No individual commercial catch records are generated. A residual kilogram
+#' shortfall can remain when no eligible whole fish fits; status is exhausted.
+#' Zero-weight fish do not provide a positive kilogram catching opportunity.
+#' Realized age composition may differ from the reference, so meeting a catch
+#' target need not reproduce reference F or one exact realized F_full.
 #' Age-specific death budgets preserve the rounded total expected deaths using
 #' largest-remainder rounding. Fishing and residual other deaths share those
 #' budgets. Residual deaths are sampled from remaining fish without replacement.
@@ -77,7 +106,8 @@
 #' retains all specified effort when capped by the target (`quota_limited`).
 #' Zero-catch operations retain their effort. Unreachable targets return a
 #' shortfall and termination status.
-#' A shortfall is `target - n`: `exhausted` means no eligible accessible catching
+#' A shortfall is the stopping target minus true catch, in `target_unit` (fish or
+#' kg): `exhausted` means no eligible accessible catching
 #' opportunities remain (including known zero capture/capacity); `operation_limit`
 #' means the allowed operations ended before reaching the target. Unused fishing
 #' allocation becomes other deaths under the fixed total-mortality budget.
@@ -98,6 +128,13 @@
 #' `mortality_ledger`, `samp`, `annual`, `reference`, `settings`, and named
 #' `configurations`. Identifiers link fishery, replicate (`sim`), year, operation,
 #' and sample. True counts are integers; reported numbers can be fractional.
+#' `annual` records `target_type`, `requested_target` (the supplied setting),
+#' `reference_target` and `target` (continuous and operational stopping targets),
+#' `target_unit`, `achieved`, and `shortfall`. It also retains expected reference
+#' catches as `reference_target_n` and `reference_target_kg`, and
+#' `F_full_reference` (missing for share targets, whose F also depends on Z at age).
+#' `reference` includes `kg_reference` at age. Reference biomass uses the growth
+#' key; a particular integer length-stock realization can have different biomass.
 #' CPUE is catch divided by nominal effort; annual CPUE uses totals. Biomass and
 #' biomass CPUE use the weight relationship stored by [sim_abundance()]. With
 #' `light = FALSE`, `joint_catch`
@@ -108,16 +145,19 @@
 #'
 #' @examples
 #' capture <- sim_capture(q = 0.1, capacity_per_gear = 50)
-#' specification <- sim_fishery(fishery_share = 0.2, catch_model = capture)
+#' specification <- sim_fishery(target = 0.2, catch_model = capture)
+#' f_target <- sim_fishery(target = 0.1, target_type = "F_full", catch_model = capture)
+#' number_target <- sim_fishery(target = 100, target_type = "catch_n", catch_model = capture)
+#' mass_target <- sim_fishery(target = 50, target_type = "catch_kg", catch_model = capture)
 #' \donttest{
 #' population <- sim_abundance(ages = 1:3, years = 1:2) |>
 #'   sim_distribution(grid = make_grid(res = c(20, 20)))
-#' result <- sim_fishery(population, fishery_share = 0.2, catch_model = capture,
+#' result <- sim_fishery(population, target = 0.2, catch_model = capture,
 #'                       max_operations = 100)
 #' result$fishery$annual
 #' }
 #' @export
-sim_fishery <- function(sim, fishery_share, catch_model,
+sim_fishery <- function(sim, target, catch_model,
                         selectivity = sim_logistic(), selectivity_by = "age",
                         gear_amount = 1, duration = 1,
                         gear_unit = "gear_unit", time_unit = "time_unit",
@@ -127,7 +167,13 @@ sim_fishery <- function(sim, fishery_share, catch_model,
                         sampling_coverage = 1, sampling_targeting = 0,
                         lengths_cap = 100, ages_cap = 5,
                         age_sampling = "stratified", age_length_group = 1,
-                        light = TRUE, maturity_sampling = "aged") {
+                        light = TRUE, maturity_sampling = "aged",
+                        target_type = "share") {
+  if (missing(target)) stop("Supply target.", call. = FALSE)
+  if (!is.character(target_type) || length(target_type) != 1 || is.na(target_type) ||
+      !target_type %in% c("share", "F_full", "catch_n", "catch_kg")) {
+    stop("target_type must be 'share', 'F_full', 'catch_n', or 'catch_kg'.", call. = FALSE)
+  }
   access <- if (missing(subset_cells)) quote(TRUE) else substitute(subset_cells)
   config_names <- setdiff(names(formals(sim_fishery)), c("sim", "subset_cells"))
   config <- mget(config_names, envir = environment(), inherits = FALSE)
@@ -138,7 +184,12 @@ sim_fishery <- function(sim, fishery_share, catch_model,
   .run_fisheries(sim, list(fishery = config), n_sims = n_sims)
 }
 
-.fishery_controls <- function(config, sim) {
+.fishery_controls <- function(config, sim, fishery = "fishery") {
+  if (!is.character(config$target_type) || length(config$target_type) != 1 ||
+      is.na(config$target_type) ||
+      !config$target_type %in% c("share", "F_full", "catch_n", "catch_kg")) {
+    stop("Fishery '", fishery, "': invalid target_type.", call. = FALSE)
+  }
   years <- sim$years
   .check_maturity_model(sim, config$maturity_sampling)
   if (!is.function(config$catch_model)) stop("catch_model must be a function.")
@@ -155,11 +206,13 @@ sim_fishery <- function(sim, fishery_share, catch_model,
   if (!is.logical(config$light) || length(config$light) != 1 || is.na(config$light)) {
     stop("light must be TRUE or FALSE.")
   }
-  probabilities <- c("fishery_share", "exploration", "sampling_coverage")
+  probabilities <- c("exploration", "sampling_coverage")
   nonnegative <- c("targeting", "knowledge_sd", "reporting_factor", "reporting_cv",
                    "sampling_targeting")
   integers <- c("max_operations", "lengths_cap", "ages_cap")
   result <- config
+  result$target <- .year_values(config[["target"]], years, paste0("Fishery '", fishery, "': target"),
+                                 upper = if (config$target_type == "share") 1 else Inf)
   for (name in probabilities) result[[name]] <- .year_values(config[[name]], years, name, upper = 1)
   for (name in nonnegative) result[[name]] <- .year_values(config[[name]], years, name)
   for (name in integers) result[[name]] <- .year_values(config[[name]], years, name, whole = TRUE)

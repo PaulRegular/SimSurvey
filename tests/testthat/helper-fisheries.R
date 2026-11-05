@@ -16,6 +16,6 @@ fishery_population <- function(counts = c(100, 100), years = 2001) {
 capture_all <- function(available, operation) available$N * (available$selectivity > 0)
 
 fishery_run <- function(sim = fishery_population(), ...) {
-  sim_fishery(sim, fishery_share = 0.5, catch_model = capture_all,
+  sim_fishery(sim, target = 0.5, catch_model = capture_all,
                selectivity = function(x) 1, subset_cells = cell == 1, ...)
 }

@@ -25,10 +25,11 @@
 #' [sim_abundance()]. Weights belong to the population, not individual programs.
 #'
 #' Every fishery's reference target uses the original population and Z.
-#' At each age/year the sum of `fishery_share * mean_selectivity_at_age` must not
-#' exceed one. Incompatible configurations produce an error rather than being
-#' normalized. Integer targets are rounded jointly across fisheries, preserving
-#' the rounded combined target and overall mortality bound.
+#' Fisheries may use different target types. At each age/year their combined
+#' reference F must not exceed Z. Incompatible configurations produce an
+#' informative error rather than being normalized. Reference catches in numbers
+#' are rounded jointly; kilogram targets remain in kilograms. See [sim_fishery()]
+#' for target definitions, units, validation and shortfalls.
 #'
 #' At each operation the next active fishery is chosen uniformly. Catches deplete
 #' shared age-length stocks and death budgets. A fishery retires on reaching its
@@ -54,8 +55,8 @@
 #' and a mathematical appendix.
 #'
 #' @examples
-#' trawl <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 0.1))
-#' gillnet <- sim_fishery(fishery_share = 0.1, catch_model = sim_capture(q = 0.05))
+#' trawl <- sim_fishery(target = 0.2, catch_model = sim_capture(q = 0.1))
+#' gillnet <- sim_fishery(target = 0.1, catch_model = sim_capture(q = 0.05))
 #' # population |> sim_fisheries(trawl = trawl, gillnet = gillnet)
 #' @export
 sim_fisheries <- function(sim, ..., n_sims = NULL) {

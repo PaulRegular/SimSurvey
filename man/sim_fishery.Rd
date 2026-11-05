@@ -6,7 +6,7 @@
 \usage{
 sim_fishery(
   sim,
-  fishery_share,
+  target,
   catch_model,
   selectivity = sim_logistic(),
   selectivity_by = "age",
@@ -29,15 +29,16 @@ sim_fishery(
   age_sampling = "stratified",
   age_length_group = 1,
   light = TRUE,
-  maturity_sampling = "aged"
+  maturity_sampling = "aged",
+  target_type = "share"
 )
 }
 \arguments{
 \item{sim}{A simulation list from \code{\link[=sim_distribution]{sim_distribution()}}. May be omitted to
 create a \code{sim_fishery_spec} configuration.}
 
-\item{fishery_share}{Proportion of Z attributed to the fishery before
-selectivity: a scalar or vector aligned with simulation years, in \verb{[0, 1]}.}
+\item{target}{A nonnegative scalar or vector aligned with simulation years.
+Its meaning is set by \code{target_type}.}
 
 \item{catch_model}{Function \verb{(available, operation)} returning one whole-fish
 proposal per available row, between zero and its remaining \code{N}. See
@@ -101,6 +102,10 @@ All length/age sampling finishes before maturity is drawn for every measured
 fish, independently of this observation mask. Switching only this argument
 preserves existing samples, catches, and overlapping maturity states. An older
 object lacking a maturity model can retain number-only sampling with \code{"none"}.}
+
+\item{target_type}{One of \code{"share"} (default: proportion of Z before
+selectivity, in \verb{[0, 1]}), \code{"F_full"} (annual fishing mortality at selectivity
+one), \code{"catch_n"} (fish), or \code{"catch_kg"} (kilograms).}
 }
 \value{
 The simulation list with \code{replicates} and a \code{fishery} list containing
@@ -108,13 +113,21 @@ The simulation list with \code{replicates} and a \code{fishery} list containing
 \code{mortality_ledger}, \code{samp}, \code{annual}, \code{reference}, \code{settings}, and named
 \code{configurations}. Identifiers link fishery, replicate (\code{sim}), year, operation,
 and sample. True counts are integers; reported numbers can be fractional.
+\code{annual} records \code{target_type}, \code{requested_target} (the supplied setting),
+\code{reference_target} and \code{target} (continuous and operational stopping targets),
+\code{target_unit}, \code{achieved}, and \code{shortfall}. It also retains expected reference
+catches as \code{reference_target_n} and \code{reference_target_kg}, and
+\code{F_full_reference} (missing for share targets, whose F also depends on Z at age).
+\code{reference} includes \code{kg_reference} at age. Reference biomass uses the growth
+key; a particular integer length-stock realization can have different biomass.
 CPUE is catch divided by nominal effort; annual CPUE uses totals. Biomass and
 biomass CPUE use the weight relationship stored by \code{\link[=sim_abundance]{sim_abundance()}}. With
 \code{light = FALSE}, \code{joint_catch}
 and \code{sample_truth} are also retained. Without \code{sim}, a \code{sim_fishery_spec} list.
 }
 \description{
-Allocate a share of existing mortality to fishing, generate aggregate catches,
+Allocate existing mortality using a share, fully selected F, or catch target,
+generate aggregate catches,
 and simulate catch reporting and nested biological monitoring. Omitting \code{sim}
 creates a configuration without running a simulation or drawing random values.
 }
@@ -126,9 +139,34 @@ gear settings. They must not implement hidden seeding. The capture table uses
 \code{fishery}, \code{sim}, \code{year}, \code{operation}, \code{cell}, \code{gear_amount}, \code{duration}, and
 \code{effort}. Grid area and capture-model units must agree.
 
-For length-age probabilities P and selectivity s, reference catch at age is
-\code{N * fishery_share * sum(P * s) * (1 - exp(-Z))}. The stopping target is its
-total in numbers, rounded to whole fish. Realized age composition may differ.
+For length-age probabilities P and selectivity s, mean selectivity at age is
+\code{s_bar = sum(P * s)}. Share targets set \code{F_reference = target * Z * s_bar};
+fully selected F targets set \code{F_reference = target * s_bar}, without rescaling
+selectivity. Catch targets scale that same selectivity pattern to the requested
+expected numbers or kilograms using the Baranov equation under fixed Z.
+Kilograms integrate weight jointly with length selectivity, not as a product
+of separately averaged weight and selectivity.
+
+Targets must be finite and nonnegative. Catch targets cannot exceed starting
+N or B, and must fit the mortality available under Z and selectivity.
+Reference F, including combined fisheries, cannot exceed Z at any age/year.
+Combined reference catches must also fit starting N and B, including when
+length selectivity concentrates several fisheries on the same heavy fish.
+Errors identify the fishery/year and applicable limits before stock allocation
+draws. Valid targets can still have shortfalls due to access, capture response,
+operation limits, integer rounding or shared-stock constraints.
+
+Shares, F_full and catch_n stop at the rounded reference total in numbers.
+These reference catches are rounded jointly across fisheries, with the rounded
+combined total capped at the shared integer death count. Catch_kg stops
+at the requested kilograms using realized catch weights, not a converted
+number quota. Whole fish are retained; final catches are thinned proportionally
+in aggregate, then filled with randomly selected categories of fish that fit.
+No individual commercial catch records are generated. A residual kilogram
+shortfall can remain when no eligible whole fish fits; status is exhausted.
+Zero-weight fish do not provide a positive kilogram catching opportunity.
+Realized age composition may differ from the reference, so meeting a catch
+target need not reproduce reference F or one exact realized F_full.
 Age-specific death budgets preserve the rounded total expected deaths using
 largest-remainder rounding. Fishing and residual other deaths share those
 budgets. Residual deaths are sampled from remaining fish without replacement.
@@ -151,7 +189,8 @@ budget; it cannot independently increase annual removals. The final operation
 retains all specified effort when capped by the target (\code{quota_limited}).
 Zero-catch operations retain their effort. Unreachable targets return a
 shortfall and termination status.
-A shortfall is \code{target - n}: \code{exhausted} means no eligible accessible catching
+A shortfall is the stopping target minus true catch, in \code{target_unit} (fish or
+kg): \code{exhausted} means no eligible accessible catching
 opportunities remain (including known zero capture/capacity); \code{operation_limit}
 means the allowed operations ended before reaching the target. Unused fishing
 allocation becomes other deaths under the fixed total-mortality budget.
@@ -169,11 +208,14 @@ Catch, stock and mortality tables remain aggregate even for very large stocks.
 }
 \examples{
 capture <- sim_capture(q = 0.1, capacity_per_gear = 50)
-specification <- sim_fishery(fishery_share = 0.2, catch_model = capture)
+specification <- sim_fishery(target = 0.2, catch_model = capture)
+f_target <- sim_fishery(target = 0.1, target_type = "F_full", catch_model = capture)
+number_target <- sim_fishery(target = 100, target_type = "catch_n", catch_model = capture)
+mass_target <- sim_fishery(target = 50, target_type = "catch_kg", catch_model = capture)
 \donttest{
 population <- sim_abundance(ages = 1:3, years = 1:2) |>
   sim_distribution(grid = make_grid(res = c(20, 20)))
-result <- sim_fishery(population, fishery_share = 0.2, catch_model = capture,
+result <- sim_fishery(population, target = 0.2, catch_model = capture,
                       max_operations = 100)
 result$fishery$annual
 }

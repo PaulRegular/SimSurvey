@@ -85,7 +85,7 @@ test_that("capture is bounded, responds to area and obeys capacity", {
 test_that("callback and control domains are enforced", {
   withr::local_seed(24)
   sim <- fishery_population()
-  expect_error(sim_fishery(sim, 1.1, capture_all), "fishery_share")
+  expect_error(sim_fishery(sim, 1.1, capture_all), "target")
   expect_error(sim_fishery(sim, 0.2, capture_all, selectivity = function(x) 2), "probabilities")
   expect_error(fishery_run(sim, gear_amount = function(operation) -1), "gear_amount")
   expect_error(fishery_run(sim, duration = 0), "duration")
@@ -97,7 +97,7 @@ test_that("callback and control domains are enforced", {
 test_that("configuration creation consumes no random numbers", {
   withr::local_seed(26)
   before <- .Random.seed
-  spec <- sim_fishery(fishery_share = 0.3, catch_model = sim_capture(0.1),
+  spec <- sim_fishery(target = 0.3, catch_model = sim_capture(0.1),
                        subset_cells = depth > 20)
   expect_s3_class(spec, "sim_fishery_spec")
   expect_identical(.Random.seed, before)

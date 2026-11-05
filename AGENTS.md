@@ -106,6 +106,9 @@ deaths again from future pre-generated populations. Keep stock and catch tables
 aggregate, with exact whole-fish mortality conservation. Complete all fishing
 truth before monitoring so monitoring controls cannot alter fishing outcomes.
 Keep effort units explicit and distinguish true catches from reported estimates.
+Targets may be shares of Z, fully selected F, catch numbers or catch kilograms.
+Validate reference allocations against the shared Z before stock draws. Keep
+kilogram stopping allowances and shortfalls in kg; never treat them as fish counts.
 Weight and maturity belong to the population. Refresh `B` and `S` from the joint
 length-age key when abundance changes; do not substitute weight at mean length
 or multiply separately averaged weight and maturity. `S` is all-fish expected
