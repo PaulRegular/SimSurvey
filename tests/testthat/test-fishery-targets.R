@@ -1,4 +1,4 @@
-test_that("target configurations preserve positional calls and the deprecated alias", {
+test_that("target configurations use shares by default and consume no RNG", {
   withr::local_seed(801)
   before <- .Random.seed
   for (type in c("share", "F_full", "catch_n", "catch_kg")) {
@@ -6,30 +6,13 @@ test_that("target configurations preserve positional calls and the deprecated al
     expect_s3_class(spec, "sim_fishery_spec")
     expect_identical(spec$target_type, type)
   }
+  default <- sim_fishery(target = 0.2, catch_model = capture_all)
+  expect_identical(default$target_type, "share")
   expect_identical(.Random.seed, before)
-  expect_warning(old <- sim_fishery(fishery_share = 0.2, catch_model = capture_all), "deprecated")
-  new <- sim_fishery(target = 0.2, catch_model = capture_all)
-  expect_equal(old, new)
-  expect_identical(.Random.seed, before)
-  expect_error(sim_fishery(target = 0.2, fishery_share = 0.2, catch_model = capture_all), "not both")
-  expect_error(sim_fishery(fishery_share = 0.2, target_type = "F_full", catch_model = capture_all), "requires")
   expect_error(sim_fishery(catch_model = capture_all), "Supply target")
   for (type in list("Fbar", c("share", "F_full"), NA_character_, 1)) {
     expect_error(sim_fishery(target = 0.2, target_type = type, catch_model = capture_all), "target_type")
   }
-  sim <- fishery_population()
-  conflicting <- new
-  conflicting$fishery_share <- 0.3
-  expect_error(sim_fisheries(sim, net = conflicting), "net.*not both")
-  legacy <- new
-  legacy$fishery_share <- legacy$target
-  legacy$target <- legacy$target_type <- NULL
-  set.seed(802)
-  a <- sim_fisheries(sim, fishery = legacy)$fishery
-  set.seed(802)
-  b <- sim_fisheries(sim, fishery = new)$fishery
-  expect_equal(a$setdet, b$setdet)
-  expect_equal(a$reference, b$reference)
 })
 
 test_that("fully selected F preserves selectivity magnitude and analytical references", {

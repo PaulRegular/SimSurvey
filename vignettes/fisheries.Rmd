@@ -514,9 +514,6 @@ Defaults are not silently installed.
 Growth remains stored as `sim_length`. Fishery-level `weight` arguments were
 removed before release. Prefer `x50` to deprecated `x0`; positional logistic
 calls keep their meaning. `death_budget` remains an alias for `total_deaths`.
-Use `target` in place of `fishery_share`; the old named argument remains a
-deprecated alias for `target_type = "share"`. Existing positional calls keep
-their meaning, and older saved fishery configurations remain accepted.
 
 Older multi-year fishery outputs affected by the annual-stock selection defect
 must be rerun from saved populations. Do not patch their ledgers or regenerate

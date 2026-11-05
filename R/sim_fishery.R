@@ -12,8 +12,6 @@
 #' @param target_type One of `"share"` (default: proportion of Z before
 #' selectivity, in `[0, 1]`), `"F_full"` (annual fishing mortality at selectivity
 #' one), `"catch_n"` (fish), or `"catch_kg"` (kilograms).
-#' @param fishery_share Deprecated alias for `target` with `target_type = "share"`.
-#' Do not supply both names.
 #' @param catch_model Function `(available, operation)` returning one whole-fish
 #' proposal per available row, between zero and its remaining `N`. See
 #' [sim_capture()] for the table contract and a generic built-in model.
@@ -170,22 +168,14 @@ sim_fishery <- function(sim, target, catch_model,
                         lengths_cap = 100, ages_cap = 5,
                         age_sampling = "stratified", age_length_group = 1,
                         light = TRUE, maturity_sampling = "aged",
-                        target_type = "share", fishery_share = NULL) {
-  if (!missing(fishery_share)) {
-    if (!missing(target)) stop("Supply target or fishery_share, not both.", call. = FALSE)
-    if (!identical(target_type, "share")) {
-      stop("fishery_share requires target_type = 'share'.", call. = FALSE)
-    }
-    warning("fishery_share is deprecated; use target with target_type = 'share'.", call. = FALSE)
-    target <- fishery_share
-  }
+                        target_type = "share") {
   if (missing(target)) stop("Supply target.", call. = FALSE)
   if (!is.character(target_type) || length(target_type) != 1 || is.na(target_type) ||
       !target_type %in% c("share", "F_full", "catch_n", "catch_kg")) {
     stop("target_type must be 'share', 'F_full', 'catch_n', or 'catch_kg'.", call. = FALSE)
   }
   access <- if (missing(subset_cells)) quote(TRUE) else substitute(subset_cells)
-  config_names <- setdiff(names(formals(sim_fishery)), c("sim", "subset_cells", "fishery_share"))
+  config_names <- setdiff(names(formals(sim_fishery)), c("sim", "subset_cells"))
   config <- mget(config_names, envir = environment(), inherits = FALSE)
   config$subset_cells <- access
   config$subset_environment <- parent.frame()
@@ -195,14 +185,6 @@ sim_fishery <- function(sim, target, catch_model,
 }
 
 .fishery_controls <- function(config, sim, fishery = "fishery") {
-  ## Serialized development configurations can still contain the former name.
-  if (!is.null(config[["target"]]) && !is.null(config[["fishery_share"]])) {
-    stop("Fishery '", fishery, "': supply target or fishery_share, not both.", call. = FALSE)
-  }
-  if (is.null(config[["target_type"]])) config$target_type <- "share"
-  if (is.null(config[["target"]]) && !is.null(config[["fishery_share"]])) {
-    config$target <- config[["fishery_share"]]
-  }
   if (!is.character(config$target_type) || length(config$target_type) != 1 ||
       is.na(config$target_type) ||
       !config$target_type %in% c("share", "F_full", "catch_n", "catch_kg")) {

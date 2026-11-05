@@ -30,8 +30,7 @@ sim_fishery(
   age_length_group = 1,
   light = TRUE,
   maturity_sampling = "aged",
-  target_type = "share",
-  fishery_share = NULL
+  target_type = "share"
 )
 }
 \arguments{
@@ -107,9 +106,6 @@ object lacking a maturity model can retain number-only sampling with \code{"none
 \item{target_type}{One of \code{"share"} (default: proportion of Z before
 selectivity, in \verb{[0, 1]}), \code{"F_full"} (annual fishing mortality at selectivity
 one), \code{"catch_n"} (fish), or \code{"catch_kg"} (kilograms).}
-
-\item{fishery_share}{Deprecated alias for \code{target} with \code{target_type = "share"}.
-Do not supply both names.}
 }
 \value{
 The simulation list with \code{replicates} and a \code{fishery} list containing
