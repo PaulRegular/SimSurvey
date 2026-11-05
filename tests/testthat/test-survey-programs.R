@@ -8,7 +8,7 @@ test_that("survey configurations consume no RNG and require common replicates", 
   expect_error(sim_surveys(sim), "nonempty")
   expect_error(sim_surveys(sim, config), "nonempty")
   expect_error(sim_surveys(sim, a = config, a = config), "unique")
-  expect_error(sim_surveys(sim, a = sim_fishery(fishery_share = 0, catch_model = capture_all)), "sim_survey_spec")
+  expect_error(sim_surveys(sim, a = sim_fishery(target = 0, catch_model = capture_all)), "sim_survey_spec")
   expect_error(sim_surveys(sim, a = sim_survey(n_sims = 2)), "common n_sims")
   sets <- sim_sets(sim, n_sims = 2, min_sets = 2, set_den = 0, trawl_dim = c(1, 5))
   expect_error(sim_surveys(sim, a = sim_survey(custom_sets = sets), n_sims = 1), "replicate identifiers")
@@ -103,7 +103,7 @@ test_that("survey extraction restores spatial truth and clears cached analyses",
 test_that("surveys observe the original population after shared fisheries", {
   withr::local_seed(326)
   sim <- small_population()
-  fishery <- sim_fishery(fishery_share = 0.3, catch_model = sim_capture(1),
+  fishery <- sim_fishery(target = 0.3, catch_model = sim_capture(1),
                           max_operations = 5, lengths_cap = 0)
   fished <- sim_fisheries(sim, first = fishery, second = fishery, n_sims = 2)
   config <- sim_survey(q = function(age) 1, trawl_dim = c(1, 5), min_sets = 2,

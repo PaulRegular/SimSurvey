@@ -23,7 +23,8 @@ uncertainty across independently regenerated population trajectories.
 }
 \description{
 Replicate values and median annual trends for one fishery, preserving its
-effort units. Number-catch plots also show the integer catch target.
+effort units. Catch plots show the stopping target when their units match:
+numbers for share, F_full and catch_n targets, kilograms for catch_kg targets.
 }
 \examples{
 # plot_fishery_trend(result, "trawl", metric = "n")

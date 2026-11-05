@@ -45,7 +45,10 @@
   ## axes follow the same age/year order used by sim_abundance().
   dimnames(sim$Z) <- dimnames(sim$N)
   configurations <- configurations[order(names(configurations), method = "radix")]
-  controls <- lapply(configurations, .fishery_controls, sim = sim)
+  controls <- lapply(names(configurations), function(fishery) {
+    .fishery_controls(configurations[[fishery]], sim, fishery)
+  })
+  names(controls) <- names(configurations)
   names_f <- names(controls)
   key <- .growth_key(sim)
   cells <- data.table(data.frame(sim$grid))
@@ -54,11 +57,8 @@
     stop("The grid must have positive cell area and unique cell identifiers.")
   }
   kg <- .biology_values(weight, as.numeric(rownames(key)), "Weight")
-  shares <- lapply(seq_along(sim$years), function(y) {
-    combined <- Reduce(`+`, lapply(controls, function(c) c$fishery_share[y] * c$selection$at_age))
-    if (any(combined > 1 + 1e-12)) stop("Combined fishery shares and selectivity exceed the mortality budget.")
-    combined
-  })
+  allocations <- .fishery_targets(sim, controls, key, kg)
+  biomass_target <- vapply(controls, function(c) c$target_type == "catch_kg", logical(1))
   operations <- catches <- ledgers <- annual <- references <- list()
   operation_id <- 0L
   for (replicate in seq_len(n_sims)) {
@@ -71,10 +71,13 @@
       l_index <- match(stock$length, as.numeric(rownames(key)))
       budget <- .balanced_round(sim$N[, y] * -expm1(-sim$Z[, y]))
       death_remaining <- budget
-      reference <- vapply(controls, function(c) {
-        sum(sim$N[, y] * c$fishery_share[y] * c$selection$at_age * -expm1(-sim$Z[, y]))
-      }, numeric(1))
-      targets <- .balanced_round(reference)
+      allocation <- allocations[[y]]
+      reference_n <- vapply(allocation, function(a) sum(a$catch_n), numeric(1))
+      reference_kg <- vapply(allocation, function(a) sum(a$catch_kg), numeric(1))
+      reference <- reference_n
+      reference[biomass_target] <- reference_kg[biomass_target]
+      targets <- .balanced_round(reference_n)
+      targets[biomass_target] <- vapply(controls[biomass_target], function(c) c$target[y], numeric(1))
       selected <- lapply(controls, function(c) c$selection$selected[cbind(a_index, l_index)])
       access <- lapply(controls, .fishery_access, cells = cells, year = year)
       errors <- lapply(seq_along(controls), function(f) {
@@ -106,6 +109,9 @@
           next
         }
         eligible <- remaining > 0 & selected[[f]] > 0 & death_remaining[a_index] > 0
+        if (biomass_target[f]) {
+          eligible <- eligible & kg[l_index] > 0 & kg[l_index] <= targets[f] - achieved[f]
+        }
         eligible_cells <- access[[f]] & seq_len(nrow(cells)) %in% c_index[eligible]
         if (!any(eligible_cells)) {
           status[f] <- "exhausted"
@@ -146,8 +152,11 @@
           accepted[group] <- .thin_counts(accepted[group], death_remaining[a])
         }
         mortality_limited <- sum(accepted) < sum(proposal)
-        quota_limited <- sum(accepted) > targets[f] - achieved[f]
-        accepted <- .thin_counts(accepted, targets[f] - achieved[f])
+        quota_limited <- if (biomass_target[f]) sum(accepted * kg[l_index[rows]]) > targets[f] - achieved[f] else
+          sum(accepted) > targets[f] - achieved[f]
+        accepted <- if (biomass_target[f])
+          .thin_biomass(accepted, kg[l_index[rows]], max(0, targets[f] - achieved[f])) else
+            .thin_counts(accepted, targets[f] - achieved[f])
         remaining[rows] <- remaining[rows] - accepted
         for (a in seq_along(sim$ages)) {
           caught_at_age <- sum(accepted[a_index[rows] == a])
@@ -168,9 +177,10 @@
             kg = accepted[caught] * kg[l_index[rows[caught]]])
         }
         counts[f] <- counts[f] + 1
-        achieved[f] <- achieved[f] + operation$n
+        achieved[f] <- achieved[f] + if (biomass_target[f]) operation$kg else operation$n
         effort[f] <- effort[f] + operation$effort
-        if (achieved[f] == targets[f]) status[f] <- "target_met"
+        tolerance <- if (biomass_target[f]) 64 * .Machine$double.eps * targets[f] else 0
+        if (targets[f] - achieved[f] <= tolerance) status[f] <- "target_met"
       }
       fishery_deaths <- starting - remaining
       other_deaths <- numeric(nrow(stock))
@@ -189,7 +199,12 @@
       ledgers[[length(ledgers) + 1L]] <- ledger
       annual[[length(annual) + 1L]] <- data.table(
         fishery = names_f, sim = replicate, year = year, reference_target = reference,
-        target = targets, n = achieved, effort = effort, shortfall = targets - achieved,
+        target = targets, target_type = vapply(controls, `[[`, character(1), "target_type"),
+        requested_target = vapply(controls, function(c) c$target[y], numeric(1)),
+        target_unit = ifelse(biomass_target, "kg", "fish"), achieved = achieved,
+        reference_target_n = reference_n, reference_target_kg = reference_kg,
+        F_full_reference = vapply(allocation, `[[`, numeric(1), "F_full"),
+        n = colSums(achieved_at_age), effort = effort, shortfall = pmax(0, targets - achieved),
         n_operations = counts, status = status)
       for (f in seq_along(controls)) {
         removal_fraction <- rep(NA_real_, length(sim$ages))
@@ -203,9 +218,8 @@
           fishery = names_f[f], sim = replicate, year = year, age = sim$ages,
           N = sim$N[, y], Z = sim$Z[, y], total_deaths = budget, death_budget = budget,
           selectivity = controls[[f]]$selection$at_age,
-          F_reference = controls[[f]]$fishery_share[y] * sim$Z[, y] * controls[[f]]$selection$at_age,
-          catch_reference = sim$N[, y] * controls[[f]]$fishery_share[y] *
-            controls[[f]]$selection$at_age * -expm1(-sim$Z[, y]),
+          F_reference = allocation[[f]]$F,
+          catch_reference = allocation[[f]]$catch_n, kg_reference = allocation[[f]]$catch_kg,
           catch_realized = achieved_at_age[, f], U_realized = removal_fraction,
           F_realized = realized_f)
       }

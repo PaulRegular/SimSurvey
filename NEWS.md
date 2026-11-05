@@ -1,5 +1,15 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add fishery `target` modes for shares of Z, fully selected F (`F_full`), catch
+  numbers (`catch_n`), and catch kilograms (`catch_kg`). Retain `fishery_share`
+  as a deprecated alias and preserve positional calls and saved configurations.
+* Validate starting-population limits, mortality-compatible targets and combined
+  reference F before random stock allocation, with fishery/year/age diagnostics.
+  Cap kilogram catches as whole-fish aggregate removals and record target units,
+  requested settings, reference catches, achieved catches and shortfalls.
+* Update fishery plots and the workflow vignette for mixed target types,
+  reference F and kilogram quotas, including the mathematical conversion.
+
 * Publish development documentation under `/dev/`, preserving the released site
   at the root. Build the site on pull requests before deployment from `main`.
   Use stable appendix anchors in both the vignette and website article.

@@ -1,7 +1,7 @@
 test_that("a single fishery batch matches standalone execution", {
   withr::local_seed(301)
   sim <- fishery_population()
-  config <- sim_fishery(fishery_share = 0.5, catch_model = sim_capture(2),
+  config <- sim_fishery(target = 0.5, catch_model = sim_capture(2),
                          selectivity = function(x) 1, subset_cells = cell == 1,
                          max_operations = 20, light = FALSE)
   set.seed(302)
@@ -19,10 +19,10 @@ test_that("fisheries share mortality without double removal", {
   sim <- fishery_population()
   # Different ages may each receive 80% of their mortality: scalar shares need
   # not sum below one when their selectivities do not overlap.
-  young <- sim_fishery(fishery_share = 0.8, catch_model = capture_all,
+  young <- sim_fishery(target = 0.8, catch_model = capture_all,
                         selectivity = function(age) as.numeric(age == 1),
                         subset_cells = cell == 1, light = FALSE)
-  old <- sim_fishery(fishery_share = 0.8, catch_model = capture_all,
+  old <- sim_fishery(target = 0.8, catch_model = capture_all,
                       selectivity = function(age) as.numeric(age == 2),
                       subset_cells = cell == 1, light = FALSE)
   result <- sim_fisheries(sim, young = young, old = old)$fishery
@@ -37,10 +37,10 @@ test_that("fisheries share mortality without double removal", {
   expect_equal(sum(result$sp_removals$n), 80)
   incompatible <- young
   incompatible$selectivity <- function(age) 1
-  expect_error(sim_fisheries(sim, young = incompatible, old = old), "Combined fishery shares")
+  expect_error(sim_fisheries(sim, young = incompatible, old = old), "Combined fisheries")
   # Validate every year, rather than only the first one.
   sim <- fishery_population(years = 2001:2003)
-  incompatible$fishery_share <- c(0.1, 0.1, 0.9)
+  incompatible$target <- c(0.1, 0.1, 0.9)
   expect_error(sim_fisheries(sim, first = incompatible, second = old), "mortality budget")
 })
 
@@ -48,7 +48,7 @@ test_that("registration order does not change interleaved fishing or monitoring"
   withr::local_seed(304)
   sim <- fishery_population()
   capture <- function(available, operation) .thin_counts(available$N, 2)
-  first <- sim_fishery(fishery_share = 0.4, catch_model = capture,
+  first <- sim_fishery(target = 0.4, catch_model = capture,
                         selectivity = function(x) 1, subset_cells = cell == 1,
                         gear_unit = "hook", time_unit = "hour", light = FALSE)
   second <- first
@@ -76,7 +76,7 @@ test_that("registration order does not change interleaved fishing or monitoring"
 test_that("joint target rounding respects small overall mortality budgets", {
   withr::local_seed(306)
   sim <- fishery_population(3)
-  config <- sim_fishery(fishery_share = 0.5, catch_model = capture_all,
+  config <- sim_fishery(target = 0.5, catch_model = capture_all,
                          selectivity = function(x) 1, subset_cells = cell == 1)
   result <- sim_fisheries(sim, first = config, second = config)$fishery
   # Each reference target is .75; joint rounding allocates one fish to each.
@@ -92,11 +92,11 @@ test_that("competition can exhaust selected stocks before reference targets", {
   sim <- fishery_population()
   # Fishery A is allowed at both ages but captures only age 1. A and B both
   # require that age, so their combined total target cannot be achieved.
-  a <- sim_fishery(fishery_share = 0.5,
+  a <- sim_fishery(target = 0.5,
                     catch_model = function(available, operation) available$N * (available$age == 1),
                     selectivity = function(age) 1, subset_cells = cell == 1,
                     max_operations = 5)
-  b <- sim_fishery(fishery_share = 0.5, catch_model = capture_all,
+  b <- sim_fishery(target = 0.5, catch_model = capture_all,
                     selectivity = function(age) as.numeric(age == 1), subset_cells = cell == 1)
   result <- sim_fisheries(sim, a = a, b = b)$fishery
   expect_equal(sum(result$annual$target), 75)
@@ -108,14 +108,14 @@ test_that("competition can exhaust selected stocks before reference targets", {
 test_that("fishery batch configuration and replicate counts are validated", {
   withr::local_seed(308)
   sim <- fishery_population()
-  config <- sim_fishery(fishery_share = 0.2, catch_model = capture_all)
+  config <- sim_fishery(target = 0.2, catch_model = capture_all)
   expect_error(sim_fisheries(sim), "nonempty")
   expect_error(sim_fisheries(sim, config), "nonempty")
   expect_error(sim_fisheries(sim, a = config, a = config), "unique")
   expect_error(sim_fisheries(sim, a = sim_survey()), "sim_fishery_spec")
-  expect_error(sim_fisheries(sim, a = sim_fishery(fishery_share = 0.2,
+  expect_error(sim_fisheries(sim, a = sim_fishery(target = 0.2,
                 catch_model = capture_all, n_sims = 2)), "common n_sims")
-  expect_error(sim_fisheries(sim, a = sim_fishery(fishery_share = 0.2,
+  expect_error(sim_fisheries(sim, a = sim_fishery(target = 0.2,
                 catch_model = capture_all, weight = function(length) 1)), "unused argument")
   result <- sim_fisheries(sim, a = config, n_sims = 2)
   expect_identical(result$replicates, 1:2)
@@ -127,7 +127,7 @@ test_that("fishery batch configuration and replicate counts are validated", {
 test_that("monitoring changes in one fishery leave all shared truth unchanged", {
   withr::local_seed(309)
   sim <- fishery_population(years = 2001:2003)
-  a <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(1), max_operations = 10,
+  a <- sim_fishery(target = 0.2, catch_model = sim_capture(1), max_operations = 10,
                     light = FALSE)
   b <- a
   set.seed(310)
@@ -151,7 +151,7 @@ test_that("existing custom mortality closures can return unnamed matrices", {
     sim_distribution(grid = small_grid(), ays_covar = zero_covariance,
                        depth_par = function(data) rep(0, nrow(data)))
   expect_null(dimnames(sim$Z))
-  spec <- sim_fishery(fishery_share = 0.1, catch_model = capture_all,
+  spec <- sim_fishery(target = 0.1, catch_model = capture_all,
                        selectivity = function(age) 1, lengths_cap = 0)
   result <- sim_fisheries(sim, custom = spec)
   expect_equal(dimnames(result$Z), dimnames(result$N))
