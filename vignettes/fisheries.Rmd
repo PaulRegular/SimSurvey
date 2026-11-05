@@ -124,9 +124,9 @@ Omitting `sim` from `sim_fishery()` creates a configuration without simulation
 or random draws. Declare fisheries together; their names identify the outputs.
 
 ```{r configurations}
-trawl <- sim_fishery(fishery_share = 0.2, catch_model = sim_capture(q = 400))
+trawl <- sim_fishery(target = 0.2, catch_model = sim_capture(q = 400))
 gillnet <- sim_fishery(
-  fishery_share = 0.1, catch_model = sim_capture(q = 200),
+  target = 0.1, catch_model = sim_capture(q = 200),
   selectivity = sim_logistic(x50 = 40), selectivity_by = "length"
 )
 
@@ -137,7 +137,7 @@ fished <- population |>
 
 The trawl uses default age selectivity; the gillnet illustrates length selectivity.
 These names do not imply calibrated gear models. To run one fishery directly,
-use `sim_fishery(population, fishery_share = 0.2, catch_model = sim_capture(q = 400))`.
+use `sim_fishery(population, target = 0.2, catch_model = sim_capture(q = 400))`.
 
 `sim_capture()` converts its `q` coefficient, gear amount, duration, selectivity,
 and cell area to an encounter probability. Capture `q` has grid-area units per
@@ -147,10 +147,44 @@ Default gear amount and duration are one, and their product is effort. Specify
 `capacity_per_gear` adds a catch-capacity limit. Every fishery inherits the
 population's weight relationship.
 
-`fishery_share` allocates a share of `Z` **before selectivity**. Selectivity
+By default, `target` allocates a share of `Z` **before selectivity**. Selectivity
 is not rescaled: its magnitude affects both the reference catch target and
-capture. Targets are total numbers of fish, not kilogram TACs. Combined shares
-and selectivity must fit `Z` at every age/year; incompatible allocations error.
+capture. Other target types specify fully selected annual F, catch numbers,
+or catch kilograms:
+
+```{r target-options}
+f_target <- sim_fishery(target = 0.1, target_type = "F_full",
+                       catch_model = sim_capture(q = 400))
+number_target <- sim_fishery(target = 1000, target_type = "catch_n",
+                            catch_model = sim_capture(q = 400))
+mass_target <- sim_fishery(target = 1000, target_type = "catch_kg",
+                          catch_model = sim_capture(q = 400))
+
+# Run one of these on the same population, using its stored weight model.
+set.seed(507)
+mass_fished <- population |> sim_fishery(
+  target = 1000, target_type = "catch_kg", catch_model = sim_capture(q = 400)
+)
+```
+
+`F_full` is F at selectivity one. It scales the selectivity curve directly;
+it is not an average over an age range. Catch targets scale the same curve to
+the requested expected catch under the existing `Z`. Each fishery may use a
+different target type in `sim_fisheries()`.
+
+Share and `F_full` settings become catch targets in numbers; `catch_n` supplies
+that number directly. Kilogram targets stop against realized kilograms, without
+converting the quota into a fixed number of fish. Every mode retains whole fish.
+The final kilogram catch is capped using aggregate counts, so a small shortfall
+can remain if no eligible fish fits the remaining allowance.
+
+Targets must be nonnegative and aligned with years. Number and kilogram targets
+cannot exceed starting `N` and `B`, respectively. They must also fit the mortality
+available under `Z` and selectivity: 100 fish with `Z = log(2)` provide only 50
+annual deaths. Reference F after selectivity, summed across all fisheries, must
+not exceed `Z` at any age/year. Invalid specifications error before fishing,
+identifying the fishery, year, and relevant limit. Access and capture constraints
+can still prevent valid targets from being reached.
 
 Operations from active fisheries are interleaved at random on shared stocks.
 Accepted catches reduce available fish and age-specific death allowances.
@@ -171,7 +205,11 @@ truth for inspection.
 
 ### Shortfalls and mortality
 
-A **shortfall** is the integer catch target minus realized catch.
+A **shortfall** is the operational catch target minus true catch, in fish or
+kilograms as recorded by `annual$target_unit`. `requested_target` retains the
+supplied share, F, or catch setting; `target` is the stopping catch allowance and
+`achieved` is catch in those same units. Expected catches in both units are
+retained as `reference_target_n` and `reference_target_kg`.
 `target_met` means the target was caught; `exhausted` means no eligible
 accessible catching opportunities remain; `operation_limit` means the allowed
 operations ended first. Access restrictions, gear response, and shared stocks
@@ -188,7 +226,10 @@ mortality; it does not improve later survival.
 across fisheries and repeated on their reference rows. Do not sum it across
 fisheries. `F_realized` is the Baranov-equivalent rate from true catches,
 original `N`, and fixed `Z`. Meeting a total-number target need not reproduce
-reference F at every age. [Appendix A2](#fishery-targets)
+reference F at every age or correspond to one exact realized `F_full`.
+`F_full_reference` records the intended fully selected F for F and catch modes;
+share targets retain F at age because their pattern also depends on Z.
+[Appendix A2](#fishery-targets)
 defines rounding and zero-abundance cases.
 
 ## Fishing locations and CPUE
@@ -227,7 +268,7 @@ biological monitoring are held fixed.
 run_cpue <- function(targeting) {
   set.seed(602)
   sim_fishery(population,
-    fishery_share = 0.2, catch_model = sim_capture(q = 1),
+    target = 0.2, catch_model = sim_capture(q = 1),
     selectivity = function(age) 1, targeting = targeting, knowledge_sd = 0.25,
     max_operations = 30, sampling_coverage = 0, n_sims = 5)
 }
@@ -367,7 +408,7 @@ every length-measured fish; `"none"` collects no maturity observations.
 For example:
 
 ```{r maturity-observations, eval=FALSE}
-sim_fishery(population, fishery_share = 0.2,
+sim_fishery(population, target = 0.2,
   catch_model = sim_capture(q = 400), maturity_sampling = "measured")
 ```
 
@@ -472,6 +513,9 @@ Defaults are not silently installed.
 Growth remains stored as `sim_length`. Fishery-level `weight` arguments were
 removed before release. Prefer `x50` to deprecated `x0`; positional logistic
 calls keep their meaning. `death_budget` remains an alias for `total_deaths`.
+Use `target` in place of `fishery_share`; the old named argument remains a
+deprecated alias for `target_type = "share"`. Existing positional calls keep
+their meaning, and older saved fishery configurations remain accepted.
 
 Older multi-year fishery outputs affected by the annual-stock selection defect
 must be rerun from saved populations. Do not patch their ledgers or regenerate
@@ -537,26 +581,58 @@ ordinary number-based length-age key would likewise lose the relevant associatio
 
 ### A2. Reference catches and integer mortality budgets {#fishery-targets}
 
-Mean selectivity at age and reference fishing mortality are
+Mean selectivity at age and its joint weight moment are
 
 \[
 \bar s_{f,a}=\sum_lP_{l,a}s_{f,a,l},\qquad
-F^{\mathrm{ref}}_{f,a,y}=p_{f,y}Z_{a,y}\bar s_{f,a}.
+v_{f,a}=\sum_lP_{l,a}w_ls_{f,a,l}.
 \]
 
-For constant annual mortality, the
-[Baranov reference catch](https://www.fao.org/4/X9026E/x9026e06.htm) becomes
+Write \(h_{a,y}=(1-e^{-Z_{a,y}})/Z_{a,y}\), with its continuous limit
+\(h_{a,y}=1\) at zero Z. Under constant annual rates, the
+[Baranov reference catch](https://www.fao.org/4/X9026E/x9026e06.htm) is
 
 \[
 C^{\mathrm{ref}}_{f,a,y}
-=N_{a,y}\frac{F^{\mathrm{ref}}_{f,a,y}}{Z_{a,y}}(1-e^{-Z_{a,y}})
-=N_{a,y}p_{f,y}\bar s_{f,a}(1-e^{-Z_{a,y}}).
+=N_{a,y}h_{a,y}F^{\mathrm{ref}}_{f,a,y}.
 \]
 
-The final expression defines zero catch at \(Z=0\), without division by zero.
-The constraint is \(\sum_f p_{f,y}\bar s_{f,a}\le1\) for every age/year
-(up to floating-point tolerance). These are reference quantities: realized age
-composition and implied allocation of deaths may differ.
+For `target_type = "share"`, the setting \(p_{f,y}\) gives
+\(F^{\mathrm{ref}}_{f,a,y}=p_{f,y}Z_{a,y}\bar s_{f,a}\), and reference catch
+kilograms at age are \(N_{a,y}p_{f,y}(1-e^{-Z_{a,y}})v_{f,a}\).
+
+The other modes use \(F^{\mathrm{ref}}_{f,a,y}=\lambda_{f,y}\bar s_{f,a}\).
+For `F_full`, \(\lambda\) is the supplied target. For number target \(T_n\)
+or kilogram target \(T_w\), solve
+
+\[
+\lambda_{f,y}=\frac{T_n}{\sum_aN_{a,y}h_{a,y}\bar s_{f,a}}
+\quad\text{or}\quad
+\lambda_{f,y}=\frac{T_w}{\sum_aN_{a,y}h_{a,y}v_{f,a}},
+\]
+
+respectively. Reference kilograms at age are then
+\(W^{\mathrm{ref}}_{f,a,y}=N_{a,y}h_{a,y}\lambda_{f,y}v_{f,a}\).
+Using \(v\), rather than separately averaged weight and selectivity, preserves
+their association. Zero targets give zero F even when the denominator is zero;
+positive targets with no vulnerable population are invalid.
+
+Validate catch targets against starting N or B and against the largest
+\(\lambda\) compatible with Z:
+
+\[
+\lambda_{\max,f,y}=\min_{a:\bar s_{f,a}>0}
+\frac{Z_{a,y}}{\bar s_{f,a}},\qquad
+\sum_fF^{\mathrm{ref}}_{f,a,y}\le Z_{a,y}.
+\]
+
+These checks include zero-abundance ages and zero Z; zero Z permits only zero
+reference F. A small relative floating-point tolerance is used for positive Z.
+The check is on selected F at age: fully selected F can exceed Z at an age with
+low selectivity provided its selected F fits. All fisheries are checked together,
+even when they use different target types. The population trajectory is unchanged.
+These are reference quantities: realized age composition and allocation of deaths
+may differ, and valid reference targets can still have operational shortfalls.
 
 Cell abundances are rounded with R's `round()` convention and annual abundance
 is recomputed from cells. Within each cell/age, integer length stocks are drawn
@@ -575,9 +651,13 @@ age order or canonical fishery-name order. Then
 
 \(D_{a,y}\), stored as `total_deaths`, is the shared whole-fish count of all
 deaths at age, including fishing and other deaths. \(Q_{f,y}\) is one fishery's
-total-number target. Target rounding is joint across fisheries, not independent rounding
-of each age/fishery catch. The valid combined target cannot exceed the overall
-death budget; realized catches must additionally fit age-specific budgets.
+total-number target for share, F_full and catch_n modes. Reference-number rounding
+is joint across all fisheries, including the reference numbers for kilogram
+fisheries; the latter use their unrounded kilogram quota to stop instead of Q.
+Rounding is not applied independently to each age/fishery catch. The rounded
+combined reference numbers cannot exceed the overall death budget; all realized
+catches must fit age-specific budgets. Integer length-stock biomass can differ
+from the expectation B, adding another possible kilogram shortfall.
 
 After fishing, retain true catches and their mortality equivalents at age:
 
@@ -639,6 +719,22 @@ The engine thins proposals without replacement, first for capacity
 remaining mortality, and finally across accepted proposals for the remaining
 fishery target. With category counts \(\mathbf x\), thinning to \(h\) fish uses
 the multivariate hypergeometric distribution; counts are not expanded into fish.
+
+For a remaining kilogram allowance \(R\), retain all proposals if
+\(\sum_i x_iw_i\le R\). Otherwise set
+\(r=R/\sum_i x_iw_i\) and start with \(\lfloor rx_i\rfloor\) fish per
+positive-weight category. Retain zero-weight proposals without charging the
+kilogram quota. Fill the residual allowance by drawing an eligible category with
+probability proportional to its remaining proposal count, retaining as many
+whole fish from it as fit, and repeating until no proposed fish fits. With equal
+positive weights, use hypergeometric thinning to \(\lfloor R/w\rfloor\) fish
+instead. This is a bounded aggregate quota rule, not an additional capture model
+or a uniform sample of every feasible catch combination. No fish is split and
+the kilogram allowance is not exceeded apart from floating-point precision.
+Across operations, exhausted status can leave a residual allowance smaller than
+any accessible, positive-weight eligible fish. A relative machine-precision
+tolerance recognizes numerical target completion.
+
 Accepted catches reduce the common stock and age death budgets.
 
 The capture probability describes a proposal, not the final constrained catch
