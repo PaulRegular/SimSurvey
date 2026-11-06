@@ -1,5 +1,13 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Run stratified estimates and truth comparisons directly on named survey
+  programs. Survey comparisons use catchability-weighted abundance within the
+  eligible cells for each program, replicate and year.
+* Add `run_caa()` and `caa_error()` for reported catch calibrated to age
+  composition from monitoring records. Report coverage and unsupported
+  estimates separately from realized catch comparisons.
+* Summarize monitoring sample counts by operation in one grouped pass.
+
 * Add fishery `target` modes for shares of Z, fully selected F (`F_full`), catch
   numbers (`catch_n`), and catch kilograms (`catch_kg`).
 * Validate starting-population limits, mortality-compatible targets and combined

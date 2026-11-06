@@ -45,6 +45,10 @@ reference:
   - error_stats
   - strat_data
   - strat_means
+- title: Commercial catch at age
+- contents:
+  - run_caa
+  - caa_error
 - title: Testing multiple surveys
 - contents:
   - test_surveys

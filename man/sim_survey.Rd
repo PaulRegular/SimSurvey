@@ -21,7 +21,8 @@ sim_survey(
   custom_sets = NULL,
   light = TRUE,
   q_by = "age",
-  maturity_sampling = "aged"
+  maturity_sampling = "aged",
+  survey_frame = NULL
 )
 }
 \arguments{
@@ -36,7 +37,8 @@ replicate identifiers; an explicit count must agree with them.
 Be cautious: large values may consume significant memory. Use \code{\link[=sim_survey_parallel]{sim_survey_parallel()}} if many simulations are needed.}
 
 \item{q}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability.
-Returned values must range between 0 and 1.}
+It is evaluated on the modeled ages or length-group labels. Returned values
+must range between 0 and 1.}
 
 \item{trawl_dim}{Trawl width and distance (same units as the grid).}
 
@@ -84,6 +86,15 @@ All length/age sampling finishes before maturity is drawn for every measured
 fish, independently of this observation mask. Switching only this argument
 preserves existing samples, catches, and overlapping maturity states. An older
 object lacking a maturity model can retain number-only sampling with \code{"none"}.}
+
+\item{survey_frame}{Optional data frame of unique eligible \code{sim}, \code{year}, and
+\code{cell} keys for \code{custom_sets}. A supplied frame describes all survey replicates
+and years, so a replicate-year with no frame rows has an empty footprint.
+By default, custom sets carry the frame recorded by \code{\link[=sim_sets]{sim_sets()}}, when
+present. Bare custom sets have an unknown frame. When combining sets from
+different designs, combine their frames explicitly and supply the result here.
+Set strata and divisions must match the grid, and stratum areas must match
+the eligible cells.}
 }
 \value{
 A list including:
@@ -98,6 +109,8 @@ Includes:
 \item \code{N}: true population
 \item \code{I}: individuals available to the survey
 \item \code{n}: individuals caught by the survey
+\item \code{survey_frame}: eligible cells by replicate and year, when known
+\item \code{survey_replicates}: intended replicate IDs, including replicates without sets
 }
 
 When \code{sim} is omitted, returns a \code{sim_survey_spec} list of settings.

@@ -267,8 +267,8 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
   I_hat <- NULL
   ints <- lapply(quants, function(q) {
     d[, list(prob = paste0(q, "%"),
-             lower = stats::quantile(I_hat, prob = (1 - q / 100) / 2),
-             upper = stats::quantile(I_hat, prob = 1 - (1 - q / 100) / 2)),
+             lower = stats::quantile(I_hat, prob = (1 - q / 100) / 2, na.rm = TRUE),
+             upper = stats::quantile(I_hat, prob = 1 - (1 - q / 100) / 2, na.rm = TRUE)),
       by = by]
   })
   ints <- data.table::rbindlist(ints)
@@ -278,6 +278,7 @@ plot_survey <- function(sim, which_year = 1, which_sim = 1) {
 
 ## helper function for making fan plots
 .fan <- function(d, x = NULL, xlab = NULL, cols = NULL, ylim = NULL, ...) {
+  if (any(!is.finite(ylim))) ylim <- NULL
   plot_ly(data = d, x = x) |>
     add_ribbons(ymin = ~lower, ymax = ~upper, line = list(width = 0),
                 color = ~prob, colors = cols,

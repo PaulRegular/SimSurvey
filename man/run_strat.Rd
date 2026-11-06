@@ -13,16 +13,16 @@ run_strat(
 )
 }
 \arguments{
-\item{sim}{Simulation object from \code{\link[=sim_survey]{sim_survey()}}.}
+\item{sim}{Simulation object from \code{\link[=sim_survey]{sim_survey()}} or \code{\link[=sim_surveys]{sim_surveys()}}.}
 
 \item{length_group}{Size of the length frequency bins used for both abundance-at-length
 calculations and age-length-key construction. By default, this is inherited from the
 value defined in \code{\link[=sim_abundance]{sim_abundance()}} via the closure supplied to \code{sim_length} (\code{"inherit"}).
-You may also supply a numeric value; however, mismatches in length groupings may cause
-issues with \code{\link[=strat_error]{strat_error()}} if true vs. estimated groupings are not aligned.}
+A numeric width can also be supplied. Length comparisons require matching
+bins or an exact aggregation of the original bins.}
 
 \item{alk_scale}{Spatial scale at which to construct and apply age-length keys:
-\code{"division"} or \code{"strat"}.}
+\code{"division"}, \code{"strat"}, or \code{"set"}.}
 
 \item{strat_data_fun}{Function used to prepare data for stratified analysis (e.g., \code{\link[=strat_data]{strat_data()}}).}
 
@@ -31,10 +31,17 @@ issues with \code{\link[=strat_error]{strat_error()}} if true vs. estimated grou
 \value{
 Adds stratified analysis results to the \code{sim} list:
 \itemize{
-\item \code{"total_strat"}: Results for the total population
+\item \code{"total_strat"}: Results for the total abundance available to the survey
 \item \code{"length_strat"}: Results aggregated by length group
 \item \code{"age_strat"}: Results aggregated by age
+\item \code{"survey_coverage"}: Eligible and visited cells and set counts by stratum
 }
+
+Results have an \code{estimate_status} column identifying support for each estimate.
+Statuses include \code{"ok"}, \code{"no_sets"}, \code{"unsampled_strata"},
+\code{"missing_lengths"}, \code{"missing_estimate"}, \code{"partial_age"}, and
+\code{"unassigned_age"}.
+Batch tables add a \code{survey} key; \code{\link[=select_survey]{select_survey()}} restores one program's view.
 }
 \description{
 Run stratified analysis on simulated data
@@ -42,6 +49,14 @@ Run stratified analysis on simulated data
 \details{
 The \code{strat_data_fun} and \code{strat_means_fun} arguments allow you to use custom
 \code{\link[=strat_data]{strat_data()}} and \code{\link[=strat_means]{strat_means()}} functions.
+Custom estimators must return the requested survey grouping columns and a
+\code{total} column. The existing estimator assumes representative sets within
+each stratum and a common tow area within a stratum. Declaring the frame
+supplies the intended coverage for comparison.
+For a batch, both hooks run independently for each named program.
+A known frame with unsampled strata has missing full-frame estimates.
+An unassigned age row retains catch without a matching age-length key.
+Assigned ages can have partial totals in this case.
 }
 \examples{
 \donttest{

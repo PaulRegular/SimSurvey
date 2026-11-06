@@ -44,11 +44,11 @@ Useful for resuming later with \code{\link[=resume_test]{resume_test()}}. If \co
 \item{length_group}{Size of the length frequency bins used for both abundance-at-length
 calculations and age-length-key construction. By default, this is inherited from the
 value defined in \code{\link[=sim_abundance]{sim_abundance()}} via the closure supplied to \code{sim_length} (\code{"inherit"}).
-You may also supply a numeric value; however, mismatches in length groupings may cause
-issues with \code{\link[=strat_error]{strat_error()}} if true vs. estimated groupings are not aligned.}
+A numeric width can also be supplied. Length comparisons require matching
+bins or an exact aggregation of the original bins.}
 
 \item{alk_scale}{Spatial scale at which to construct and apply age-length keys:
-\code{"division"} or \code{"strat"}.}
+\code{"division"}, \code{"strat"}, or \code{"set"}.}
 
 \item{progress}{Logical. Should progress bar and messages be displayed?}
 
@@ -56,7 +56,8 @@ issues with \code{\link[=strat_error]{strat_error()}} if true vs. estimated grou
   Arguments passed on to \code{\link[=sim_survey]{sim_survey}}
   \describe{
     \item{\code{q}}{A closure (e.g., \code{\link[=sim_logistic]{sim_logistic()}}) for simulating catchability.
-Returned values must range between 0 and 1.}
+It is evaluated on the modeled ages or length-group labels. Returned values
+must range between 0 and 1.}
     \item{\code{q_by}}{Basis of catchability: \code{"age"} (the historical default) or
 \code{"length"}. Length-based catchability is evaluated on the growth model's
 discrete length-group labels. Availability integrates catchability over the
@@ -81,6 +82,14 @@ If \code{FALSE}, stratified estimates at older ages may be biased due to roundin
 Options: \code{"division"} (default), \code{"strat"}, or \code{"set"}. Ignored if \code{age_sampling = "random"}.}
     \item{\code{custom_sets}}{A \code{data.table} of set locations (same structure as returned by \code{\link[=sim_sets]{sim_sets()}}).
 If \code{NULL}, set locations are generated automatically.}
+    \item{\code{survey_frame}}{Optional data frame of unique eligible \code{sim}, \code{year}, and
+\code{cell} keys for \code{custom_sets}. A supplied frame describes all survey replicates
+and years, so a replicate-year with no frame rows has an empty footprint.
+By default, custom sets carry the frame recorded by \code{\link[=sim_sets]{sim_sets()}}, when
+present. Bare custom sets have an unknown frame. When combining sets from
+different designs, combine their frames explicitly and supply the result here.
+Set strata and divisions must match the grid, and stratum areas must match
+the eligible cells.}
   }}
 }
 \value{

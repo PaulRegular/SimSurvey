@@ -19,8 +19,9 @@ the chosen program; \code{survey_configuration} contains its settings.
 }
 \description{
 Creates a standard single-survey view, restoring the selected program's
-availability, set details, samples and summaries. Incompatible cached analyses
-are cleared. The input object and other program tables are not modified.
+availability, survey frame, set details, samples and summaries. Stacked
+analysis results are extracted for the selected program when present.
+The input object and other program tables are not modified.
 }
 \examples{
 # programs |> select_survey("survey_A") |> run_strat() |> strat_error()

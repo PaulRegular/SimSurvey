@@ -263,14 +263,15 @@ resume_test <- function(export_dir = NULL, ...) {
   }
   sim$surveys <- data.table::data.table(surveys)
   sim$samp_totals <- data.table::rbindlist(samp_totals); rm(samp_totals)
-  sim$total_strat_error <- data.table::rbindlist(total_strat_error); rm(total_strat_error)
-  sim$length_strat_error <- data.table::rbindlist(length_strat_error); rm(length_strat_error)
-  sim$age_strat_error <- data.table::rbindlist(age_strat_error); rm(age_strat_error)
+  sim$total_strat_error <- data.table::rbindlist(total_strat_error, use.names = TRUE, fill = TRUE)
+  sim$length_strat_error <- data.table::rbindlist(length_strat_error, use.names = TRUE, fill = TRUE)
+  sim$age_strat_error <- data.table::rbindlist(age_strat_error, use.names = TRUE, fill = TRUE)
+  rm(total_strat_error, length_strat_error, age_strat_error)
 
   ## Calculate some stats
-  sim$total_strat_error_stats <- sim$total_strat_error[, as.list(error_stats(error)), by = "survey"]
-  sim$length_strat_error_stats <- sim$length_strat_error[, as.list(error_stats(error)), by = "survey"]
-  sim$age_strat_error_stats <- sim$age_strat_error[, as.list(error_stats(error)), by = "survey"]
+  sim$total_strat_error_stats <- sim$total_strat_error[, as.list(.comparable_error_stats(error)), by = "survey"]
+  sim$length_strat_error_stats <- sim$length_strat_error[, as.list(.comparable_error_stats(error)), by = "survey"]
+  sim$age_strat_error_stats <- sim$age_strat_error[, as.list(.comparable_error_stats(error)), by = "survey"]
 
   ## Keep details from one survey
   i <- which(surveys$survey == keep_details)
@@ -283,6 +284,7 @@ resume_test <- function(export_dir = NULL, ...) {
   sim$N0 <- res$N[, 1] # attach rounded results
   sim$R <- res$N[1, ]
   sim$N <- res$N
+  sim$N_at_length <- res$N_at_length
   sim$sp_N <- res$sp_N
   sim$I <- res$I
   sim$I_at_length <- res$I_at_length
@@ -293,6 +295,10 @@ resume_test <- function(export_dir = NULL, ...) {
   sim$total_strat <- res$total_strat
   sim$length_strat <- res$length_strat
   sim$age_strat <- res$age_strat
+  for (field in c("survey_frame", "survey_replicates", "survey_selection",
+                  "survey_coverage", "strat_length_group")) {
+    sim[[field]] <- res[[field]]
+  }
   sim <- .population_biology(sim)
 
   if (!is.null(export_dir)) {

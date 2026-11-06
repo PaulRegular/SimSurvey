@@ -34,7 +34,8 @@ another program's fishing truth. Mutable tables are isolated between programs.
 
 The common population is stored once. Each program retains availability
 (\code{I}, \code{I_at_length}, and keyed spatial \code{sp_I}), set details, biological samples,
-summaries, and its configuration. The existing \code{surveys} design table used by
+summaries, evaluated catchability, its eligible survey frame when known,
+and its configuration. The existing \code{surveys} design table used by
 \code{\link[=test_surveys]{test_surveys()}} is preserved. Repeated calls replace program results with a
 fresh simulation; they do not append or replay earlier programs.
 }

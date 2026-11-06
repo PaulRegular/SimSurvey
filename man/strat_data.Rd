@@ -26,3 +26,8 @@ A list containing:
 Generate set details (\code{setdet}), length-frequency (\code{lf}), and age-frequency (\code{af})
 data for stratified analysis.
 }
+\details{
+Length frequencies expand measured fish to the observed set catch.
+A positive catch without measured lengths has missing composition. Length
+frequencies without a matching age-length key are assigned to \code{age = NA}.
+}

@@ -22,6 +22,13 @@ Adds error details and summary statistics to the \code{sim} list, ending with
 \description{
 Calculate error of stratified estimates
 }
+\details{
+\code{I} is expected catchable abundance inside each program's eligible
+frame. \code{N_frame} and \code{N_stock} give unweighted abundance within the frame and
+across the grid. Unknown frames, incompatible length bins and unassigned
+ages have missing matching truth. Only estimates and truth with status
+\code{"ok"} contribute to error summaries. Batch outputs include a \code{survey} key.
+}
 \examples{
 \donttest{
 sim <- sim_abundance(ages = 1:5, years = 1:5,

@@ -78,7 +78,9 @@ round_sim <- function(sim) {
 #' @param resample_cells Logical. If `TRUE`, allows resampling of grid cells.
 #' Note: allowing resampling may introduce bias, since depletion is applied at the cell level.
 #'
-#' @return A `data.table` containing details of each survey set location.
+#' @return A `data.table` containing details of each survey set location. Its
+#' `survey_frame` attribute records every eligible `sim`, `year`, and `cell`
+#' before set allocation, including cells that no set visits.
 #'
 #' @export
 #'
@@ -90,10 +92,11 @@ round_sim <- function(sim) {
 #' # Define different sets for early and later years
 #' standard_sets <- sim_sets(sim, year <= 2, set_den = 2 / 1000)
 #' reduced_sets <- sim_sets(sim, year > 2 & !cell %in% 1:100, set_den = 1 / 1000)
+#' frame <- rbind(attr(standard_sets, "survey_frame"), attr(reduced_sets, "survey_frame"))
 #' sets <- rbind(standard_sets, reduced_sets)
 #' sets$set <- seq(nrow(sets))  # Ensure each set has a unique ID
 #'
-#' survey <- sim_survey(sim, custom_sets = sets)
+#' survey <- sim_survey(sim, custom_sets = sets, survey_frame = frame)
 #'
 #' plot_survey(survey, which_year = 3, which_sim = 1)
 #' }
@@ -119,9 +122,15 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 
   ## Subset cells for sampling
   if (!missing(subset_cells)) {
-    r <- eval(substitute(subset_cells), cells)
-    cells <- cells[r,]
+    r <- eval(substitute(subset_cells), cells, parent.frame())
+    if (!is.logical(r) || anyNA(r) || !length(r) %in% c(1L, nrow(cells))) {
+      stop("subset_cells must return a logical scalar or one value per cell, without NAs.",
+           call. = FALSE)
+    }
+    cells <- cells[r, ]
   }
+  frame <- cells[, c("sim", "year", "cell")]
+  setorderv(frame, c("sim", "year", "cell"))
 
   ## Strat area and sampling effort
   strat_det <- cells[, list(strat_cells = .N), by = c("sim", "year", "strat")]
@@ -133,11 +142,14 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
   cells <- merge(cells, strat_det, by = c("sim", "year", "strat"))
 
   ## Simulate sets; randomly sample row id by group
-  ind <- cells[, .I[sample(.N, size = unique(strat_sets), replace = resample_cells)],
-               by = c("sim", "year", "strat")][[4]]
+  ind <- if (nrow(cells)) {
+    cells[, .I[sample(.N, size = unique(strat_sets), replace = resample_cells)],
+          by = c("sim", "year", "strat")][[4]]
+  } else integer()
   sets <- cells[ind, ]
   sets[, cell_sets := .N, by = c("sim", "year", "cell")] # useful for identifying cells with more than one set (when resample_units = TRUE)
-  sets$set <- seq(nrow(sets))
+  sets$set <- seq_len(nrow(sets))
+  data.table::setattr(sets, "survey_frame", frame)
   sets
 
 }
@@ -157,7 +169,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' replicate identifiers; an explicit count must agree with them.
 #' Be cautious: large values may consume significant memory. Use [`sim_survey_parallel()`] if many simulations are needed.
 #' @param q A closure (e.g., [`sim_logistic()`]) for simulating catchability.
-#' Returned values must range between 0 and 1.
+#' It is evaluated on the modeled ages or length-group labels. Returned values
+#' must range between 0 and 1.
 #' @param q_by Basis of catchability: `"age"` (the historical default) or
 #' `"length"`. Length-based catchability is evaluated on the growth model's
 #' discrete length-group labels. Availability integrates catchability over the
@@ -188,6 +201,14 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' Options: `"division"` (default), `"strat"`, or `"set"`. Ignored if `age_sampling = "random"`.
 #' @param custom_sets A `data.table` of set locations (same structure as returned by [`sim_sets()`]).
 #' If `NULL`, set locations are generated automatically.
+#' @param survey_frame Optional data frame of unique eligible `sim`, `year`, and
+#' `cell` keys for `custom_sets`. A supplied frame describes all survey replicates
+#' and years, so a replicate-year with no frame rows has an empty footprint.
+#' By default, custom sets carry the frame recorded by [`sim_sets()`], when
+#' present. Bare custom sets have an unknown frame. When combining sets from
+#' different designs, combine their frames explicitly and supply the result here.
+#' Set strata and divisions must match the grid, and stratum areas must match
+#' the eligible cells.
 #' @param light Logical. If `TRUE`, drops some objects from output to reduce memory footprint.
 #'
 #' @return A list including:
@@ -199,6 +220,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' - `N`: true population
 #' - `I`: individuals available to the survey
 #' - `n`: individuals caught by the survey
+#' - `survey_frame`: eligible cells by replicate and year, when known
+#' - `survey_replicates`: intended replicate IDs, including replicates without sets
 #'
 #' When `sim` is omitted, returns a `sim_survey_spec` list of settings.
 #' `samp$weight` gives deterministic kilograms for every simulated caught fish;
@@ -225,7 +248,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                        ages_cap = 10, age_sampling = "stratified",
                        age_length_group = 1, age_space_group = "division",
                        custom_sets = NULL, light = TRUE, q_by = "age",
-                       maturity_sampling = "aged") {
+                       maturity_sampling = "aged", survey_frame = NULL) {
   if (missing(sim)) {
     config <- mget(setdiff(names(formals(sim_survey)), "sim"),
                     envir = environment(), inherits = FALSE)
@@ -246,7 +269,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
                           ages_cap = 10, age_sampling = "stratified",
                           age_length_group = 1, age_space_group = "division",
                           custom_sets = NULL, light = TRUE, q_by = "age",
-                          maturity_sampling = "aged") {
+                          maturity_sampling = "aged", survey_frame = NULL) {
 
   n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- weight <- kg <- i.kg <- NULL
 
@@ -261,36 +284,43 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
     stop('age_space_group must be either "division", "strat" or "set". Other options have yet to be implemented.')
   }
 
+  if (is.null(custom_sets) && !is.null(survey_frame)) {
+    stop("Supply survey_frame with custom_sets.", call. = FALSE)
+  }
+
   ## Round simulated population and calculate numbers available to survey
-  sim <- round_sim(sim)
+  sim <- .clear_survey(round_sim(sim))
   .check_maturity_model(sim, maturity_sampling)
   if (length(q_by) != 1 || !q_by %in% c("age", "length")) {
     stop("q_by must be 'age' or 'length'.")
   }
-  if (q_by == "age") {
-    I <- sim$N * q(replicate(length(sim$years), sim$ages))
-    I_at_length <- convert_N(N_at_age = I,
-                             lak = sim$sim_length(age = sim$ages, length_age_key = TRUE))
-    sim$sp_N$I <- sim$sp_N$N * q(sim$sp_N$age)
-    catchability <- q
-  } else {
-    selection <- .trait_selection(sim, q, "length")
-    I <- sim$N * selection$at_age
-    I_at_length <- sim$N_at_length * selection$values
-    catchability <- function(age) selection$at_age[match(age, sim$ages)]
-    sim$sp_N$I <- sim$sp_N$N * catchability(sim$sp_N$age)
-  }
+  if (!is.function(q)) stop("q must be a function.", call. = FALSE)
+  selection <- .trait_selection(sim, function(trait) {
+    values <- q(trait)
+    if (q_by == "age" && is.logical(values)) as.numeric(values) else values
+  }, q_by)
+  available_at_age <- if (q_by == "age") selection$values else selection$at_age
+  catchability <- function(age) available_at_age[match(age, sim$ages)]
+  I <- sim$N * available_at_age
+  I_at_length <- if (q_by == "age") convert_N(I, selection$key) else
+    convert_N(sim$N, selection$key) * selection$values
+  sim$sp_N$I <- sim$sp_N$N * catchability(sim$sp_N$age)
+  trait_labels <- if (q_by == "age") colnames(selection$key) else rownames(selection$key)
+  sim$survey_selection <- list(key = selection$key, by = q_by,
+                               values = stats::setNames(selection$values, trait_labels))
+  sim$survey_replicates <- seq_len(n_sims)
 
   ## Simulate sets conducted across survey grid
   if (is.null(custom_sets)) {
     sets <- sim_sets(sim, resample_cells = resample_cells, n_sims = n_sims,
                      trawl_dim = trawl_dim, set_den = set_den, min_sets = min_sets)
+    sim$survey_frame <- attr(sets, "survey_frame", exact = TRUE)
   } else {
     sets <- data.table::copy(as.data.table(custom_sets))
-    if (any(duplicated(sets$set))) {
-      stop("When supplying 'custom_sets', please make sure each set has a unique number.")
-    }
+    frame <- if (is.null(survey_frame)) attr(custom_sets, "survey_frame", exact = TRUE) else survey_frame
+    sim$survey_frame <- .validate_survey_frame(sim, sets, frame)
   }
+  data.table::setattr(sets, "survey_frame", NULL)
   setkeyv(sets, c("sim", "year", "cell"))
 
   ## Expand sp_N object n_sim times
@@ -315,8 +345,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   rm(sp_I)
 
   ## Expand set catch to individuals and simulate length
-  samp <- setdet[rep(seq(.N), n), list(set, age)]
-  samp$id <- seq(nrow(samp))
+  samp <- setdet[rep(seq_len(.N), n), list(set, age)]
+  samp$id <- seq_len(nrow(samp))
   if (q_by == "age") {
     samp$length <- sim$sim_length(samp$age)
   } else {
@@ -454,7 +484,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
 
   j <- loop <- new_set <- NULL
 
-  sim <- round_sim(sim)
+  sim <- .clear_survey(round_sim(sim))
   start <- Sys.time()
   one_res <- sim_survey(sim, n_sims = n_sims, light = TRUE, ...)
   end <- Sys.time()
@@ -477,7 +507,7 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
                         keep <- c("samp_totals", "setdet", "samp")
                         loop_res <- lapply(keep, function(nm) {
                           x <- res[[nm]]
-                          x$loop <- j
+                          x$loop <- rep.int(j, nrow(x))
                           x
                         })
                         names(loop_res) <- keep
@@ -508,6 +538,15 @@ sim_survey_parallel <- function(sim, n_sims = 1, n_loops = 100,
   sim$I <- one_res$I
   sim$I_at_length <- one_res$I_at_length
   sim$sp_N$I <- one_res$sp_N$I
+  sim$survey_selection <- one_res$survey_selection
+  sim$survey_replicates <- seq_len(n_sims * n_loops)
+  if (!is.null(one_res$survey_frame)) {
+    ## Every loop uses the same eligible cells and its own replicate IDs.
+    n_frame <- nrow(one_res$survey_frame)
+    frame <- one_res$survey_frame[rep(seq_len(n_frame), times = n_loops), ]
+    frame$sim <- frame$sim + rep((seq_len(n_loops) - 1L) * n_sims, each = n_frame)
+    sim$survey_frame <- frame
+  }
   sim$setdet <- setdet
   sim$samp <- samp
   sim$samp_totals <- samp_totals
