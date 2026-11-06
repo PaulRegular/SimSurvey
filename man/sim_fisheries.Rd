@@ -58,5 +58,6 @@ gillnet <- sim_fishery(target = 0.1, catch_model = sim_capture(q = 0.05))
 }
 \seealso{
 \code{vignette("fisheries", package = "SimSurvey")} for the joint workflow
-and a mathematical appendix.
+and a mathematical appendix. \code{\link[=run_catch]{run_catch()}} estimates catch by fishery from
+reports and biological samples.
 }

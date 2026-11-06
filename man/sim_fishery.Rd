@@ -223,4 +223,6 @@ result$fishery$annual
 \seealso{
 \code{vignette("fisheries", package = "SimSurvey")} for controlled
 comparisons of targeting, knowledge, reporting, and biological monitoring.
+\code{\link[=run_catch]{run_catch()}} summarizes reported catch and estimates its length and age
+composition from monitoring records.
 }

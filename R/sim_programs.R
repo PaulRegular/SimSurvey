@@ -52,7 +52,8 @@
 #' The mortality ledger and population are shared across fisheries.
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for the joint workflow
-#' and a mathematical appendix.
+#' and a mathematical appendix. [run_catch()] estimates catch by fishery from
+#' reports and biological samples.
 #'
 #' @examples
 #' trawl <- sim_fishery(target = 0.2, catch_model = sim_capture(q = 0.1))

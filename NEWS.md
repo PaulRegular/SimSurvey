@@ -3,9 +3,10 @@
 * Run stratified estimates and truth comparisons directly on named survey
   programs. Compare estimates with abundance available to the survey within its
   intended footprint after applying `q`.
-* Add `run_caa()` and `caa_error()` for reported catch calibrated to age
-  composition from monitoring records. Report coverage and unsupported
-  estimates separately from realized catch comparisons.
+* Add `run_catch()` for total reported commercial catch and estimates at
+  length and age calibrated to that total. Report monitoring coverage and
+  support for each composition. Use `catch_error()` to compare estimates
+  with realized catch.
 * Summarize monitoring sample counts by operation in one grouped pass.
 
 * Add fishery `target` modes for shares of Z, fully selected F (`F_full`), catch
