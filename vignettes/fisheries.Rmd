@@ -161,12 +161,6 @@ number_target <- sim_fishery(target = 1000, target_type = "catch_n",
                             catch_model = sim_capture(q = 400))
 mass_target <- sim_fishery(target = 1000, target_type = "catch_kg",
                           catch_model = sim_capture(q = 400))
-
-# Run one of these on the same population, using its stored weight model.
-set.seed(507)
-mass_fished <- population |> sim_fishery(
-  target = 1000, target_type = "catch_kg", catch_model = sim_capture(q = 400)
-)
 ```
 
 `F_full` is F at selectivity one. It scales the selectivity curve directly;
@@ -343,11 +337,12 @@ is left to downstream analysis.
 
 ## Fishery reporting and biological sampling
 
-Reporting defaults to unbiased totals without error, and every operation is
-selected for biological monitoring up to the length and age caps.
-The comparisons below reduce coverage, change selection at that same coverage,
-or introduce reporting error. The helper repeats the same fishing configuration
-and seed.
+The full-coverage run selects every operation for biological sampling, applies
+the length and age caps, and reports catches accurately. Random and preferential
+sampling both select 25% of operations in expectation. Preferential sampling
+favors operations with larger reported catches. The under-reporting run keeps
+full coverage and reports 80% of each catch. All four scenarios share the same
+fishing configuration and seed.
 
 ```{r monitoring-comparisons}
 run_fleets <- function(trawl_spec) {
@@ -357,76 +352,83 @@ run_fleets <- function(trawl_spec) {
     run_caa() |>
     caa_error()
 }
-random_monitoring <- run_fleets(modifyList(trawl, list(sampling_coverage = 0.25)))
-preferential_monitoring <- run_fleets(modifyList(trawl,
-  list(sampling_coverage = 0.25, sampling_targeting = 2)))
-under_reporting <- run_fleets(modifyList(trawl,
-  list(reporting_factor = 0.8, reporting_cv = 0.2)))
+monitoring <- list(
+  "Random sampling" = run_fleets(modifyList(trawl, list(sampling_coverage = 0.25))),
+  "Preferential sampling" = run_fleets(modifyList(trawl,
+    list(sampling_coverage = 0.25, sampling_targeting = 2))),
+  "Full coverage" = fished |> run_caa() |> caa_error(),
+  "Under reporting" = run_fleets(modifyList(trawl, list(reporting_factor = 0.8)))
+)
 ```
 
-`reporting_factor` and `reporting_cv` set the mean and CV of an operation's
-lognormal reporting multiplier, applied to both numbers and kilograms.
-Biological samples come from true catches, regardless of reports.
-
-Coverage is an **expected proportion**, not a fixed count. Positive
-`sampling_targeting` favors operations with larger reported catches while
-preserving that expected coverage.
+`run_caa()` weights each aged fish by its operation's reported catch divided by
+the operation inclusion probability, the number measured, and the conditional
+probability of aging. It sums these contributions by age and scales the
+composition to the fleet's total reported catch for that year and replicate.
+`caa_error()` then adds realized catch at age for comparison.
 
 ```{r monitoring-figure, echo=FALSE, fig.height=5.5}
-annual <- under_reporting$fishery$annual[under_reporting$fishery$annual$fishery == "trawl", ]
-limits <- range(c(annual$n, annual$reported_n)) / 1000
-reporting <- plotly::plot_ly(x = annual$n / 1000, y = annual$reported_n / 1000,
-  type = "scatter", mode = "markers", name = "Reports", showlegend = FALSE) |>
-  plotly::add_lines(x = limits, y = limits, inherit = FALSE, name = "Identity",
-    line = list(color = "grey50", dash = "dash"), showlegend = FALSE) |>
-  plotly::layout(xaxis = list(title = "True catch (1000 fish)"),
-    yaxis = list(title = "Reported catch (1000 fish)"))
-truth <- fished$fishery$catch_at_length
-truth <- truth[truth$fishery == "trawl", list(n = sum(n)), by = "length"]
-truth <- truth[order(truth$length), ]
-measured_frequency <- function(result) {
-  sample <- result$fishery$samp
-  count <- table(factor(sample$length[sample$fishery == "trawl"], levels = truth$length))
-  as.numeric(count / sum(count))
-}
-composition <- plotly::plot_ly(x = truth$length, y = truth$n / sum(truth$n),
-  type = "scatter", mode = "lines", name = "Catch truth", line = list(color = "black")) |>
-  plotly::add_lines(y = measured_frequency(random_monitoring), name = "Uniform monitoring",
-    line = list(color = "#0072B2", dash = "dash")) |>
-  plotly::add_lines(y = measured_frequency(preferential_monitoring), name = "Preferential monitoring",
-    line = list(color = "#D55E00", dash = "dot")) |>
+diagnostics <- data.table::rbindlist(lapply(monitoring, function(result) {
+  result$fishery$caa_diagnostics[fishery == "trawl", list(sim, year, status)]
+}), idcol = "scenario")
+diagnostics[, supported := status %in% c("estimated", "zero_reported_catch")]
+common <- diagnostics[, list(shared = all(supported)), by = c("sim", "year")][
+  shared == TRUE, list(sim, year)]
+unsupported <- diagnostics[, list(n = sum(!supported)), by = "scenario"]
+
+length_truth <- fished$fishery$catch_at_length[fishery == "trawl",
+  list(n = sum(n)), by = "length"][order(length)]
+at_age <- lapply(monitoring, function(result) {
+  comparison <- result$fishery$caa_error[fishery == "trawl", ]
+  comparison[common, on = c("sim", "year"), nomatch = 0L][
+    , list(n_hat = sum(n_hat), n_true = sum(n_true)), by = "age"][order(age)]
+})
+age_truth <- at_age[["Full coverage"]]
+colours <- c("Random sampling" = "#0072B2", "Preferential sampling" = "#D55E00",
+             "Full coverage" = "#009E73", "Under reporting" = "#CC79A7")
+composition <- plotly::plot_ly(x = length_truth$length, y = length_truth$n / sum(length_truth$n),
+  type = "scatter", mode = "lines", name = "Realized catch", legendgroup = "truth",
+  line = list(color = "black"), showlegend = FALSE) |>
   plotly::layout(xaxis = list(title = "Length group (cm)"), yaxis = list(title = "Proportion"))
-plotly::subplot(reporting, composition, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
+age_comparison <- plotly::plot_ly(x = age_truth$age, y = age_truth$n_true / 1e6,
+  type = "scatter", mode = "lines+markers", name = "Realized catch", legendgroup = "truth",
+  line = list(color = "black"), marker = list(color = "black")) |>
+  plotly::layout(xaxis = list(title = "Age", dtick = 1),
+    yaxis = list(title = "Pooled catch (million fish)"))
+for (label in names(monitoring)) {
+  colour <- colours[[label]]
+  if (label != "Under reporting") {
+    sample <- monitoring[[label]]$fishery$samp
+    count <- table(factor(sample$length[sample$fishery == "trawl"], levels = length_truth$length))
+    composition <- composition |>
+      plotly::add_lines(x = length_truth$length, y = as.numeric(count / sum(count)),
+        name = if (label == "Full coverage") "Full coverage / Under reporting" else label,
+        legendgroup = label, line = list(color = colour), showlegend = FALSE)
+  }
+  values <- at_age[[label]]
+  age_comparison <- age_comparison |>
+    plotly::add_trace(x = values$age, y = values$n_hat / 1e6,
+      type = "scatter", mode = "lines+markers", name = label, legendgroup = label,
+      line = list(color = colour), marker = list(color = colour))
+}
+plotly::subplot(composition, age_comparison, titleX = TRUE, titleY = TRUE, margin = 0.09) |>
   plotly::layout(legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
 
-The left panel shows reports against true catches. The right compares pooled
-catch truth with unweighted measured-length compositions at 25% coverage.
-These are descriptive proportions, not catch-composition estimates. Even random
-operation selection with fixed fish-sampling caps can overrepresent fish from
-small catches. Known probabilities support appropriate weighting; zero coverage
-and convenience sampling pose different problems.
+The left panel pools unweighted measured-length proportions for the trawl and
+compares them with the realized length composition. Full coverage and Under
+reporting share a line because they measure the same fish. With fixed sampling
+caps, even randomly selected operations can overrepresent fish from small
+catches.
 
-### Estimate monitored catch at age
-
-`run_caa()` expands each observed age using its operation's reported catch,
-operation inclusion probability, measured count, and conditional aging
-probability. It then scales each fleet's age composition to its total reported
-catch for the year and replicate. `fishery$caa_diagnostics` describes coverage
-and identifies positive catches with insufficient sampling support. These
-groups have missing age estimates. A reported annual total of zero gives
-zeros at every age.
-
-`caa_error()` adds realized catch at age for comparison after estimation. A
-difference can reflect both reporting error and uncertainty from biological
-sampling. Ratio calibration matches the reported total and can introduce bias.
-
-```{r catch-at-age}
-monitored <- preferential_monitoring$fishery
-head(monitored$caa_error[fishery == "trawl" & !is.na(n_hat)])
-head(monitored$caa_diagnostics[fishery == "trawl",
-  c("fishery", "sim", "year", "reported_n", "reported_catch_coverage", "status")])
-```
+The right panel pools numbers at age over the `r nrow(common)` replicate-years
+supported by every scenario, including the realized catch for those same
+groups. Unsupported replicate-years by scenario are
+`r paste(paste(unsupported$scenario, unsupported$n, sep = " = "), collapse = ", ")`.
+`fishery$caa_diagnostics` identifies these groups, which have missing age
+estimates. A zero reported annual catch gives zeros at every age. Under
+reporting lowers the catch-at-age numbers because the estimator calibrates to
+the reported total.
 
 ### Maturity observations
 
@@ -451,8 +453,7 @@ biology are outside this model.
 Survey configurations also omit `sim`. The western and eastern programs have
 overlapping footprints and use age-based and length-based catchability,
 respectively. Each `sim_sets()` call retains the eligible cells for its
-program and passes that frame along with the sampled sets. The example uses
-set-level aging and age-length keys to match the tinyAM workflow below.
+program and passes that frame along with the sampled sets.
 
 ```{r surveys}
 run_programs <- function(pop, n_sims = 1) {
@@ -460,12 +461,12 @@ run_programs <- function(pop, n_sims = 1) {
   east <- sim_sets(pop, x >= -20, n_sims = n_sims)
   pop |>
     sim_surveys(
-      west = sim_survey(custom_sets = west, age_space_group = "set"),
+      west = sim_survey(custom_sets = west),
       east = sim_survey(custom_sets = east, q = sim_logistic(x50 = 40),
-                        q_by = "length", age_space_group = "set"),
+                        q_by = "length"),
       n_sims = n_sims
     ) |>
-    run_strat(alk_scale = "set") |>
+    run_strat() |>
     strat_error()
 }
 
@@ -478,9 +479,12 @@ Both programs independently sample the original rounded annual population,
 even after a simulated fishery. `run_strat()` runs the same estimator for each
 program and stacks the results by survey, replicate, year, and, for
 `length_strat` and `age_strat`, length or age. `strat_error()` compares those
-estimates to `I`, the catchability-weighted abundance in each program's eligible
-cells. It retains unweighted frame abundance `N_frame` and whole-stock
-abundance `N_stock` for comparison.
+estimates to `I`, the abundance available to the survey within its footprint
+after applying catchability `q` at age or length. The comparison includes
+footprint abundance `N_frame` before catchability and whole-stock abundance
+`N_stock`. The availability matrices `I` and `I_at_length` used by
+`plot_survey()` cover the full grid. The `I` column in the error tables covers
+the survey footprint.
 
 For externally supplied sets, pass their eligible cell, replicate, and year
 keys as `survey_frame` to `sim_survey()`. You can calculate estimates with an
@@ -510,7 +514,7 @@ share <- function(data, column) {
 colours <- c(west = "#0072B2", east = "#D55E00")
 available <- plotly::plot_ly() |>
   plotly::layout(xaxis = list(title = "Year"),
-                 yaxis = list(title = "Catchability-weighted fraction"))
+                 yaxis = list(title = "Fraction available to the survey"))
 footprint <- plotly::plot_ly() |>
   plotly::layout(xaxis = list(title = "Year"),
                  yaxis = list(title = "Stock fraction in footprint", range = c(0, 1)))
@@ -540,12 +544,12 @@ plotly::subplot(available, footprint, titleX = TRUE, titleY = TRUE, margin = 0.0
   plotly::layout(legend = list(orientation = "h", y = -0.25)) |> vignette_widget()
 ```
 
-The left panel divides each estimate and its comparison truth by whole-stock
-abundance. Points show estimates from the shifting population, and lines show
-truth with shifting and fixed distributions. The right panel shows the
-unweighted stock fraction in each footprint. Movement changes the fraction of
-the stock available to each survey while the gear catchability curve stays
-fixed. Age composition can still change through time in the fixed scenario.
+The left panel shows abundance available to the survey as a fraction of the
+whole stock. Points show estimates from the shifting population, and lines show
+truth with shifting and fixed distributions. The right panel shows the stock
+fraction in each footprint before catchability. Movement changes how much of
+the stock enters each footprint with the same gear catchability curve. Changes
+in age composition also affect availability in the fixed scenario.
 
 `select_survey()` keeps the single-survey workflow available after batch
 analysis. Use the selected view for survey graphics.
@@ -566,30 +570,11 @@ Keep program identifiers when combining records; survey set identifiers are
 program-scoped. Stratified fishery age caps apply per operation/length group,
 whereas survey caps use `age_space_group` per replicate/year/length group.
 
-### Prepare assessment observations
-
-The stacked age estimates and catch-at-age results can replace the per-survey
-loop and local catch expansion in tinyAM's simulated-cod generator. Match
-`alk_scale` to the existing survey sampling design when calling `run_strat()`.
-The generator uses `"set"` for both the key and the survey's age sampling
-scale. Select the same replicate from the two branches and convert numbers of
-fish to thousands for the assessment tables.
-
-```{r assessment-observations}
-index <- programs$age_strat[sim == 1 & !is.na(age),
-  list(survey, year, age,
-       obs = ifelse(estimate_status == "ok", total / 1000, NA_real_),
-       samp_time = 0, unit = "thousand fish")]
-catch <- monitored$caa[sim == 1,
-  list(fleet = fishery, year, age, obs = n_hat / 1000, unit = "thousand fish")]
-```
-
-This mapping keeps missing estimates missing and leaves unassigned age mass
-in the survey output. Keep `sets`, `sd`, and `sampling_units` in the survey
-precision table if you use them downstream. The generator scales the standard
-error of the mean to thousands of fish as `sd * sampling_units / 1000`.
-Use the comparison tables to evaluate estimates after preparing the assessment
-inputs.
+For an age-structured assessment, use supported `age_strat` estimates for
+survey indices and `fishery$caa` for catch numbers. Align replicates and units,
+preserve fleet and survey identifiers, and handle missing estimates and
+unassigned age mass explicitly. The error tables support comparison with
+simulation truth.
 
 ## Scope and reproducibility
 
@@ -983,6 +968,9 @@ never sampled. The historical age-based path uses age catchability and the
 original growth sampler. For age-based comparison truth, apply catchability
 at age before expanding availability to length through the growth key.
 Length-based draws use the growth key's labels.
+Using full-grid abundance in the same calculations gives the stored
+`I` and `I_at_length` matrices for survey plots. The error tables use the
+footprint calculation.
 
 Survey catches at age use binomial trials with rounded cell abundance divided
 by the number of sets in that cell, and probability

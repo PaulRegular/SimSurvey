@@ -60,8 +60,9 @@ It is evaluated on the modeled ages or length-group labels. Returned values
 must range between 0 and 1.}
     \item{\code{q_by}}{Basis of catchability: \code{"age"} (the historical default) or
 \code{"length"}. Length-based catchability is evaluated on the growth model's
-discrete length-group labels. Availability integrates catchability over the
-length-age key; caught lengths follow that selected distribution.}
+discrete length-group labels. The model averages length-based \code{q} over the
+length-age key to find availability at age. Caught lengths follow the
+distribution after applying \code{q}.}
     \item{\code{maturity_sampling}}{Fish examined for maturity: \code{"aged"} (default),
 \code{"measured"}, or \code{"none"}. Binary states follow the population maturity model.
 Unexamined \code{mature} values are missing and \code{maturity_observed} is \code{FALSE}.

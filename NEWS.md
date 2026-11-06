@@ -1,8 +1,8 @@
 # SimSurvey 0.1.8.9000 (development)
 
 * Run stratified estimates and truth comparisons directly on named survey
-  programs. Survey comparisons use catchability-weighted abundance within the
-  eligible cells for each program, replicate and year.
+  programs. Compare estimates with abundance available to the survey within its
+  intended footprint after applying `q`.
 * Add `run_caa()` and `caa_error()` for reported catch calibrated to age
   composition from monitoring records. Report coverage and unsupported
   estimates separately from realized catch comparisons.

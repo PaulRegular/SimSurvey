@@ -83,9 +83,10 @@ sim_fisheries <- function(sim, ..., n_sims = NULL) {
 #' @details Configurations run in canonical name order using caller-controlled
 #' randomness. All programs' locations and catches are generated before any
 #' program's biological subsampling, so changing sampling caps does not change
-#' another program's fishing truth. Mutable tables are isolated between programs.
+#' another program's locations or catches. Mutable tables are isolated between programs.
 #'
-#' The common population is stored once. Each program retains availability
+#' The common population is stored once. Each program retains abundance
+#' available to the survey across the full grid
 #' (`I`, `I_at_length`, and keyed spatial `sp_I`), set details, biological samples,
 #' summaries, evaluated catchability, its eligible survey frame when known,
 #' and its configuration. The existing `surveys` design table used by
@@ -93,7 +94,9 @@ sim_fisheries <- function(sim, ..., n_sims = NULL) {
 #' fresh simulation; they do not append or replay earlier programs.
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for multiple survey
-#' programs, program extraction, and comparisons against availability truth.
+#' programs and program extraction. [strat_error()] compares estimates with
+#' abundance available to the survey within its intended footprint after
+#' applying `q` at age or length.
 #'
 #' @return A simulation list with common `replicates` and named `survey_programs`.
 #' Use [select_survey()] to create a standard single-survey view for existing

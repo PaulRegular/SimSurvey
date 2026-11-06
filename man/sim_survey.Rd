@@ -75,8 +75,9 @@ If \code{NULL}, set locations are generated automatically.}
 
 \item{q_by}{Basis of catchability: \code{"age"} (the historical default) or
 \code{"length"}. Length-based catchability is evaluated on the growth model's
-discrete length-group labels. Availability integrates catchability over the
-length-age key; caught lengths follow that selected distribution.}
+discrete length-group labels. The model averages length-based \code{q} over the
+length-age key to find availability at age. Caught lengths follow the
+distribution after applying \code{q}.}
 
 \item{maturity_sampling}{Fish examined for maturity: \code{"aged"} (default),
 \code{"measured"}, or \code{"none"}. Binary states follow the population maturity model.
@@ -107,11 +108,15 @@ A list including:
 Includes:
 \itemize{
 \item \code{N}: true population
-\item \code{I}: individuals available to the survey
+\item \code{I}, \code{I_at_length}, and \code{sp_I}: abundance available to the survey across
+the full grid, after applying \code{q}
 \item \code{n}: individuals caught by the survey
 \item \code{survey_frame}: eligible cells by replicate and year, when known
 \item \code{survey_replicates}: intended replicate IDs, including replicates without sets
 }
+
+\code{\link[=strat_error]{strat_error()}} compares estimates with abundance available to the survey
+within the intended footprint after applying \code{q} at age or length.
 
 When \code{sim} is omitted, returns a \code{sim_survey_spec} list of settings.
 \code{samp$weight} gives deterministic kilograms for every simulated caught fish;

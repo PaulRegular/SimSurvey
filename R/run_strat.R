@@ -189,6 +189,8 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' `total` column. The existing estimator assumes representative sets within
 #' each stratum and a common tow area within a stratum. Declaring the frame
 #' supplies the intended coverage for comparison.
+#' These estimates target abundance available to the survey, meaning abundance within
+#' the intended survey footprint after applying `q` at age or length.
 #' For a batch, both hooks run independently for each named program.
 #' A known frame with unsampled strata has missing full-frame estimates.
 #' An unassigned age row retains catch without a matching age-length key.
@@ -399,10 +401,12 @@ run_strat <- function(sim,
 #' - **MSE**: Mean squared error
 #' - **RMSE**: Root mean squared error
 #'
-#' @details `I` is expected catchable abundance inside each program's eligible
-#' frame. `N_frame` and `N_stock` give unweighted abundance within the frame and
-#' across the grid. Unknown frames, incompatible length bins and unassigned
-#' ages have missing matching truth. Only estimates and truth with status
+#' @details In the error tables, `I` is abundance available to the survey,
+#' calculated within the intended survey footprint after applying the program's
+#' `q` at age or length. `N_frame` and `N_stock` give abundance before applying
+#' `q`, within the footprint and across the full grid, respectively.
+#' Matching truth is missing for unknown frames, incompatible length bins and
+#' unassigned ages. Only estimates and truth with status
 #' `"ok"` contribute to error summaries. Batch outputs include a `survey` key.
 #'
 #' @examples

@@ -173,8 +173,9 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' must range between 0 and 1.
 #' @param q_by Basis of catchability: `"age"` (the historical default) or
 #' `"length"`. Length-based catchability is evaluated on the growth model's
-#' discrete length-group labels. Availability integrates catchability over the
-#' length-age key; caught lengths follow that selected distribution.
+#' discrete length-group labels. The model averages length-based `q` over the
+#' length-age key to find availability at age. Caught lengths follow the
+#' distribution after applying `q`.
 #' @param maturity_sampling Fish examined for maturity: `"aged"` (default),
 #' `"measured"`, or `"none"`. Binary states follow the population maturity model.
 #' Unexamined `mature` values are missing and `maturity_observed` is `FALSE`.
@@ -218,10 +219,14 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #'
 #' Includes:
 #' - `N`: true population
-#' - `I`: individuals available to the survey
+#' - `I`, `I_at_length`, and `sp_I`: abundance available to the survey across
+#'   the full grid, after applying `q`
 #' - `n`: individuals caught by the survey
 #' - `survey_frame`: eligible cells by replicate and year, when known
 #' - `survey_replicates`: intended replicate IDs, including replicates without sets
+#'
+#' [`strat_error()`] compares estimates with abundance available to the survey
+#' within the intended footprint after applying `q` at age or length.
 #'
 #' When `sim` is omitted, returns a `sim_survey_spec` list of settings.
 #' `samp$weight` gives deterministic kilograms for every simulated caught fish;
