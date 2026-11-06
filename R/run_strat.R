@@ -191,6 +191,8 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' supplies the intended coverage for comparison.
 #' These estimates target abundance available to the survey, meaning abundance within
 #' the intended survey footprint after applying `q` at age or length.
+#' Use [strat_error()] to compare with abundance available across the full grid
+#' or within that footprint.
 #' For a batch, both hooks run independently for each named program.
 #' A known frame with unsampled strata has missing full-frame estimates.
 #' An unassigned age row retains catch without a matching age-length key.
@@ -393,6 +395,9 @@ run_strat <- function(sim,
 #'
 #' @param sim Object returned by [`run_strat()`], which includes the simulated population,
 #' survey results, and stratified analysis outputs.
+#' @param scope Area used for the comparison. `"whole_grid"` (default) uses all
+#' grid cells. `"survey_frame"` uses the eligible cells in each program's
+#' intended footprint for that replicate and year.
 #'
 #' @return Adds error details and summary statistics to the `sim` list, ending with
 #' `"*_strat_error"` and `"*_strat_error_stats"`. Error statistics include:
@@ -401,13 +406,19 @@ run_strat <- function(sim,
 #' - **MSE**: Mean squared error
 #' - **RMSE**: Root mean squared error
 #'
-#' @details In the error tables, `I` is abundance available to the survey,
-#' calculated within the intended survey footprint after applying the program's
-#' `q` at age or length. `N_frame` and `N_stock` give abundance before applying
-#' `q`, within the footprint and across the full grid, respectively.
-#' Matching truth is missing for unknown frames, incompatible length bins and
-#' unassigned ages. Only estimates and truth with status
-#' `"ok"` contribute to error summaries. Batch outputs include a `survey` key.
+#' @details In the error tables, `I` is abundance available in the chosen area
+#' after applying the program's `q` at age or length. The default uses the
+#' stored full-grid availability matrices `sim$I` and `sim$I_at_length`. For a
+#' restricted footprint, this comparison includes the effect of missing part
+#' of the stock. Use `scope = "survey_frame"` to compare with abundance
+#' available to the survey within its intended footprint.
+#'
+#' In both scopes, `N_frame` and `N_stock` give abundance before applying
+#' `q`, within the footprint and across the full grid, respectively. An
+#' unknown frame leaves `N_frame` and frame-scoped truth missing. Incompatible
+#' length bins and unassigned ages have missing matching truth. Only comparisons
+#' with an estimate and truth both marked `"ok"` contribute to error summaries.
+#' Batch outputs include a `survey` key.
 #'
 #' @examples
 #' \donttest{
@@ -423,7 +434,8 @@ run_strat <- function(sim,
 #'
 #' @export
 
-strat_error <- function(sim) {
+strat_error <- function(sim, scope = "whole_grid") {
+  scope <- match.arg(scope, c("whole_grid", "survey_frame"))
   if (any(vapply(.strat_estimates, function(field) is.null(sim[[field]]), logical(1)))) {
     stop("Run run_strat() before strat_error().", call. = FALSE)
   }
@@ -431,7 +443,7 @@ strat_error <- function(sim) {
     fields <- c(.strat_errors, .strat_error_stats)
     results <- lapply(names(sim$survey_programs), function(survey) {
       view <- .survey_view(sim, survey, restore_spatial = FALSE)
-      .strat_error_one(.restore_survey_analysis(view, sim, survey))[fields]
+      .strat_error_one(.restore_survey_analysis(view, sim, survey), scope)[fields]
     })
     names(results) <- names(sim$survey_programs)
     for (field in fields) {
@@ -439,7 +451,7 @@ strat_error <- function(sim) {
     }
     return(sim)
   }
-  .strat_error_one(sim)
+  .strat_error_one(sim, scope)
 }
 
 .comparable_error_stats <- function(errors) {
@@ -447,7 +459,7 @@ strat_error <- function(sim) {
   error_stats(if (length(errors)) errors else NA_real_)
 }
 
-.strat_frame_truth <- function(sim, roster) {
+.strat_truth <- function(sim, roster, scope, length_map) {
   N <- N_frame <- NULL
   n_ages <- length(sim$ages)
   n_lengths <- length(sim$lengths)
@@ -469,6 +481,10 @@ strat_error <- function(sim) {
   }
   frame_age <- available_age <- empty_age
   frame_length <- available_length <- empty_length
+  if (scope == "whole_grid") {
+    if (!is.null(sim[["I"]])) available_age <- sim[["I"]][, years, drop = FALSE]
+    if (!is.null(sim[["I_at_length"]])) available_length <- sim[["I_at_length"]][, years, drop = FALSE]
+  }
 
   if (!is.null(sim$survey_frame) && all(c("cell", "year", "age", "N") %in% names(sim$sp_N))) {
     spatial <- as.data.table(sim$sp_N)[, c("cell", "year", "age", "N"), with = FALSE]
@@ -483,7 +499,7 @@ strat_error <- function(sim) {
     frame_age <- matrix(values, nrow = n_ages, ncol = n_groups)
 
     if (!is.null(key)) frame_length <- key %*% frame_age
-    if (!is.null(selection)) {
+    if (scope == "survey_frame" && !is.null(selection)) {
       if (selection$by == "age") {
         available_age <- frame_age * selection$values[as.character(sim$ages)]
         available_length <- key %*% available_age
@@ -501,7 +517,6 @@ strat_error <- function(sim) {
                      age = rep(sim$ages, times = n_groups),
                      I = as.numeric(available_age), N_frame = as.numeric(frame_age),
                      N_stock = as.numeric(stock_age))
-  length_map <- .strat_length_map(sim, sim$strat_length_group)
   lengths <- data.table(sim = integer(), year = numeric(), length = numeric(),
                          I = numeric(), N_frame = numeric(), N_stock = numeric())
   if (length(length_map)) {
@@ -517,10 +532,12 @@ strat_error <- function(sim) {
   list(total, lengths, age)
 }
 
-.strat_error_one <- function(sim) {
+.strat_error_one <- function(sim, scope) {
   I <- I_hat <- error <- estimate_status <- truth_status <- age <- NULL
   roster <- unique(sim$total_strat[, c("sim", "year"), with = FALSE])
-  truth <- .strat_frame_truth(sim, roster)
+  length_map <- .strat_length_map(sim, sim$strat_length_group)
+  truth <- .strat_truth(sim, roster, scope, length_map)
+  frame_unknown <- scope == "survey_frame" && is.null(sim$survey_frame)
   for (i in seq_along(.strat_estimates)) {
     trait <- list(NULL, "length", "age")[[i]]
     keys <- c("sim", "year", trait)
@@ -532,9 +549,8 @@ strat_error <- function(sim) {
       table[, estimate_status := ifelse(is.finite(I_hat), "ok", "missing_estimate")]
     }
     table <- merge(table, truth[[i]], by = keys, all.x = TRUE)
-    unavailable <- if (is.null(sim$survey_frame)) "frame_unknown" else "truth_unavailable"
-    if (i == 2L && !is.null(sim$survey_frame) &&
-        is.null(.strat_length_map(sim, sim$strat_length_group))) {
+    unavailable <- if (frame_unknown) "frame_unknown" else "truth_unavailable"
+    if (i == 2L && !frame_unknown && is.null(length_map)) {
       unavailable <- "length_bins_mismatch"
     }
     table[, truth_status := ifelse(is.finite(I), "ok", unavailable)]

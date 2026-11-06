@@ -96,8 +96,8 @@ sim_fisheries <- function(sim, ..., n_sims = NULL) {
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for multiple survey
 #' programs and program extraction. [strat_error()] compares estimates with
-#' abundance available to the survey within its intended footprint after
-#' applying `q` at age or length.
+#' abundance after applying `q` at age or length, across the full grid by default
+#' or within each intended survey footprint.
 #'
 #' @return A simulation list with common `replicates` and named `survey_programs`.
 #' Use [select_survey()] to create a standard single-survey view for existing

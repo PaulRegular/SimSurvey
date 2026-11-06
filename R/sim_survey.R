@@ -225,8 +225,8 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' - `survey_frame`: eligible cells by replicate and year, when known
 #' - `survey_replicates`: intended replicate IDs, including replicates without sets
 #'
-#' [`strat_error()`] compares estimates with abundance available to the survey
-#' within the intended footprint after applying `q` at age or length.
+#' [`strat_error()`] compares estimates with abundance after applying `q` at age
+#' or length, across the full grid by default or within the intended footprint.
 #'
 #' When `sim` is omitted, returns a `sim_survey_spec` list of settings.
 #' `samp$weight` gives deterministic kilograms for every simulated caught fish;

@@ -115,8 +115,8 @@ the full grid, after applying \code{q}
 \item \code{survey_replicates}: intended replicate IDs, including replicates without sets
 }
 
-\code{\link[=strat_error]{strat_error()}} compares estimates with abundance available to the survey
-within the intended footprint after applying \code{q} at age or length.
+\code{\link[=strat_error]{strat_error()}} compares estimates with abundance after applying \code{q} at age
+or length, across the full grid by default or within the intended footprint.
 
 When \code{sim} is omitted, returns a \code{sim_survey_spec} list of settings.
 \code{samp$weight} gives deterministic kilograms for every simulated caught fish;

@@ -1,4 +1,4 @@
-test_that("batch estimates and framed comparisons match single-program calls", {
+test_that("batch estimates and both truth scopes match single-program calls", {
   withr::local_seed(1204)
   population <- small_population()
   population$sp_N$N <- population$sp_N$N * (1 + population$sp_N$cell %% 3)
@@ -14,69 +14,116 @@ test_that("batch estimates and framed comparisons match single-program calls", {
                   east = sim_survey(q = length_q, q_by = "length", custom_sets = east),
                   n_sims = 2)
   original <- data.table::copy(batch)
-  analysed <- batch |> run_strat() |> strat_error()
+  estimates <- run_strat(batch)
+  analysed <- list(whole_grid = strat_error(estimates),
+                   survey_frame = strat_error(estimates, scope = "survey_frame"))
   expect_equal(batch, original)
-  expect_identical(data.table::key(analysed$age_strat_error), c("survey", "sim", "year", "age"))
-  expect_equal(sort(unique(analysed$total_strat$survey)), c("east", "west"))
+  expect_equal(sort(unique(estimates$total_strat$survey)), c("east", "west"))
 
   key <- population$sim_length(population$ages, length_age_key = TRUE)
   for (label in names(batch$survey_programs)) {
-    single <- batch |> select_survey(label) |> run_strat() |> strat_error()
-    restored <- select_survey(analysed, label)
-    for (field in c("total_strat", "length_strat", "age_strat", "survey_coverage",
-                    "total_strat_error", "length_strat_error", "age_strat_error",
-                    "total_strat_error_stats", "length_strat_error_stats", "age_strat_error_stats")) {
-      expect_equal(restored[[field]], single[[field]])
-    }
-    for (rep in 1:2) {
-      for (yr in population$years) {
-        frame <- single$survey_frame
-        cells <- frame$cell[frame$sim == rep & frame$year == yr]
-        spatial <- single$sp_N[single$sp_N$cell %in% cells & single$sp_N$year == yr, ]
-        by_age <- vapply(population$ages, function(a) sum(spatial$N[spatial$age == a]), numeric(1))
-        joint <- sweep(key, 2, by_age, "*")
-        catchable <- if (label == "west") sweep(joint, 2, age_q(population$ages), "*") else
-          joint * length_q(population$lengths)
-        total <- single$total_strat_error[sim == rep & year == yr]
-        ages <- single$age_strat_error[sim == rep & year == yr & !is.na(age)]
-        lengths <- single$length_strat_error[sim == rep & year == yr]
-        expect_equal(total$N_frame, sum(by_age))
-        expect_equal(total$N_stock, sum(population$N[, as.character(yr)]))
-        expect_equal(total$I, sum(catchable))
-        expect_equal(ages$I, unname(colSums(catchable)))
-        expect_equal(lengths$I[match(population$lengths, lengths$length)], unname(rowSums(catchable)))
-        if (!length(cells)) {
-          expect_true(is.na(total$I_hat))
-          expect_identical(total$estimate_status, "no_sets")
+    view <- batch |> select_survey(label) |> run_strat()
+    for (scope in names(analysed)) {
+      single <- strat_error(view, scope = scope)
+      restored <- select_survey(analysed[[scope]], label)
+      expect_identical(data.table::key(analysed[[scope]]$age_strat_error),
+                       c("survey", "sim", "year", "age"))
+      for (field in c("total_strat", "length_strat", "age_strat", "survey_coverage",
+                      "total_strat_error", "length_strat_error", "age_strat_error",
+                      "total_strat_error_stats", "length_strat_error_stats", "age_strat_error_stats")) {
+        expect_equal(restored[[field]], single[[field]])
+      }
+      for (rep in 1:2) {
+        for (yr in population$years) {
+          frame <- single$survey_frame
+          cells <- frame$cell[frame$sim == rep & frame$year == yr]
+          spatial <- single$sp_N[single$sp_N$cell %in% cells & single$sp_N$year == yr, ]
+          frame_age <- vapply(population$ages, function(a) sum(spatial$N[spatial$age == a]),
+                              numeric(1))
+          stock_age <- population$N[, as.character(yr)]
+          joint <- sweep(key, 2, if (scope == "whole_grid") stock_age else frame_age, "*")
+          catchable <- if (label == "west") sweep(joint, 2, age_q(population$ages), "*") else
+            joint * length_q(population$lengths)
+          total <- single$total_strat_error[sim == rep & year == yr]
+          ages <- single$age_strat_error[sim == rep & year == yr & !is.na(age)]
+          lengths <- single$length_strat_error[sim == rep & year == yr]
+          expect_equal(total$N_frame, sum(frame_age))
+          expect_equal(total$N_stock, sum(stock_age))
+          expect_equal(total$I, sum(catchable))
+          expect_equal(ages$I, unname(colSums(catchable)))
+          expect_equal(lengths$I[match(population$lengths, lengths$length)],
+                       unname(rowSums(catchable)))
+          if (!length(cells)) {
+            expect_true(is.na(total$I_hat))
+            expect_identical(total$estimate_status, "no_sets")
+          }
         }
       }
     }
   }
-  expect_null(run_strat(analysed)$age_strat_error)
+  expect_null(run_strat(analysed$survey_frame)$age_strat_error)
 })
 
-test_that("unknown frames allow estimates and incompatible length bins leave missing truth", {
+test_that("the default uses stored whole-grid truth when the frame is unknown", {
   withr::local_seed(1251)
   population <- small_population()
   sets <- sim_sets(population, x <= 0, min_sets = 1, set_den = 0, trawl_dim = c(1, 5))
   attr(sets, "survey_frame") <- NULL
-  legacy <- population |> sim_survey(custom_sets = sets) |> run_strat() |> strat_error()
-  expect_true(all(is.finite(legacy$total_strat_error$I_hat)))
-  expect_true(all(is.na(legacy$total_strat_error$I)))
-  expect_true(all(is.na(legacy$total_strat_error$error)))
-  expect_true(all(legacy$total_strat_error$truth_status == "frame_unknown"))
-  expect_equal(legacy$total_strat_error$N_stock, unname(colSums(legacy$N)))
-  expect_true(all(is.na(legacy$total_strat_error_stats)))
+  legacy <- population |>
+    sim_survey(custom_sets = sets, q_by = "length",
+                q = function(length) ifelse(length < 30, 0.8, 0.25)) |>
+    run_strat()
+  legacy[c("sp_N", "survey_selection", "survey_replicates")] <- NULL
+  whole <- strat_error(legacy)
+  framed <- strat_error(legacy, scope = "survey_frame")
+  expect_equal(whole, strat_error(legacy, scope = "whole_grid"))
+  expect_equal(whole$total_strat_error$I, unname(colSums(legacy$I)))
+  expect_equal(whole$total_strat_error$error,
+               whole$total_strat_error$I_hat - whole$total_strat_error$I)
+  expect_true(all(whole$total_strat_error$truth_status == "ok"))
+  expect_true(all(is.na(whole$total_strat_error$N_frame)))
+  expect_equal(whole$total_strat_error$N_stock, unname(colSums(legacy$N)))
+  for (yr in legacy$years) {
+    ages <- whole$age_strat_error[year == yr & !is.na(age)]
+    lengths <- whole$length_strat_error[year == yr & length %in% legacy$lengths]
+    expect_equal(ages$I, unname(legacy$I[as.character(ages$age), as.character(yr)]))
+    expect_equal(lengths$I, unname(legacy$I_at_length[as.character(lengths$length), as.character(yr)]))
+  }
+  expect_equal(framed$total_strat_error$I_hat, whole$total_strat_error$I_hat)
+  expect_true(all(is.finite(framed$total_strat_error$I_hat)))
+  expect_true(all(is.na(framed$total_strat_error$I)))
+  expect_true(all(is.na(framed$total_strat_error$error)))
+  expect_true(all(framed$total_strat_error$truth_status == "frame_unknown"))
+  expect_equal(framed$total_strat_error$N_stock, whole$total_strat_error$N_stock)
+  expect_true(all(is.na(framed$total_strat_error_stats)))
+  expect_error(strat_error(legacy, scope = "visited_cells"), "whole_grid.*survey_frame")
 
+  legacy[["I"]] <- NULL
+  length_only <- strat_error(legacy)
+  expect_true(all(length_only$total_strat_error$truth_status == "truth_unavailable"))
+  expect_true(all(length_only$age_strat_error[!is.na(age)]$truth_status == "truth_unavailable"))
+  expect_equal(length_only$length_strat_error, whole$length_strat_error)
+})
+
+test_that("both scopes compare lengths only at compatible bin widths", {
+  withr::local_seed(1252)
   survey <- small_survey()
   expect_warning(incompatible <- run_strat(survey, length_group = 1), "Matching length truth")
-  incompatible <- strat_error(incompatible)
-  expect_true(all(is.na(incompatible$length_strat_error$I)))
-  expect_true(all(incompatible$length_strat_error$truth_status == "length_bins_mismatch"))
-  expect_true(all(is.finite(incompatible$total_strat_error$I)))
-  coarse <- survey |> run_strat(length_group = 6) |> strat_error()
-  sums <- coarse$length_strat_error[, list(I_length = sum(I, na.rm = TRUE)), by = "year"]
-  expect_equal(sums$I_length, coarse$total_strat_error$I)
+  coarse <- run_strat(survey, length_group = 6)
+  for (scope in c("whole_grid", "survey_frame")) {
+    mismatch <- strat_error(incompatible, scope = scope)
+    expect_true(all(is.na(mismatch$length_strat_error$I)))
+    expect_true(all(mismatch$length_strat_error$truth_status == "length_bins_mismatch"))
+    expect_true(all(is.finite(mismatch$total_strat_error$I)))
+    compared <- strat_error(coarse, scope = scope)
+    sums <- compared$length_strat_error[, list(I_length = sum(I, na.rm = TRUE)), by = "year"]
+    expect_equal(sums$I_length, compared$total_strat_error$I)
+  }
+  incompatible$survey_frame <- NULL
+  whole <- strat_error(incompatible)
+  framed <- strat_error(incompatible, scope = "survey_frame")
+  expect_true(all(whole$length_strat_error$truth_status == "length_bins_mismatch"))
+  expect_true(all(framed$length_strat_error$truth_status == "frame_unknown"))
 })
 
 test_that("zeros, missing composition and partial age allocation are distinct", {
@@ -131,7 +178,7 @@ test_that("missing intended strata suppress full-frame estimates", {
   result <- population |>
     sim_survey(custom_sets = sets, survey_frame = frame, q = function(x) 1) |>
     run_strat() |>
-    strat_error()
+    strat_error(scope = "survey_frame")
   expect_true(all(result$survey_coverage[strat == omitted]$sets_sampled == 0))
   expect_true(all(result$total_strat$estimate_status == "unsampled_strata"))
   expect_true(all(is.na(result$total_strat$total)))

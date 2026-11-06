@@ -489,7 +489,7 @@ run_programs <- function(pop, n_sims = 1) {
       n_sims = n_sims
     ) |>
     run_strat() |>
-    strat_error()
+    strat_error(scope = "survey_frame")
 }
 
 set.seed(503)
@@ -501,16 +501,19 @@ Both programs independently sample the original rounded annual population,
 even after a simulated fishery. `run_strat()` runs the same estimator for each
 program and stacks the results by survey, replicate, year, and, for
 `length_strat` and `age_strat`, length or age. `strat_error()` compares those
-estimates to `I`, the abundance available to the survey within its footprint
-after applying catchability `q` at age or length. The comparison includes
-footprint abundance `N_frame` before catchability and whole-stock abundance
-`N_stock`. The availability matrices `I` and `I_at_length` used by
-`plot_survey()` cover the full grid. The `I` column in the error tables covers
-the survey footprint.
+estimates to `I`, the abundance available to the survey after applying
+catchability `q` at age or length. The default `scope = "whole_grid"` includes
+all grid cells, even outside the survey footprint. This matches the stored
+availability matrices `I` and `I_at_length` used by `plot_survey()`. The example
+uses `scope = "survey_frame"` to isolate abundance available within the
+footprint and match the area the survey estimates cover. The comparison also
+includes footprint abundance `N_frame` before catchability and whole-stock
+abundance `N_stock`.
 
 For externally supplied sets, pass their eligible cell, replicate, and year
-keys as `survey_frame` to `sim_survey()`. You can calculate estimates with an
-unknown frame, and `truth_status` flags the missing comparison.
+keys as `survey_frame` to `sim_survey()`. An unknown frame prevents the
+`"survey_frame"` truth comparison, which `truth_status` flags. You can still
+calculate estimates and use the whole-grid comparison.
 A survey's visited cells describe the realized sample and can cover only part
 of its intended footprint.
 
@@ -996,9 +999,9 @@ maturity records are needed to calculate expected `S`.
 
 ### A8. Length-selective survey observations
 
-For length catchability \(q_{s,l}\), sum rounded abundance over the program's
-eligible cells for each replicate, year, and age. With that frame abundance
-represented by `N_frame`, the comparison truth is
+For length catchability \(q_{s,l}\) and `scope = "survey_frame"`, sum rounded
+abundance over the program's eligible cells for each replicate, year, and
+age. With that frame abundance represented by `N_frame`, the comparison truth is
 
 \[
 \overline q_{s,a}=\sum_lP_{l,a}q_{s,l},\qquad
@@ -1013,9 +1016,9 @@ never sampled. The historical age-based path uses age catchability and the
 original growth sampler. For age-based comparison truth, apply catchability
 at age before expanding availability to length through the growth key.
 Length-based draws use the growth key's labels.
-Using full-grid abundance in the same calculations gives the stored
-`I` and `I_at_length` matrices for survey plots. The error tables use the
-footprint calculation.
+For `scope = "whole_grid"`, the default, apply the same catchability
+calculations to abundance across all grid cells. This gives the same
+availability as the stored `I` and `I_at_length` matrices for survey plots.
 
 Survey catches at age use binomial trials with rounded cell abundance divided
 by the number of sets in that cell, and probability

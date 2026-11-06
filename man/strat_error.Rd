@@ -4,11 +4,15 @@
 \alias{strat_error}
 \title{Calculate error of stratified estimates}
 \usage{
-strat_error(sim)
+strat_error(sim, scope = "whole_grid")
 }
 \arguments{
 \item{sim}{Object returned by \code{\link[=run_strat]{run_strat()}}, which includes the simulated population,
 survey results, and stratified analysis outputs.}
+
+\item{scope}{Area used for the comparison. \code{"whole_grid"} (default) uses all
+grid cells. \code{"survey_frame"} uses the eligible cells in each program's
+intended footprint for that replicate and year.}
 }
 \value{
 Adds error details and summary statistics to the \code{sim} list, ending with
@@ -23,13 +27,19 @@ Adds error details and summary statistics to the \code{sim} list, ending with
 Calculate error of stratified estimates
 }
 \details{
-In the error tables, \code{I} is abundance available to the survey,
-calculated within the intended survey footprint after applying the program's
-\code{q} at age or length. \code{N_frame} and \code{N_stock} give abundance before applying
-\code{q}, within the footprint and across the full grid, respectively.
-Matching truth is missing for unknown frames, incompatible length bins and
-unassigned ages. Only estimates and truth with status
-\code{"ok"} contribute to error summaries. Batch outputs include a \code{survey} key.
+In the error tables, \code{I} is abundance available in the chosen area
+after applying the program's \code{q} at age or length. The default uses the
+stored full-grid availability matrices \code{sim$I} and \code{sim$I_at_length}. For a
+restricted footprint, this comparison includes the effect of missing part
+of the stock. Use \code{scope = "survey_frame"} to compare with abundance
+available to the survey within its intended footprint.
+
+In both scopes, \code{N_frame} and \code{N_stock} give abundance before applying
+\code{q}, within the footprint and across the full grid, respectively. An
+unknown frame leaves \code{N_frame} and frame-scoped truth missing. Incompatible
+length bins and unassigned ages have missing matching truth. Only comparisons
+with an estimate and truth both marked \code{"ok"} contribute to error summaries.
+Batch outputs include a \code{survey} key.
 }
 \examples{
 \donttest{

@@ -48,6 +48,6 @@ survey_B <- sim_survey(q = sim_logistic(x50 = 30), q_by = "length")
 \seealso{
 \code{vignette("fisheries", package = "SimSurvey")} for multiple survey
 programs and program extraction. \code{\link[=strat_error]{strat_error()}} compares estimates with
-abundance available to the survey within its intended footprint after
-applying \code{q} at age or length.
+abundance after applying \code{q} at age or length, across the full grid by default
+or within each intended survey footprint.
 }

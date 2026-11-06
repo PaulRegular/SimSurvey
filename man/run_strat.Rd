@@ -55,6 +55,8 @@ each stratum and a common tow area within a stratum. Declaring the frame
 supplies the intended coverage for comparison.
 These estimates target abundance available to the survey, meaning abundance within
 the intended survey footprint after applying \code{q} at age or length.
+Use \code{\link[=strat_error]{strat_error()}} to compare with abundance available across the full grid
+or within that footprint.
 For a batch, both hooks run independently for each named program.
 A known frame with unsampled strata has missing full-frame estimates.
 An unassigned age row retains catch without a matching age-length key.
