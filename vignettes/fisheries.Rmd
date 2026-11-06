@@ -77,9 +77,9 @@ fixed on the same grid.
 
 ```{r population}
 set.seed(601)
-abundance <- sim_abundance(ages = 1:5, years = 2001:2010)
+cohort_history <- sim_abundance(ages = 1:5, years = 2001:2010)
 grid <- make_grid(res = c(20, 20))
-population <- abundance |> sim_distribution(grid = grid)
+population <- cohort_history |> sim_distribution(grid = grid)
 ```
 
 `sim_abundance()` accepts growth, weight, and maturity functions.
@@ -451,7 +451,8 @@ biology are outside this model.
 Survey configurations also omit `sim`. The western and eastern programs have
 overlapping footprints and use age-based and length-based catchability,
 respectively. Each `sim_sets()` call retains the eligible cells for its
-program and passes that frame along with the sampled sets.
+program and passes that frame along with the sampled sets. The example uses
+set-level aging and age-length keys to match the tinyAM workflow below.
 
 ```{r surveys}
 run_programs <- function(pop, n_sims = 1) {
@@ -459,12 +460,12 @@ run_programs <- function(pop, n_sims = 1) {
   east <- sim_sets(pop, x >= -20, n_sims = n_sims)
   pop |>
     sim_surveys(
-      west = sim_survey(custom_sets = west),
+      west = sim_survey(custom_sets = west, age_space_group = "set"),
       east = sim_survey(custom_sets = east, q = sim_logistic(x50 = 40),
-                        q_by = "length"),
+                        q_by = "length", age_space_group = "set"),
       n_sims = n_sims
     ) |>
-    run_strat() |>
+    run_strat(alk_scale = "set") |>
     strat_error()
 }
 
@@ -494,7 +495,7 @@ curves with zero spatial process variation to hold the distribution fixed.
 The previous example uses the default shifting distribution.
 
 ```{r fixed-survey-footprints}
-fixed <- abundance |>
+fixed <- cohort_history |>
   sim_distribution(grid = grid, ays_covar = sim_ays_covar(sd = 0))
 set.seed(504)
 fixed_programs <- run_programs(fixed)
