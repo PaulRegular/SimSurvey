@@ -16,6 +16,7 @@ reference:
   - sim_growth
   - sim_weight
   - sim_maturity
+  - stock_biology
 - title: Simulate distribution
 - contents:
   - sim_distribution
@@ -45,6 +46,7 @@ reference:
   - error_stats
   - strat_data
   - strat_means
+  - age_means
 - title: Commercial catch analysis
 - contents:
   - run_catch

@@ -114,6 +114,15 @@ supplied curve, without sex structure, spawning timing, or recruitment feedback.
 Both summaries integrate weight and maturity jointly over the length-age key
 ([Appendix A1](#biology-equations)).
 
+Use `stock_biology()` for the underlying means by age or length and year.
+`mean_weight_kg` and `mean_mature_weight_kg` are kilograms per fish, with
+immature fish contributing zero to the latter. `prop_mature` is the proportion
+of fish mature. The age table also gives `mean_length` in centimetres.
+
+```{r stock-biology}
+stock_at_age <- stock_biology(population)$at_age
+```
+
 ```{r biomass-trends, fig.height=4.5}
 plotly::subplot(plot_trend(population, mat = "B"), plot_trend(population, mat = "S"),
                 titleX = TRUE, titleY = TRUE, margin = 0.09) |>
@@ -369,6 +378,16 @@ conditional aging probability. Both compositions are scaled to the reported
 total. `catch_error()` adds realized total catch, catch at length, and catch at
 age for comparison.
 
+The length and age estimates also contain `mean_weight_kg` and `prop_mature`,
+using the observed fish and accounting for the sampling design. Their status
+columns flag missing support. `catch_error()` compares estimated mean weight
+with the realized catch kilograms per fish in the same group and summarizes
+those errors in `fishery$catch_weight_error_stats`.
+
+```{r catch-biology}
+catch_at_age <- monitoring[["Full coverage"]]$fishery$catch_estimates$catch_at_age
+```
+
 ```{r monitoring-figure, echo=FALSE, fig.height=8.5}
 diagnostics <- data.table::rbindlist(lapply(monitoring, function(result) {
   result$fishery$catch_diagnostics[fishery == "trawl",
@@ -464,11 +483,12 @@ sim_fishery(population, target = 0.2,
 ```
 
 `mature` is binary, with `NA` for unexamined fish. `maturity_observed` marks
-examinations and `n_maturity` counts them. Latent states are drawn for every
-measured fish before the protocol masks observations, so changing only this
-setting preserves catches, existing samples, and overlapping maturity states.
-Classification is perfect; individual maturation histories and sex-specific
-biology are outside this model.
+examinations and `n_maturity` counts them. Examining every measured fish
+adds information on maturity at length. Maturity at age still requires a
+recorded age. Latent states are drawn for every measured fish before masking,
+so changing only the protocol preserves catches, existing samples, and
+overlapping maturity states. Classification is perfect. The model uses a
+single maturity curve and draws each sampled fish's state independently.
 
 ## Independent survey programs
 
@@ -597,10 +617,25 @@ whereas survey caps use `age_space_group` per replicate/year/length group.
 
 For an age-structured assessment, use supported `age_strat` estimates for
 survey indices and `fishery$catch_estimates$catch_at_age` for catch numbers.
-Align replicates and units,
-preserve fleet and survey identifiers, and handle missing estimates and
-unassigned age mass explicitly. The error tables support comparison with
-simulation truth.
+`age_strat` and `length_strat` also contain design-weighted `mean_weight_kg`
+and `prop_mature` for the fish available to the survey. `strat_error()` compares
+mean weight with truth for the selected comparison scope and summarizes it in
+`age_strat_weight_error_stats` and `length_strat_weight_error_stats`.
+
+```{r survey-biology}
+survey_at_age <- programs$age_strat
+```
+
+Keep stock, fishery, and survey biology separate. Use stock weight for
+population biomass and fleet-specific catch weight for yield. Align replicates
+and units, preserve fleet and survey identifiers, and handle missing means
+and unassigned age mass explicitly. To reproduce `S` in an assessment that
+multiplies abundance, mean weight, and maturity, use `mean_mature_weight_kg`
+divided by `mean_weight_kg` where the latter is positive. With length-based
+maturity this biomass-weighted fraction can differ from `prop_mature`.
+
+For separate data with length totals and aged fish, `age_means()` estimates
+mean traits at age using the supplied strata and length groups.
 
 ## Scope and reproducibility
 
@@ -695,6 +730,11 @@ S_{l,y}=w_l\sum_aN_{a,y}P_{l,a}m_{a,l}.
 Annual totals match across age and length representations, with \(0\le S\le B\).
 Spatial summaries use the same conditional expectations and refresh after
 abundance rounding. No spawning timing, female fraction, or fecundity is applied.
+At age, `stock_biology()` returns \(\sum_l P_{l,a}w_l\),
+\(\sum_l P_{l,a}m_{a,l}\), and \(\sum_l P_{l,a}w_lm_{a,l}\) as mean weight,
+proportion mature, and mean mature weight. These expectations are defined even
+if an age is absent in a year. At length, maturity means use the year's age
+composition within the length group and are missing when the group is empty.
 
 As a hand calculation, suppose an age group contains 100 fish, with probabilities
 0.75 and 0.25 of lengths whose weights are 1 and 8 kg and maturities 0 and 1.
@@ -979,6 +1019,13 @@ Age composition also requires aging support. Positive reported catch with
 insufficient support yields missing estimates for the affected composition.
 A zero reported total yields zero estimated fish in every group.
 
+Within a length or age group, each biological mean is a weighted ratio
+\(\sum_i u_i x_i / \sum_i u_i\) over fish with an observed trait \(x_i\).
+For weight and measured-protocol maturity at length, use \(u^{(L)}\).
+For age means and aged-protocol maturity at length, use \(u^{(A)}\).
+The annual calibration factor cancels in the ratio. A mean needs a supported
+positive denominator, even when a catch count is known to be zero.
+
 ### A7. Maturity observations
 
 After every existing sample is generated, draw a latent state for each measured
@@ -1035,6 +1082,29 @@ replicate/year totals sum the same realized weights. These are not population
 biomass expectations or estimates scaled from the measured subsample. Legacy
 objects without a weight model retain missing individual weights and nonempty
 catch masses, with mass zero for an empty catch.
+
+For biological means, let \(A_h\) be the area of stratum \(h\),
+\(A_{\mathrm{tow},h}\) the area swept per set, and \(n_h\) the number of sets.
+For fish measured in set \(j\), multiply the stratified expansion by the
+set's caught-to-measured ratio:
+
+\[
+u_{ji}=\frac{A_h}{A_{\mathrm{tow},h}\,n_h}
+        \frac{n_{\mathrm{caught},j}}{n_{\mathrm{measured},j}}.
+\]
+
+Divide by the conditional aging probability for age means and for maturity
+at length under the aged protocol. As in the fishery, take the weighted
+mean within each group using observed traits. For the survey mean-weight
+comparison, average the length-group weights using availability after
+catchability in the chosen scope. For example, with length selectivity,
+weight at age is \(\sum_l P_{l,a}q_{s,l}w_l/\overline q_{s,a}\) wherever
+availability is positive.
+
+With external data, `age_means()` weights each aged fish by the estimated
+number at its length and stratum divided by the number aged there. It sums
+weighted traits and weights at age across the strata to be pooled before
+dividing. This assumes representative aging within each stratum and length.
 
 ### A9. Biomass catches, CPUE, and random sequencing
 

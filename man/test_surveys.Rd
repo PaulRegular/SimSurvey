@@ -70,7 +70,10 @@ With \code{light = FALSE}, \code{sample_truth} retains latent states for measure
 All length/age sampling finishes before maturity is drawn for every measured
 fish, independently of this observation mask. Switching only this argument
 preserves existing samples, catches, and overlapping maturity states. An older
-object lacking a maturity model can retain number-only sampling with \code{"none"}.}
+object lacking a maturity model can retain number-only sampling with \code{"none"}.
+For each measured fish, \code{samp$age_probability} and
+\code{samp$maturity_probability} record its inclusion probabilities conditional
+on measurement. Both are missing for unmeasured fish.}
     \item{\code{trawl_dim}}{Trawl width and distance (same units as the grid).}
     \item{\code{resample_cells}}{Logical. If \code{TRUE}, allows grid cells to be resampled.
 May introduce bias, as depletion is applied at the cell level.}
@@ -98,6 +101,8 @@ The returned object includes:
 \itemize{
 \item A table of survey designs tested
 \item Stratified error results (\verb{*_strat_error} and \verb{*_strat_error_stats})
+\item Mean-weight error statistics (\code{age_strat_weight_error_stats} and
+\code{length_strat_weight_error_stats})
 \item Error statistics:
 \itemize{
 \item \code{ME}: Mean error

@@ -42,6 +42,17 @@ test_that("survey scenarios export and resume in temporary directories", {
   exported <- data.table::fread(file.path(export_dir, "samp_totals", "1.csv"))
   expect_equal(exported$kg_caught, result$samp_totals$kg_caught[result$samp_totals$survey == 1])
   expect_equal(resumed$total_strat_error, result$total_strat_error)
+  expect_equal(resumed$age_strat_weight_error_stats, result$age_strat_weight_error_stats)
+  expect_equal(resumed$length_strat_weight_error_stats, result$length_strat_weight_error_stats)
+
+  ## Emulate a completed scenario exported before mean-weight comparisons.
+  for (field in c("length_strat_error", "age_strat_error")) {
+    path <- file.path(export_dir, field, "1.csv")
+    comparison <- data.table::fread(path)
+    columns <- setdiff(names(comparison), c("mean_weight_kg", "mean_weight_true_kg",
+                                          "mean_weight_error_kg", "weight_status"))
+    data.table::fwrite(comparison[, ..columns], path)
+  }
 
   state <- new.env(parent = emptyenv())
   load(file.path(export_dir, "complete.RData"), envir = state)
@@ -53,6 +64,10 @@ test_that("survey scenarios export and resume in temporary directories", {
                result$samp_totals[result$samp_totals$survey == 1, ])
   expect_equal(sort(unique(partial$samp_totals$survey)), 1:2)
   expect_equal(nrow(partial$samp_totals), nrow(result$samp_totals))
+  expect_true(is.na(partial$age_strat_weight_error_stats[survey == 1]$RMSE))
+  expect_true(is.finite(partial$age_strat_weight_error_stats[survey == 2]$RMSE))
+  expect_true(is.na(partial$length_strat_weight_error_stats[survey == 1]$RMSE))
+  expect_true(is.finite(partial$length_strat_weight_error_stats[survey == 2]$RMSE))
 })
 
 test_that("survey programs coexist with scenario designs and length-selective wrappers", {
@@ -93,6 +108,8 @@ test_that("maturity and refreshed biomass propagate through parallel and scenari
   expect_equal(sum(parallel$sp_N$B), sum(parallel$B))
   expect_equal(parallel$setdet$n_maturity, parallel$setdet$n_measured)
   expect_equal(parallel$samp$maturity_observed, parallel$samp$measured)
+  expect_true(all(parallel$samp$maturity_probability[parallel$samp$measured] == 1))
+  expect_true(any(run_strat(parallel)$age_strat$maturity_status == "ok"))
   designs <- expand_surveys(set_den = 0, lengths_cap = 30, ages_cap = 2)
   export_dir <- withr::local_tempdir()
   scenarios <- test_surveys(sim, surveys = designs, n_sims = 1, n_loops = 1,

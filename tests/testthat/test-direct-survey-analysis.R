@@ -21,6 +21,7 @@ test_that("batch estimates and both truth scopes match single-program calls", {
   expect_equal(sort(unique(estimates$total_strat$survey)), c("east", "west"))
 
   key <- population$sim_length(population$ages, length_age_key = TRUE)
+  weight <- population$sim_weight(population$lengths)
   for (label in names(batch$survey_programs)) {
     view <- batch |> select_survey(label) |> run_strat()
     for (scope in names(analysed)) {
@@ -30,7 +31,8 @@ test_that("batch estimates and both truth scopes match single-program calls", {
                        c("survey", "sim", "year", "age"))
       for (field in c("total_strat", "length_strat", "age_strat", "survey_coverage",
                       "total_strat_error", "length_strat_error", "age_strat_error",
-                      "total_strat_error_stats", "length_strat_error_stats", "age_strat_error_stats")) {
+                      "total_strat_error_stats", "length_strat_error_stats", "age_strat_error_stats",
+                      "length_strat_weight_error_stats", "age_strat_weight_error_stats")) {
         expect_equal(restored[[field]], single[[field]])
       }
       for (rep in 1:2) {
@@ -53,6 +55,11 @@ test_that("batch estimates and both truth scopes match single-program calls", {
           expect_equal(ages$I, unname(colSums(catchable)))
           expect_equal(lengths$I[match(population$lengths, lengths$length)],
                        unname(rowSums(catchable)))
+          available_weight_at_age <- colSums(catchable * weight) / colSums(catchable)
+          available_weight_at_age[is.nan(available_weight_at_age)] <- NA_real_
+          expect_equal(ages$mean_weight_true_kg, unname(available_weight_at_age))
+          expect_equal(lengths$mean_weight_true_kg[match(population$lengths, lengths$length)],
+                       ifelse(rowSums(catchable) > 0, weight, NA_real_) |> unname())
           if (!length(cells)) {
             expect_true(is.na(total$I_hat))
             expect_identical(total$estimate_status, "no_sets")
@@ -62,6 +69,7 @@ test_that("batch estimates and both truth scopes match single-program calls", {
     }
   }
   expect_null(run_strat(analysed$survey_frame)$age_strat_error)
+  expect_null(run_strat(analysed$survey_frame)$age_strat_weight_error_stats)
 })
 
 test_that("the default uses stored whole-grid truth when the frame is unknown", {
@@ -82,6 +90,8 @@ test_that("the default uses stored whole-grid truth when the frame is unknown", 
                whole$total_strat_error$I_hat - whole$total_strat_error$I)
   expect_true(all(whole$total_strat_error$truth_status == "ok"))
   expect_true(all(is.na(whole$total_strat_error$N_frame)))
+  expect_true(all(is.na(whole$age_strat_error$mean_weight_true_kg)))
+  expect_true(all(is.na(whole$length_strat_weight_error_stats)))
   expect_equal(whole$total_strat_error$N_stock, unname(colSums(legacy$N)))
   for (yr in legacy$years) {
     ages <- whole$age_strat_error[year == yr & !is.na(age)]
@@ -113,11 +123,21 @@ test_that("both scopes compare lengths only at compatible bin widths", {
   for (scope in c("whole_grid", "survey_frame")) {
     mismatch <- strat_error(incompatible, scope = scope)
     expect_true(all(is.na(mismatch$length_strat_error$I)))
+    expect_true(all(is.na(mismatch$length_strat_error$mean_weight_true_kg)))
     expect_true(all(mismatch$length_strat_error$truth_status == "length_bins_mismatch"))
     expect_true(all(is.finite(mismatch$total_strat_error$I)))
     compared <- strat_error(coarse, scope = scope)
     sums <- compared$length_strat_error[, list(I_length = sum(I, na.rm = TRUE)), by = "year"]
     expect_equal(sums$I_length, compared$total_strat_error$I)
+    native <- data.table::data.table(length = group_lengths(survey$lengths, 6),
+                                    I = survey$I_at_length[, 1],
+                                    kg = survey$sim_weight(survey$lengths))
+    expected <- native[I > 0, list(weight = stats::weighted.mean(kg, I)), by = "length"]
+    result <- compared$length_strat_error[year == survey$years[1]]
+    expect_equal(result$mean_weight_true_kg[match(expected$length, result$length)], expected$weight)
+    finite <- compared$length_strat_error[is.finite(mean_weight_error_kg)]
+    expect_equal(finite$mean_weight_error_kg, finite$mean_weight_kg - finite$mean_weight_true_kg)
+    expect_equal(compared$length_strat_weight_error_stats, error_stats(finite$mean_weight_error_kg))
   }
   incompatible$survey_frame <- NULL
   whole <- strat_error(incompatible)
@@ -184,6 +204,8 @@ test_that("missing intended strata suppress full-frame estimates", {
   expect_true(all(is.na(result$total_strat$total)))
   expect_true(all(is.na(result$length_strat$total)))
   expect_true(all(is.na(result$age_strat$total)))
+  expect_true(all(result$length_strat$weight_status == "unsampled_strata"))
+  expect_true(all(result$age_strat[!is.na(age)]$maturity_status == "unsampled_strata"))
   expect_equal(result$total_strat_error$I, unname(colSums(result$N)))
 })
 

@@ -61,6 +61,15 @@ For a batch, both hooks run independently for each named program.
 A known frame with unsampled strata has missing full-frame estimates.
 An unassigned age row retains catch without a matching age-length key.
 Assigned ages can have partial totals in this case.
+The default estimator also gives mean individual weight (\code{mean_weight_kg})
+and the fraction mature (\code{prop_mature}) at length and age. It weights
+measured fish by their share of the set catch and the set's swept-area
+expansion. Age and aged-only maturity observations also account for the
+conditional aging probability. These ratios use observed samples and have
+their own \code{weight_status} and \code{maturity_status} columns. Missing sampling
+probabilities or biological observations can leave a ratio unsupported even
+when abundance is estimable. Custom estimators report \code{"custom_estimator"}
+for these ratios. The existing confidence intervals describe abundance.
 }
 \examples{
 \donttest{

@@ -101,7 +101,10 @@ With \code{light = FALSE}, \code{sample_truth} retains latent states for measure
 All length/age sampling finishes before maturity is drawn for every measured
 fish, independently of this observation mask. Switching only this argument
 preserves existing samples, catches, and overlapping maturity states. An older
-object lacking a maturity model can retain number-only sampling with \code{"none"}.}
+object lacking a maturity model can retain number-only sampling with \code{"none"}.
+For each measured fish, \code{samp$age_probability} and
+\code{samp$maturity_probability} record its inclusion probabilities conditional
+on measurement. Both are missing for unmeasured fish.}
 
 \item{target_type}{One of \code{"share"} (default: proportion of Z before
 selectivity, in \verb{[0, 1]}), \code{"F_full"} (annual fishing mortality at selectivity
@@ -203,7 +206,11 @@ Unnamed mortality matrices from custom closures use the age/year order of
 
 Fishing truth is completed before monitoring. Biological samples are drawn
 from actual catches, with ages nested within measured fish. Sample records
-contain stage-specific inclusion probabilities and missing unobserved ages.
+contain stage-specific inclusion probabilities, missing unobserved ages,
+and \code{weight} in kilograms per measured fish from the population's
+weight-at-length relationship. The \code{maturity_probability} is conditional on
+a fish being measured and is one, the conditional aging probability, or zero
+for the measured, aged, or none maturity protocols, respectively.
 Catch, stock and mortality tables remain aggregate even for very large stocks.
 }
 \examples{

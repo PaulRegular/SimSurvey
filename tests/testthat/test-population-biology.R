@@ -89,3 +89,24 @@ test_that("invalid relationships fail and legacy models are explicit", {
   expect_identical(.population_biology(sim), sim)
   expect_error(.population_biology(sim, required = TRUE), "migration recipe")
 })
+
+test_that("stock_biology summarizes the same moments as B and S", {
+  sim <- biology_population()
+  out <- stock_biology(sim)
+  expect_identical(key(out$at_age), c("year", "age"))
+  expect_identical(key(out$at_length), c("year", "length"))
+  expect_equal(out$at_age$mean_length, rep(c(12.5, 15), 2))
+  expect_equal(out$at_age$mean_weight_kg, rep(c(2.75, 4.5), 2))
+  expect_equal(out$at_age$prop_mature, rep(c(0.25, 0.5), 2))
+  expect_equal(out$at_age$mean_mature_weight_kg * as.numeric(sim$N), as.numeric(sim$S))
+  expect_equal(out$at_length$mean_mature_weight_kg * as.numeric(sim$N_at_length),
+               as.numeric(sim$S_at_length))
+  sim <- biology_population("age")
+  out <- stock_biology(sim)
+  expect_equal(out$at_age$prop_mature, rep(c(0.25, 1), 2))
+  expect_equal(out$at_length$mean_mature_weight_kg * as.numeric(sim$N_at_length),
+               as.numeric(sim$S_at_length))
+  sim$N[] <- 0
+  expect_equal(stock_biology(sim)$at_age, out$at_age)
+  expect_true(all(is.na(stock_biology(sim)$at_length$prop_mature)))
+})

@@ -61,6 +61,8 @@ expand_surveys <- function(set_den = c(0.5, 1, 2, 5, 10) / 1000,
 #'
 #' - A table of survey designs tested
 #' - Stratified error results (`*_strat_error` and `*_strat_error_stats`)
+#' - Mean-weight error statistics (`age_strat_weight_error_stats` and
+#'   `length_strat_weight_error_stats`)
 #' - Error statistics:
 #'   - `ME`: Mean error
 #'   - `MAE`: Mean absolute error
@@ -158,7 +160,7 @@ resume_test <- function(export_dir = NULL, ...) {
                        length_group = NULL, alk_scale = NULL, progress = NULL,
                        ...) {
 
-  j <- error <- NULL
+  j <- error <- mean_weight_error_kg <- NULL
 
   ## Containers
   samp_totals <- total_strat_error <- length_strat_error <- age_strat_error <- vector("list", nrow(surveys))
@@ -272,6 +274,15 @@ resume_test <- function(export_dir = NULL, ...) {
   sim$total_strat_error_stats <- sim$total_strat_error[, as.list(.comparable_error_stats(error)), by = "survey"]
   sim$length_strat_error_stats <- sim$length_strat_error[, as.list(.comparable_error_stats(error)), by = "survey"]
   sim$age_strat_error_stats <- sim$age_strat_error[, as.list(.comparable_error_stats(error)), by = "survey"]
+  for (trait in c("length", "age")) {
+    comparison <- sim[[paste0(trait, "_strat_error")]]
+    ## Completed scenarios resumed from older exports may lack weight errors.
+    if (!"mean_weight_error_kg" %in% names(comparison)) {
+      comparison$mean_weight_error_kg <- rep(NA_real_, nrow(comparison))
+    }
+    sim[[paste0(trait, "_strat_weight_error_stats")]] <-
+      comparison[, as.list(.comparable_error_stats(mean_weight_error_kg)), by = "survey"]
+  }
 
   ## Keep details from one survey
   i <- which(surveys$survey == keep_details)

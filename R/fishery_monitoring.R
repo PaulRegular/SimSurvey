@@ -37,7 +37,7 @@
   })
 }
 
-.monitor_fisheries <- function(truth, controls, years, sim) {
+.monitor_fisheries <- function(truth, controls, years, sim, weight_at_length) {
   n <- kg <- reported_n <- reported_kg <- effort <- n_measured <- n_aged <- n_maturity <- NULL
   operations <- truth$setdet
   catches <- truth$joint_catch
@@ -87,16 +87,22 @@
                              age_probability = numeric(), aged = logical(), measured = logical())
   sample <- if (length(samples)) rbindlist(samples) else empty_sample
   sample$sample <- seq_len(nrow(sample))
+  sample$weight <- unname(weight_at_length[as.character(sample$length)])
   sample$true_mature <- rep(NA_integer_, nrow(sample))
   sample$mature <- rep(NA_integer_, nrow(sample))
   sample$maturity_observed <- rep(FALSE, nrow(sample))
+  sample$maturity_probability <- numeric(nrow(sample))
   for (label in names(controls)) {
     rows <- which(sample$fishery == label)
-    maturity <- .maturity_observations(sample[rows, ], sim, controls[[label]]$maturity_sampling,
+    protocol <- controls[[label]]$maturity_sampling
+    maturity <- .maturity_observations(sample[rows, ], sim, protocol,
                                        true_age = sample$true_age[rows])
     for (column in c("true_mature", "mature", "maturity_observed")) {
       set(sample, i = rows, j = column, value = maturity[[column]])
     }
+    sample$maturity_probability[rows] <- switch(protocol,
+      aged = sample$age_probability[rows], measured = rep(1, length(rows)),
+      none = numeric(length(rows)))
   }
   counts <- .fishery_sample_counts(operations$operation, sample)
   for (column in names(counts)) set(operations, j = column, value = counts[[column]])

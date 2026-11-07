@@ -15,6 +15,129 @@ catch_estimation_fixture <- function() {
        fishery = list(configurations = list(fleet = list()), setdet = operations, samp = sample))
 }
 
+catch_biology_fixture <- function(protocol = "measured") {
+  sim <- catch_estimation_fixture()
+  sample <- sim$fishery$samp
+  sample$weight <- ifelse(sample$length == 20, 2, 8)
+  sample$mature <- c(1, 0, 0, 1, 0, 0)
+  sample$maturity_observed <- if (protocol == "measured") rep(TRUE, nrow(sample)) else sample$aged
+  sample$mature[!sample$maturity_observed] <- NA_real_
+  sample$maturity_probability <- if (protocol == "measured") rep(1, nrow(sample)) else
+    sample$age_probability
+  sim$fishery$samp <- sample
+  sim
+}
+
+test_that("catch biological means use the stages needed for each observed trait", {
+  measured <- run_catch(catch_biology_fixture())$fishery$catch_estimates
+  aged <- run_catch(catch_biology_fixture("aged"))$fishery$catch_estimates
+  expect_equal(measured$catch_at_length$mean_weight_kg, c(2, 8, NA))
+  expect_equal(measured$catch_at_age$mean_weight_kg, c(2, 5, NA))
+  expect_equal(measured$catch_at_length$prop_mature, c(2 / 7, 2 / 3, NA))
+  expect_equal(aged$catch_at_length$prop_mature, c(3 / 4, 1, NA))
+  expect_equal(measured$catch_at_age$prop_mature, c(1, 1 / 2, NA))
+  expect_equal(aged$catch_at_age, measured$catch_at_age)
+  expect_identical(aged$catch_at_length$weight_status, c("estimated", "estimated", "no_bin_sample"))
+  expect_identical(aged$catch_at_age$maturity_status, c("estimated", "estimated", "no_bin_sample"))
+  expect_equal(aged$catch_at_length$n_hat, c(140, 60, 0))
+  expect_equal(aged$catch_at_age$n_hat, c(120, 80, 0))
+})
+
+test_that("catch biological support is separate from counts and other traits", {
+  sim <- catch_biology_fixture()
+  sample <- sim$fishery$samp
+  sample$age_probability[] <- 0
+  sample$aged[] <- FALSE
+  sample$age[] <- NA_real_
+  sim$fishery$samp <- sample
+  result <- run_catch(sim)$fishery$catch_estimates
+  expect_equal(result$catch_at_length$prop_mature, c(2 / 7, 2 / 3, NA))
+  expect_true(all(result$catch_at_age$maturity_status == "no_aging_support"))
+
+  sample$mature[] <- 0
+  sample$weight[sample$length == 30] <- NA_real_
+  sim$fishery$samp <- sample
+  result <- run_catch(sim)$fishery$catch_estimates$catch_at_length
+  expect_equal(result$prop_mature, c(0, 0, NA))
+  expect_equal(result$mean_weight_kg, c(2, NA, NA))
+  expect_identical(result$weight_status, c("estimated", "no_weight_support", "no_bin_sample"))
+  expect_equal(result$n_hat, c(140, 60, 0))
+
+  sample$maturity_probability[] <- 0
+  sample$maturity_observed[] <- FALSE
+  sample$mature[] <- NA_real_
+  sim$fishery$samp <- sample
+  result <- run_catch(sim)$fishery$catch_estimates$catch_at_length
+  expect_true(all(is.na(result$prop_mature)))
+  expect_identical(result$maturity_status, c("no_maturity_support", "no_maturity_support",
+                                             "no_bin_sample"))
+  expect_equal(result$n_hat, c(140, 60, 0))
+
+  sim$fishery$setdet$reported_n[] <- 0
+  result <- run_catch(sim)$fishery$catch_estimates$catch_at_length
+  expect_true(all(is.na(result$mean_weight_kg) & is.na(result$prop_mature)))
+  expect_true(all(result$weight_status == "zero_reported_catch" &
+                    result$maturity_status == "zero_reported_catch" & result$n_hat == 0))
+})
+
+test_that("catch biology ignores latent values and retains length maturity when ages are missing", {
+  sim <- catch_biology_fixture("aged")
+  reference <- run_catch(sim)$fishery$catch_estimates
+  sim$sim_weight <- function(x) stop("Latent weight model was used")
+  sim$sim_maturity <- function(x) stop("Latent maturity model was used")
+  sim$fishery$samp$true_age <- rep(3, 6)
+  sim$fishery$samp$true_mature <- rep(1, 6)
+  sim$fishery$samp$mature[!sim$fishery$samp$maturity_observed] <- 1
+  expect_identical(run_catch(sim)$fishery$catch_estimates, reference)
+
+  sim$fishery$samp$age[1] <- NA_real_
+  result <- run_catch(sim)$fishery$catch_estimates
+  expect_identical(result$catch_at_length, reference$catch_at_length)
+  expect_true(all(result$catch_at_age$maturity_status == "no_aging_support"))
+
+  sim <- catch_biology_fixture("aged")
+  sim$fishery$samp$mature[1] <- NA_real_
+  result <- run_catch(sim)$fishery$catch_estimates$catch_at_length
+  expect_equal(result$prop_mature, c(NA, 1, NA))
+  expect_identical(result$maturity_status, c("no_maturity_support", "estimated", "no_bin_sample"))
+  expect_equal(result$n_hat, reference$catch_at_length$n_hat)
+
+  sim <- catch_biology_fixture("aged")
+  sim$fishery$samp[operation == 1 & length == 30, `:=`(aged = FALSE, age = NA_real_,
+    age_probability = 1 / 3, maturity_probability = 1 / 3, maturity_observed = FALSE,
+    mature = NA_real_)]
+  result <- run_catch(sim)$fishery$catch_estimates$catch_at_length
+  expect_identical(result$maturity_status, c("estimated", "no_bin_sample", "no_bin_sample"))
+  expect_equal(result$prop_mature, c(3 / 4, NA, NA))
+})
+
+test_that("catch mean-weight truth divides aggregate kilograms by realized numbers", {
+  sim <- catch_biology_fixture()
+  sim$fishery$catch_at_age <- data.table(fishery = "fleet", sim = 1L, year = 2001,
+                                        age = c(1, 2, 2, 3), n = c(50, 30, 20, 10),
+                                        kg = c(100, 120, 140, 0))
+  sim$fishery$catch_at_length <- data.table(fishery = "fleet", sim = 1L, year = 2001,
+                                           length = c(20, 30, 40), n = c(100, 40, 10),
+                                           kg = c(200, 280, NA))
+  result <- sim |> run_catch() |> catch_error()
+  expect_equal(result$fishery$catch_error$catch_at_age$mean_weight_true_kg, c(2, 5.2, 0))
+  expect_equal(result$fishery$catch_error$catch_at_age$mean_weight_error_kg, c(0, -0.2, NA))
+  expect_equal(result$fishery$catch_error$catch_at_length$mean_weight_true_kg, c(2, 7, NA))
+  expect_equal(result$fishery$catch_error$catch_at_length$mean_weight_error_kg, c(0, 1, NA))
+  stats <- result$fishery$catch_weight_error_stats
+  expect_identical(key(stats$catch_at_length), "fishery")
+  expect_equal(unlist(stats$catch_at_length[, -1]), c(ME = 0.5, MAE = 0.5, MSE = 0.5, RMSE = sqrt(0.5)))
+  expect_equal(unlist(stats$catch_at_age[, -1]), c(ME = -0.1, MAE = 0.1, MSE = 0.02, RMSE = sqrt(0.02)))
+  expect_null(run_catch(result)$fishery$catch_weight_error_stats)
+
+  result$fishery$catch_at_age$kg <- NULL
+  missing <- catch_error(result)$fishery
+  expect_equal(missing$catch_error$catch_at_age$n_true, c(50, 50, 10))
+  expect_true(all(is.na(missing$catch_error$catch_at_age$mean_weight_true_kg)))
+  expect_true(all(is.na(unlist(missing$catch_weight_error_stats$catch_at_age[, -1]))))
+  expect_identical(missing$catch_weight_error_stats$catch_at_length, stats$catch_at_length)
+})
+
 test_that("catch estimates use the corresponding inclusion stages and calibrate to reports", {
   sim <- catch_estimation_fixture()
   saved <- copy(sim)
@@ -222,6 +345,12 @@ test_that("a monitored census matches realized catch in all tables", {
     expect_equal(comparison$n_hat, comparison$n_true)
     expect_equal(comparison$error, rep(0, nrow(comparison)))
     expect_true(all(comparison$truth_status == "available"))
+  }
+  for (trait in c("catch_at_age", "catch_at_length")) {
+    comparison <- sim$fishery$catch_error[[trait]]
+    expect_equal(comparison$mean_weight_kg, comparison$mean_weight_true_kg)
+    errors <- comparison$mean_weight_error_kg[!is.na(comparison$mean_weight_error_kg)]
+    expect_equal(errors, numeric(length(errors)))
   }
   expect_true(all(sim$fishery$catch_diagnostics[fishery == "empty", length_status] ==
                     "zero_reported_catch"))
