@@ -82,7 +82,13 @@
     <p>The simulation list with three keyed data tables in
 <code>fishery$catch_estimates</code> named <code>total_catch</code>, <code>catch_at_length</code>, and <code>catch_at_age</code>.
 Each has <code>fishery</code>, <code>sim</code>, <code>year</code>, and estimated numbers of fish <code>n_hat</code>.
-The composition tables also include <code>length</code> or <code>age</code>.
+The composition tables also include <code>length</code> or <code>age</code>, <code>mean_weight_kg</code>
+(kilograms per fish), <code>prop_mature</code> (a proportion), and <code>weight_status</code>
+and <code>maturity_status</code>. A trait status is <code>"estimated"</code>, inherits an
+unsupported composition status, or indicates <code>"no_bin_sample"</code>,
+<code>"no_weight_support"</code>, or <code>"no_maturity_support"</code>. Means are missing
+for empty groups and when the corresponding trait is unsupported.
+A supported group of entirely immature fish has proportion zero.
 <code>fishery$catch_diagnostics</code> gives annual <code>reported_n</code>, operation counts
 (<code>n_operations</code>, <code>n_positive_operations</code>, <code>n_sampled_operations</code>), biological
 counts (<code>n_measured</code>, <code>n_aged</code>), the fraction of operations selected
@@ -91,7 +97,8 @@ operations (<code>reported_catch_coverage</code>). Fractions with zero denominat
 are missing. Both <code>length_status</code> and <code>age_status</code> can be <code>"estimated"</code>,
 <code>"zero_reported_catch"</code>, <code>"no_operation_support"</code>, or
 <code>"no_measurement_support"</code>. The <code>age_status</code> can also be
-<code>"no_aging_support"</code>. Re-estimation clears the previous catch comparison.</p>
+<code>"no_aging_support"</code>. Re-estimation clears previous catch comparisons
+and their error summaries.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -117,6 +124,15 @@ missing or invalid conditional aging probabilities, and absence of aged
 fish can leave age estimates unsupported while length estimates remain
 available. Unobserved lengths or ages within supported groups have
 estimated counts of zero.</p>
+<p>Mean weight and mature proportion are weighted means of the observed
+values within each length or age group. Mean weight uses the length
+weights for measured fish and the age weights for aged fish. Maturity at
+length additionally accounts for the probability of maturity examination
+among measured fish. That probability is one with
+<code>maturity_sampling = "measured"</code> and the conditional aging probability
+with <code>"aged"</code>. At age, the aging weight accounts for the joint observation
+of age and maturity under either protocol. Calibration to total catch
+cancels in each mean. Disabling maturity sampling leaves its means missing.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -135,64 +151,122 @@ estimated counts of zero.</p>
 <span class="r-in"><span>  <span class="fu"><a href="catch_error.html">catch_error</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">result</span><span class="op">$</span><span class="va">fishery</span><span class="op">$</span><span class="va">catch_estimates</span><span class="op">$</span><span class="va">catch_at_length</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Key: &lt;fishery, sim, year, length&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     fishery   sim  year length  n_hat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;char&gt; &lt;int&gt; &lt;int&gt;  &lt;num&gt;  &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:   trawl     1  2001      1   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:   trawl     1  2001      4   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:   trawl     1  2001      7   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:   trawl     1  2001     10   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:   trawl     1  2001     13   9.80</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:   trawl     1  2001     16  36.40</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:   trawl     1  2001     19   7.32</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:   trawl     1  2001     22  58.07</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:   trawl     1  2001     25 117.56</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:   trawl     1  2001     28 124.13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:   trawl     1  2001     31 149.69</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:   trawl     1  2001     34 216.24</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13:   trawl     1  2001     37 128.62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14:   trawl     1  2001     40  51.20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15:   trawl     1  2001     43  13.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16:   trawl     1  2001     46   3.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17:   trawl     1  2001     49   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18:   trawl     1  2001     52   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19:   trawl     1  2001     55   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20:   trawl     1  2001     58   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21:   trawl     1  2001     61   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22:   trawl     1  2001     64   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23:   trawl     1  2001     67   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24:   trawl     1  2001     70   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25:   trawl     1  2001     73   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26:   trawl     1  2001     76   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27:   trawl     1  2001     79   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28:   trawl     1  2002      1   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29:   trawl     1  2002      4   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30:   trawl     1  2002      7   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31:   trawl     1  2002     10   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32:   trawl     1  2002     13   2.86</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33:   trawl     1  2002     16  22.88</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34:   trawl     1  2002     19   8.15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35:   trawl     1  2002     22  43.88</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36:   trawl     1  2002     25 101.42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37:   trawl     1  2002     28  79.45</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38:   trawl     1  2002     31 151.15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39:   trawl     1  2002     34 232.64</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 40:   trawl     1  2002     37 189.89</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 41:   trawl     1  2002     40  67.35</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 42:   trawl     1  2002     43  16.36</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 43:   trawl     1  2002     46   1.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 44:   trawl     1  2002     49   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 45:   trawl     1  2002     52   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 46:   trawl     1  2002     55   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 47:   trawl     1  2002     58   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 48:   trawl     1  2002     61   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 49:   trawl     1  2002     64   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 50:   trawl     1  2002     67   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 51:   trawl     1  2002     70   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 52:   trawl     1  2002     73   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 53:   trawl     1  2002     76   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 54:   trawl     1  2002     79   0.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     fishery   sim  year length  n_hat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;char&gt; &lt;int&gt; &lt;int&gt;  &lt;num&gt;  &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     fishery   sim  year length  n_hat mean_weight_kg prop_mature weight_status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;char&gt; &lt;int&gt; &lt;int&gt;  &lt;num&gt;  &lt;num&gt;          &lt;num&gt;       &lt;num&gt;        &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1:   trawl     1  2001      1   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2:   trawl     1  2001      4   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3:   trawl     1  2001      7   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4:   trawl     1  2001     10   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5:   trawl     1  2001     13   9.80     0.01694906 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6:   trawl     1  2001     16  36.40     0.03218119 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7:   trawl     1  2001     19   7.32     0.05470956 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8:   trawl     1  2001     22  58.07     0.08603338 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9:   trawl     1  2001     25 117.56     0.12767297 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10:   trawl     1  2001     28 124.13     0.18116708 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11:   trawl     1  2001     31 149.69     0.24807087 0.029394081     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12:   trawl     1  2001     34 216.24     0.32995427 0.007399186     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13:   trawl     1  2001     37 128.62     0.42840063 0.043290313     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14:   trawl     1  2001     40  51.20     0.54500570 0.095781250     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15:   trawl     1  2001     43  13.97     0.68137665 0.268432355     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16:   trawl     1  2001     46   3.00     0.83913128 0.333333333     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17:   trawl     1  2001     49   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18:   trawl     1  2001     52   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19:   trawl     1  2001     55   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20:   trawl     1  2001     58   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21:   trawl     1  2001     61   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22:   trawl     1  2001     64   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23:   trawl     1  2001     67   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24:   trawl     1  2001     70   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25:   trawl     1  2001     73   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26:   trawl     1  2001     76   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27:   trawl     1  2001     79   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28:   trawl     1  2002      1   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29:   trawl     1  2002      4   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30:   trawl     1  2002      7   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31:   trawl     1  2002     10   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32:   trawl     1  2002     13   2.86     0.01694906 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33:   trawl     1  2002     16  22.88     0.03218119 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34:   trawl     1  2002     19   8.15     0.05470956 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35:   trawl     1  2002     22  43.88     0.08603338 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36:   trawl     1  2002     25 101.42     0.12767297 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37:   trawl     1  2002     28  79.45     0.18116708 0.037759597     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38:   trawl     1  2002     31 151.15     0.24807087 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39:   trawl     1  2002     34 232.64     0.32995427 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40:   trawl     1  2002     37 189.89     0.42840063 0.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41:   trawl     1  2002     40  67.35     0.54500570 0.074951745     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42:   trawl     1  2002     43  16.36     0.68137665 0.112469438     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43:   trawl     1  2002     46   1.97     0.83913128 1.000000000     estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44:   trawl     1  2002     49   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45:   trawl     1  2002     52   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46:   trawl     1  2002     55   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47:   trawl     1  2002     58   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48:   trawl     1  2002     61   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49:   trawl     1  2002     64   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50:   trawl     1  2002     67   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 51:   trawl     1  2002     70   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 52:   trawl     1  2002     73   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 53:   trawl     1  2002     76   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 54:   trawl     1  2002     79   0.00             NA          NA no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     fishery   sim  year length  n_hat mean_weight_kg prop_mature weight_status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;char&gt; &lt;int&gt; &lt;int&gt;  &lt;num&gt;  &lt;num&gt;          &lt;num&gt;       &lt;num&gt;        &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     maturity_status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              &lt;char&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43:       estimated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 51:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 52:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 53:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 54:   no_bin_sample</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     maturity_status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              &lt;char&gt;</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
