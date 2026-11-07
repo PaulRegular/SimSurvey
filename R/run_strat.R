@@ -692,7 +692,7 @@ strat_error <- function(sim, scope = "whole_grid") {
 
 .strat_error_one <- function(sim, scope) {
   I <- I_hat <- error <- estimate_status <- truth_status <- age <- NULL
-  weight_status <- mean_weight_kg <- mean_weight_true_kg <- NULL
+  weight_status <- mean_weight_kg <- mean_weight_true_kg <- mean_weight_error_kg <- NULL
   roster <- unique(sim$total_strat[, c("sim", "year"), with = FALSE])
   length_map <- .strat_length_map(sim, sim$strat_length_group)
   truth <- .strat_truth(sim, roster, scope, length_map)
