@@ -39,6 +39,15 @@ In both scopes, \code{N_frame} and \code{N_stock} give abundance before applying
 unknown frame leaves \code{N_frame} and frame-scoped truth missing. Incompatible
 length bins and unassigned ages have missing matching truth. Only comparisons
 with an estimate and truth both marked \code{"ok"} contribute to error summaries.
+Age and length tables also compare observed mean weight in kg with
+\code{mean_weight_true_kg}, the mean over fish available to the survey in that
+scope. This truth uses the population's discrete length groups and the
+program's catchability. It is missing when the model, matching length
+bins, or available fish are absent. Age-selective surveys draw individual
+lengths, so their expected weights can differ from this grouped truth.
+Signed differences appear as \code{mean_weight_error_kg}. The corresponding
+\code{age_strat_weight_error_stats} and \code{length_strat_weight_error_stats} are
+calculated only for supported comparisons.
 Batch outputs include a \code{survey} key.
 }
 \examples{

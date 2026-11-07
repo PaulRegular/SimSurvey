@@ -91,7 +91,7 @@ test_that("fishery protocols preserve reporting, all existing samples and later 
   columns <- setdiff(names(aged$setdet), "n_maturity")
   expect_equal(aged$setdet[, ..columns], measured$setdet[, ..columns])
   expect_equal(aged$setdet[, ..columns], none$setdet[, ..columns])
-  columns <- setdiff(names(aged$samp), c("mature", "maturity_observed"))
+  columns <- setdiff(names(aged$samp), c("mature", "maturity_observed", "maturity_probability"))
   expect_equal(aged$samp[, ..columns], measured$samp[, ..columns])
   expect_equal(aged$samp[, ..columns], none$samp[, ..columns])
   expect_equal(aged$sample_truth$true_mature, measured$sample_truth$true_mature)
@@ -100,6 +100,9 @@ test_that("fishery protocols preserve reporting, all existing samples and later 
                aged$samp$mature[aged$samp$maturity_observed])
   rows <- none$samp$fishery == "a"
   expect_true(all(is.na(none$samp$mature[rows])))
+  expect_equal(none$samp$maturity_probability[rows], rep(0, sum(rows)))
+  expect_equal(measured$samp$maturity_probability[rows], rep(1, sum(rows)))
+  expect_equal(aged$samp$maturity_probability[rows], aged$samp$age_probability[rows])
 })
 
 test_that("survey programs finish all existing samples before maturity", {

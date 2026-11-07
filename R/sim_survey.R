@@ -184,6 +184,9 @@ sim_sets <- function(sim, subset_cells, n_sims = 1, trawl_dim = c(1.5, 0.02),
 #' fish, independently of this observation mask. Switching only this argument
 #' preserves existing samples, catches, and overlapping maturity states. An older
 #' object lacking a maturity model can retain number-only sampling with `"none"`.
+#' For each measured fish, `samp$age_probability` and
+#' `samp$maturity_probability` record its inclusion probabilities conditional
+#' on measurement. Both are missing for unmeasured fish.
 #' @param trawl_dim Trawl width and distance (same units as the grid).
 #' @param resample_cells Logical. If `TRUE`, allows grid cells to be resampled.
 #' May introduce bias, as depletion is applied at the cell level.
@@ -376,7 +379,8 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   list(sim = sim, sets = sets, setdet = setdet, samp = samp, I = I,
        I_at_length = I_at_length, lengths_cap = lengths_cap, ages_cap = ages_cap,
        age_sampling = age_sampling, age_length_group = age_length_group,
-       age_space_group = age_space_group, light = light)
+       age_space_group = age_space_group, maturity_sampling = maturity_sampling,
+       light = light)
 }
 
 .survey_samples <- function(truth) {
@@ -391,6 +395,7 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   age_space_group <- truth$age_space_group
   light <- truth$light
   n <- age <- id <- division <- strat <- N <- n_measured <- n_aged <- weight <- kg <- NULL
+  aged <- age_probability <- maturity_probability <- NULL
 
   ## Sample lengths
   measured <- samp[, list(id = id[sample(.N, ifelse(.N > lengths_cap, lengths_cap, .N),
@@ -402,22 +407,24 @@ sim_survey <- function(sim, n_sims = 1, q = sim_logistic(), trawl_dim = c(1.5, 0
   ## Sample ages
   length_samp$length_group <- group_lengths(length_samp$length, age_length_group)
   length_samp <- merge(sets[, list(set, sim, year, division, strat)], length_samp, by = "set")
-  if (age_sampling == "stratified") {
-    aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
-                                              replace = FALSE)]),
-                        by = c("sim", "year", age_space_group, "length_group")]
-  }
-  if (age_sampling == "random") {
-    aged <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
-                                              replace = FALSE)]),
-                        by = c("set")]
-  }
-  samp$aged <- samp$id %in% aged$id # tag ages sampled
-  rm(aged)
+  age_groups <- if (age_sampling == "stratified") {
+    c("sim", "year", age_space_group, "length_group")
+  } else "set"
+  age_sample <- length_samp[, list(id = id[sample(.N, ifelse(.N > ages_cap, ages_cap, .N),
+                                                  replace = FALSE)]), by = age_groups]
+  samp$aged <- samp$id %in% age_sample$id
+  length_samp$aged <- length_samp$id %in% age_sample$id
+  length_samp[, age_probability := mean(aged), by = age_groups]
+  samp$age_probability <- length_samp$age_probability[match(samp$id, length_samp$id)]
+  samp$maturity_probability <- switch(truth$maturity_sampling,
+    aged = samp$age_probability,
+    measured = ifelse(samp$measured, 1, NA_real_),
+    none = ifelse(samp$measured, 0, NA_real_))
   rm(length_samp)
 
   ## Simplify samp object
-  samp <- samp[, list(set, id, length, weight, age, measured, aged)]
+  samp <- samp[, list(set, id, length, weight, age, measured, aged,
+                      age_probability, maturity_probability)]
   if (light) samp$id <- NULL
 
   ## Summarise set catch and sampling

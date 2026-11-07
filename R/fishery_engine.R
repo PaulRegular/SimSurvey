@@ -56,7 +56,8 @@
   if (!is.finite(cell_area) || cell_area <= 0 || anyDuplicated(cells$cell)) {
     stop("The grid must have positive cell area and unique cell identifiers.")
   }
-  kg <- .biology_values(weight, as.numeric(rownames(key)), "Weight")
+  lengths <- as.numeric(rownames(key))
+  kg <- .biology_values(weight, lengths, "Weight")
   allocations <- .fishery_targets(sim, controls, key, kg)
   biomass_target <- vapply(controls, function(c) c$target_type == "catch_kg", logical(1))
   operations <- catches <- ledgers <- annual <- references <- list()
@@ -68,7 +69,7 @@
       remaining <- starting <- stock$N
       a_index <- match(stock$age, sim$ages)
       c_index <- match(stock$cell, cells$cell)
-      l_index <- match(stock$length, as.numeric(rownames(key)))
+      l_index <- match(stock$length, lengths)
       budget <- .balanced_round(sim$N[, y] * -expm1(-sim$Z[, y]))
       death_remaining <- budget
       allocation <- allocations[[y]]
@@ -234,7 +235,8 @@
                 joint_catch = if (length(catches)) rbindlist(catches) else empty_catch,
                 mortality_ledger = rbindlist(ledgers), annual = rbindlist(annual),
                 reference = rbindlist(references), has_weight = TRUE)
-  result <- .monitor_fisheries(truth, controls, sim$years, sim)
+  result <- .monitor_fisheries(truth, controls, sim$years, sim,
+                                stats::setNames(kg, lengths))
   result$configurations <- configurations
   result$settings <- list(n_sims = n_sims, weight_source = "sim_weight", cell_area = cell_area,
                           length_age_key = key, mortality = "conditional on existing Z")

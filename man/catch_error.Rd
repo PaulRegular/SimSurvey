@@ -21,6 +21,13 @@ the corresponding truth is present, missing groups have zero realized
 catch and truth is \code{"available"}. When it is absent, truth and errors are
 missing and truth is \code{"unavailable"}. Missing estimates retain missing
 errors. The comparisons do not alter estimates or diagnostics.
+
+Length and age comparisons also include \code{mean_weight_kg},
+\code{mean_weight_true_kg} (realized kilograms divided by realized numbers), and
+\code{mean_weight_error_kg}. Realized mean weight is missing when there is no
+realized catch or its weight is unavailable. The corresponding tables in
+\code{fishery$catch_weight_error_stats} summarize comparable errors across bins,
+replicates, and years by fishery, with \code{ME}, \code{MAE}, \code{MSE}, and \code{RMSE}.
 }
 \description{
 Compare monitored catch with realized catch

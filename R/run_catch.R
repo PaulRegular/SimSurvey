@@ -6,12 +6,69 @@
   as.data.table(x[columns])
 }
 
+.catch_trait_ratios <- function(sample, keys, values, log_weights, valid, unsupported) {
+  value <- log_weight <- weight <- status <- i.estimate <- NULL
+  rows <- sample[, keys, with = FALSE]
+  rows$value <- values
+  rows$log_weight <- log_weights
+  rows$valid <- valid
+  bins <- rows[, list(estimate = NA_real_,
+                       status = if (all(valid)) "no_bin_sample" else unsupported), by = keys]
+  rows <- rows[bins[status == "no_bin_sample", ], on = keys, nomatch = 0L]
+  rows <- rows[is.finite(value) & is.finite(log_weight), ]
+  if (nrow(rows)) {
+    rows[, weight := exp(log_weight - max(log_weight)), by = keys]
+    ratios <- .biology_ratio(rows, keys, rows$value, rows$weight)
+    bins[ratios, on = keys, `:=`(estimate = i.estimate, status = "estimated")]
+  }
+  bins
+}
+
+.catch_biology <- function(estimates, sample, keys, trait) {
+  kg <- sample$weight
+  if (!is.numeric(kg)) kg <- rep(NA_real_, nrow(sample))
+  means <- .catch_trait_ratios(sample, keys, kg, sample$log_weight,
+                               is.finite(kg) & kg >= 0, "no_weight_support")
+  rows <- estimates[means, on = keys, which = TRUE]
+  set(estimates, rows, "mean_weight_kg", means$estimate)
+  set(estimates, rows, "weight_status", means$status)
+
+  mature <- sample$mature
+  if (!is.numeric(mature) && !is.logical(mature)) mature <- rep(NA_real_, nrow(sample))
+  examined <- sample$maturity_observed
+  if (!is.logical(examined)) examined <- rep(NA, nrow(sample))
+  probability <- sample$maturity_probability
+  if (!is.numeric(probability)) probability <- rep(NA_real_, nrow(sample))
+  positive <- is.finite(probability) & probability > 0 & probability <= 1
+  ## Maturity is observed either on all measured fish or on the nested aged fish.
+  ## For age estimates, the existing weight already includes the aging stage.
+  expected <- probability %in% 1 | sample$aged
+  valid <- positive & (probability %in% 1 | probability == sample$age_probability) &
+    !is.na(examined) & examined == expected & (!examined | mature %in% 0:1)
+  valid[is.na(valid)] <- FALSE
+  mature[is.na(examined) | !examined] <- NA
+  log_weights <- sample$log_weight
+  if (trait == "length") log_weights <- log_weights - log(ifelse(positive, probability, NA_real_))
+  means <- .catch_trait_ratios(sample, keys, mature, log_weights, valid, "no_maturity_support")
+  rows <- estimates[means, on = keys, which = TRUE]
+  set(estimates, rows, "prop_mature", means$estimate)
+  set(estimates, rows, "maturity_status", means$status)
+  estimates
+}
+
 .catch_composition <- function(estimates, sample, diagnostics, group_keys, trait) {
   reported_n <- sampling_probability <- n_measured <- age_probability <- NULL
-  log_weight <- weight <- proportion <- n_hat <- i.n_hat <- i.reported_n <- NULL
+  log_weight <- count_weight <- proportion <- n_hat <- i.n_hat <- i.reported_n <- NULL
 
   status <- diagnostics[[paste0(trait, "_status")]]
   estimates$n_hat <- rep(NA_real_, nrow(estimates))
+  estimates$mean_weight_kg <- rep(NA_real_, nrow(estimates))
+  estimates$prop_mature <- rep(NA_real_, nrow(estimates))
+  group_rows <- diagnostics[estimates, on = group_keys, which = TRUE]
+  bin_status <- status[group_rows]
+  bin_status[bin_status == "estimated"] <- "no_bin_sample"
+  estimates$weight_status <- bin_status
+  estimates$maturity_status <- bin_status
   supported <- status %in% c("estimated", "zero_reported_catch")
   estimates[diagnostics[supported, ], on = group_keys, n_hat := 0]
 
@@ -22,12 +79,13 @@
     ## A common scale cancels in calibration and prevents overflow at small probabilities.
     observed[, log_weight := log(reported_n) - log(sampling_probability) - log(n_measured)]
     if (trait == "age") observed[, log_weight := log_weight - log(age_probability)]
-    observed[, weight := exp(log_weight - max(log_weight)), by = group_keys]
+    observed[, count_weight := exp(log_weight - max(log_weight)), by = group_keys]
     keys <- c(group_keys, trait)
-    weights <- observed[, list(weight = sum(weight)), by = keys]
-    weights[, proportion := weight / sum(weight), by = group_keys]
+    weights <- observed[, list(count_weight = sum(count_weight)), by = keys]
+    weights[, proportion := count_weight / sum(count_weight), by = group_keys]
     weights[diagnostics, on = group_keys, n_hat := proportion * i.reported_n]
     estimates[weights, on = keys, n_hat := i.n_hat]
+    estimates <- .catch_biology(estimates, observed, keys, trait)
   }
   estimates
 }
@@ -61,10 +119,26 @@
 #' available. Unobserved lengths or ages within supported groups have
 #' estimated counts of zero.
 #'
+#' Mean weight and mature proportion are weighted means of the observed
+#' values within each length or age group. Mean weight uses the length
+#' weights for measured fish and the age weights for aged fish. Maturity at
+#' length additionally accounts for the probability of maturity examination
+#' among measured fish. That probability is one with
+#' `maturity_sampling = "measured"` and the conditional aging probability
+#' with `"aged"`. At age, the aging weight accounts for the joint observation
+#' of age and maturity under either protocol. Calibration to total catch
+#' cancels in each mean. Disabling maturity sampling leaves its means missing.
+#'
 #' @return The simulation list with three keyed data tables in
 #' `fishery$catch_estimates` named `total_catch`, `catch_at_length`, and `catch_at_age`.
 #' Each has `fishery`, `sim`, `year`, and estimated numbers of fish `n_hat`.
-#' The composition tables also include `length` or `age`.
+#' The composition tables also include `length` or `age`, `mean_weight_kg`
+#' (kilograms per fish), `prop_mature` (a proportion), and `weight_status`
+#' and `maturity_status`. A trait status is `"estimated"`, inherits an
+#' unsupported composition status, or indicates `"no_bin_sample"`,
+#' `"no_weight_support"`, or `"no_maturity_support"`. Means are missing
+#' for empty groups and when the corresponding trait is unsupported.
+#' A supported group of entirely immature fish has proportion zero.
 #' `fishery$catch_diagnostics` gives annual `reported_n`, operation counts
 #' (`n_operations`, `n_positive_operations`, `n_sampled_operations`), biological
 #' counts (`n_measured`, `n_aged`), the fraction of operations selected
@@ -73,7 +147,8 @@
 #' are missing. Both `length_status` and `age_status` can be `"estimated"`,
 #' `"zero_reported_catch"`, `"no_operation_support"`, or
 #' `"no_measurement_support"`. The `age_status` can also be
-#' `"no_aging_support"`. Re-estimation clears the previous catch comparison.
+#' `"no_aging_support"`. Re-estimation clears previous catch comparisons
+#' and their error summaries.
 #' @seealso [catch_error()]
 #' @examples
 #' \donttest{
@@ -104,8 +179,11 @@ run_catch <- function(sim) {
   operations <- .catch_table(fishery$setdet,
                               c(operation_keys, "reported_n", "sampling_probability", "sampled"),
                               "fishery$setdet")
+  biology <- intersect(c("weight", "mature", "maturity_observed", "maturity_probability"),
+                        names(fishery$samp))
   sample <- .catch_table(fishery$samp,
-                          c(operation_keys, "measured", "length", "aged", "age", "age_probability"),
+                          c(operation_keys, "measured", "length", "aged", "age", "age_probability",
+                            biology),
                           "fishery$samp")
   roster <- CJ(fishery = fleets, sim = sim$replicates, year = sim$years)
   if (anyNA(operations[, operation_keys, with = FALSE]) ||
@@ -197,30 +275,51 @@ run_catch <- function(sim) {
   )
   sim$fishery$catch_diagnostics <- diagnostics
   sim$fishery$catch_error <- NULL
+  sim$fishery$catch_weight_error_stats <- NULL
   sim
 }
 
 .catch_comparison <- function(estimates, truth, keys, estimate_label, truth_label) {
-  n <- n_true <- i.n_true <- NULL
+  n <- n_true <- i.n_true <- kg <- mean_weight_true_kg <- i.mean_weight_true_kg <- NULL
   comparison <- .catch_table(estimates, c(keys, "n_hat"), estimate_label)
   comparison$n_true <- rep(if (is.null(truth)) NA_real_ else 0, nrow(comparison))
   comparison$truth_status <- rep(if (is.null(truth)) "unavailable" else "available",
                                   nrow(comparison))
+  composition <- "age" %in% keys || "length" %in% keys
+  if (composition) {
+    comparison$mean_weight_kg <- if ("mean_weight_kg" %in% names(estimates)) {
+      estimates$mean_weight_kg
+    } else rep(NA_real_, nrow(comparison))
+    comparison$mean_weight_true_kg <- rep(NA_real_, nrow(comparison))
+  }
   if (!is.null(truth)) {
-    truth <- .catch_table(truth, c(keys, "n"), truth_label)
+    has_weight <- composition && is.data.frame(truth) && is.numeric(truth[["kg"]])
+    columns <- c(keys, "n", if (has_weight) "kg")
+    truth <- .catch_table(truth, columns, truth_label)
     if (!is.numeric(truth$n) || any(!is.finite(truth$n) | truth$n < 0) ||
         nrow(truth[!comparison, on = keys])) {
       stop(truth_label, " must contain finite nonnegative counts on the estimate grid.",
            call. = FALSE)
     }
-    truth <- truth[, list(n_true = sum(n)), by = keys]
-    if (any(!is.finite(truth$n_true))) {
+    totals <- truth[, list(n_true = sum(n)), by = keys]
+    if (any(!is.finite(totals$n_true))) {
       stop(truth_label, " has nonfinite sums of realized catch.", call. = FALSE)
     }
-    comparison[truth, on = keys, n_true := i.n_true]
+    comparison[totals, on = keys, n_true := i.n_true]
+    if (has_weight) {
+      weights <- truth[n > 0, list(mean_weight_true_kg =
+        if (all(is.finite(kg) & kg >= 0)) sum(kg) / sum(n) else NA_real_), by = keys]
+      weights$mean_weight_true_kg[!is.finite(weights$mean_weight_true_kg)] <- NA_real_
+      comparison[weights, on = keys, mean_weight_true_kg := i.mean_weight_true_kg]
+    }
   }
   comparison$error <- comparison$n_hat - comparison$n_true
-  setcolorder(comparison, c(keys, "n_hat", "n_true", "error", "truth_status"))
+  traits <- NULL
+  if (composition) {
+    comparison$mean_weight_error_kg <- comparison$mean_weight_kg - comparison$mean_weight_true_kg
+    traits <- c("mean_weight_kg", "mean_weight_true_kg", "mean_weight_error_kg")
+  }
+  setcolorder(comparison, c(keys, "n_hat", "n_true", "error", "truth_status", traits))
   setkeyv(comparison, keys)
   comparison
 }
@@ -239,8 +338,16 @@ run_catch <- function(sim) {
 #' catch and truth is `"available"`. When it is absent, truth and errors are
 #' missing and truth is `"unavailable"`. Missing estimates retain missing
 #' errors. The comparisons do not alter estimates or diagnostics.
+#'
+#' Length and age comparisons also include `mean_weight_kg`,
+#' `mean_weight_true_kg` (realized kilograms divided by realized numbers), and
+#' `mean_weight_error_kg`. Realized mean weight is missing when there is no
+#' realized catch or its weight is unavailable. The corresponding tables in
+#' `fishery$catch_weight_error_stats` summarize comparable errors across bins,
+#' replicates, and years by fishery, with `ME`, `MAE`, `MSE`, and `RMSE`.
 #' @export
 catch_error <- function(sim) {
+  mean_weight_error_kg <- NULL
   fishery <- sim$fishery
   estimates <- fishery$catch_estimates
   tables <- c("total_catch", "catch_at_length", "catch_at_age")
@@ -259,5 +366,10 @@ catch_error <- function(sim) {
                                      c(keys, "age"), "fishery$catch_estimates$catch_at_age",
                                      "fishery$catch_at_age")
   )
+  sim$fishery$catch_weight_error_stats <- lapply(sim$fishery$catch_error[tables[-1L]], function(table) {
+    result <- table[, as.list(.comparable_error_stats(mean_weight_error_kg)), by = "fishery"]
+    setkey(result, fishery)
+    result
+  })
   sim
 }

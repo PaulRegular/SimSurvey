@@ -197,6 +197,15 @@ strat_means <- function(data = NULL, metric = NULL, strat_groups = NULL,
 #' A known frame with unsampled strata has missing full-frame estimates.
 #' An unassigned age row retains catch without a matching age-length key.
 #' Assigned ages can have partial totals in this case.
+#' The default estimator also gives mean individual weight (`mean_weight_kg`)
+#' and the fraction mature (`prop_mature`) at length and age. It weights
+#' measured fish by their share of the set catch and the set's swept-area
+#' expansion. Age and aged-only maturity observations also account for the
+#' conditional aging probability. These ratios use observed samples and have
+#' their own `weight_status` and `maturity_status` columns. Missing sampling
+#' probabilities or biological observations can leave a ratio unsupported even
+#' when abundance is estimable. Custom estimators report `"custom_estimator"`
+#' for these ratios. The existing confidence intervals describe abundance.
 #'
 #' @return Adds stratified analysis results to the `sim` list:
 #' - `"total_strat"`: Results for the total abundance available to the survey
@@ -258,7 +267,8 @@ run_strat <- function(sim,
 
 .strat_estimates <- c("total_strat", "length_strat", "age_strat")
 .strat_errors <- paste0(.strat_estimates, "_error")
-.strat_error_stats <- paste0(.strat_errors, "_stats")
+.strat_error_stats <- c(paste0(.strat_errors, "_stats"),
+                        "length_strat_weight_error_stats", "age_strat_weight_error_stats")
 
 .clear_strat_analysis <- function(sim) {
   fields <- c(.strat_estimates, .strat_errors, .strat_error_stats,
@@ -327,6 +337,111 @@ run_strat <- function(sim,
   view
 }
 
+.strat_biology_data <- function(sim, setdet, strata, length_group) {
+  strat_area <- tow_area <- n <- expanded_n <- base_weight <- NULL
+  sample <- sim$samp
+  columns <- c("set", "length", "age", "aged", "weight", "mature",
+                "maturity_observed", "age_probability", "maturity_probability")
+  measured <- sample[which(sample$measured & is.finite(sample$length)),
+                     intersect(columns, names(sample)), with = FALSE]
+  for (column in setdiff(columns, names(measured))) {
+    measured[[column]] <- rep(NA_real_, nrow(measured))
+  }
+  setdet[, expanded_n := (strat_area / tow_area) * n / .N, by = strata]
+  measured <- merge(measured, setdet[, c("set", "sim", "year", "expanded_n"), with = FALSE],
+                    by = "set")
+  measured[, base_weight := expanded_n / .N, by = "set"]
+  measured$length <- group_lengths(measured$length, length_group)
+  measured[which(is.finite(measured$base_weight) & measured$base_weight > 0)]
+}
+
+.strat_design_status <- function(data, keys, probability, unknown, absent) {
+  if (!nrow(data)) {
+    result <- data[, keys, with = FALSE]
+    result$status <- character()
+    return(result)
+  }
+  data[, {
+    p <- probability[.I]
+    list(status = if (any(!is.finite(p) | p < 0 | p > 1)) unknown else
+      if (any(p == 0)) absent else "ok")
+  }, by = keys]
+}
+
+.strat_biology_ratio <- function(table, sample, keys, trait, observations, weights,
+                                 estimate_col, status_col) {
+  i.estimate <- NULL
+  rows <- which(observations)
+  if (!length(rows)) return(invisible(NULL))
+  sample <- sample[rows, ]
+  weights <- weights[rows]
+  value <- as.numeric(sample[[trait]])
+  invalid <- if (trait == "weight") !is.finite(value) | value < 0 else !value %in% c(0, 1)
+  missing <- unique(sample[invalid, keys, with = FALSE])
+  ratios <- .biology_ratio(sample[!invalid, ], keys, value[!invalid], weights[!invalid])
+  table[ratios, on = keys, (c(estimate_col, status_col)) := list(i.estimate, "ok")]
+  missing_status <- if (trait == "weight") "missing_weight" else "missing_maturity"
+  table[missing, on = keys, (status_col) := missing_status]
+}
+
+.add_strat_biology <- function(table, measured, trait, ages) {
+  i.status <- age <- status <- maturity_status <- NULL
+  keys <- c("sim", "year", trait)
+  table$mean_weight_kg <- table$prop_mature <- rep(NA_real_, nrow(table))
+  weight_status <- if (is.null(measured)) "custom_estimator" else "no_observations"
+  table$weight_status <- table$maturity_status <- rep(weight_status, nrow(table))
+  at_age <- trait == "age"
+  if (!is.null(measured) && nrow(measured)) {
+    if (at_age) {
+      age_keys <- c("sim", "year")
+      age_status <- .strat_design_status(measured, age_keys, measured$age_probability,
+                                         "age_design_unknown", "no_aging_support")
+      sampled_age <- which(measured$aged %in% TRUE)
+      required_age <- which(is.na(measured$aged) |
+                              (measured$age_probability %in% 1 & !measured$aged))
+      bad_age <- sampled_age[!measured$age[sampled_age] %in% ages]
+      missing_age <- unique(measured[c(required_age, bad_age), age_keys, with = FALSE])
+      age_status[missing_age, on = age_keys, status := "missing_age"]
+      measured <- measured[sampled_age, ]
+    }
+    weights <- if (at_age) measured$base_weight / measured$age_probability else
+      measured$base_weight
+    .strat_biology_ratio(table, measured, keys, "weight", rep(TRUE, nrow(measured)),
+                         weights, "mean_weight_kg", "weight_status")
+
+    maturity_p <- measured$maturity_probability
+    ## Fractional maturity coverage uses the same selected fish as the age stage.
+    nested <- which(maturity_p > 0 & maturity_p < 1)
+    incompatible <- is.na(measured$age_probability[nested]) |
+      maturity_p[nested] != measured$age_probability[nested]
+    maturity_p[nested[incompatible]] <- NA_real_
+    maturity_design <- .strat_design_status(measured, keys, maturity_p,
+                                            "maturity_design_unknown", "no_maturity_support")
+    maturity_gaps <- maturity_design[status != "ok"]
+    observed <- measured$maturity_observed %in% TRUE
+    expected <- maturity_p > 0 & (maturity_p == 1 | measured$aged %in% TRUE)
+    missing <- unique(measured[which(expected & !observed), keys, with = FALSE])
+    .strat_biology_ratio(table, measured, keys, "mature", expected & observed,
+                         if (at_age) weights else weights / maturity_p,
+                         "prop_mature", "maturity_status")
+    table[missing, on = keys, maturity_status := "missing_maturity"]
+    table[maturity_gaps, on = keys, maturity_status := i.status]
+    if (at_age) {
+      table[age_status[age_status$status != "ok"], on = age_keys,
+            `:=`(weight_status = i.status, maturity_status = i.status)]
+    }
+  }
+  unsupported <- which(table$estimate_status %in% c("no_sets", "unsampled_strata", "missing_lengths"))
+  table$weight_status[unsupported] <- table$maturity_status[unsupported] <-
+    table$estimate_status[unsupported]
+  if (at_age) {
+    table[is.na(age), `:=`(weight_status = "unassigned_age", maturity_status = "unassigned_age")]
+  }
+  table$mean_weight_kg[table$weight_status != "ok"] <- NA_real_
+  table$prop_mature[table$maturity_status != "ok"] <- NA_real_
+  table
+}
+
 .run_strat_one <- function(sim, length_group, alk_scale, strat_data_fun, strat_means_fun) {
   if (is.null(sim$setdet) || is.null(sim$samp)) {
     stop("Run sim_survey() or sim_surveys() before run_strat().", call. = FALSE)
@@ -348,6 +463,9 @@ run_strat <- function(sim,
   roster[sampled, on = keys, estimate_status := "ok"]
   roster[gaps, on = keys, estimate_status := "unsampled_strata"]
   missing_lengths <- unique(data$lf[is.na(n), keys, with = FALSE])
+  measured <- if (identical(strat_data_fun, strat_data) && identical(strat_means_fun, strat_means)) {
+    .strat_biology_data(sim, copy(data$setdet), strata, length_group)
+  }
 
   for (i in seq_along(.strat_estimates)) {
     trait <- list(NULL, "length", "age")[[i]]
@@ -382,6 +500,7 @@ run_strat <- function(sim,
       for (column in values) set(table, i = no_assignment, j = column, value = NA)
       table[is.na(age) & estimate_status == "ok", estimate_status := "unassigned_age"]
     }
+    if (!is.null(trait)) table <- .add_strat_biology(table, measured, trait, sim$ages)
     sim[[.strat_estimates[i]]] <- setkeyv(table, c(keys, trait))
   }
   sim$survey_coverage <- coverage
@@ -418,6 +537,15 @@ run_strat <- function(sim,
 #' unknown frame leaves `N_frame` and frame-scoped truth missing. Incompatible
 #' length bins and unassigned ages have missing matching truth. Only comparisons
 #' with an estimate and truth both marked `"ok"` contribute to error summaries.
+#' Age and length tables also compare observed mean weight in kg with
+#' `mean_weight_true_kg`, the mean over fish available to the survey in that
+#' scope. This truth uses the population's discrete length groups and the
+#' program's catchability. It is missing when the model, matching length
+#' bins, or available fish are absent. Age-selective surveys draw individual
+#' lengths, so their expected weights can differ from this grouped truth.
+#' Signed differences appear as `mean_weight_error_kg`. The corresponding
+#' `age_strat_weight_error_stats` and `length_strat_weight_error_stats` are
+#' calculated only for supported comparisons.
 #' Batch outputs include a `survey` key.
 #'
 #' @examples
@@ -457,6 +585,30 @@ strat_error <- function(sim, scope = "whole_grid") {
 .comparable_error_stats <- function(errors) {
   errors <- errors[is.finite(errors)]
   error_stats(if (length(errors)) errors else NA_real_)
+}
+
+.strat_weight_truth <- function(sim, selection, abundance, length_map) {
+  if (is.null(selection$key) || !is.function(sim$sim_weight)) return(list())
+  key <- selection$key[as.character(sim$lengths), as.character(sim$ages), drop = FALSE]
+  if (selection$by == "age") {
+    key <- sweep(key, 2, selection$values[as.character(sim$ages)], "*")
+  } else {
+    key <- key * selection$values[as.character(sim$lengths)]
+  }
+  kg <- .biology_values(sim$sim_weight, sim$lengths, "Weight")
+  age_n <- abundance * colSums(key)
+  age_kg <- abundance * colSums(key * kg)
+  at_age <- age_kg / age_n
+  at_age[which(age_n == 0)] <- NA_real_
+  at_length <- NULL
+  if (length(length_map)) {
+    length_n <- key %*% abundance
+    length_kg <- rowsum(length_n * kg, group = length_map, reorder = TRUE)
+    length_n <- rowsum(length_n, group = length_map, reorder = TRUE)
+    at_length <- length_kg / length_n
+    at_length[which(length_n == 0)] <- NA_real_
+  }
+  list(age = as.numeric(at_age), length = as.numeric(at_length))
 }
 
 .strat_truth <- function(sim, roster, scope, length_map) {
@@ -511,14 +663,19 @@ strat_error <- function(sim, scope = "whole_grid") {
     }
   }
 
+  weights <- .strat_weight_truth(sim, selection,
+                                 if (scope == "whole_grid") stock_age else frame_age,
+                                 length_map)
   total <- data.table(roster, I = colSums(available_age),
                        N_frame = colSums(frame_age), N_stock = colSums(stock_age))
   age <- data.table(roster[rep(seq_len(n_groups), each = n_ages)],
                      age = rep(sim$ages, times = n_groups),
                      I = as.numeric(available_age), N_frame = as.numeric(frame_age),
-                     N_stock = as.numeric(stock_age))
+                     N_stock = as.numeric(stock_age),
+                     mean_weight_true_kg = if (length(weights$age)) weights$age else NA_real_)
   lengths <- data.table(sim = integer(), year = numeric(), length = numeric(),
-                         I = numeric(), N_frame = numeric(), N_stock = numeric())
+                         I = numeric(), N_frame = numeric(), N_stock = numeric(),
+                         mean_weight_true_kg = numeric())
   if (length(length_map)) {
     available_length <- rowsum(available_length, group = length_map, reorder = TRUE)
     frame_length <- rowsum(frame_length, group = length_map, reorder = TRUE)
@@ -527,13 +684,15 @@ strat_error <- function(sim, scope = "whole_grid") {
     lengths <- data.table(roster[rep(seq_len(n_groups), each = length(bins))],
                            length = rep(bins, times = n_groups),
                            I = as.numeric(available_length), N_frame = as.numeric(frame_length),
-                           N_stock = as.numeric(stock_length))
+                           N_stock = as.numeric(stock_length),
+                           mean_weight_true_kg = if (length(weights$length)) weights$length else NA_real_)
   }
   list(total, lengths, age)
 }
 
 .strat_error_one <- function(sim, scope) {
   I <- I_hat <- error <- estimate_status <- truth_status <- age <- NULL
+  weight_status <- mean_weight_kg <- mean_weight_true_kg <- mean_weight_error_kg <- NULL
   roster <- unique(sim$total_strat[, c("sim", "year"), with = FALSE])
   length_map <- .strat_length_map(sim, sim$strat_length_group)
   truth <- .strat_truth(sim, roster, scope, length_map)
@@ -542,7 +701,8 @@ strat_error <- function(sim, scope = "whole_grid") {
     trait <- list(NULL, "length", "age")[[i]]
     keys <- c("sim", "year", trait)
     table <- sim[[.strat_estimates[i]]]
-    columns <- c(keys, "total", intersect("estimate_status", names(table)))
+    columns <- c(keys, "total", intersect(c("estimate_status", "mean_weight_kg", "weight_status"),
+                                          names(table)))
     table <- table[, columns, with = FALSE]
     setnames(table, "total", "I_hat")
     if (is.null(table$estimate_status)) {
@@ -556,6 +716,14 @@ strat_error <- function(sim, scope = "whole_grid") {
     table[, truth_status := ifelse(is.finite(I), "ok", unavailable)]
     if (i == 3L) table[is.na(age), truth_status := "unassigned_age"]
     table[, error := ifelse(estimate_status == "ok" & truth_status == "ok", I_hat - I, NA_real_)]
+    if (i > 1L) {
+      if (is.null(table$mean_weight_kg)) table$mean_weight_kg <- rep(NA_real_, nrow(table))
+      if (is.null(table$weight_status)) table$weight_status <- rep("no_observations", nrow(table))
+      table[, mean_weight_error_kg := ifelse(weight_status == "ok",
+                                               mean_weight_kg - mean_weight_true_kg, NA_real_)]
+      sim[[paste0(.strat_estimates[i], "_weight_error_stats")]] <-
+        .comparable_error_stats(table$mean_weight_error_kg)
+    }
     sim[[.strat_errors[i]]] <- setkeyv(table, keys)
     sim[[.strat_error_stats[i]]] <- .comparable_error_stats(table$error)
   }

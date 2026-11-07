@@ -1,5 +1,11 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Add `age_means()` for length-stratified biological samples and
+  `stock_biology()` for expected stock weight and maturity.
+* Estimate mean weight and proportion mature at length and age in
+  `run_strat()` and `run_catch()`. Add mean-weight truth comparisons and
+  error statistics to `strat_error()` and `catch_error()`.
+
 * Run stratified estimates and truth comparisons directly on named survey
   programs. `strat_error()` compares estimates with abundance after applying
   `q` across the full grid by default. Use `scope = "survey_frame"` to compare

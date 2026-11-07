@@ -120,7 +120,11 @@
 #'
 #' Fishing truth is completed before monitoring. Biological samples are drawn
 #' from actual catches, with ages nested within measured fish. Sample records
-#' contain stage-specific inclusion probabilities and missing unobserved ages.
+#' contain stage-specific inclusion probabilities, missing unobserved ages,
+#' and `weight` in kilograms per measured fish from the population's
+#' weight-at-length relationship. The `maturity_probability` is conditional on
+#' a fish being measured and is one, the conditional aging probability, or zero
+#' for the measured, aged, or none maturity protocols, respectively.
 #' Catch, stock and mortality tables remain aggregate even for very large stocks.
 #'
 #' @return The simulation list with `replicates` and a `fishery` list containing

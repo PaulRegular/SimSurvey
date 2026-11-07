@@ -13,7 +13,13 @@ run_catch(sim)
 The simulation list with three keyed data tables in
 \code{fishery$catch_estimates} named \code{total_catch}, \code{catch_at_length}, and \code{catch_at_age}.
 Each has \code{fishery}, \code{sim}, \code{year}, and estimated numbers of fish \code{n_hat}.
-The composition tables also include \code{length} or \code{age}.
+The composition tables also include \code{length} or \code{age}, \code{mean_weight_kg}
+(kilograms per fish), \code{prop_mature} (a proportion), and \code{weight_status}
+and \code{maturity_status}. A trait status is \code{"estimated"}, inherits an
+unsupported composition status, or indicates \code{"no_bin_sample"},
+\code{"no_weight_support"}, or \code{"no_maturity_support"}. Means are missing
+for empty groups and when the corresponding trait is unsupported.
+A supported group of entirely immature fish has proportion zero.
 \code{fishery$catch_diagnostics} gives annual \code{reported_n}, operation counts
 (\code{n_operations}, \code{n_positive_operations}, \code{n_sampled_operations}), biological
 counts (\code{n_measured}, \code{n_aged}), the fraction of operations selected
@@ -22,7 +28,8 @@ operations (\code{reported_catch_coverage}). Fractions with zero denominators
 are missing. Both \code{length_status} and \code{age_status} can be \code{"estimated"},
 \code{"zero_reported_catch"}, \code{"no_operation_support"}, or
 \code{"no_measurement_support"}. The \code{age_status} can also be
-\code{"no_aging_support"}. Re-estimation clears the previous catch comparison.
+\code{"no_aging_support"}. Re-estimation clears previous catch comparisons
+and their error summaries.
 }
 \description{
 Estimate monitored commercial catch
@@ -52,6 +59,16 @@ missing or invalid conditional aging probabilities, and absence of aged
 fish can leave age estimates unsupported while length estimates remain
 available. Unobserved lengths or ages within supported groups have
 estimated counts of zero.
+
+Mean weight and mature proportion are weighted means of the observed
+values within each length or age group. Mean weight uses the length
+weights for measured fish and the age weights for aged fish. Maturity at
+length additionally accounts for the probability of maturity examination
+among measured fish. That probability is one with
+\code{maturity_sampling = "measured"} and the conditional aging probability
+with \code{"aged"}. At age, the aging weight accounts for the joint observation
+of age and maturity under either protocol. Calibration to total catch
+cancels in each mean. Disabling maturity sampling leaves its means missing.
 }
 \examples{
 \donttest{
