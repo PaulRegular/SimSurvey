@@ -45,6 +45,10 @@ reference:
   - error_stats
   - strat_data
   - strat_means
+- title: Commercial catch analysis
+- contents:
+  - run_catch
+  - catch_error
 - title: Testing multiple surveys
 - contents:
   - test_surveys

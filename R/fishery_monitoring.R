@@ -23,6 +23,20 @@
   sample
 }
 
+.fishery_sample_counts <- function(operation_ids, sample) {
+  aged <- maturity_observed <- NULL
+  counts <- sample[, list(n_measured = as.numeric(.N),
+                           n_aged = as.numeric(sum(aged)),
+                           n_maturity = as.numeric(sum(maturity_observed))),
+                   by = "operation"]
+  rows <- match(operation_ids, counts$operation)
+  lapply(as.list(counts)[-1L], function(x) {
+    x <- x[rows]
+    x[is.na(rows)] <- 0
+    x
+  })
+}
+
 .monitor_fisheries <- function(truth, controls, years, sim) {
   n <- kg <- reported_n <- reported_kg <- effort <- n_measured <- n_aged <- n_maturity <- NULL
   operations <- truth$setdet
@@ -84,11 +98,8 @@
       set(sample, i = rows, j = column, value = maturity[[column]])
     }
   }
-  operations$n_measured <- vapply(operations$operation, function(id) sum(sample$operation == id), numeric(1))
-  operations$n_aged <- vapply(operations$operation, function(id) sum(sample$aged[sample$operation == id]), numeric(1))
-  operations$n_maturity <- vapply(operations$operation, function(id) {
-    sum(sample$maturity_observed[sample$operation == id])
-  }, numeric(1))
+  counts <- .fishery_sample_counts(operations$operation, sample)
+  for (column in names(counts)) set(operations, j = column, value = counts[[column]])
   totals <- operations[, list(kg = sum(kg), reported_n = sum(reported_n),
                               reported_kg = sum(reported_kg), n_measured = sum(n_measured),
                               n_aged = sum(n_aged), n_maturity = sum(n_maturity)),

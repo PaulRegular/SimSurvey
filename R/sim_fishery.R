@@ -142,6 +142,8 @@
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for controlled
 #' comparisons of targeting, knowledge, reporting, and biological monitoring.
+#' [run_catch()] summarizes reported catch and estimates its length and age
+#' composition from monitoring records.
 #'
 #' @examples
 #' capture <- sim_capture(q = 0.1, capacity_per_gear = 50)

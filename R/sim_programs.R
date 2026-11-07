@@ -52,7 +52,8 @@
 #' The mortality ledger and population are shared across fisheries.
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for the joint workflow
-#' and a mathematical appendix.
+#' and a mathematical appendix. [run_catch()] estimates catch by fishery from
+#' reports and biological samples.
 #'
 #' @examples
 #' trawl <- sim_fishery(target = 0.2, catch_model = sim_capture(q = 0.1))
@@ -83,16 +84,20 @@ sim_fisheries <- function(sim, ..., n_sims = NULL) {
 #' @details Configurations run in canonical name order using caller-controlled
 #' randomness. All programs' locations and catches are generated before any
 #' program's biological subsampling, so changing sampling caps does not change
-#' another program's fishing truth. Mutable tables are isolated between programs.
+#' another program's locations or catches. Mutable tables are isolated between programs.
 #'
-#' The common population is stored once. Each program retains availability
+#' The common population is stored once. Each program retains abundance
+#' available to the survey across the full grid
 #' (`I`, `I_at_length`, and keyed spatial `sp_I`), set details, biological samples,
-#' summaries, and its configuration. The existing `surveys` design table used by
+#' summaries, evaluated catchability, its eligible survey frame when known,
+#' and its configuration. The existing `surveys` design table used by
 #' [test_surveys()] is preserved. Repeated calls replace program results with a
 #' fresh simulation; they do not append or replay earlier programs.
 #'
 #' @seealso `vignette("fisheries", package = "SimSurvey")` for multiple survey
-#' programs, program extraction, and comparisons against availability truth.
+#' programs and program extraction. [strat_error()] compares estimates with
+#' abundance after applying `q` at age or length, across the full grid by default
+#' or within each intended survey footprint.
 #'
 #' @return A simulation list with common `replicates` and named `survey_programs`.
 #' Use [select_survey()] to create a standard single-survey view for existing
@@ -128,8 +133,7 @@ sim_surveys <- function(sim, ..., n_sims = NULL) {
   programs <- lapply(seq_along(results), function(i) {
     result <- .survey_maturity(results[[i]], configurations[[i]]$maturity_sampling,
                                configurations[[i]]$light)
-    keep <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals", "sample_truth")
-    program <- result[intersect(keep, names(result))]
+    program <- result[intersect(.survey_fields, names(result))]
     program$sp_I <- data.table::copy(as.data.table(result$sp_N)[, c("cell", "age", "year", "I")])
     program$configuration <- configurations[[i]]
     program
@@ -140,21 +144,25 @@ sim_surveys <- function(sim, ..., n_sims = NULL) {
   sim
 }
 
+.survey_fields <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals",
+                     "sample_truth", "survey_frame", "survey_replicates", "survey_selection")
+
 .clear_survey <- function(sim) {
-  fields <- c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals", "sample_truth",
-               "selected_survey", "survey_configuration", "total_strat", "length_strat", "age_strat",
-               "total_strat_error", "total_strat_error_stats", "length_strat_error",
-               "length_strat_error_stats", "age_strat_error", "age_strat_error_stats")
+  fields <- c(.survey_fields, "selected_survey", "survey_configuration")
   sim[intersect(fields, names(sim))] <- NULL
-  if ("I" %in% names(sim$sp_N)) sim$sp_N$I <- NULL
-  sim
+  if ("I" %in% names(sim$sp_N)) {
+    sim$sp_N <- data.table::copy(sim$sp_N)
+    sim$sp_N$I <- NULL
+  }
+  .clear_strat_analysis(sim)
 }
 
 #' Extract one survey program for existing analyses
 #'
 #' Creates a standard single-survey view, restoring the selected program's
-#' availability, set details, samples and summaries. Incompatible cached analyses
-#' are cleared. The input object and other program tables are not modified.
+#' availability, survey frame, set details, samples and summaries. Stacked
+#' analysis results are extracted for the selected program when present.
+#' The input object and other program tables are not modified.
 #'
 #' @param sim A simulation list returned by [sim_surveys()].
 #' @param survey One program name from `names(sim$survey_programs)`.
@@ -168,14 +176,22 @@ sim_surveys <- function(sim, ..., n_sims = NULL) {
 #' # programs |> select_survey("survey_A") |> run_strat() |> strat_error()
 #' @export
 select_survey <- function(sim, survey) {
+  view <- .survey_view(data.table::copy(sim), survey)
+  .restore_survey_analysis(view, sim, survey)
+}
+
+.survey_view <- function(sim, survey, restore_spatial = TRUE) {
   if (!is.character(survey) || length(survey) != 1 || is.na(survey) ||
       !survey %in% names(sim$survey_programs)) stop("survey must name one available survey program.")
-  sim <- .clear_survey(data.table::copy(sim))
+  sim <- .clear_survey(sim)
   program <- sim$survey_programs[[survey]]
-  keep <- intersect(c("I", "I_at_length", "full_setdet", "setdet", "samp", "samp_totals", "sample_truth"), names(program))
+  keep <- intersect(.survey_fields, names(program))
   sim[keep] <- data.table::copy(program[keep])
-  spatial <- as.data.table(sim$sp_N)[, c("cell", "age", "year")]
-  sim$sp_N$I <- program$sp_I[spatial, on = c("cell", "age", "year")][["I"]]
+  if (restore_spatial && !is.null(sim$sp_N) && !is.null(program$sp_I)) {
+    spatial <- as.data.table(sim$sp_N)[, c("cell", "age", "year")]
+    sim$sp_N <- data.table::copy(sim$sp_N)
+    sim$sp_N$I <- program$sp_I[spatial, on = c("cell", "age", "year")][["I"]]
+  }
   sim$selected_survey <- survey
   sim$survey_configuration <- program$configuration
   sim

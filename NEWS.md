@@ -1,5 +1,15 @@
 # SimSurvey 0.1.8.9000 (development)
 
+* Run stratified estimates and truth comparisons directly on named survey
+  programs. `strat_error()` compares estimates with abundance after applying
+  `q` across the full grid by default. Use `scope = "survey_frame"` to compare
+  with abundance available to the survey within its intended footprint.
+* Add `run_catch()` for total reported commercial catch and estimates at
+  length and age calibrated to that total. Report monitoring coverage and
+  support for each composition. Use `catch_error()` to compare estimates
+  with realized catch.
+* Summarize monitoring sample counts by operation in one grouped pass.
+
 * Add fishery `target` modes for shares of Z, fully selected F (`F_full`), catch
   numbers (`catch_n`), and catch kilograms (`catch_kg`).
 * Validate starting-population limits, mortality-compatible targets and combined

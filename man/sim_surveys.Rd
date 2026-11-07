@@ -30,11 +30,13 @@ population or consume the fishing mortality budget.
 Configurations run in canonical name order using caller-controlled
 randomness. All programs' locations and catches are generated before any
 program's biological subsampling, so changing sampling caps does not change
-another program's fishing truth. Mutable tables are isolated between programs.
+another program's locations or catches. Mutable tables are isolated between programs.
 
-The common population is stored once. Each program retains availability
+The common population is stored once. Each program retains abundance
+available to the survey across the full grid
 (\code{I}, \code{I_at_length}, and keyed spatial \code{sp_I}), set details, biological samples,
-summaries, and its configuration. The existing \code{surveys} design table used by
+summaries, evaluated catchability, its eligible survey frame when known,
+and its configuration. The existing \code{surveys} design table used by
 \code{\link[=test_surveys]{test_surveys()}} is preserved. Repeated calls replace program results with a
 fresh simulation; they do not append or replay earlier programs.
 }
@@ -45,5 +47,7 @@ survey_B <- sim_survey(q = sim_logistic(x50 = 30), q_by = "length")
 }
 \seealso{
 \code{vignette("fisheries", package = "SimSurvey")} for multiple survey
-programs, program extraction, and comparisons against availability truth.
+programs and program extraction. \code{\link[=strat_error]{strat_error()}} compares estimates with
+abundance after applying \code{q} at age or length, across the full grid by default
+or within each intended survey footprint.
 }
