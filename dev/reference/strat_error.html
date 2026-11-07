@@ -66,7 +66,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">strat_error</span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">strat_error</span><span class="op">(</span><span class="va">sim</span>, scope <span class="op">=</span> <span class="st">"whole_grid"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -77,6 +77,12 @@
 <dd><p>Object returned by <code><a href="run_strat.html">run_strat()</a></code>, which includes the simulated population,
 survey results, and stratified analysis outputs.</p></dd>
 
+
+<dt id="arg-scope">scope<a class="anchor" aria-label="anchor" href="#arg-scope"></a></dt>
+<dd><p>Area used for the comparison. <code>"whole_grid"</code> (default) uses all
+grid cells. <code>"survey_frame"</code> uses the eligible cells in each program's
+intended footprint for that replicate and year.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -85,6 +91,21 @@ survey results, and stratified analysis outputs.</p></dd>
 <li><p><strong>MSE</strong>: Mean squared error</p></li>
 <li><p><strong>RMSE</strong>: Root mean squared error</p></li>
 </ul></div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>In the error tables, <code>I</code> is abundance available in the chosen area
+after applying the program's <code>q</code> at age or length. The default uses the
+stored full-grid availability matrices <code>sim$I</code> and <code>sim$I_at_length</code>. For a
+restricted footprint, this comparison includes the effect of missing part
+of the stock. Use <code>scope = "survey_frame"</code> to compare with abundance
+available to the survey within its intended footprint.</p>
+<p>In both scopes, <code>N_frame</code> and <code>N_stock</code> give abundance before applying
+<code>q</code>, within the footprint and across the full grid, respectively. An
+unknown frame leaves <code>N_frame</code> and frame-scoped truth missing. Incompatible
+length bins and unassigned ages have missing matching truth. Only comparisons
+with an estimate and truth both marked <code>"ok"</code> contribute to error summaries.
+Batch outputs include a <code>survey</code> key.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>

@@ -103,17 +103,21 @@ analyses and plots. Top-level stale survey observations and analyses are cleared
     <p>Configurations run in canonical name order using caller-controlled
 randomness. All programs' locations and catches are generated before any
 program's biological subsampling, so changing sampling caps does not change
-another program's fishing truth. Mutable tables are isolated between programs.</p>
-<p>The common population is stored once. Each program retains availability
+another program's locations or catches. Mutable tables are isolated between programs.</p>
+<p>The common population is stored once. Each program retains abundance
+available to the survey across the full grid
 (<code>I</code>, <code>I_at_length</code>, and keyed spatial <code>sp_I</code>), set details, biological samples,
-summaries, and its configuration. The existing <code>surveys</code> design table used by
+summaries, evaluated catchability, its eligible survey frame when known,
+and its configuration. The existing <code>surveys</code> design table used by
 <code><a href="test_surveys.html">test_surveys()</a></code> is preserved. Repeated calls replace program results with a
 fresh simulation; they do not append or replay earlier programs.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code><a href="../articles/fisheries.html">vignette("fisheries", package = "SimSurvey")</a></code> for multiple survey
-programs, program extraction, and comparisons against availability truth.</p></div>
+programs and program extraction. <code><a href="strat_error.html">strat_error()</a></code> compares estimates with
+abundance after applying <code>q</code> at age or length, across the full grid by default
+or within each intended survey footprint.</p></div>
     </div>
 
     <div id="ref-examples">

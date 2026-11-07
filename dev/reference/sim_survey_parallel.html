@@ -112,13 +112,15 @@ Using a smaller <code>n_sims</code> and larger <code>n_loops</code> reduces memo
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Arguments passed on to <code><a href="sim_survey.html">sim_survey</a></code></p><dl><dt><code>q</code></dt>
 <dd><p>A closure (e.g., <code><a href="sim_logistic.html">sim_logistic()</a></code>) for simulating catchability.
-Returned values must range between 0 and 1.</p></dd>
+It is evaluated on the modeled ages or length-group labels. Returned values
+must range between 0 and 1.</p></dd>
 
     <dt><code>q_by</code></dt>
 <dd><p>Basis of catchability: <code>"age"</code> (the historical default) or
 <code>"length"</code>. Length-based catchability is evaluated on the growth model's
-discrete length-group labels. Availability integrates catchability over the
-length-age key; caught lengths follow that selected distribution.</p></dd>
+discrete length-group labels. The model averages length-based <code>q</code> over the
+length-age key to find availability at age. Caught lengths follow the
+distribution after applying <code>q</code>.</p></dd>
 
     <dt><code>maturity_sampling</code></dt>
 <dd><p>Fish examined for maturity: <code>"aged"</code> (default),
@@ -170,6 +172,16 @@ Options: <code>"division"</code> (default), <code>"strat"</code>, or <code>"set"
 <dd><p>A <code>data.table</code> of set locations (same structure as returned by <code><a href="sim_sets.html">sim_sets()</a></code>).
 If <code>NULL</code>, set locations are generated automatically.</p></dd>
 
+    <dt><code>survey_frame</code></dt>
+<dd><p>Optional data frame of unique eligible <code>sim</code>, <code>year</code>, and
+<code>cell</code> keys for <code>custom_sets</code>. A supplied frame describes all survey replicates
+and years, so a replicate-year with no frame rows has an empty footprint.
+By default, custom sets carry the frame recorded by <code><a href="sim_sets.html">sim_sets()</a></code>, when
+present. Bare custom sets have an unknown frame. When combining sets from
+different designs, combine their frames explicitly and supply the result here.
+Set strata and divisions must match the grid, and stratum areas must match
+the eligible cells.</p></dd>
+
     <dt><code>light</code></dt>
 <dd><p>Logical. If <code>TRUE</code>, drops some objects from output to reduce memory footprint.</p></dd>
 
@@ -199,7 +211,7 @@ and minimize RAM usage.</p>
 <span class="r-in"><span>    q <span class="op">=</span> <span class="fu"><a href="sim_logistic.html">sim_logistic</a></span><span class="op">(</span>k <span class="op">=</span> <span class="fl">2</span>, x50 <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    quiet <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> One run of sim_survey took ~ 2 secs to run. It may take up to 14 secs to run all simulations.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> One run of sim_survey took ~ 1 secs to run. It may take up to 5 secs to run all simulations.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

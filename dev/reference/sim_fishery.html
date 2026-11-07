@@ -318,7 +318,9 @@ Catch, stock and mortality tables remain aggregate even for very large stocks.</
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code><a href="../articles/fisheries.html">vignette("fisheries", package = "SimSurvey")</a></code> for controlled
-comparisons of targeting, knowledge, reporting, and biological monitoring.</p></div>
+comparisons of targeting, knowledge, reporting, and biological monitoring.
+<code><a href="run_catch.html">run_catch()</a></code> summarizes reported catch and estimates its length and age
+composition from monitoring records.</p></div>
     </div>
 
     <div id="ref-examples">
@@ -336,24 +338,24 @@ comparisons of targeting, knowledge, reporting, and biological monitoring.</p></
 <span class="r-in"><span><span class="va">result</span><span class="op">$</span><span class="va">fishery</span><span class="op">$</span><span class="va">annual</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    fishery   sim  year reference_target target target_type requested_target</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;char&gt; &lt;int&gt; &lt;int&gt;            &lt;num&gt;  &lt;num&gt;      &lt;char&gt;            &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: fishery     1     1         582148.2 582148       share              0.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2: fishery     1     2         570662.0 570662       share              0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: fishery     1     1           714074 714074       share              0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: fishery     1     2           494334 494334       share              0.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    target_unit achieved reference_target_n reference_target_kg F_full_reference</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;char&gt;    &lt;num&gt;              &lt;num&gt;               &lt;num&gt;            &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:        fish     3797           582148.2            160048.9               NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:        fish     3851           570662.0            162706.6               NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:        fish     3990             714074            196459.2               NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:        fish     4333             494334            134049.0               NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        n effort shortfall n_operations          status       kg reported_n</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;num&gt;  &lt;num&gt;     &lt;num&gt;        &lt;num&gt;          &lt;char&gt;    &lt;num&gt;      &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:  3797    100    578351          100 operation_limit 1014.767       3797</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:  3851    100    566811          100 operation_limit 1097.986       3851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:  3990    100    710084          100 operation_limit 1232.241       3990</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:  4333    100    490001          100 operation_limit 1290.391       4333</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    reported_kg n_measured n_aged n_maturity  cpue reported_cpue biomass_cpue</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;num&gt;      &lt;num&gt;  &lt;num&gt;      &lt;num&gt; &lt;num&gt;         &lt;num&gt;        &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:    1014.767       3797   1899       1899 37.97         37.97     10.14767</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:    1097.986       3851   2163       2163 38.51         38.51     10.97986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:    1232.241       3990   2012       2012 39.90         39.90     12.32241</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:    1290.391       4333   2079       2079 43.33         43.33     12.90391</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    reported_biomass_cpue</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:              10.14767</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:              10.97986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1:              12.32241</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:              12.90391</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

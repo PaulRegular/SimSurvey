@@ -80,20 +80,20 @@
 
 
 <dl><dt id="arg-sim">sim<a class="anchor" aria-label="anchor" href="#arg-sim"></a></dt>
-<dd><p>Simulation object from <code><a href="sim_survey.html">sim_survey()</a></code>.</p></dd>
+<dd><p>Simulation object from <code><a href="sim_survey.html">sim_survey()</a></code> or <code><a href="sim_surveys.html">sim_surveys()</a></code>.</p></dd>
 
 
 <dt id="arg-length-group">length_group<a class="anchor" aria-label="anchor" href="#arg-length-group"></a></dt>
 <dd><p>Size of the length frequency bins used for both abundance-at-length
 calculations and age-length-key construction. By default, this is inherited from the
 value defined in <code><a href="sim_abundance.html">sim_abundance()</a></code> via the closure supplied to <code>sim_length</code> (<code>"inherit"</code>).
-You may also supply a numeric value; however, mismatches in length groupings may cause
-issues with <code><a href="strat_error.html">strat_error()</a></code> if true vs. estimated groupings are not aligned.</p></dd>
+A numeric width can also be supplied. Length comparisons require matching
+bins or an exact aggregation of the original bins.</p></dd>
 
 
 <dt id="arg-alk-scale">alk_scale<a class="anchor" aria-label="anchor" href="#arg-alk-scale"></a></dt>
 <dd><p>Spatial scale at which to construct and apply age-length keys:
-<code>"division"</code> or <code>"strat"</code>.</p></dd>
+<code>"division"</code>, <code>"strat"</code>, or <code>"set"</code>.</p></dd>
 
 
 <dt id="arg-strat-data-fun">strat_data_fun<a class="anchor" aria-label="anchor" href="#arg-strat-data-fun"></a></dt>
@@ -106,14 +106,32 @@ issues with <code><a href="strat_error.html">strat_error()</a></code> if true vs
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Adds stratified analysis results to the <code>sim</code> list:</p><ul><li><p><code>"total_strat"</code>: Results for the total population</p></li>
+    <p>Adds stratified analysis results to the <code>sim</code> list:</p><ul><li><p><code>"total_strat"</code>: Results for the total abundance available to the survey</p></li>
 <li><p><code>"length_strat"</code>: Results aggregated by length group</p></li>
 <li><p><code>"age_strat"</code>: Results aggregated by age</p></li>
-</ul></div>
+<li><p><code>"survey_coverage"</code>: Eligible and visited cells and set counts by stratum</p></li>
+</ul><p>Results have an <code>estimate_status</code> column identifying support for each estimate.
+Statuses include <code>"ok"</code>, <code>"no_sets"</code>, <code>"unsampled_strata"</code>,
+<code>"missing_lengths"</code>, <code>"missing_estimate"</code>, <code>"partial_age"</code>, and
+<code>"unassigned_age"</code>.
+Batch tables add a <code>survey</code> key; <code><a href="select_survey.html">select_survey()</a></code> restores one program's view.</p>
+    </div>
     <div id="details">
     <h2>Details</h2>
     <p>The <code>strat_data_fun</code> and <code>strat_means_fun</code> arguments allow you to use custom
-<code><a href="strat_data.html">strat_data()</a></code> and <code><a href="strat_means.html">strat_means()</a></code> functions.</p>
+<code><a href="strat_data.html">strat_data()</a></code> and <code><a href="strat_means.html">strat_means()</a></code> functions.
+Custom estimators must return the requested survey grouping columns and a
+<code>total</code> column. The existing estimator assumes representative sets within
+each stratum and a common tow area within a stratum. Declaring the frame
+supplies the intended coverage for comparison.
+These estimates target abundance available to the survey, meaning abundance within
+the intended survey footprint after applying <code>q</code> at age or length.
+Use <code><a href="strat_error.html">strat_error()</a></code> to compare with abundance available across the full grid
+or within that footprint.
+For a batch, both hooks run independently for each named program.
+A known frame with unsampled strata has missing full-frame estimates.
+An unassigned age row retains catch without a matching age-length key.
+Assigned ages can have partial totals in this case.</p>
     </div>
 
     <div id="ref-examples">

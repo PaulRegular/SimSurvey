@@ -62,7 +62,10 @@
 
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.8.9000" id="simsurvey-0189000-development">SimSurvey 0.1.8.9000 (development)<a class="anchor" aria-label="anchor" href="#simsurvey-0189000-development"></a></h2>
-<ul><li><p>Add fishery <code>target</code> modes for shares of Z, fully selected F (<code>F_full</code>), catch numbers (<code>catch_n</code>), and catch kilograms (<code>catch_kg</code>).</p></li>
+<ul><li><p>Run stratified estimates and truth comparisons directly on named survey programs. <code><a href="../reference/strat_error.html">strat_error()</a></code> compares estimates with abundance after applying <code>q</code> across the full grid by default. Use <code>scope = "survey_frame"</code> to compare with abundance available to the survey within its intended footprint.</p></li>
+<li><p>Add <code><a href="../reference/run_catch.html">run_catch()</a></code> for total reported commercial catch and estimates at length and age calibrated to that total. Report monitoring coverage and support for each composition. Use <code><a href="../reference/catch_error.html">catch_error()</a></code> to compare estimates with realized catch.</p></li>
+<li><p>Summarize monitoring sample counts by operation in one grouped pass.</p></li>
+<li><p>Add fishery <code>target</code> modes for shares of Z, fully selected F (<code>F_full</code>), catch numbers (<code>catch_n</code>), and catch kilograms (<code>catch_kg</code>).</p></li>
 <li><p>Validate starting-population limits, mortality-compatible targets and combined reference F before random stock allocation, with fishery/year/age diagnostics. Cap kilogram catches as whole-fish aggregate removals and record target units, requested settings, reference catches, achieved catches and shortfalls.</p></li>
 <li><p>Update fishery plots and the workflow vignette for mixed target types, reference F and kilogram quotas, including the mathematical conversion.</p></li>
 <li><p>Bound jointly rounded reference-number targets by the shared integer death count, preventing floating-point round trips at half-integer ties from creating an unsupported extra fish.</p></li>
