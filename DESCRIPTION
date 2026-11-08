@@ -12,9 +12,10 @@ Authors@R: c(
 Maintainer: Paul Regular <Paul.Regular@dfo-mpo.gc.ca>
 Description: Simulate age-structured populations that vary in space and time and 
     explore the efficacy of a range of built-in or user-defined sampling 
-    protocols to reproduce the population parameters of the known population. 
-    (See Regular et al. (2020) <doi:10.1371/journal.pone.0232822> for more
-    details).
+    protocols to reproduce the population parameters of the known population.
+    The package also simulates fishery catches and associated catch monitoring.
+    The original survey framework is described by Regular et al. (2020)
+    <doi:10.1371/journal.pone.0232822>.
 Depends:
     R (>= 4.1.0)
 License: GPL-3
